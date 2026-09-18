@@ -30,6 +30,9 @@ airports = load_json("airports.json")
 # Fast lookup for the /select step, keyed by flight number.
 routes_by_flight_number = {r["flight_number"]: r for r in routes}
 
+# Fast country lookup by ICAO code.
+country_by_icao = {a["icao"]: a["country"] for a in airports}
+
 
 @app.route("/")
 def index():
@@ -92,11 +95,18 @@ def search():
     summaries = []
     for itin in itineraries:
         total_minutes = sum(leg["duration_minutes"] for leg in itin)
+        dep_country = country_by_icao.get(itin[0]["departure_icao"], "")
+        arr_country = country_by_icao.get(itin[-1]["arrival_icao"], "")
         summaries.append({
             "flight_numbers": [leg["flight_number"] for leg in itin],
             "path": [itin[0]["departure_icao"]] + [leg["arrival_icao"] for leg in itin],
             "total_minutes": total_minutes,
             "legs": len(itin),
+            "departure_icao": itin[0]["departure_icao"],
+            "arrival_icao": itin[-1]["arrival_icao"],
+            "departure_country": dep_country,
+            "arrival_country": arr_country,
+            "domestic": dep_country != "" and dep_country == arr_country,
         })
 
     return jsonify({"count": len(summaries), "itineraries": summaries})
