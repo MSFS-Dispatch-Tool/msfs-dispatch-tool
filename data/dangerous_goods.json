@@ -1,0 +1,32 @@
+[
+  {
+    "id": "dg-01",
+    "label": "Lithium batteries (spare, in passenger baggage, quantity-limited)",
+    "informational_only": true,
+    "weight": 5
+  },
+  {
+    "id": "dg-02",
+    "label": "Dry ice (for perishable cargo, ventilated stowage)",
+    "informational_only": true,
+    "weight": 2
+  },
+  {
+    "id": "dg-03",
+    "label": "Small quantity of medicinal/toiletry aerosols in checked baggage",
+    "informational_only": true,
+    "weight": 3
+  },
+  {
+    "id": "dg-04",
+    "label": "Security-sensitive cargo item requiring manifest annotation",
+    "informational_only": true,
+    "weight": 1
+  },
+  {
+    "id": "dg-05",
+    "label": "No dangerous goods on this sector",
+    "informational_only": true,
+    "weight": 6
+  }
+]
