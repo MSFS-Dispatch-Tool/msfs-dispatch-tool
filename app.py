@@ -7,9 +7,10 @@ No generator logic yet (that's step 4) - this is purely "does the app run
 and can it read its own data" before anything else gets built on top.
 """
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import json
 import os
+from generator import generate_flight
 
 app = Flask(__name__)
 
@@ -42,6 +43,20 @@ def index():
         "dangerous_goods": len(dangerous_goods),
     }
     return render_template("index.html", counts=counts)
+
+
+@app.route("/generate")
+def generate():
+    # Query params for now (?minutes=180) - a proper form comes with the
+    # real interface in a later step. Defaults to 180 min / 738 if omitted.
+    available_minutes = request.args.get("minutes", default=180, type=int)
+    aircraft_type = request.args.get("aircraft", default="738", type=str)
+
+    session = generate_flight(
+        routes, mels, delay_codes, lmc_events, dangerous_goods,
+        aircraft_type=aircraft_type, available_minutes=available_minutes
+    )
+    return jsonify(session)
 
 
 if __name__ == "__main__":
