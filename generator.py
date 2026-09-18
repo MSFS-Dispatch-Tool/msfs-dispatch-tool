@@ -7,10 +7,9 @@ Split into two phases, matching the new flow:
    filters (origin, destination, leg count, time budget). Pure route/time
    logic, no randomized conditions yet.
 2. generate_conditions() - once the person has picked one itinerary, rolls
-   pax/cargo/MEL/delay/LMC/dangerous-goods for it. Applied once per
-   itinerary as a whole for now (not per individual leg) - a reasonable
-   simplification to keep this step bounded; per-leg granularity is a
-   plausible future refinement, not built now.
+   the airframe-level MEL once for the whole rotation, and rolls
+   pax/cargo/dangerous-goods/delay/LMC separately per leg, since those are
+   sector-specific, not aircraft-specific.
 """
 
 import random
@@ -126,27 +125,45 @@ def resolve_lmc(item):
     return resolved
 
 
-def generate_conditions(itinerary, mels, delay_codes, lmc_events, dangerous_goods):
-    """
-    Rolls the randomized operational conditions for an already-chosen
-    itinerary (a list of route legs). Applied once for the whole
-    itinerary, not per leg - see module docstring.
-    """
+def generate_leg_conditions(dangerous_goods, delay_codes, lmc_events):
+    """Rolls the per-sector conditions for a single leg: pax load, cargo,
+    dangerous goods, delay, LMC. Called once per leg in the itinerary."""
     load_factor = round(random.triangular(0.65, 0.98, 0.90), 2)
     pax_count = round(189 * load_factor)
     bags_per_pax = random.uniform(0.5, 0.9)
     cargo_weight_kg = round(pax_count * bags_per_pax * 15)
 
-    session = {
-        "session_id": str(uuid.uuid4()),
-        "itinerary": itinerary,
+    return {
         "pax_count": pax_count,
         "load_factor": load_factor,
         "cargo_weight_kg": cargo_weight_kg,
         "dangerous_goods": resolve_component(weighted_pick(dangerous_goods)),
-        "mel": resolve_component(weighted_pick(mels)) if random.random() < MEL_PROBABILITY else None,
         "delay": weighted_pick(delay_codes) if random.random() < DELAY_PROBABILITY else None,
         "lmc_event": resolve_lmc(weighted_pick(lmc_events)) if random.random() < LMC_PROBABILITY else None,
+    }
+
+
+def generate_conditions(itinerary, mels, delay_codes, lmc_events, dangerous_goods):
+    """
+    Rolls the randomized operational conditions for an already-chosen
+    itinerary (a list of route legs).
+
+    MEL is rolled ONCE for the whole itinerary - it's a property of the
+    airframe, not the sector, so it follows the aircraft across every leg
+    of the rotation. Pax load, cargo, dangerous goods, delay, and LMC are
+    rolled separately PER LEG, since those are sector-specific.
+    """
+    legs = []
+    for route_leg in itinerary:
+        conditions = generate_leg_conditions(dangerous_goods, delay_codes, lmc_events)
+        conditions["flight_number"] = route_leg["flight_number"]
+        legs.append(conditions)
+
+    session = {
+        "session_id": str(uuid.uuid4()),
+        "itinerary": itinerary,
+        "legs": legs,
+        "mel": resolve_component(weighted_pick(mels)) if random.random() < MEL_PROBABILITY else None,
         "fuel": None,
         "ofp_static_id": None,
     }
