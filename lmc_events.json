@@ -1,0 +1,79 @@
+[
+  {
+    "id": "lmc-01",
+    "type": "pax_change",
+    "description": "No-shows discovered at boarding",
+    "delta_range": [
+      -5,
+      -1
+    ],
+    "unit": "passengers",
+    "weight": 5
+  },
+  {
+    "id": "lmc-02",
+    "type": "pax_change",
+    "description": "Late-joining passengers added after initial loadsheet",
+    "delta_range": [
+      1,
+      4
+    ],
+    "unit": "passengers",
+    "weight": 3
+  },
+  {
+    "id": "lmc-03",
+    "type": "pax_change",
+    "description": "Passenger removed after being deemed unfit to fly / gate incident",
+    "delta_range": [
+      -1,
+      -1
+    ],
+    "unit": "passengers",
+    "weight": 1
+  },
+  {
+    "id": "lmc-04",
+    "type": "cargo_change",
+    "description": "Extra bags checked in at the gate",
+    "delta_range": [
+      20,
+      100
+    ],
+    "unit": "kg",
+    "weight": 4
+  },
+  {
+    "id": "lmc-05",
+    "type": "cargo_change",
+    "description": "A bag pulled from the hold at the last minute (owner no-show)",
+    "delta_range": [
+      -30,
+      -10
+    ],
+    "unit": "kg",
+    "weight": 2
+  },
+  {
+    "id": "lmc-06",
+    "type": "cargo_change",
+    "description": "Additional hold cargo accepted late from another delayed connection",
+    "delta_range": [
+      50,
+      200
+    ],
+    "unit": "kg",
+    "weight": 1
+  },
+  {
+    "id": "lmc-07",
+    "type": "bag_pulled",
+    "description": "Bag pulled for a security/documentation issue, loadsheet re-run required",
+    "delta_range": [
+      -15,
+      -5
+    ],
+    "unit": "kg",
+    "weight": 1
+  }
+]

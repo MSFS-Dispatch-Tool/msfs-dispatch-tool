@@ -1,0 +1,191 @@
+[
+  {
+    "iata_code": "17",
+    "description": "Catering order, late or incorrect order given to supplier",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 4
+  },
+  {
+    "iata_code": "18",
+    "description": "Baggage processing, sorting etc.",
+    "duration_range_minutes": [
+      5,
+      20
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "32",
+    "description": "Loading/unloading, bulky or special load, lack of loading staff",
+    "duration_range_minutes": [
+      10,
+      25
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "33",
+    "description": "Loading equipment lack of or breakdown (e.g. container/pallet loader)",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "34",
+    "description": "Servicing equipment lack of or breakdown (e.g. steps)",
+    "duration_range_minutes": [
+      10,
+      25
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "35",
+    "description": "Aircraft cleaning",
+    "duration_range_minutes": [
+      5,
+      15
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "36",
+    "description": "Fuelling/defuelling delay, fuel supplier",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "39",
+    "description": "Technical/ground equipment lack of or breakdown (e.g. pushback tug)",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "41",
+    "description": "Aircraft defects",
+    "duration_range_minutes": [
+      15,
+      60
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "63",
+    "description": "Late crew boarding or departure procedures",
+    "duration_range_minutes": [
+      5,
+      20
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "64",
+    "description": "Flight deck crew shortage - sickness, awaiting standby, flight time limitations",
+    "duration_range_minutes": [
+      15,
+      60
+    ],
+    "weight": 1
+  },
+  {
+    "iata_code": "67",
+    "description": "Cabin crew shortage - sickness, awaiting standby, flight time limitations",
+    "duration_range_minutes": [
+      15,
+      60
+    ],
+    "weight": 1
+  },
+  {
+    "iata_code": "71",
+    "description": "Weather at departure station",
+    "duration_range_minutes": [
+      10,
+      45
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "72",
+    "description": "Weather at destination station",
+    "duration_range_minutes": [
+      10,
+      45
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "75",
+    "description": "De-icing of aircraft",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "81",
+    "description": "ATFM due to ATC en-route demand/capacity",
+    "duration_range_minutes": [
+      10,
+      40
+    ],
+    "weight": 4
+  },
+  {
+    "iata_code": "82",
+    "description": "ATFM due to ATC staff/equipment en-route (industrial action, staff shortage, equipment failure)",
+    "duration_range_minutes": [
+      15,
+      60
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "83",
+    "description": "ATFM due to restriction at destination airport",
+    "duration_range_minutes": [
+      15,
+      45
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "87",
+    "description": "Airport facilities - parking stands, ramp congestion, gate limitations",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 3
+  },
+  {
+    "iata_code": "89",
+    "description": "Restrictions at airport of departure - start-up/pushback, ATC services, noise curfew",
+    "duration_range_minutes": [
+      10,
+      30
+    ],
+    "weight": 2
+  },
+  {
+    "iata_code": "93",
+    "description": "Aircraft rotation - late arrival of aircraft from previous sector",
+    "duration_range_minutes": [
+      15,
+      60
+    ],
+    "weight": 5
+  }
+]
