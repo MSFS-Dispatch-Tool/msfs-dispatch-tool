@@ -1,54 +1,107 @@
 """
-Generator logic for the MSFS immersion tool (step 4).
+Generator logic for the MSFS immersion tool (step 4, revised for
+search/filter/multi-leg selection).
 
-Pure functions operating on the in-memory datasets loaded by app.py.
-No Flask/HTTP concerns in here - that separation makes this testable from
-a plain Python shell before it's ever wired to a route.
+Split into two phases, matching the new flow:
+1. find_itineraries() - lists candidate route combinations matching the
+   filters (origin, destination, leg count, time budget). Pure route/time
+   logic, no randomized conditions yet.
+2. generate_conditions() - once the person has picked one itinerary, rolls
+   pax/cargo/MEL/delay/LMC/dangerous-goods for it. Applied once per
+   itinerary as a whole for now (not per individual leg) - a reasonable
+   simplification to keep this step bounded; per-leg granularity is a
+   plausible future refinement, not built now.
 """
 
 import random
 import uuid
 
-# Tunable probabilities for whether an event fires at all on a given
-# generated flight. These are starting guesses, not sourced from anything -
-# tune by feel once you're actually using the tool. Dangerous goods doesn't
-# need a separate gate: the dataset already has a heavily-weighted
-# "no dangerous goods on this sector" entry that serves as the null case.
 MEL_PROBABILITY = 0.35
 DELAY_PROBABILITY = 0.45
 LMC_PROBABILITY = 0.50
 
+MAX_LEGS = 3          # hard cap - beyond this, search space explodes for
+                       # little realistic benefit on a single session
+MAX_ITINERARIES = 40  # cap on how many options are returned to the person
 
-def pick_route(routes, aircraft_type, available_minutes):
+
+def resolve_airport(airports, code):
     """
-    Filters routes by aircraft type and whether the flight fits in the
-    available time (duration only - doesn't account for turnaround,
-    taxi, etc. at this stage). Returns None if nothing fits.
+    Accepts an ICAO or IATA code (case-insensitive) and returns the matching
+    airport's ICAO code, or None if it doesn't exist in the dataset.
     """
-    candidates = [
-        r for r in routes
-        if r["aircraft_type"] == aircraft_type
-        and r["duration_minutes"] is not None
-        and r["duration_minutes"] <= available_minutes
-    ]
-    if not candidates:
+    if not code:
         return None
-    return random.choice(candidates)
+    code = code.strip().upper()
+    for a in airports:
+        if a["icao"] == code or a["iata"] == code:
+            return a["icao"]
+    return None
+
+
+def find_itineraries(routes, aircraft_type, available_minutes,
+                      origin_icao=None, destination_icao=None, num_legs=None):
+    """
+    Returns a list of itineraries, each a list of 1..MAX_LEGS route dicts
+    chained so each leg's departure equals the previous leg's arrival.
+
+    - origin_icao, if given, constrains the FIRST leg's departure.
+    - destination_icao, if given, constrains the LAST leg's arrival.
+    - num_legs, if given, requires that exact chain length; if None
+      ("auto"), all chain lengths up to MAX_LEGS that fit the time budget
+      are considered.
+    - Total chain duration must fit within available_minutes.
+    """
+    by_departure = {}
+    for r in routes:
+        if r["aircraft_type"] != aircraft_type or r["duration_minutes"] is None:
+            continue
+        by_departure.setdefault(r["departure_icao"], []).append(r)
+
+    leg_counts_to_try = [num_legs] if num_legs else list(range(1, MAX_LEGS + 1))
+
+    results = []
+
+    def extend(chain, remaining_minutes, target_legs, bucket, bucket_cap):
+        if len(bucket) >= bucket_cap:
+            return
+        if len(chain) == target_legs:
+            if destination_icao and chain[-1]["arrival_icao"] != destination_icao:
+                return
+            bucket.append(list(chain))
+            return
+
+        current_airport = chain[-1]["arrival_icao"] if chain else origin_icao
+        candidates = by_departure.get(current_airport, []) if current_airport else routes
+
+        for leg in candidates:
+            if origin_icao and not chain and leg["departure_icao"] != origin_icao:
+                continue
+            if leg["duration_minutes"] > remaining_minutes:
+                continue
+            chain.append(leg)
+            extend(chain, remaining_minutes - leg["duration_minutes"], target_legs, bucket, bucket_cap)
+            chain.pop()
+            if len(bucket) >= bucket_cap:
+                return
+
+    # Each leg-count gets its own capped bucket so "auto" mode returns a mix
+    # of 1/2/3-leg options instead of one leg-count exhausting the whole cap.
+    per_count_cap = MAX_ITINERARIES if num_legs else max(1, MAX_ITINERARIES // len(leg_counts_to_try))
+    for legs in leg_counts_to_try:
+        bucket = []
+        extend([], available_minutes, legs, bucket, per_count_cap)
+        results.extend(bucket)
+
+    return results[:MAX_ITINERARIES]
 
 
 def weighted_pick(items):
-    """Picks one item from a list using its 'weight' field."""
     weights = [item["weight"] for item in items]
     return random.choices(items, weights=weights, k=1)[0]
 
 
 def resolve_component(item):
-    """
-    If an item has component_options, randomly picks one and substitutes
-    it into {side} in description/dispatch_consequence. Returns a copy -
-    never mutates the original dataset entry, since that's shared across
-    every future generation.
-    """
     resolved = dict(item)
     options = item.get("component_options")
     if options:
@@ -67,38 +120,26 @@ def resolve_component(item):
 
 
 def resolve_lmc(item):
-    """LMC events use delta_range instead of component_options - roll an
-    actual delta within that range rather than substituting text."""
     resolved = dict(item)
     lo, hi = item["delta_range"]
     resolved["delta"] = random.randint(lo, hi)
     return resolved
 
 
-def generate_flight(routes, mels, delay_codes, lmc_events, dangerous_goods,
-                     aircraft_type="738", available_minutes=180):
+def generate_conditions(itinerary, mels, delay_codes, lmc_events, dangerous_goods):
     """
-    Assembles one generated session object per the schema from step 1.
-    Returns None (with a reason) if no route fits the time available.
+    Rolls the randomized operational conditions for an already-chosen
+    itinerary (a list of route legs). Applied once for the whole
+    itinerary, not per leg - see module docstring.
     """
-    route = pick_route(routes, aircraft_type, available_minutes)
-    if route is None:
-        return {"error": "No route fits the given aircraft type and time available."}
-
-    # Passenger load: weighted toward realistic LCC load factors rather
-    # than a flat range - see step 1 discussion on why flat random was
-    # rejected.
     load_factor = round(random.triangular(0.65, 0.98, 0.90), 2)
-    pax_count = round(189 * load_factor)  # 189 seats, standard Ryanair 738 config
-
-    # Cargo: rough bag-per-pax model, not tied to any real dataset - a
-    # reasonable placeholder until refined.
+    pax_count = round(189 * load_factor)
     bags_per_pax = random.uniform(0.5, 0.9)
-    cargo_weight_kg = round(pax_count * bags_per_pax * 15)  # ~15kg avg checked bag
+    cargo_weight_kg = round(pax_count * bags_per_pax * 15)
 
     session = {
         "session_id": str(uuid.uuid4()),
-        "route": route,
+        "itinerary": itinerary,
         "pax_count": pax_count,
         "load_factor": load_factor,
         "cargo_weight_kg": cargo_weight_kg,
@@ -106,7 +147,7 @@ def generate_flight(routes, mels, delay_codes, lmc_events, dangerous_goods,
         "mel": resolve_component(weighted_pick(mels)) if random.random() < MEL_PROBABILITY else None,
         "delay": weighted_pick(delay_codes) if random.random() < DELAY_PROBABILITY else None,
         "lmc_event": resolve_lmc(weighted_pick(lmc_events)) if random.random() < LMC_PROBABILITY else None,
-        "fuel": None,  # filled in step 5 once SimBrief integration exists
-        "ofp_static_id": None,  # filled in step 5
+        "fuel": None,
+        "ofp_static_id": None,
     }
     return session
