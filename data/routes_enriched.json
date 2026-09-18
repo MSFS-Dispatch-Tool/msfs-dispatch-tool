@@ -10,7 +10,8 @@
     "duration_minutes": 160,
     "distance_nm": 851,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10",
+    "scheduled_arrival_local": "10:40"
   },
   {
     "flight_number": "FR30",
@@ -23,7 +24,8 @@
     "duration_minutes": 80,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:30",
+    "scheduled_arrival_local": null
   },
   {
     "flight_number": "FR611",
@@ -36,7 +38,8 @@
     "duration_minutes": 55,
     "distance_nm": 140,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:05",
+    "scheduled_arrival_local": "10:00"
   },
   {
     "flight_number": "FR3976",
@@ -49,7 +52,8 @@
     "duration_minutes": 165,
     "distance_nm": 802,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05",
+    "scheduled_arrival_local": "16:50"
   },
   {
     "flight_number": "FR615",
@@ -62,7 +66,8 @@
     "duration_minutes": 50,
     "distance_nm": 94,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45",
+    "scheduled_arrival_local": "06:35"
   },
   {
     "flight_number": "FR4585",
@@ -75,7 +80,8 @@
     "duration_minutes": 120,
     "distance_nm": 485,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:00",
+    "scheduled_arrival_local": "13:00"
   },
   {
     "flight_number": "FR6256",
@@ -88,7 +94,8 @@
     "duration_minutes": 80,
     "distance_nm": 353,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05",
+    "scheduled_arrival_local": "07:25"
   },
   {
     "flight_number": "FR1342",
@@ -101,7 +108,8 @@
     "duration_minutes": 60,
     "distance_nm": 109,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10",
+    "scheduled_arrival_local": "07:10"
   },
   {
     "flight_number": "FR2353",
@@ -114,7 +122,8 @@
     "duration_minutes": 80,
     "distance_nm": 266,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15",
+    "scheduled_arrival_local": "08:35"
   },
   {
     "flight_number": "FR205",
@@ -127,7 +136,8 @@
     "duration_minutes": 80,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00",
+    "scheduled_arrival_local": "19:20"
   },
   {
     "flight_number": "FR7530",
@@ -140,7 +150,8 @@
     "duration_minutes": 105,
     "distance_nm": 453,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15",
+    "scheduled_arrival_local": "10:00"
   },
   {
     "flight_number": "FR6101",
@@ -153,7 +164,8 @@
     "duration_minutes": 75,
     "distance_nm": 273,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00",
+    "scheduled_arrival_local": "07:15"
   },
   {
     "flight_number": "FR2756",
@@ -166,7 +178,8 @@
     "duration_minutes": 125,
     "distance_nm": 503,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45",
+    "scheduled_arrival_local": "06:50"
   },
   {
     "flight_number": "FR1015",
@@ -179,7 +192,8 @@
     "duration_minutes": 105,
     "distance_nm": 488,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45",
+    "scheduled_arrival_local": "07:30"
   },
   {
     "flight_number": "FR1502",
@@ -192,7 +206,8 @@
     "duration_minutes": 110,
     "distance_nm": 565,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30",
+    "scheduled_arrival_local": "18:20"
   },
   {
     "flight_number": "FR118",
@@ -205,7 +220,8 @@
     "duration_minutes": 90,
     "distance_nm": 262,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:40",
+    "scheduled_arrival_local": "14:10"
   },
   {
     "flight_number": "FR1501",
@@ -218,7 +234,8 @@
     "duration_minutes": 115,
     "distance_nm": 565,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10",
+    "scheduled_arrival_local": "15:05"
   },
   {
     "flight_number": "FR777",
@@ -231,7 +248,8 @@
     "duration_minutes": 115,
     "distance_nm": 514,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20",
+    "scheduled_arrival_local": "08:15"
   },
   {
     "flight_number": "FR657",
@@ -244,7 +262,8 @@
     "duration_minutes": 105,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35",
+    "scheduled_arrival_local": "09:20"
   },
   {
     "flight_number": "FR660",
@@ -257,7 +276,8 @@
     "duration_minutes": 65,
     "distance_nm": 174,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45",
+    "scheduled_arrival_local": "07:50"
   },
   {
     "flight_number": "FR3102",
@@ -270,7 +290,7 @@
     "duration_minutes": 100,
     "distance_nm": 405,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:50"
   },
   {
     "flight_number": "FR5910",
@@ -283,7 +303,7 @@
     "duration_minutes": 255,
     "distance_nm": 1505,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50"
   },
   {
     "flight_number": "FR8142",
@@ -296,7 +316,7 @@
     "duration_minutes": 90,
     "distance_nm": 329,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:15"
   },
   {
     "flight_number": "FR5814",
@@ -309,7 +329,7 @@
     "duration_minutes": 135,
     "distance_nm": 644,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:35"
   },
   {
     "flight_number": "FR1170",
@@ -322,7 +342,7 @@
     "duration_minutes": 80,
     "distance_nm": 291,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR3223",
@@ -335,7 +355,7 @@
     "duration_minutes": 85,
     "distance_nm": 304,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25"
   },
   {
     "flight_number": "FR6149",
@@ -348,7 +368,9 @@
     "duration_minutes": 100,
     "distance_nm": 475,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:10",
+    "scheduled_arrival_local": "09:50",
+    "note": null
   },
   {
     "flight_number": "FR661",
@@ -361,7 +383,7 @@
     "duration_minutes": 70,
     "distance_nm": 174,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:35"
   },
   {
     "flight_number": "FR352",
@@ -374,7 +396,7 @@
     "duration_minutes": 95,
     "distance_nm": 425,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR8734",
@@ -387,7 +409,7 @@
     "duration_minutes": 135,
     "distance_nm": 738,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:50"
   },
   {
     "flight_number": "FR5914",
@@ -400,7 +422,7 @@
     "duration_minutes": 90,
     "distance_nm": 374,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:55"
   },
   {
     "flight_number": "FR9052",
@@ -413,7 +435,7 @@
     "duration_minutes": 150,
     "distance_nm": 762,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:45"
   },
   {
     "flight_number": "FR5419",
@@ -426,7 +448,7 @@
     "duration_minutes": 140,
     "distance_nm": 717,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR5555",
@@ -439,7 +461,7 @@
     "duration_minutes": 265,
     "distance_nm": 1590,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR4324",
@@ -452,7 +474,9 @@
     "duration_minutes": 65,
     "distance_nm": 222,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00",
+    "scheduled_arrival_local": "07:05",
+    "note": null
   },
   {
     "flight_number": "FR1731",
@@ -465,7 +489,7 @@
     "duration_minutes": 195,
     "distance_nm": 1086,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:20"
   },
   {
     "flight_number": "FR1122",
@@ -478,7 +502,7 @@
     "duration_minutes": 255,
     "distance_nm": 1608,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:08"
   },
   {
     "flight_number": "FR589",
@@ -491,7 +515,7 @@
     "duration_minutes": 140,
     "distance_nm": 639,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:20"
   },
   {
     "flight_number": "FR824",
@@ -504,7 +528,7 @@
     "duration_minutes": 80,
     "distance_nm": 290,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:30"
   },
   {
     "flight_number": "FR7177",
@@ -517,7 +541,7 @@
     "duration_minutes": 105,
     "distance_nm": 421,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:10"
   },
   {
     "flight_number": "FR1000",
@@ -530,7 +554,7 @@
     "duration_minutes": 125,
     "distance_nm": 596,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR4320",
@@ -543,7 +567,7 @@
     "duration_minutes": 65,
     "distance_nm": 208,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:10"
   },
   {
     "flight_number": "FR6105",
@@ -556,7 +580,7 @@
     "duration_minutes": 165,
     "distance_nm": 836,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05"
   },
   {
     "flight_number": "FR68",
@@ -569,7 +593,7 @@
     "duration_minutes": 90,
     "distance_nm": 377,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10"
   },
   {
     "flight_number": "FR3774",
@@ -582,7 +606,9 @@
     "duration_minutes": 85,
     "distance_nm": 375,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10",
+    "scheduled_arrival_local": "08:35",
+    "note": null
   },
   {
     "flight_number": "FR2063",
@@ -595,7 +621,7 @@
     "duration_minutes": 90,
     "distance_nm": 295,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:30"
   },
   {
     "flight_number": "FR1963",
@@ -608,7 +634,7 @@
     "duration_minutes": 80,
     "distance_nm": 315,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:50"
   },
   {
     "flight_number": "FR4546",
@@ -621,7 +647,7 @@
     "duration_minutes": 105,
     "distance_nm": 485,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:35"
   },
   {
     "flight_number": "FR3080",
@@ -634,7 +660,7 @@
     "duration_minutes": 110,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:08"
   },
   {
     "flight_number": "FR3074",
@@ -647,7 +673,7 @@
     "duration_minutes": 75,
     "distance_nm": 266,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:00"
   },
   {
     "flight_number": "FR8664",
@@ -660,7 +686,7 @@
     "duration_minutes": 140,
     "distance_nm": 704,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:15"
   },
   {
     "flight_number": "FR6072",
@@ -673,7 +699,7 @@
     "duration_minutes": 200,
     "distance_nm": 1226,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:30"
   },
   {
     "flight_number": "FR6881",
@@ -686,7 +712,7 @@
     "duration_minutes": 60,
     "distance_nm": 130,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35"
   },
   {
     "flight_number": "FR278",
@@ -699,7 +725,7 @@
     "duration_minutes": 100,
     "distance_nm": 442,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:35"
   },
   {
     "flight_number": "FR490",
@@ -712,7 +738,7 @@
     "duration_minutes": 150,
     "distance_nm": 859,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:00"
   },
   {
     "flight_number": "FR5766",
@@ -725,7 +751,7 @@
     "duration_minutes": 170,
     "distance_nm": 949,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45"
   },
   {
     "flight_number": "FR6707",
@@ -738,7 +764,7 @@
     "duration_minutes": 85,
     "distance_nm": 336,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:15"
   },
   {
     "flight_number": "FR8097",
@@ -751,7 +777,7 @@
     "duration_minutes": 85,
     "distance_nm": 321,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:55"
   },
   {
     "flight_number": "FR1915",
@@ -764,7 +790,7 @@
     "duration_minutes": 165,
     "distance_nm": 913,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR144",
@@ -777,7 +803,7 @@
     "duration_minutes": 110,
     "distance_nm": 489,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR5210",
@@ -790,7 +816,7 @@
     "duration_minutes": 215,
     "distance_nm": 1264,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR1532",
@@ -803,7 +829,7 @@
     "duration_minutes": 85,
     "distance_nm": 317,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR5958",
@@ -816,7 +842,7 @@
     "duration_minutes": 140,
     "distance_nm": 733,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:15"
   },
   {
     "flight_number": "FR504",
@@ -829,7 +855,7 @@
     "duration_minutes": 65,
     "distance_nm": 179,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:00"
   },
   {
     "flight_number": "FR6148",
@@ -842,7 +868,9 @@
     "duration_minutes": 100,
     "distance_nm": 475,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05",
+    "scheduled_arrival_local": "07:45",
+    "note": null
   },
   {
     "flight_number": "FR6429",
@@ -855,7 +883,7 @@
     "duration_minutes": 240,
     "distance_nm": 1413,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:05"
   },
   {
     "flight_number": "FR5568",
@@ -868,7 +896,7 @@
     "duration_minutes": 185,
     "distance_nm": 1018,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35"
   },
   {
     "flight_number": "FR2363",
@@ -881,7 +909,7 @@
     "duration_minutes": 145,
     "distance_nm": 745,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:35"
   },
   {
     "flight_number": "FR2646",
@@ -894,7 +922,7 @@
     "duration_minutes": 90,
     "distance_nm": 389,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:15"
   },
   {
     "flight_number": "FR182",
@@ -907,7 +935,7 @@
     "duration_minutes": 95,
     "distance_nm": 434,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:05"
   },
   {
     "flight_number": "FR1554",
@@ -920,7 +948,7 @@
     "duration_minutes": 80,
     "distance_nm": 290,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:55"
   },
   {
     "flight_number": "FR2969",
@@ -933,7 +961,7 @@
     "duration_minutes": 290,
     "distance_nm": 1769,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20"
   },
   {
     "flight_number": "FR708",
@@ -946,7 +974,7 @@
     "duration_minutes": 180,
     "distance_nm": 1100,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR2915",
@@ -959,7 +987,7 @@
     "duration_minutes": 145,
     "distance_nm": 802,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:15"
   },
   {
     "flight_number": "FR450",
@@ -972,7 +1000,9 @@
     "duration_minutes": 150,
     "distance_nm": 834,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:55",
+    "scheduled_arrival_local": "12:25",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR2004",
@@ -985,7 +1015,9 @@
     "duration_minutes": 85,
     "distance_nm": 319,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:30",
+    "scheduled_arrival_local": "21:55",
+    "note": null
   },
   {
     "flight_number": "FR8561",
@@ -998,7 +1030,7 @@
     "duration_minutes": 95,
     "distance_nm": 372,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:35"
   },
   {
     "flight_number": "FR5156",
@@ -1011,7 +1043,7 @@
     "duration_minutes": 170,
     "distance_nm": 912,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR5127",
@@ -1024,7 +1056,7 @@
     "duration_minutes": 175,
     "distance_nm": 935,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:30"
   },
   {
     "flight_number": "FR1202",
@@ -1037,7 +1069,7 @@
     "duration_minutes": 150,
     "distance_nm": 748,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25"
   },
   {
     "flight_number": "FR602",
@@ -1050,7 +1082,7 @@
     "duration_minutes": 155,
     "distance_nm": 867,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:40"
   },
   {
     "flight_number": "FR4661",
@@ -1063,7 +1095,7 @@
     "duration_minutes": 75,
     "distance_nm": 299,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:15"
   },
   {
     "flight_number": "FR4342",
@@ -1076,7 +1108,9 @@
     "duration_minutes": 90,
     "distance_nm": 390,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05",
+    "scheduled_arrival_local": "07:35",
+    "note": null
   },
   {
     "flight_number": "FR7538",
@@ -1089,7 +1123,7 @@
     "duration_minutes": 100,
     "distance_nm": 389,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:25"
   },
   {
     "flight_number": "FR3409",
@@ -1102,7 +1136,9 @@
     "duration_minutes": 105,
     "distance_nm": 473,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25",
+    "scheduled_arrival_local": "23:10",
+    "note": null
   },
   {
     "flight_number": "FR1901",
@@ -1115,7 +1151,7 @@
     "duration_minutes": 170,
     "distance_nm": 983,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:55"
   },
   {
     "flight_number": "FR3956",
@@ -1128,7 +1164,7 @@
     "duration_minutes": 125,
     "distance_nm": 613,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:05"
   },
   {
     "flight_number": "FR4039",
@@ -1141,7 +1177,9 @@
     "duration_minutes": 90,
     "distance_nm": 400,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45",
+    "scheduled_arrival_local": "07:15",
+    "note": null
   },
   {
     "flight_number": "FR8485",
@@ -1154,7 +1192,9 @@
     "duration_minutes": 80,
     "distance_nm": 353,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:25",
+    "scheduled_arrival_local": "23:45",
+    "note": null
   },
   {
     "flight_number": "FR3785",
@@ -1167,7 +1207,7 @@
     "duration_minutes": 110,
     "distance_nm": 541,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:20"
   },
   {
     "flight_number": "FR653",
@@ -1180,7 +1220,7 @@
     "duration_minutes": 280,
     "distance_nm": 1729,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:35"
   },
   {
     "flight_number": "FR6819",
@@ -1193,7 +1233,7 @@
     "duration_minutes": 130,
     "distance_nm": 630,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:55"
   },
   {
     "flight_number": "FR3730",
@@ -1206,7 +1246,7 @@
     "duration_minutes": 120,
     "distance_nm": 566,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10"
   },
   {
     "flight_number": "FR4239",
@@ -1219,7 +1259,7 @@
     "duration_minutes": 70,
     "distance_nm": 252,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25"
   },
   {
     "flight_number": "FR5440",
@@ -1232,7 +1272,7 @@
     "duration_minutes": 165,
     "distance_nm": 930,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:50"
   },
   {
     "flight_number": "FR5862",
@@ -1245,7 +1285,9 @@
     "duration_minutes": 90,
     "distance_nm": 369,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:00",
+    "scheduled_arrival_local": "17:30",
+    "note": null
   },
   {
     "flight_number": "FR4905",
@@ -1258,7 +1300,7 @@
     "duration_minutes": 75,
     "distance_nm": 221,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:15"
   },
   {
     "flight_number": "FR2948",
@@ -1271,7 +1313,7 @@
     "duration_minutes": 140,
     "distance_nm": 709,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:05"
   },
   {
     "flight_number": "FR3946",
@@ -1284,7 +1326,7 @@
     "duration_minutes": 70,
     "distance_nm": 221,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:10"
   },
   {
     "flight_number": "FR5451",
@@ -1297,7 +1339,7 @@
     "duration_minutes": 70,
     "distance_nm": 256,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR7992",
@@ -1310,7 +1352,9 @@
     "duration_minutes": 65,
     "distance_nm": 206,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10",
+    "scheduled_arrival_local": "22:15",
+    "note": null
   },
   {
     "flight_number": "FR6106",
@@ -1323,7 +1367,7 @@
     "duration_minutes": 155,
     "distance_nm": 836,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR9917",
@@ -1336,7 +1380,7 @@
     "duration_minutes": 235,
     "distance_nm": 1423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:30"
   },
   {
     "flight_number": "FR8017",
@@ -1349,7 +1393,7 @@
     "duration_minutes": 80,
     "distance_nm": 308,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:55"
   },
   {
     "flight_number": "FR4654",
@@ -1362,7 +1406,7 @@
     "duration_minutes": 75,
     "distance_nm": 260,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:55"
   },
   {
     "flight_number": "FR6476",
@@ -1375,7 +1419,9 @@
     "duration_minutes": 90,
     "distance_nm": 364,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00",
+    "scheduled_arrival_local": "07:30",
+    "note": null
   },
   {
     "flight_number": "FR5338",
@@ -1388,7 +1434,7 @@
     "duration_minutes": 105,
     "distance_nm": 430,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:30"
   },
   {
     "flight_number": "FR774",
@@ -1401,7 +1447,7 @@
     "duration_minutes": 95,
     "distance_nm": 338,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:50"
   },
   {
     "flight_number": "FR226",
@@ -1414,7 +1460,7 @@
     "duration_minutes": 165,
     "distance_nm": 889,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05"
   },
   {
     "flight_number": "FR1522",
@@ -1427,7 +1473,9 @@
     "duration_minutes": 95,
     "distance_nm": 424,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45",
+    "scheduled_arrival_local": "08:20",
+    "note": null
   },
   {
     "flight_number": "FR4864",
@@ -1440,7 +1488,9 @@
     "duration_minutes": 90,
     "distance_nm": 341,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:30",
+    "scheduled_arrival_local": "15:00",
+    "note": null
   },
   {
     "flight_number": "FR8298",
@@ -1453,7 +1503,7 @@
     "duration_minutes": 150,
     "distance_nm": 835,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:30"
   },
   {
     "flight_number": "FR901",
@@ -1466,7 +1516,7 @@
     "duration_minutes": 85,
     "distance_nm": 323,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR4754",
@@ -1479,7 +1529,7 @@
     "duration_minutes": 245,
     "distance_nm": 1534,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50"
   },
   {
     "flight_number": "FR7372",
@@ -1492,7 +1542,7 @@
     "duration_minutes": 60,
     "distance_nm": 149,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:00"
   },
   {
     "flight_number": "FR8390",
@@ -1505,7 +1555,7 @@
     "duration_minutes": 95,
     "distance_nm": 434,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:30"
   },
   {
     "flight_number": "FR5622",
@@ -1518,7 +1568,7 @@
     "duration_minutes": 75,
     "distance_nm": 255,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:20"
   },
   {
     "flight_number": "FR8594",
@@ -1531,7 +1581,9 @@
     "duration_minutes": 110,
     "distance_nm": 558,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:55",
+    "scheduled_arrival_local": "10:45",
+    "note": null
   },
   {
     "flight_number": "FR9007",
@@ -1544,7 +1596,9 @@
     "duration_minutes": 145,
     "distance_nm": 755,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:40",
+    "scheduled_arrival_local": "15:05",
+    "note": null
   },
   {
     "flight_number": "FR2155",
@@ -1557,7 +1611,9 @@
     "duration_minutes": 165,
     "distance_nm": 880,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:45",
+    "scheduled_arrival_local": "16:30",
+    "note": null
   },
   {
     "flight_number": "FR8025",
@@ -1570,7 +1626,7 @@
     "duration_minutes": 165,
     "distance_nm": 847,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:15"
   },
   {
     "flight_number": "FR101",
@@ -1583,7 +1639,7 @@
     "duration_minutes": 150,
     "distance_nm": 810,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:20"
   },
   {
     "flight_number": "FR4982",
@@ -1596,7 +1652,9 @@
     "duration_minutes": 75,
     "distance_nm": 305,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50",
+    "scheduled_arrival_local": "07:05",
+    "note": null
   },
   {
     "flight_number": "FR5865",
@@ -1609,7 +1667,7 @@
     "duration_minutes": 95,
     "distance_nm": 435,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:10"
   },
   {
     "flight_number": "FR4777",
@@ -1622,7 +1680,7 @@
     "duration_minutes": 75,
     "distance_nm": 243,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:15"
   },
   {
     "flight_number": "FR1864",
@@ -1635,7 +1693,9 @@
     "duration_minutes": 150,
     "distance_nm": 806,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:20",
+    "scheduled_arrival_local": "10:50",
+    "note": null
   },
   {
     "flight_number": "FR108",
@@ -1648,7 +1708,7 @@
     "duration_minutes": 90,
     "distance_nm": 340,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:35"
   },
   {
     "flight_number": "FR6301",
@@ -1661,7 +1721,7 @@
     "duration_minutes": 180,
     "distance_nm": 953,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:40"
   },
   {
     "flight_number": "FR5453",
@@ -1674,7 +1734,7 @@
     "duration_minutes": 80,
     "distance_nm": 311,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:25"
   },
   {
     "flight_number": "FR625",
@@ -1687,7 +1747,7 @@
     "duration_minutes": 105,
     "distance_nm": 483,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:20"
   },
   {
     "flight_number": "FR4963",
@@ -1700,7 +1760,7 @@
     "duration_minutes": 165,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:15"
   },
   {
     "flight_number": "FR6013",
@@ -1713,7 +1773,7 @@
     "duration_minutes": 165,
     "distance_nm": 902,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:20"
   },
   {
     "flight_number": "FR8230",
@@ -1726,7 +1786,7 @@
     "duration_minutes": 135,
     "distance_nm": 640,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:10"
   },
   {
     "flight_number": "FR2738",
@@ -1739,7 +1799,7 @@
     "duration_minutes": 115,
     "distance_nm": 528,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:05"
   },
   {
     "flight_number": "FR2814",
@@ -1752,7 +1812,7 @@
     "duration_minutes": 80,
     "distance_nm": 266,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:30"
   },
   {
     "flight_number": "FR2672",
@@ -1765,7 +1825,7 @@
     "duration_minutes": 145,
     "distance_nm": 788,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:25"
   },
   {
     "flight_number": "FR2618",
@@ -1778,7 +1838,7 @@
     "duration_minutes": 105,
     "distance_nm": 494,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:20"
   },
   {
     "flight_number": "FR8092",
@@ -1791,7 +1851,7 @@
     "duration_minutes": 90,
     "distance_nm": 354,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR1518",
@@ -1804,7 +1864,7 @@
     "duration_minutes": 90,
     "distance_nm": 369,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:20"
   },
   {
     "flight_number": "FR347",
@@ -1817,7 +1877,7 @@
     "duration_minutes": 150,
     "distance_nm": 702,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR1468",
@@ -1830,7 +1890,7 @@
     "duration_minutes": 120,
     "distance_nm": 545,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30"
   },
   {
     "flight_number": "FR1261",
@@ -1843,7 +1903,7 @@
     "duration_minutes": 145,
     "distance_nm": 736,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:25"
   },
   {
     "flight_number": "FR1428",
@@ -1856,7 +1916,7 @@
     "duration_minutes": 110,
     "distance_nm": 540,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:00"
   },
   {
     "flight_number": "FR588",
@@ -1869,7 +1929,7 @@
     "duration_minutes": 125,
     "distance_nm": 639,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:55"
   },
   {
     "flight_number": "FR8576",
@@ -1882,7 +1942,7 @@
     "duration_minutes": 240,
     "distance_nm": 1502,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:55"
   },
   {
     "flight_number": "FR8026",
@@ -1895,7 +1955,7 @@
     "duration_minutes": 165,
     "distance_nm": 847,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:10"
   },
   {
     "flight_number": "FR109",
@@ -1908,7 +1968,7 @@
     "duration_minutes": 90,
     "distance_nm": 340,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00"
   },
   {
     "flight_number": "FR1730",
@@ -1921,7 +1981,7 @@
     "duration_minutes": 180,
     "distance_nm": 1086,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:30"
   },
   {
     "flight_number": "FR926",
@@ -1934,7 +1994,9 @@
     "duration_minutes": 110,
     "distance_nm": 538,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:00",
+    "scheduled_arrival_local": "08:50",
+    "note": null
   },
   {
     "flight_number": "FR1164",
@@ -1947,7 +2009,7 @@
     "duration_minutes": 100,
     "distance_nm": 437,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:25"
   },
   {
     "flight_number": "FR3629",
@@ -1960,7 +2022,7 @@
     "duration_minutes": 70,
     "distance_nm": 174,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30"
   },
   {
     "flight_number": "FR351",
@@ -1973,7 +2035,7 @@
     "duration_minutes": 95,
     "distance_nm": 425,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:50"
   },
   {
     "flight_number": "FR5556",
@@ -1986,7 +2048,7 @@
     "duration_minutes": 255,
     "distance_nm": 1590,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:50"
   },
   {
     "flight_number": "FR8356",
@@ -1999,7 +2061,7 @@
     "duration_minutes": 110,
     "distance_nm": 505,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:55"
   },
   {
     "flight_number": "FR8237",
@@ -2012,7 +2074,7 @@
     "duration_minutes": 160,
     "distance_nm": 835,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:20"
   },
   {
     "flight_number": "FR8370",
@@ -2025,7 +2087,7 @@
     "duration_minutes": 85,
     "distance_nm": 320,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:45"
   },
   {
     "flight_number": "FR5627",
@@ -2038,7 +2100,7 @@
     "duration_minutes": 80,
     "distance_nm": 247,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR8391",
@@ -2051,7 +2113,7 @@
     "duration_minutes": 100,
     "distance_nm": 434,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:15"
   },
   {
     "flight_number": "FR5623",
@@ -2064,7 +2126,7 @@
     "duration_minutes": 80,
     "distance_nm": 255,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20"
   },
   {
     "flight_number": "FR5618",
@@ -2077,7 +2139,7 @@
     "duration_minutes": 125,
     "distance_nm": 574,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:25"
   },
   {
     "flight_number": "FR1135",
@@ -2090,7 +2152,7 @@
     "duration_minutes": 95,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:15"
   },
   {
     "flight_number": "FR85",
@@ -2103,7 +2165,9 @@
     "duration_minutes": 105,
     "distance_nm": 429,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:40",
+    "scheduled_arrival_local": "21:25",
+    "note": null
   },
   {
     "flight_number": "FR9197",
@@ -2116,7 +2180,9 @@
     "duration_minutes": 100,
     "distance_nm": 482,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00",
+    "scheduled_arrival_local": "07:40",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR6217",
@@ -2129,7 +2195,9 @@
     "duration_minutes": 120,
     "distance_nm": 638,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:40",
+    "scheduled_arrival_local": "12:40",
+    "note": null
   },
   {
     "flight_number": "FR775",
@@ -2142,7 +2210,7 @@
     "duration_minutes": 90,
     "distance_nm": 338,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR264",
@@ -2155,7 +2223,9 @@
     "duration_minutes": 95,
     "distance_nm": 467,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:55",
+    "scheduled_arrival_local": "09:30",
+    "note": null
   },
   {
     "flight_number": "FR8680",
@@ -2168,7 +2238,9 @@
     "duration_minutes": 85,
     "distance_nm": 363,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:35",
+    "scheduled_arrival_local": "21:00",
+    "note": null
   },
   {
     "flight_number": "FR1019",
@@ -2181,7 +2253,7 @@
     "duration_minutes": 110,
     "distance_nm": 572,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:00"
   },
   {
     "flight_number": "FR873",
@@ -2194,7 +2266,7 @@
     "duration_minutes": 90,
     "distance_nm": 390,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30"
   },
   {
     "flight_number": "FR2747",
@@ -2207,7 +2279,9 @@
     "duration_minutes": 105,
     "distance_nm": 487,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:05",
+    "scheduled_arrival_local": "20:45",
+    "note": null
   },
   {
     "flight_number": "FR8595",
@@ -2220,7 +2294,9 @@
     "duration_minutes": 110,
     "distance_nm": 558,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:10",
+    "scheduled_arrival_local": "13:00",
+    "note": null
   },
   {
     "flight_number": "FR927",
@@ -2233,7 +2309,9 @@
     "duration_minutes": 105,
     "distance_nm": 538,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:15",
+    "scheduled_arrival_local": "11:00",
+    "note": null
   },
   {
     "flight_number": "FR5619",
@@ -2246,7 +2324,7 @@
     "duration_minutes": 115,
     "distance_nm": 574,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:50"
   },
   {
     "flight_number": "FR2708",
@@ -2259,7 +2337,7 @@
     "duration_minutes": 105,
     "distance_nm": 507,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20"
   },
   {
     "flight_number": "FR1759",
@@ -2272,7 +2350,9 @@
     "duration_minutes": 95,
     "distance_nm": 460,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30",
+    "scheduled_arrival_local": "12:05",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR1539",
@@ -2285,7 +2365,9 @@
     "duration_minutes": 110,
     "distance_nm": 468,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:55",
+    "scheduled_arrival_local": "22:45",
+    "note": null
   },
   {
     "flight_number": "FR4939",
@@ -2298,7 +2380,9 @@
     "duration_minutes": 100,
     "distance_nm": 424,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:55",
+    "scheduled_arrival_local": "22:35",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR1180",
@@ -2311,7 +2395,7 @@
     "duration_minutes": 115,
     "distance_nm": 592,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:35"
   },
   {
     "flight_number": "FR1531",
@@ -2324,7 +2408,7 @@
     "duration_minutes": 80,
     "distance_nm": 280,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:15"
   },
   {
     "flight_number": "FR1134",
@@ -2337,7 +2421,7 @@
     "duration_minutes": 90,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:45"
   },
   {
     "flight_number": "FR6248",
@@ -2350,7 +2434,7 @@
     "duration_minutes": 135,
     "distance_nm": 670,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35"
   },
   {
     "flight_number": "FR776",
@@ -2363,7 +2447,7 @@
     "duration_minutes": 115,
     "distance_nm": 514,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR402",
@@ -2376,7 +2460,7 @@
     "duration_minutes": 100,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00"
   },
   {
     "flight_number": "FR1551",
@@ -2389,7 +2473,7 @@
     "duration_minutes": 90,
     "distance_nm": 403,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:20"
   },
   {
     "flight_number": "FR782",
@@ -2402,7 +2486,7 @@
     "duration_minutes": 125,
     "distance_nm": 607,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:50"
   },
   {
     "flight_number": "FR780",
@@ -2415,7 +2499,7 @@
     "duration_minutes": 75,
     "distance_nm": 233,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:10"
   },
   {
     "flight_number": "FR4767",
@@ -2428,7 +2512,7 @@
     "duration_minutes": 80,
     "distance_nm": 306,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:55"
   },
   {
     "flight_number": "FR9004",
@@ -2441,7 +2525,7 @@
     "duration_minutes": 95,
     "distance_nm": 419,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:10"
   },
   {
     "flight_number": "FR4167",
@@ -2454,7 +2538,7 @@
     "duration_minutes": 225,
     "distance_nm": 1245,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:25"
   },
   {
     "flight_number": "FR689",
@@ -2467,7 +2551,7 @@
     "duration_minutes": 190,
     "distance_nm": 975,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50"
   },
   {
     "flight_number": "FR6538",
@@ -2480,7 +2564,7 @@
     "duration_minutes": 110,
     "distance_nm": 527,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:55"
   },
   {
     "flight_number": "FR500",
@@ -2493,7 +2577,7 @@
     "duration_minutes": 150,
     "distance_nm": 787,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:50"
   },
   {
     "flight_number": "FR781",
@@ -2506,7 +2590,7 @@
     "duration_minutes": 75,
     "distance_nm": 233,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR496",
@@ -2519,7 +2603,7 @@
     "duration_minutes": 120,
     "distance_nm": 583,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR1445",
@@ -2532,7 +2616,7 @@
     "duration_minutes": 120,
     "distance_nm": 549,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:20"
   },
   {
     "flight_number": "FR6249",
@@ -2545,7 +2629,7 @@
     "duration_minutes": 130,
     "distance_nm": 670,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:45"
   },
   {
     "flight_number": "FR3151",
@@ -2558,7 +2642,9 @@
     "duration_minutes": 90,
     "distance_nm": 420,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:55",
+    "scheduled_arrival_local": "23:25",
+    "note": null
   },
   {
     "flight_number": "FR5018",
@@ -2571,7 +2657,7 @@
     "duration_minutes": 105,
     "distance_nm": 512,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:15"
   },
   {
     "flight_number": "FR6073",
@@ -2584,7 +2670,7 @@
     "duration_minutes": 210,
     "distance_nm": 1226,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:15"
   },
   {
     "flight_number": "FR3866",
@@ -2597,7 +2683,9 @@
     "duration_minutes": 135,
     "distance_nm": 718,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10",
+    "scheduled_arrival_local": "08:25",
+    "note": null
   },
   {
     "flight_number": "FR1962",
@@ -2610,7 +2698,9 @@
     "duration_minutes": 85,
     "distance_nm": 315,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:55",
+    "scheduled_arrival_local": "20:20",
+    "note": null
   },
   {
     "flight_number": "FR2123",
@@ -2623,7 +2713,9 @@
     "duration_minutes": 120,
     "distance_nm": 544,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:15",
+    "scheduled_arrival_local": "19:15",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR8836",
@@ -2636,7 +2728,7 @@
     "duration_minutes": 85,
     "distance_nm": 289,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:20"
   },
   {
     "flight_number": "FR4385",
@@ -2649,7 +2741,9 @@
     "duration_minutes": 120,
     "distance_nm": 597,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:40",
+    "scheduled_arrival_local": "20:40",
+    "note": null
   },
   {
     "flight_number": "FR1530",
@@ -2662,7 +2756,7 @@
     "duration_minutes": 80,
     "distance_nm": 280,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:15"
   },
   {
     "flight_number": "FR1427",
@@ -2675,7 +2769,7 @@
     "duration_minutes": 115,
     "distance_nm": 540,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:30"
   },
   {
     "flight_number": "FR7515",
@@ -2688,7 +2782,7 @@
     "duration_minutes": 75,
     "distance_nm": 286,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:00"
   },
   {
     "flight_number": "FR69",
@@ -2701,7 +2795,7 @@
     "duration_minutes": 90,
     "distance_nm": 377,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:35"
   },
   {
     "flight_number": "FR6708",
@@ -2714,7 +2808,7 @@
     "duration_minutes": 85,
     "distance_nm": 336,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR8472",
@@ -2727,7 +2821,7 @@
     "duration_minutes": 110,
     "distance_nm": 503,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:05"
   },
   {
     "flight_number": "FR4033",
@@ -2740,7 +2834,7 @@
     "duration_minutes": 70,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30"
   },
   {
     "flight_number": "FR3040",
@@ -2753,7 +2847,7 @@
     "duration_minutes": 145,
     "distance_nm": 733,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:05"
   },
   {
     "flight_number": "FR5594",
@@ -2766,7 +2860,7 @@
     "duration_minutes": 270,
     "distance_nm": 1679,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:55"
   },
   {
     "flight_number": "FR3594",
@@ -2779,7 +2873,9 @@
     "duration_minutes": 110,
     "distance_nm": 492,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:55",
+    "scheduled_arrival_local": "09:45",
+    "note": null
   },
   {
     "flight_number": "FR1758",
@@ -2792,7 +2888,9 @@
     "duration_minutes": 95,
     "distance_nm": 460,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:30",
+    "scheduled_arrival_local": "14:05",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR49",
@@ -2805,7 +2903,7 @@
     "duration_minutes": 60,
     "distance_nm": 172,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:35"
   },
   {
     "flight_number": "FR4946",
@@ -2818,7 +2916,9 @@
     "duration_minutes": 115,
     "distance_nm": 602,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:20",
+    "scheduled_arrival_local": "18:15",
+    "note": null
   },
   {
     "flight_number": "FR6268",
@@ -2831,7 +2931,9 @@
     "duration_minutes": 155,
     "distance_nm": 824,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30",
+    "scheduled_arrival_local": "13:05",
+    "note": null
   },
   {
     "flight_number": "FR3167",
@@ -2844,7 +2946,7 @@
     "duration_minutes": 115,
     "distance_nm": 541,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:30"
   },
   {
     "flight_number": "FR7826",
@@ -2857,7 +2959,7 @@
     "duration_minutes": 60,
     "distance_nm": 149,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:55"
   },
   {
     "flight_number": "FR501",
@@ -2870,7 +2972,7 @@
     "duration_minutes": 150,
     "distance_nm": 787,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35"
   },
   {
     "flight_number": "FR440",
@@ -2883,7 +2985,7 @@
     "duration_minutes": 135,
     "distance_nm": 695,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:15"
   },
   {
     "flight_number": "FR6219",
@@ -2896,7 +2998,7 @@
     "duration_minutes": 150,
     "distance_nm": 737,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:15"
   },
   {
     "flight_number": "FR3442",
@@ -2909,7 +3011,7 @@
     "duration_minutes": 160,
     "distance_nm": 854,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:10"
   },
   {
     "flight_number": "FR2062",
@@ -2922,7 +3024,7 @@
     "duration_minutes": 90,
     "distance_nm": 295,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:19"
   },
   {
     "flight_number": "FR4213",
@@ -2935,7 +3037,7 @@
     "duration_minutes": 135,
     "distance_nm": 653,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:15"
   },
   {
     "flight_number": "FR8551",
@@ -2948,7 +3050,7 @@
     "duration_minutes": 130,
     "distance_nm": 601,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR5185",
@@ -2961,7 +3063,7 @@
     "duration_minutes": 125,
     "distance_nm": 600,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:10"
   },
   {
     "flight_number": "FR6186",
@@ -2974,7 +3076,7 @@
     "duration_minutes": 175,
     "distance_nm": 911,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:00"
   },
   {
     "flight_number": "FR7830",
@@ -2987,7 +3089,7 @@
     "duration_minutes": 140,
     "distance_nm": 659,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:20"
   },
   {
     "flight_number": "FR2880",
@@ -3000,7 +3102,7 @@
     "duration_minutes": 185,
     "distance_nm": 1042,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:50"
   },
   {
     "flight_number": "FR7045",
@@ -3013,7 +3115,7 @@
     "duration_minutes": 190,
     "distance_nm": 1008,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:55"
   },
   {
     "flight_number": "FR8663",
@@ -3026,7 +3128,7 @@
     "duration_minutes": 150,
     "distance_nm": 704,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:50"
   },
   {
     "flight_number": "FR5656",
@@ -3039,7 +3141,7 @@
     "duration_minutes": 105,
     "distance_nm": 479,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:20"
   },
   {
     "flight_number": "FR227",
@@ -3052,7 +3154,7 @@
     "duration_minutes": 165,
     "distance_nm": 889,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR2890",
@@ -3065,7 +3167,7 @@
     "duration_minutes": 55,
     "distance_nm": 109,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:35"
   },
   {
     "flight_number": "FR6566",
@@ -3078,7 +3180,7 @@
     "duration_minutes": 65,
     "distance_nm": 172,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:55"
   },
   {
     "flight_number": "FR5676",
@@ -3091,7 +3193,7 @@
     "duration_minutes": 100,
     "distance_nm": 383,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:55"
   },
   {
     "flight_number": "FR324",
@@ -3104,7 +3206,7 @@
     "duration_minutes": 140,
     "distance_nm": 656,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:40"
   },
   {
     "flight_number": "FR67",
@@ -3117,7 +3219,7 @@
     "duration_minutes": 175,
     "distance_nm": 942,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:40"
   },
   {
     "flight_number": "FR3957",
@@ -3130,7 +3232,7 @@
     "duration_minutes": 125,
     "distance_nm": 613,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:30"
   },
   {
     "flight_number": "FR902",
@@ -3143,7 +3245,7 @@
     "duration_minutes": 85,
     "distance_nm": 323,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:40"
   },
   {
     "flight_number": "FR9006",
@@ -3156,7 +3258,9 @@
     "duration_minutes": 140,
     "distance_nm": 755,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50",
+    "scheduled_arrival_local": "13:10",
+    "note": null
   },
   {
     "flight_number": "FR6644",
@@ -3169,7 +3273,7 @@
     "duration_minutes": 170,
     "distance_nm": 929,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:50"
   },
   {
     "flight_number": "FR7721",
@@ -3182,7 +3286,7 @@
     "duration_minutes": 90,
     "distance_nm": 313,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:45"
   },
   {
     "flight_number": "FR3233",
@@ -3195,7 +3299,7 @@
     "duration_minutes": 180,
     "distance_nm": 1006,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:35"
   },
   {
     "flight_number": "FR7775",
@@ -3208,7 +3312,7 @@
     "duration_minutes": 120,
     "distance_nm": 603,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30"
   },
   {
     "flight_number": "FR4017",
@@ -3221,7 +3325,7 @@
     "duration_minutes": 145,
     "distance_nm": 801,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:50"
   },
   {
     "flight_number": "FR1174",
@@ -3234,7 +3338,7 @@
     "duration_minutes": 150,
     "distance_nm": 771,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:00"
   },
   {
     "flight_number": "FR8613",
@@ -3247,7 +3351,7 @@
     "duration_minutes": 180,
     "distance_nm": 1004,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50"
   },
   {
     "flight_number": "FR366",
@@ -3260,7 +3364,7 @@
     "duration_minutes": 125,
     "distance_nm": 643,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:50"
   },
   {
     "flight_number": "FR6008",
@@ -3273,7 +3377,7 @@
     "duration_minutes": 175,
     "distance_nm": 939,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10"
   },
   {
     "flight_number": "FR5452",
@@ -3286,7 +3390,7 @@
     "duration_minutes": 70,
     "distance_nm": 256,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50"
   },
   {
     "flight_number": "FR7472",
@@ -3299,7 +3403,7 @@
     "duration_minutes": 150,
     "distance_nm": 842,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:05"
   },
   {
     "flight_number": "FR1387",
@@ -3312,7 +3416,7 @@
     "duration_minutes": 145,
     "distance_nm": 777,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45"
   },
   {
     "flight_number": "FR594",
@@ -3325,7 +3429,7 @@
     "duration_minutes": 130,
     "distance_nm": 670,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:15"
   },
   {
     "flight_number": "FR5677",
@@ -3338,7 +3442,7 @@
     "duration_minutes": 90,
     "distance_nm": 383,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:10"
   },
   {
     "flight_number": "FR2028",
@@ -3351,7 +3455,7 @@
     "duration_minutes": 95,
     "distance_nm": 415,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:10"
   },
   {
     "flight_number": "FR439",
@@ -3364,7 +3468,7 @@
     "duration_minutes": 135,
     "distance_nm": 695,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:40"
   },
   {
     "flight_number": "FR6218",
@@ -3377,7 +3481,7 @@
     "duration_minutes": 140,
     "distance_nm": 737,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20"
   },
   {
     "flight_number": "FR4834",
@@ -3390,7 +3494,9 @@
     "duration_minutes": 140,
     "distance_nm": 751,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05",
+    "scheduled_arrival_local": "08:25",
+    "note": null
   },
   {
     "flight_number": "FR8612",
@@ -3403,7 +3509,7 @@
     "duration_minutes": 185,
     "distance_nm": 1004,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR8143",
@@ -3416,7 +3522,7 @@
     "duration_minutes": 75,
     "distance_nm": 329,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:35"
   },
   {
     "flight_number": "FR4080",
@@ -3429,7 +3535,7 @@
     "duration_minutes": 175,
     "distance_nm": 1007,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30"
   },
   {
     "flight_number": "FR872",
@@ -3442,7 +3548,7 @@
     "duration_minutes": 95,
     "distance_nm": 390,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR5626",
@@ -3455,7 +3561,7 @@
     "duration_minutes": 80,
     "distance_nm": 247,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30"
   },
   {
     "flight_number": "FR48",
@@ -3468,7 +3574,7 @@
     "duration_minutes": 60,
     "distance_nm": 172,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR5915",
@@ -3481,7 +3587,7 @@
     "duration_minutes": 95,
     "distance_nm": 374,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:50"
   },
   {
     "flight_number": "FR1722",
@@ -3494,7 +3600,7 @@
     "duration_minutes": 80,
     "distance_nm": 302,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:45"
   },
   {
     "flight_number": "FR1303",
@@ -3507,7 +3613,7 @@
     "duration_minutes": 140,
     "distance_nm": 706,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:40"
   },
   {
     "flight_number": "FR1444",
@@ -3520,7 +3626,7 @@
     "duration_minutes": 120,
     "distance_nm": 549,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR5616",
@@ -3533,7 +3639,7 @@
     "duration_minutes": 115,
     "distance_nm": 541,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:05"
   },
   {
     "flight_number": "FR7993",
@@ -3546,7 +3652,9 @@
     "duration_minutes": 60,
     "distance_nm": 206,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:40",
+    "scheduled_arrival_local": "23:40",
+    "note": null
   },
   {
     "flight_number": "FR1436",
@@ -3559,7 +3667,7 @@
     "duration_minutes": 110,
     "distance_nm": 523,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:50"
   },
   {
     "flight_number": "FR6401",
@@ -3572,7 +3680,7 @@
     "duration_minutes": 80,
     "distance_nm": 304,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR2752",
@@ -3585,7 +3693,7 @@
     "duration_minutes": 140,
     "distance_nm": 620,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35"
   },
   {
     "flight_number": "FR1070",
@@ -3598,7 +3706,7 @@
     "duration_minutes": 120,
     "distance_nm": 566,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:25"
   },
   {
     "flight_number": "FR218",
@@ -3611,7 +3719,7 @@
     "duration_minutes": 125,
     "distance_nm": 637,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR996",
@@ -3624,7 +3732,7 @@
     "duration_minutes": 160,
     "distance_nm": 852,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:25"
   },
   {
     "flight_number": "FR8326",
@@ -3637,7 +3745,7 @@
     "duration_minutes": 100,
     "distance_nm": 448,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:05"
   },
   {
     "flight_number": "FR5734",
@@ -3650,7 +3758,7 @@
     "duration_minutes": 90,
     "distance_nm": 380,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05"
   },
   {
     "flight_number": "FR9034",
@@ -3663,7 +3771,7 @@
     "duration_minutes": 140,
     "distance_nm": 681,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:40"
   },
   {
     "flight_number": "FR1467",
@@ -3676,7 +3784,7 @@
     "duration_minutes": 120,
     "distance_nm": 545,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:50"
   },
   {
     "flight_number": "FR1356",
@@ -3689,7 +3797,7 @@
     "duration_minutes": 160,
     "distance_nm": 823,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:35"
   },
   {
     "flight_number": "FR6005",
@@ -3702,7 +3810,9 @@
     "duration_minutes": 95,
     "distance_nm": 436,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30",
+    "scheduled_arrival_local": "12:05",
+    "note": null
   },
   {
     "flight_number": "FR4449",
@@ -3715,7 +3825,7 @@
     "duration_minutes": 80,
     "distance_nm": 325,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25"
   },
   {
     "flight_number": "FR4004",
@@ -3728,7 +3838,7 @@
     "duration_minutes": 125,
     "distance_nm": 625,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10"
   },
   {
     "flight_number": "FR944",
@@ -3741,7 +3851,7 @@
     "duration_minutes": 85,
     "distance_nm": 326,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:55"
   },
   {
     "flight_number": "FR5791",
@@ -3754,7 +3864,9 @@
     "duration_minutes": 135,
     "distance_nm": 716,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35",
+    "scheduled_arrival_local": "17:50",
+    "note": null
   },
   {
     "flight_number": "FR6315",
@@ -3767,7 +3879,9 @@
     "duration_minutes": 100,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:20",
+    "scheduled_arrival_local": "18:00",
+    "note": null
   },
   {
     "flight_number": "FR1426",
@@ -3780,7 +3894,7 @@
     "duration_minutes": 210,
     "distance_nm": 1239,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:10"
   },
   {
     "flight_number": "FR4384",
@@ -3793,7 +3907,9 @@
     "duration_minutes": 120,
     "distance_nm": 597,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:05",
+    "scheduled_arrival_local": "23:05",
+    "note": null
   },
   {
     "flight_number": "FR3871",
@@ -3806,7 +3922,7 @@
     "duration_minutes": 115,
     "distance_nm": 597,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:00"
   },
   {
     "flight_number": "FR1723",
@@ -3819,7 +3935,7 @@
     "duration_minutes": 80,
     "distance_nm": 302,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:55"
   },
   {
     "flight_number": "FR7114",
@@ -3832,7 +3948,7 @@
     "duration_minutes": 155,
     "distance_nm": 884,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:00"
   },
   {
     "flight_number": "FR5660",
@@ -3845,7 +3961,7 @@
     "duration_minutes": 165,
     "distance_nm": 937,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR367",
@@ -3858,7 +3974,7 @@
     "duration_minutes": 50,
     "distance_nm": 101,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:55"
   },
   {
     "flight_number": "FR2955",
@@ -3871,7 +3987,7 @@
     "duration_minutes": 175,
     "distance_nm": 978,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:55"
   },
   {
     "flight_number": "FR7404",
@@ -3884,7 +4000,7 @@
     "duration_minutes": 95,
     "distance_nm": 472,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:40"
   },
   {
     "flight_number": "FR8426",
@@ -3897,7 +4013,7 @@
     "duration_minutes": 155,
     "distance_nm": 816,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:40"
   },
   {
     "flight_number": "FR2071",
@@ -3910,7 +4026,7 @@
     "duration_minutes": 170,
     "distance_nm": 908,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:10"
   },
   {
     "flight_number": "FR4776",
@@ -3923,7 +4039,7 @@
     "duration_minutes": 70,
     "distance_nm": 243,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:40"
   },
   {
     "flight_number": "FR3441",
@@ -3936,7 +4052,7 @@
     "duration_minutes": 155,
     "distance_nm": 854,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:50"
   },
   {
     "flight_number": "FR4079",
@@ -3949,7 +4065,7 @@
     "duration_minutes": 180,
     "distance_nm": 1007,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:00"
   },
   {
     "flight_number": "FR1175",
@@ -3962,7 +4078,7 @@
     "duration_minutes": 150,
     "distance_nm": 771,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:55"
   },
   {
     "flight_number": "FR6835",
@@ -3975,7 +4091,7 @@
     "duration_minutes": 175,
     "distance_nm": 1004,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:55"
   },
   {
     "flight_number": "FR2029",
@@ -3988,7 +4104,7 @@
     "duration_minutes": 100,
     "distance_nm": 415,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45"
   },
   {
     "flight_number": "FR1557",
@@ -4001,7 +4117,7 @@
     "duration_minutes": 60,
     "distance_nm": 143,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:25"
   },
   {
     "flight_number": "FR3238",
@@ -4014,7 +4130,7 @@
     "duration_minutes": 85,
     "distance_nm": 304,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:30"
   },
   {
     "flight_number": "FR3206",
@@ -4027,7 +4143,7 @@
     "duration_minutes": 165,
     "distance_nm": 915,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR692",
@@ -4040,7 +4156,7 @@
     "duration_minutes": 190,
     "distance_nm": 1047,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:20"
   },
   {
     "flight_number": "FR6596",
@@ -4053,7 +4169,7 @@
     "duration_minutes": 140,
     "distance_nm": 745,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:25"
   },
   {
     "flight_number": "FR3232",
@@ -4066,7 +4182,7 @@
     "duration_minutes": 180,
     "distance_nm": 1006,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:00"
   },
   {
     "flight_number": "FR2506",
@@ -4079,7 +4195,7 @@
     "duration_minutes": 160,
     "distance_nm": 817,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:25"
   },
   {
     "flight_number": "FR4815",
@@ -4092,7 +4208,7 @@
     "duration_minutes": 70,
     "distance_nm": 258,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:30"
   },
   {
     "flight_number": "FR6882",
@@ -4105,7 +4221,7 @@
     "duration_minutes": 55,
     "distance_nm": 130,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20"
   },
   {
     "flight_number": "FR9069",
@@ -4118,7 +4234,7 @@
     "duration_minutes": 215,
     "distance_nm": 1322,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:20"
   },
   {
     "flight_number": "FR348",
@@ -4131,7 +4247,7 @@
     "duration_minutes": 145,
     "distance_nm": 702,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:10"
   },
   {
     "flight_number": "FR2753",
@@ -4144,7 +4260,7 @@
     "duration_minutes": 130,
     "distance_nm": 620,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR2066",
@@ -4157,7 +4273,7 @@
     "duration_minutes": 80,
     "distance_nm": 248,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:25"
   },
   {
     "flight_number": "FR3007",
@@ -4170,7 +4286,7 @@
     "duration_minutes": 105,
     "distance_nm": 405,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:14"
   },
   {
     "flight_number": "FR11",
@@ -4183,7 +4299,7 @@
     "duration_minutes": 160,
     "distance_nm": 784,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:40"
   },
   {
     "flight_number": "FR5713",
@@ -4196,7 +4312,7 @@
     "duration_minutes": 185,
     "distance_nm": 1066,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR3814",
@@ -4209,7 +4325,7 @@
     "duration_minutes": 140,
     "distance_nm": 700,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20"
   },
   {
     "flight_number": "FR2017",
@@ -4222,7 +4338,7 @@
     "duration_minutes": 165,
     "distance_nm": 851,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:44"
   },
   {
     "flight_number": "FR2144",
@@ -4235,7 +4351,7 @@
     "duration_minutes": 155,
     "distance_nm": 890,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25"
   },
   {
     "flight_number": "FR5767",
@@ -4248,7 +4364,7 @@
     "duration_minutes": 170,
     "distance_nm": 949,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:55"
   },
   {
     "flight_number": "FR338",
@@ -4261,7 +4377,7 @@
     "duration_minutes": 80,
     "distance_nm": 234,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:50"
   },
   {
     "flight_number": "FR8425",
@@ -4274,7 +4390,7 @@
     "duration_minutes": 155,
     "distance_nm": 816,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:30"
   },
   {
     "flight_number": "FR6645",
@@ -4287,7 +4403,7 @@
     "duration_minutes": 175,
     "distance_nm": 929,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:25"
   },
   {
     "flight_number": "FR4813",
@@ -4300,7 +4416,7 @@
     "duration_minutes": 155,
     "distance_nm": 859,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:50"
   },
   {
     "flight_number": "FR6558",
@@ -4313,7 +4429,7 @@
     "duration_minutes": 140,
     "distance_nm": 750,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:00"
   },
   {
     "flight_number": "FR4678",
@@ -4326,7 +4442,7 @@
     "duration_minutes": 80,
     "distance_nm": 317,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:40"
   },
   {
     "flight_number": "FR95",
@@ -4339,7 +4455,7 @@
     "duration_minutes": 255,
     "distance_nm": 1583,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:25"
   },
   {
     "flight_number": "FR4166",
@@ -4352,7 +4468,7 @@
     "duration_minutes": 210,
     "distance_nm": 1245,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR3628",
@@ -4365,7 +4481,7 @@
     "duration_minutes": 65,
     "distance_nm": 174,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:25"
   },
   {
     "flight_number": "FR385",
@@ -4378,7 +4494,7 @@
     "duration_minutes": 115,
     "distance_nm": 521,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:10"
   },
   {
     "flight_number": "FR8197",
@@ -4391,7 +4507,7 @@
     "duration_minutes": 180,
     "distance_nm": 993,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:20"
   },
   {
     "flight_number": "FR3609",
@@ -4404,7 +4520,7 @@
     "duration_minutes": 165,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:10"
   },
   {
     "flight_number": "FR1083",
@@ -4417,7 +4533,7 @@
     "duration_minutes": 150,
     "distance_nm": 802,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:55"
   },
   {
     "flight_number": "FR6006",
@@ -4430,7 +4546,9 @@
     "duration_minutes": 100,
     "distance_nm": 436,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:30",
+    "scheduled_arrival_local": "14:10",
+    "note": null
   },
   {
     "flight_number": "FR7722",
@@ -4443,7 +4561,7 @@
     "duration_minutes": 90,
     "distance_nm": 313,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:30"
   },
   {
     "flight_number": "FR123",
@@ -4456,7 +4574,7 @@
     "duration_minutes": 85,
     "distance_nm": 262,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25"
   },
   {
     "flight_number": "FR5659",
@@ -4469,7 +4587,7 @@
     "duration_minutes": 165,
     "distance_nm": 937,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:35"
   },
   {
     "flight_number": "FR2145",
@@ -4482,7 +4600,7 @@
     "duration_minutes": 170,
     "distance_nm": 890,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:00"
   },
   {
     "flight_number": "FR6216",
@@ -4495,7 +4613,9 @@
     "duration_minutes": 125,
     "distance_nm": 638,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:10",
+    "scheduled_arrival_local": "10:15",
+    "note": null
   },
   {
     "flight_number": "FR7115",
@@ -4508,7 +4628,7 @@
     "duration_minutes": 155,
     "distance_nm": 884,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:30"
   },
   {
     "flight_number": "FR42",
@@ -4521,7 +4641,9 @@
     "duration_minutes": 115,
     "distance_nm": 552,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:05",
+    "scheduled_arrival_local": "16:00",
+    "note": null
   },
   {
     "flight_number": "FR4935",
@@ -4534,7 +4656,9 @@
     "duration_minutes": 120,
     "distance_nm": 588,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:20",
+    "scheduled_arrival_local": "19:20",
+    "note": null
   },
   {
     "flight_number": "FR2763",
@@ -4547,7 +4671,7 @@
     "duration_minutes": 100,
     "distance_nm": 421,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:15"
   },
   {
     "flight_number": "FR3435",
@@ -4560,7 +4684,9 @@
     "duration_minutes": 135,
     "distance_nm": 685,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00",
+    "scheduled_arrival_local": "08:15",
+    "note": null
   },
   {
     "flight_number": "FR612",
@@ -4573,7 +4699,7 @@
     "duration_minutes": 55,
     "distance_nm": 140,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:20"
   },
   {
     "flight_number": "FR616",
@@ -4586,7 +4712,7 @@
     "duration_minutes": 50,
     "distance_nm": 94,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10"
   },
   {
     "flight_number": "FR4448",
@@ -4599,7 +4725,7 @@
     "duration_minutes": 85,
     "distance_nm": 325,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:24"
   },
   {
     "flight_number": "FR2067",
@@ -4612,7 +4738,7 @@
     "duration_minutes": 80,
     "distance_nm": 248,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:55"
   },
   {
     "flight_number": "FR6457",
@@ -4625,7 +4751,7 @@
     "duration_minutes": 140,
     "distance_nm": 708,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:55"
   },
   {
     "flight_number": "FR133",
@@ -4638,7 +4764,7 @@
     "duration_minutes": 160,
     "distance_nm": 812,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:10"
   },
   {
     "flight_number": "FR3792",
@@ -4651,7 +4777,7 @@
     "duration_minutes": 145,
     "distance_nm": 688,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:30"
   },
   {
     "flight_number": "FR3160",
@@ -4664,7 +4790,7 @@
     "duration_minutes": 145,
     "distance_nm": 637,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:50"
   },
   {
     "flight_number": "FR3175",
@@ -4677,7 +4803,7 @@
     "duration_minutes": 60,
     "distance_nm": 149,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:40"
   },
   {
     "flight_number": "FR5718",
@@ -4690,7 +4816,7 @@
     "duration_minutes": 150,
     "distance_nm": 764,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:10"
   },
   {
     "flight_number": "FR8018",
@@ -4703,7 +4829,7 @@
     "duration_minutes": 85,
     "distance_nm": 308,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:45"
   },
   {
     "flight_number": "FR3121",
@@ -4716,7 +4842,7 @@
     "duration_minutes": 120,
     "distance_nm": 490,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:10"
   },
   {
     "flight_number": "FR4212",
@@ -4729,7 +4855,7 @@
     "duration_minutes": 125,
     "distance_nm": 653,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:50"
   },
   {
     "flight_number": "FR5214",
@@ -4742,7 +4868,9 @@
     "duration_minutes": 125,
     "distance_nm": 662,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:20",
+    "scheduled_arrival_local": "15:25",
+    "note": null
   },
   {
     "flight_number": "FR2834",
@@ -4755,7 +4883,7 @@
     "duration_minutes": 135,
     "distance_nm": 559,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:15"
   },
   {
     "flight_number": "FR6267",
@@ -4768,7 +4896,7 @@
     "duration_minutes": 175,
     "distance_nm": 905,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:20"
   },
   {
     "flight_number": "FR1517",
@@ -4781,7 +4909,7 @@
     "duration_minutes": 95,
     "distance_nm": 369,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:15"
   },
   {
     "flight_number": "FR3180",
@@ -4794,7 +4922,7 @@
     "duration_minutes": 115,
     "distance_nm": 458,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05"
   },
   {
     "flight_number": "FR3174",
@@ -4807,7 +4935,7 @@
     "duration_minutes": 70,
     "distance_nm": 149,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:50"
   },
   {
     "flight_number": "FR6559",
@@ -4820,7 +4948,7 @@
     "duration_minutes": 155,
     "distance_nm": 750,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:40"
   },
   {
     "flight_number": "FR275",
@@ -4833,7 +4961,7 @@
     "duration_minutes": 60,
     "distance_nm": 160,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:30"
   },
   {
     "flight_number": "FR6597",
@@ -4846,7 +4974,7 @@
     "duration_minutes": 155,
     "distance_nm": 745,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:20"
   },
   {
     "flight_number": "FR6123",
@@ -4859,7 +4987,7 @@
     "duration_minutes": 150,
     "distance_nm": 752,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:55"
   },
   {
     "flight_number": "FR269",
@@ -4872,7 +5000,7 @@
     "duration_minutes": 105,
     "distance_nm": 389,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR1425",
@@ -4885,7 +5013,7 @@
     "duration_minutes": 220,
     "distance_nm": 1239,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:00"
   },
   {
     "flight_number": "FR4567",
@@ -4898,7 +5026,9 @@
     "duration_minutes": 130,
     "distance_nm": 571,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:10",
+    "scheduled_arrival_local": "21:20",
+    "note": null
   },
   {
     "flight_number": "FR365",
@@ -4911,7 +5041,7 @@
     "duration_minutes": 120,
     "distance_nm": 643,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR3166",
@@ -4924,7 +5054,7 @@
     "duration_minutes": 120,
     "distance_nm": 541,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10"
   },
   {
     "flight_number": "FR3039",
@@ -4937,7 +5067,7 @@
     "duration_minutes": 150,
     "distance_nm": 733,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:05"
   },
   {
     "flight_number": "FR6300",
@@ -4950,7 +5080,7 @@
     "duration_minutes": 175,
     "distance_nm": 953,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20"
   },
   {
     "flight_number": "FR8231",
@@ -4963,7 +5093,7 @@
     "duration_minutes": 145,
     "distance_nm": 640,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30"
   },
   {
     "flight_number": "FR1165",
@@ -4976,7 +5106,7 @@
     "duration_minutes": 105,
     "distance_nm": 437,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:40"
   },
   {
     "flight_number": "FR4947",
@@ -4989,7 +5119,9 @@
     "duration_minutes": 115,
     "distance_nm": 602,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:00",
+    "scheduled_arrival_local": "15:55",
+    "note": null
   },
   {
     "flight_number": "FR8552",
@@ -5002,7 +5134,7 @@
     "duration_minutes": 125,
     "distance_nm": 601,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25"
   },
   {
     "flight_number": "FR8093",
@@ -5015,7 +5147,7 @@
     "duration_minutes": 95,
     "distance_nm": 354,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:00"
   },
   {
     "flight_number": "FR5184",
@@ -5028,7 +5160,7 @@
     "duration_minutes": 120,
     "distance_nm": 600,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:35"
   },
   {
     "flight_number": "FR8837",
@@ -5041,7 +5173,7 @@
     "duration_minutes": 85,
     "distance_nm": 289,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:40"
   },
   {
     "flight_number": "FR999",
@@ -5054,7 +5186,7 @@
     "duration_minutes": 130,
     "distance_nm": 596,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:05"
   },
   {
     "flight_number": "FR7178",
@@ -5067,7 +5199,7 @@
     "duration_minutes": 105,
     "distance_nm": 421,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR8915",
@@ -5080,7 +5212,7 @@
     "duration_minutes": 70,
     "distance_nm": 234,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:00"
   },
   {
     "flight_number": "FR3075",
@@ -5093,7 +5225,7 @@
     "duration_minutes": 80,
     "distance_nm": 266,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:50"
   },
   {
     "flight_number": "FR945",
@@ -5106,7 +5238,7 @@
     "duration_minutes": 90,
     "distance_nm": 326,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35"
   },
   {
     "flight_number": "FR1120",
@@ -5119,7 +5251,7 @@
     "duration_minutes": 90,
     "distance_nm": 372,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:15"
   },
   {
     "flight_number": "FR8196",
@@ -5132,7 +5264,7 @@
     "duration_minutes": 195,
     "distance_nm": 993,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:55"
   },
   {
     "flight_number": "FR3020",
@@ -5145,7 +5277,7 @@
     "duration_minutes": 130,
     "distance_nm": 695,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:00"
   },
   {
     "flight_number": "FR4139",
@@ -5158,7 +5290,7 @@
     "duration_minutes": 115,
     "distance_nm": 528,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR9612",
@@ -5171,7 +5303,7 @@
     "duration_minutes": 195,
     "distance_nm": 1018,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:20"
   },
   {
     "flight_number": "FR7301",
@@ -5184,7 +5316,9 @@
     "duration_minutes": 110,
     "distance_nm": 528,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:20",
+    "scheduled_arrival_local": "12:10",
+    "note": null
   },
   {
     "flight_number": "FR3150",
@@ -5197,7 +5331,9 @@
     "duration_minutes": 90,
     "distance_nm": 420,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:00",
+    "scheduled_arrival_local": "21:30",
+    "note": null
   },
   {
     "flight_number": "FR135",
@@ -5210,7 +5346,7 @@
     "duration_minutes": 130,
     "distance_nm": 636,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR6986",
@@ -5223,7 +5359,7 @@
     "duration_minutes": 110,
     "distance_nm": 458,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:35"
   },
   {
     "flight_number": "FR4005",
@@ -5236,7 +5372,7 @@
     "duration_minutes": 135,
     "distance_nm": 625,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:50"
   },
   {
     "flight_number": "FR132",
@@ -5249,7 +5385,7 @@
     "duration_minutes": 155,
     "distance_nm": 812,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35"
   },
   {
     "flight_number": "FR5790",
@@ -5262,7 +5398,9 @@
     "duration_minutes": 135,
     "distance_nm": 716,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:55",
+    "scheduled_arrival_local": "16:10",
+    "note": null
   },
   {
     "flight_number": "FR5668",
@@ -5275,7 +5413,7 @@
     "duration_minutes": 200,
     "distance_nm": 1152,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:10"
   },
   {
     "flight_number": "FR4818",
@@ -5288,7 +5426,7 @@
     "duration_minutes": 160,
     "distance_nm": 874,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:45"
   },
   {
     "flight_number": "FR134",
@@ -5301,7 +5439,7 @@
     "duration_minutes": 130,
     "distance_nm": 636,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00"
   },
   {
     "flight_number": "FR4468",
@@ -5314,7 +5452,7 @@
     "duration_minutes": 175,
     "distance_nm": 979,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:05"
   },
   {
     "flight_number": "FR7473",
@@ -5327,7 +5465,7 @@
     "duration_minutes": 160,
     "distance_nm": 842,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:40"
   },
   {
     "flight_number": "FR43",
@@ -5340,7 +5478,9 @@
     "duration_minutes": 110,
     "distance_nm": 552,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:40",
+    "scheduled_arrival_local": "18:30",
+    "note": null
   },
   {
     "flight_number": "FR5815",
@@ -5353,7 +5493,7 @@
     "duration_minutes": 130,
     "distance_nm": 644,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:00"
   },
   {
     "flight_number": "FR6695",
@@ -5366,7 +5506,7 @@
     "duration_minutes": 230,
     "distance_nm": 1409,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:45"
   },
   {
     "flight_number": "FR5589",
@@ -5379,7 +5519,7 @@
     "duration_minutes": 180,
     "distance_nm": 1053,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:15"
   },
   {
     "flight_number": "FR100",
@@ -5392,7 +5532,7 @@
     "duration_minutes": 145,
     "distance_nm": 810,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00"
   },
   {
     "flight_number": "FR6266",
@@ -5405,7 +5545,7 @@
     "duration_minutes": 165,
     "distance_nm": 905,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00"
   },
   {
     "flight_number": "FR5593",
@@ -5418,7 +5558,7 @@
     "duration_minutes": 275,
     "distance_nm": 1679,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR401",
@@ -5431,7 +5571,7 @@
     "duration_minutes": 100,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:55"
   },
   {
     "flight_number": "FR6187",
@@ -5444,7 +5584,7 @@
     "duration_minutes": 165,
     "distance_nm": 911,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:40"
   },
   {
     "flight_number": "FR558",
@@ -5457,7 +5597,7 @@
     "duration_minutes": 60,
     "distance_nm": 143,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35"
   },
   {
     "flight_number": "FR10",
@@ -5470,7 +5610,7 @@
     "duration_minutes": 165,
     "distance_nm": 784,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:15"
   },
   {
     "flight_number": "FR337",
@@ -5483,7 +5623,7 @@
     "duration_minutes": 75,
     "distance_nm": 234,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:10"
   },
   {
     "flight_number": "FR444",
@@ -5496,7 +5636,7 @@
     "duration_minutes": 55,
     "distance_nm": 123,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:40"
   },
   {
     "flight_number": "FR94",
@@ -5509,7 +5649,7 @@
     "duration_minutes": 265,
     "distance_nm": 1583,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:25"
   },
   {
     "flight_number": "FR219",
@@ -5522,7 +5662,7 @@
     "duration_minutes": 130,
     "distance_nm": 637,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:05"
   },
   {
     "flight_number": "FR7138",
@@ -5535,7 +5675,7 @@
     "duration_minutes": 170,
     "distance_nm": 887,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:05"
   },
   {
     "flight_number": "FR2669",
@@ -5548,7 +5688,7 @@
     "duration_minutes": 100,
     "distance_nm": 429,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:25"
   },
   {
     "flight_number": "FR5102",
@@ -5561,7 +5701,9 @@
     "duration_minutes": 125,
     "distance_nm": 606,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:00",
+    "scheduled_arrival_local": "12:05",
+    "note": null
   },
   {
     "flight_number": "FR276",
@@ -5574,7 +5716,7 @@
     "duration_minutes": 60,
     "distance_nm": 160,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:00"
   },
   {
     "flight_number": "FR4132",
@@ -5587,7 +5729,9 @@
     "duration_minutes": 90,
     "distance_nm": 411,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:40",
+    "scheduled_arrival_local": "12:10",
+    "note": null
   },
   {
     "flight_number": "FR7034",
@@ -5600,7 +5744,7 @@
     "duration_minutes": 175,
     "distance_nm": 988,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:25"
   },
   {
     "flight_number": "FR3164",
@@ -5613,7 +5757,7 @@
     "duration_minutes": 95,
     "distance_nm": 408,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:55"
   },
   {
     "flight_number": "FR3480",
@@ -5626,7 +5770,9 @@
     "duration_minutes": 90,
     "distance_nm": 387,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:40",
+    "scheduled_arrival_local": "21:10",
+    "note": null
   },
   {
     "flight_number": "FR1860",
@@ -5639,7 +5785,7 @@
     "duration_minutes": 95,
     "distance_nm": 393,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:00"
   },
   {
     "flight_number": "FR5531",
@@ -5652,7 +5798,9 @@
     "duration_minutes": 85,
     "distance_nm": 328,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:15",
+    "scheduled_arrival_local": "14:40",
+    "note": null
   },
   {
     "flight_number": "FR1784",
@@ -5665,7 +5813,7 @@
     "duration_minutes": 125,
     "distance_nm": 607,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:10"
   },
   {
     "flight_number": "FR4523",
@@ -5678,7 +5826,9 @@
     "duration_minutes": 95,
     "distance_nm": 356,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20",
+    "scheduled_arrival_local": "09:55",
+    "note": null
   },
   {
     "flight_number": "FR3396",
@@ -5691,7 +5841,9 @@
     "duration_minutes": 105,
     "distance_nm": 517,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:20",
+    "scheduled_arrival_local": "10:05",
+    "note": null
   },
   {
     "flight_number": "FR5418",
@@ -5704,7 +5856,7 @@
     "duration_minutes": 135,
     "distance_nm": 717,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:45"
   },
   {
     "flight_number": "FR3977",
@@ -5717,7 +5869,7 @@
     "duration_minutes": 150,
     "distance_nm": 802,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00"
   },
   {
     "flight_number": "FR7044",
@@ -5730,7 +5882,7 @@
     "duration_minutes": 180,
     "distance_nm": 1008,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR9756",
@@ -5743,7 +5895,7 @@
     "duration_minutes": 85,
     "distance_nm": 341,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:55"
   },
   {
     "flight_number": "FR5017",
@@ -5756,7 +5908,7 @@
     "duration_minutes": 110,
     "distance_nm": 512,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR2707",
@@ -5769,7 +5921,7 @@
     "duration_minutes": 110,
     "distance_nm": 507,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR1020",
@@ -5782,7 +5934,7 @@
     "duration_minutes": 120,
     "distance_nm": 572,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:45"
   },
   {
     "flight_number": "FR8369",
@@ -5795,7 +5947,7 @@
     "duration_minutes": 85,
     "distance_nm": 320,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:00"
   },
   {
     "flight_number": "FR4319",
@@ -5808,7 +5960,7 @@
     "duration_minutes": 70,
     "distance_nm": 208,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:26"
   },
   {
     "flight_number": "FR888",
@@ -5821,7 +5973,9 @@
     "duration_minutes": 105,
     "distance_nm": 484,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:55",
+    "scheduled_arrival_local": "11:40",
+    "note": null
   },
   {
     "flight_number": "FR368",
@@ -5834,7 +5988,7 @@
     "duration_minutes": 50,
     "distance_nm": 101,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:10"
   },
   {
     "flight_number": "FR4892",
@@ -5847,7 +6001,7 @@
     "duration_minutes": 90,
     "distance_nm": 291,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:10"
   },
   {
     "flight_number": "FR820",
@@ -5860,7 +6014,7 @@
     "duration_minutes": 180,
     "distance_nm": 931,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:10"
   },
   {
     "flight_number": "FR3397",
@@ -5873,7 +6027,9 @@
     "duration_minutes": 105,
     "distance_nm": 517,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30",
+    "scheduled_arrival_local": "12:15",
+    "note": null
   },
   {
     "flight_number": "FR2124",
@@ -5886,7 +6042,9 @@
     "duration_minutes": 115,
     "distance_nm": 544,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:40",
+    "scheduled_arrival_local": "21:25",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR6269",
@@ -5899,7 +6057,9 @@
     "duration_minutes": 150,
     "distance_nm": 824,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:35",
+    "scheduled_arrival_local": "10:05",
+    "note": null
   },
   {
     "flight_number": "FR7831",
@@ -5912,7 +6072,7 @@
     "duration_minutes": 130,
     "distance_nm": 659,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:40"
   },
   {
     "flight_number": "FR66",
@@ -5925,7 +6085,7 @@
     "duration_minutes": 165,
     "distance_nm": 942,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR1386",
@@ -5938,7 +6098,7 @@
     "duration_minutes": 150,
     "distance_nm": 777,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:15"
   },
   {
     "flight_number": "FR6501",
@@ -5951,7 +6111,9 @@
     "duration_minutes": 80,
     "distance_nm": 287,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:35",
+    "scheduled_arrival_local": "16:55",
+    "note": null
   },
   {
     "flight_number": "FR1302",
@@ -5964,7 +6126,7 @@
     "duration_minutes": 140,
     "distance_nm": 706,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:45"
   },
   {
     "flight_number": "FR6316",
@@ -5977,7 +6139,9 @@
     "duration_minutes": 105,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10",
+    "scheduled_arrival_local": "15:55",
+    "note": null
   },
   {
     "flight_number": "FR2956",
@@ -5990,7 +6154,7 @@
     "duration_minutes": 170,
     "distance_nm": 978,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:05"
   },
   {
     "flight_number": "FR3593",
@@ -6003,7 +6167,9 @@
     "duration_minutes": 105,
     "distance_nm": 492,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45",
+    "scheduled_arrival_local": "07:30",
+    "note": null
   },
   {
     "flight_number": "FR3610",
@@ -6016,7 +6182,7 @@
     "duration_minutes": 170,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:45"
   },
   {
     "flight_number": "FR4934",
@@ -6029,7 +6195,9 @@
     "duration_minutes": 120,
     "distance_nm": 588,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:45",
+    "scheduled_arrival_local": "21:45",
+    "note": null
   },
   {
     "flight_number": "FR6456",
@@ -6042,7 +6210,7 @@
     "duration_minutes": 145,
     "distance_nm": 708,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:10"
   },
   {
     "flight_number": "FR4566",
@@ -6055,7 +6223,9 @@
     "duration_minutes": 120,
     "distance_nm": 571,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35",
+    "scheduled_arrival_local": "18:35",
+    "note": null
   },
   {
     "flight_number": "FR3727",
@@ -6068,7 +6238,7 @@
     "duration_minutes": 160,
     "distance_nm": 903,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:00"
   },
   {
     "flight_number": "FR4417",
@@ -6081,7 +6251,9 @@
     "duration_minutes": 135,
     "distance_nm": 700,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50",
+    "scheduled_arrival_local": "12:05",
+    "note": null
   },
   {
     "flight_number": "FR79",
@@ -6094,7 +6266,9 @@
     "duration_minutes": 140,
     "distance_nm": 759,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:35",
+    "scheduled_arrival_local": "09:55",
+    "note": null
   },
   {
     "flight_number": "FR4522",
@@ -6107,7 +6281,9 @@
     "duration_minutes": 90,
     "distance_nm": 356,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:25",
+    "scheduled_arrival_local": "07:55",
+    "note": null
   },
   {
     "flight_number": "FR2739",
@@ -6120,7 +6296,7 @@
     "duration_minutes": 125,
     "distance_nm": 528,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:40"
   },
   {
     "flight_number": "FR2835",
@@ -6133,7 +6309,7 @@
     "duration_minutes": 120,
     "distance_nm": 559,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:55"
   },
   {
     "flight_number": "FR3534",
@@ -6146,7 +6322,7 @@
     "duration_minutes": 150,
     "distance_nm": 762,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:10"
   },
   {
     "flight_number": "FR8355",
@@ -6159,7 +6335,7 @@
     "duration_minutes": 105,
     "distance_nm": 505,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:45"
   },
   {
     "flight_number": "FR783",
@@ -6172,7 +6348,7 @@
     "duration_minutes": 130,
     "distance_nm": 607,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:05"
   },
   {
     "flight_number": "FR9196",
@@ -6185,7 +6361,9 @@
     "duration_minutes": 100,
     "distance_nm": 482,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:15",
+    "scheduled_arrival_local": "23:55",
+    "note": null
   },
   {
     "flight_number": "FR2619",
@@ -6198,7 +6376,7 @@
     "duration_minutes": 115,
     "distance_nm": 494,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:50"
   },
   {
     "flight_number": "FR7361",
@@ -6211,7 +6389,7 @@
     "duration_minutes": 85,
     "distance_nm": 317,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:55"
   },
   {
     "flight_number": "FR497",
@@ -6224,7 +6402,7 @@
     "duration_minutes": 120,
     "distance_nm": 583,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:05"
   },
   {
     "flight_number": "FR2881",
@@ -6237,7 +6415,7 @@
     "duration_minutes": 185,
     "distance_nm": 1042,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:50"
   },
   {
     "flight_number": "FR2762",
@@ -6250,7 +6428,7 @@
     "duration_minutes": 95,
     "distance_nm": 421,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35"
   },
   {
     "flight_number": "FR81",
@@ -6263,7 +6441,7 @@
     "duration_minutes": 110,
     "distance_nm": 549,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR2677",
@@ -6276,7 +6454,7 @@
     "duration_minutes": 130,
     "distance_nm": 667,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35"
   },
   {
     "flight_number": "FR1785",
@@ -6289,7 +6467,7 @@
     "duration_minutes": 130,
     "distance_nm": 607,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:30"
   },
   {
     "flight_number": "FR3865",
@@ -6302,7 +6480,9 @@
     "duration_minutes": 135,
     "distance_nm": 718,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:50",
+    "scheduled_arrival_local": "11:05",
+    "note": null
   },
   {
     "flight_number": "FR2266",
@@ -6315,7 +6495,7 @@
     "duration_minutes": 175,
     "distance_nm": 954,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:10"
   },
   {
     "flight_number": "FR995",
@@ -6328,7 +6508,7 @@
     "duration_minutes": 155,
     "distance_nm": 852,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:40"
   },
   {
     "flight_number": "FR8096",
@@ -6341,7 +6521,7 @@
     "duration_minutes": 85,
     "distance_nm": 321,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30"
   },
   {
     "flight_number": "FR3793",
@@ -6354,7 +6534,7 @@
     "duration_minutes": 135,
     "distance_nm": 688,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:35"
   },
   {
     "flight_number": "FR2673",
@@ -6367,7 +6547,7 @@
     "duration_minutes": 160,
     "distance_nm": 788,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00"
   },
   {
     "flight_number": "FR5103",
@@ -6380,7 +6560,9 @@
     "duration_minutes": 125,
     "distance_nm": 606,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:30",
+    "scheduled_arrival_local": "15:35",
+    "note": null
   },
   {
     "flight_number": "FR626",
@@ -6393,7 +6575,7 @@
     "duration_minutes": 105,
     "distance_nm": 483,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30"
   },
   {
     "flight_number": "FR8471",
@@ -6406,7 +6588,7 @@
     "duration_minutes": 110,
     "distance_nm": 503,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:40"
   },
   {
     "flight_number": "FR3207",
@@ -6419,7 +6601,7 @@
     "duration_minutes": 170,
     "distance_nm": 915,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:10"
   },
   {
     "flight_number": "FR4226",
@@ -6432,7 +6614,7 @@
     "duration_minutes": 95,
     "distance_nm": 430,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:35"
   },
   {
     "flight_number": "FR7403",
@@ -6445,7 +6627,7 @@
     "duration_minutes": 105,
     "distance_nm": 472,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:55"
   },
   {
     "flight_number": "FR5532",
@@ -6458,7 +6640,9 @@
     "duration_minutes": 90,
     "distance_nm": 328,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:20",
+    "scheduled_arrival_local": "12:50",
+    "note": null
   },
   {
     "flight_number": "FR1355",
@@ -6471,7 +6655,7 @@
     "duration_minutes": 160,
     "distance_nm": 823,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:00"
   },
   {
     "flight_number": "FR321",
@@ -6484,7 +6668,9 @@
     "duration_minutes": 85,
     "distance_nm": 378,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:20",
+    "scheduled_arrival_local": "22:45",
+    "note": null
   },
   {
     "flight_number": "FR1552",
@@ -6497,7 +6683,7 @@
     "duration_minutes": 90,
     "distance_nm": 403,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:55"
   },
   {
     "flight_number": "FR8679",
@@ -6510,7 +6696,9 @@
     "duration_minutes": 85,
     "distance_nm": 363,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25",
+    "scheduled_arrival_local": "22:50",
+    "note": null
   },
   {
     "flight_number": "FR4833",
@@ -6523,7 +6711,9 @@
     "duration_minutes": 145,
     "distance_nm": 751,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:50",
+    "scheduled_arrival_local": "11:15",
+    "note": null
   },
   {
     "flight_number": "FR4655",
@@ -6536,7 +6726,7 @@
     "duration_minutes": 75,
     "distance_nm": 260,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR4612",
@@ -6549,7 +6739,9 @@
     "duration_minutes": 65,
     "distance_nm": 222,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:00",
+    "scheduled_arrival_local": "21:05",
+    "note": null
   },
   {
     "flight_number": "FR3481",
@@ -6562,7 +6754,9 @@
     "duration_minutes": 90,
     "distance_nm": 387,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35",
+    "scheduled_arrival_local": "23:05",
+    "note": null
   },
   {
     "flight_number": "FR2154",
@@ -6575,7 +6769,9 @@
     "duration_minutes": 160,
     "distance_nm": 880,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30",
+    "scheduled_arrival_local": "14:10",
+    "note": null
   },
   {
     "flight_number": "FR1540",
@@ -6588,7 +6784,9 @@
     "duration_minutes": 95,
     "distance_nm": 468,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:55",
+    "scheduled_arrival_local": "20:30",
+    "note": null
   },
   {
     "flight_number": "FR595",
@@ -6601,7 +6799,7 @@
     "duration_minutes": 135,
     "distance_nm": 670,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:10"
   },
   {
     "flight_number": "FR1084",
@@ -6614,7 +6812,7 @@
     "duration_minutes": 155,
     "distance_nm": 802,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:30"
   },
   {
     "flight_number": "FR3436",
@@ -6627,7 +6825,9 @@
     "duration_minutes": 130,
     "distance_nm": 685,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40",
+    "scheduled_arrival_local": "10:50",
+    "note": null
   },
   {
     "flight_number": "FR1861",
@@ -6640,7 +6840,7 @@
     "duration_minutes": 95,
     "distance_nm": 393,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35"
   },
   {
     "flight_number": "FR3122",
@@ -6653,7 +6853,7 @@
     "duration_minutes": 105,
     "distance_nm": 490,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:15"
   },
   {
     "flight_number": "FR9035",
@@ -6666,7 +6866,7 @@
     "duration_minutes": 130,
     "distance_nm": 681,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:35"
   },
   {
     "flight_number": "FR6887",
@@ -6679,7 +6879,7 @@
     "duration_minutes": 90,
     "distance_nm": 362,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:20"
   },
   {
     "flight_number": "FR3110",
@@ -6692,7 +6892,7 @@
     "duration_minutes": 160,
     "distance_nm": 858,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:05"
   },
   {
     "flight_number": "FR4090",
@@ -6705,7 +6905,7 @@
     "duration_minutes": 100,
     "distance_nm": 447,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR8325",
@@ -6718,7 +6918,7 @@
     "duration_minutes": 105,
     "distance_nm": 448,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:55"
   },
   {
     "flight_number": "FR2204",
@@ -6731,7 +6931,7 @@
     "duration_minutes": 140,
     "distance_nm": 727,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:35"
   },
   {
     "flight_number": "FR5712",
@@ -6744,7 +6944,7 @@
     "duration_minutes": 200,
     "distance_nm": 1066,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:50"
   },
   {
     "flight_number": "FR80",
@@ -6757,7 +6957,7 @@
     "duration_minutes": 120,
     "distance_nm": 549,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:50"
   },
   {
     "flight_number": "FR5190",
@@ -6770,7 +6970,7 @@
     "duration_minutes": 90,
     "distance_nm": 393,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:25"
   },
   {
     "flight_number": "FR3165",
@@ -6783,7 +6983,7 @@
     "duration_minutes": 100,
     "distance_nm": 408,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:15"
   },
   {
     "flight_number": "FR2676",
@@ -6796,7 +6996,7 @@
     "duration_minutes": 130,
     "distance_nm": 667,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:40"
   },
   {
     "flight_number": "FR5733",
@@ -6809,7 +7009,7 @@
     "duration_minutes": 95,
     "distance_nm": 380,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:00"
   },
   {
     "flight_number": "FR4225",
@@ -6822,7 +7022,7 @@
     "duration_minutes": 95,
     "distance_nm": 430,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:40"
   },
   {
     "flight_number": "FR5719",
@@ -6835,7 +7035,7 @@
     "duration_minutes": 155,
     "distance_nm": 764,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:45"
   },
   {
     "flight_number": "FR5863",
@@ -6848,7 +7048,9 @@
     "duration_minutes": 105,
     "distance_nm": 369,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:55",
+    "scheduled_arrival_local": "19:40",
+    "note": null
   },
   {
     "flight_number": "FR2947",
@@ -6861,7 +7063,7 @@
     "duration_minutes": 150,
     "distance_nm": 709,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:10"
   },
   {
     "flight_number": "FR1453",
@@ -6874,7 +7076,7 @@
     "duration_minutes": 105,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR3161",
@@ -6887,7 +7089,7 @@
     "duration_minutes": 130,
     "distance_nm": 637,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:15"
   },
   {
     "flight_number": "FR9005",
@@ -6900,7 +7102,7 @@
     "duration_minutes": 95,
     "distance_nm": 419,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:55"
   },
   {
     "flight_number": "FR6181",
@@ -6913,7 +7115,9 @@
     "duration_minutes": 105,
     "distance_nm": 467,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:20",
+    "scheduled_arrival_local": "22:05",
+    "note": null
   },
   {
     "flight_number": "FR3813",
@@ -6926,7 +7130,7 @@
     "duration_minutes": 150,
     "distance_nm": 700,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:35"
   },
   {
     "flight_number": "FR5454",
@@ -6939,7 +7143,7 @@
     "duration_minutes": 80,
     "distance_nm": 311,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:20"
   },
   {
     "flight_number": "FR7525",
@@ -6952,7 +7156,9 @@
     "duration_minutes": 145,
     "distance_nm": 765,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25",
+    "scheduled_arrival_local": "15:50",
+    "note": null
   },
   {
     "flight_number": "FR5215",
@@ -6965,7 +7171,9 @@
     "duration_minutes": 125,
     "distance_nm": 662,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:50",
+    "scheduled_arrival_local": "12:55",
+    "note": null
   },
   {
     "flight_number": "FR7074",
@@ -6978,7 +7186,7 @@
     "duration_minutes": 70,
     "distance_nm": 207,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:10"
   },
   {
     "flight_number": "FR6191",
@@ -6991,7 +7199,7 @@
     "duration_minutes": 75,
     "distance_nm": 234,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:15"
   },
   {
     "flight_number": "FR78",
@@ -7004,7 +7212,9 @@
     "duration_minutes": 145,
     "distance_nm": 759,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:20",
+    "scheduled_arrival_local": "12:45",
+    "note": null
   },
   {
     "flight_number": "FR5191",
@@ -7017,7 +7227,7 @@
     "duration_minutes": 90,
     "distance_nm": 393,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:10"
   },
   {
     "flight_number": "FR4131",
@@ -7030,7 +7240,9 @@
     "duration_minutes": 90,
     "distance_nm": 411,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:35",
+    "scheduled_arrival_local": "14:05",
+    "note": null
   },
   {
     "flight_number": "FR1499",
@@ -7043,7 +7255,7 @@
     "duration_minutes": 90,
     "distance_nm": 384,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:50"
   },
   {
     "flight_number": "FR4768",
@@ -7056,7 +7268,7 @@
     "duration_minutes": 80,
     "distance_nm": 306,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:10"
   },
   {
     "flight_number": "FR4914",
@@ -7069,7 +7281,9 @@
     "duration_minutes": 95,
     "distance_nm": 444,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:35",
+    "scheduled_arrival_local": "17:10",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR2098",
@@ -7082,7 +7296,7 @@
     "duration_minutes": 105,
     "distance_nm": 449,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:55"
   },
   {
     "flight_number": "FR3916",
@@ -7095,7 +7309,9 @@
     "duration_minutes": 90,
     "distance_nm": 390,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:05",
+    "scheduled_arrival_local": "19:35",
+    "note": null
   },
   {
     "flight_number": "FR7795",
@@ -7108,7 +7324,7 @@
     "duration_minutes": 125,
     "distance_nm": 624,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50"
   },
   {
     "flight_number": "FR1986",
@@ -7121,7 +7337,7 @@
     "duration_minutes": 100,
     "distance_nm": 416,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:25"
   },
   {
     "flight_number": "FR18",
@@ -7134,7 +7350,9 @@
     "duration_minutes": 85,
     "distance_nm": 333,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:00",
+    "scheduled_arrival_local": "08:25",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR8385",
@@ -7147,7 +7365,7 @@
     "duration_minutes": 155,
     "distance_nm": 822,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:15"
   },
   {
     "flight_number": "FR2586",
@@ -7160,7 +7378,7 @@
     "duration_minutes": 160,
     "distance_nm": 817,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:25"
   },
   {
     "flight_number": "FR361",
@@ -7173,7 +7391,7 @@
     "duration_minutes": 155,
     "distance_nm": 890,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:15"
   },
   {
     "flight_number": "FR26",
@@ -7186,7 +7404,7 @@
     "duration_minutes": 155,
     "distance_nm": 748,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR57",
@@ -7199,7 +7417,7 @@
     "duration_minutes": 165,
     "distance_nm": 909,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:30"
   },
   {
     "flight_number": "FR2892",
@@ -7212,7 +7430,7 @@
     "duration_minutes": 110,
     "distance_nm": 548,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:00"
   },
   {
     "flight_number": "FR810",
@@ -7225,7 +7443,7 @@
     "duration_minutes": 80,
     "distance_nm": 325,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30"
   },
   {
     "flight_number": "FR701",
@@ -7238,7 +7456,7 @@
     "duration_minutes": 90,
     "distance_nm": 361,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:05"
   },
   {
     "flight_number": "FR8735",
@@ -7251,7 +7469,7 @@
     "duration_minutes": 150,
     "distance_nm": 738,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:30"
   },
   {
     "flight_number": "FR5493",
@@ -7264,7 +7482,7 @@
     "duration_minutes": 135,
     "distance_nm": 659,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:50"
   },
   {
     "flight_number": "FR1813",
@@ -7277,7 +7495,7 @@
     "duration_minutes": 140,
     "distance_nm": 767,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35"
   },
   {
     "flight_number": "FR1812",
@@ -7290,7 +7508,7 @@
     "duration_minutes": 150,
     "distance_nm": 767,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR702",
@@ -7303,7 +7521,7 @@
     "duration_minutes": 90,
     "distance_nm": 361,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:30"
   },
   {
     "flight_number": "FR1659",
@@ -7316,7 +7534,7 @@
     "duration_minutes": 155,
     "distance_nm": 783,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50"
   },
   {
     "flight_number": "FR4034",
@@ -7329,7 +7547,7 @@
     "duration_minutes": 75,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50"
   },
   {
     "flight_number": "FR5681",
@@ -7342,7 +7560,7 @@
     "duration_minutes": 65,
     "distance_nm": 193,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:00"
   },
   {
     "flight_number": "FR280",
@@ -7355,7 +7573,7 @@
     "duration_minutes": 105,
     "distance_nm": 498,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:50"
   },
   {
     "flight_number": "FR2471",
@@ -7368,7 +7586,7 @@
     "duration_minutes": 130,
     "distance_nm": 712,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:45"
   },
   {
     "flight_number": "FR485",
@@ -7381,7 +7599,9 @@
     "duration_minutes": 95,
     "distance_nm": 383,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:20",
+    "scheduled_arrival_local": "19:55",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR237",
@@ -7394,7 +7614,9 @@
     "duration_minutes": 70,
     "distance_nm": 263,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:10",
+    "scheduled_arrival_local": "20:20",
+    "note": null
   },
   {
     "flight_number": "FR4512",
@@ -7407,7 +7629,7 @@
     "duration_minutes": 175,
     "distance_nm": 958,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:35"
   },
   {
     "flight_number": "FR527",
@@ -7420,7 +7642,7 @@
     "duration_minutes": 240,
     "distance_nm": 1474,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR3568",
@@ -7433,7 +7655,7 @@
     "duration_minutes": 130,
     "distance_nm": 638,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:15"
   },
   {
     "flight_number": "FR1982",
@@ -7446,7 +7668,7 @@
     "duration_minutes": 125,
     "distance_nm": 626,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR406",
@@ -7459,7 +7681,7 @@
     "duration_minutes": 155,
     "distance_nm": 830,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:05"
   },
   {
     "flight_number": "FR6515",
@@ -7472,7 +7694,7 @@
     "duration_minutes": 100,
     "distance_nm": 442,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR4366",
@@ -7485,7 +7707,7 @@
     "duration_minutes": 190,
     "distance_nm": 1119,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR8874",
@@ -7498,7 +7720,7 @@
     "duration_minutes": 110,
     "distance_nm": 499,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:30"
   },
   {
     "flight_number": "FR9923",
@@ -7511,7 +7733,9 @@
     "duration_minutes": 115,
     "distance_nm": 508,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:35",
+    "scheduled_arrival_local": "11:30",
+    "note": null
   },
   {
     "flight_number": "FR3747",
@@ -7524,7 +7748,9 @@
     "duration_minutes": 105,
     "distance_nm": 473,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10",
+    "scheduled_arrival_local": "22:55",
+    "note": null
   },
   {
     "flight_number": "FR418",
@@ -7537,7 +7763,9 @@
     "duration_minutes": 110,
     "distance_nm": 486,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:30",
+    "scheduled_arrival_local": "16:20",
+    "note": null
   },
   {
     "flight_number": "FR6184",
@@ -7550,7 +7778,9 @@
     "duration_minutes": 80,
     "distance_nm": 321,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:55",
+    "scheduled_arrival_local": "21:15",
+    "note": null
   },
   {
     "flight_number": "FR97",
@@ -7563,7 +7793,7 @@
     "duration_minutes": 150,
     "distance_nm": 786,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20"
   },
   {
     "flight_number": "FR3527",
@@ -7576,7 +7806,7 @@
     "duration_minutes": 85,
     "distance_nm": 323,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:05"
   },
   {
     "flight_number": "FR955",
@@ -7589,7 +7819,7 @@
     "duration_minutes": 175,
     "distance_nm": 967,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:40"
   },
   {
     "flight_number": "FR837",
@@ -7602,7 +7832,7 @@
     "duration_minutes": 95,
     "distance_nm": 441,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:45"
   },
   {
     "flight_number": "FR2748",
@@ -7615,7 +7845,9 @@
     "duration_minutes": 105,
     "distance_nm": 487,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:00",
+    "scheduled_arrival_local": "18:40",
+    "note": null
   },
   {
     "flight_number": "FR1029",
@@ -7628,7 +7860,7 @@
     "duration_minutes": 105,
     "distance_nm": 488,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:15"
   },
   {
     "flight_number": "FR5277",
@@ -7641,7 +7873,9 @@
     "duration_minutes": 150,
     "distance_nm": 803,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35",
+    "scheduled_arrival_local": "19:05",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR954",
@@ -7654,7 +7888,7 @@
     "duration_minutes": 170,
     "distance_nm": 967,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR6751",
@@ -7667,7 +7901,7 @@
     "duration_minutes": 115,
     "distance_nm": 532,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:00"
   },
   {
     "flight_number": "FR2346",
@@ -7680,7 +7914,7 @@
     "duration_minutes": 175,
     "distance_nm": 947,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:30"
   },
   {
     "flight_number": "FR5200",
@@ -7693,7 +7927,7 @@
     "duration_minutes": 80,
     "distance_nm": 259,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR4814",
@@ -7706,7 +7940,7 @@
     "duration_minutes": 165,
     "distance_nm": 859,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:25"
   },
   {
     "flight_number": "FR2173",
@@ -7719,7 +7953,7 @@
     "duration_minutes": 130,
     "distance_nm": 662,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:06"
   },
   {
     "flight_number": "FR7249",
@@ -7732,7 +7966,7 @@
     "duration_minutes": 160,
     "distance_nm": 783,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR6032",
@@ -7745,7 +7979,7 @@
     "duration_minutes": 155,
     "distance_nm": 815,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:20"
   },
   {
     "flight_number": "FR6586",
@@ -7758,7 +7992,7 @@
     "duration_minutes": 160,
     "distance_nm": 847,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:50"
   },
   {
     "flight_number": "FR4367",
@@ -7771,7 +8005,7 @@
     "duration_minutes": 185,
     "distance_nm": 1119,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:55"
   },
   {
     "flight_number": "FR459",
@@ -7784,7 +8018,9 @@
     "duration_minutes": 120,
     "distance_nm": 570,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:20",
+    "scheduled_arrival_local": "00:20",
+    "note": null
   },
   {
     "flight_number": "FR1181",
@@ -7797,7 +8033,7 @@
     "duration_minutes": 125,
     "distance_nm": 592,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:25"
   },
   {
     "flight_number": "FR1862",
@@ -7810,7 +8046,7 @@
     "duration_minutes": 75,
     "distance_nm": 244,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:50"
   },
   {
     "flight_number": "FR1262",
@@ -7823,7 +8059,7 @@
     "duration_minutes": 145,
     "distance_nm": 736,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:00"
   },
   {
     "flight_number": "FR6750",
@@ -7836,7 +8072,7 @@
     "duration_minutes": 110,
     "distance_nm": 532,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:35"
   },
   {
     "flight_number": "FR573",
@@ -7849,7 +8085,7 @@
     "duration_minutes": 75,
     "distance_nm": 237,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:35"
   },
   {
     "flight_number": "FR5047",
@@ -7862,7 +8098,7 @@
     "duration_minutes": 85,
     "distance_nm": 337,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:50"
   },
   {
     "flight_number": "FR6537",
@@ -7875,7 +8111,7 @@
     "duration_minutes": 105,
     "distance_nm": 527,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR6502",
@@ -7888,7 +8124,9 @@
     "duration_minutes": 75,
     "distance_nm": 287,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:35",
+    "scheduled_arrival_local": "18:50",
+    "note": null
   },
   {
     "flight_number": "FR7633",
@@ -7901,7 +8139,7 @@
     "duration_minutes": 105,
     "distance_nm": 436,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:05"
   },
   {
     "flight_number": "FR6477",
@@ -7914,7 +8152,9 @@
     "duration_minutes": 85,
     "distance_nm": 364,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:55",
+    "scheduled_arrival_local": "09:20",
+    "note": null
   },
   {
     "flight_number": "FR5714",
@@ -7927,7 +8167,9 @@
     "duration_minutes": 165,
     "distance_nm": 962,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:40",
+    "scheduled_arrival_local": "20:25",
+    "note": null
   },
   {
     "flight_number": "FR8473",
@@ -7940,7 +8182,9 @@
     "duration_minutes": 120,
     "distance_nm": 599,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25",
+    "scheduled_arrival_local": "15:25",
+    "note": null
   },
   {
     "flight_number": "FR5781",
@@ -7953,7 +8197,7 @@
     "duration_minutes": 185,
     "distance_nm": 1061,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:50"
   },
   {
     "flight_number": "FR7524",
@@ -7966,7 +8210,9 @@
     "duration_minutes": 145,
     "distance_nm": 765,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:40",
+    "scheduled_arrival_local": "13:00",
+    "note": null
   },
   {
     "flight_number": "FR6551",
@@ -7979,7 +8225,9 @@
     "duration_minutes": 60,
     "distance_nm": 215,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:00",
+    "scheduled_arrival_local": "18:00",
+    "note": null
   },
   {
     "flight_number": "FR2347",
@@ -7992,7 +8240,7 @@
     "duration_minutes": 165,
     "distance_nm": 947,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:35"
   },
   {
     "flight_number": "FR21",
@@ -8005,7 +8253,7 @@
     "duration_minutes": 65,
     "distance_nm": 188,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:45"
   },
   {
     "flight_number": "FR4089",
@@ -8018,7 +8266,7 @@
     "duration_minutes": 100,
     "distance_nm": 447,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:45"
   },
   {
     "flight_number": "FR3666",
@@ -8031,7 +8279,7 @@
     "duration_minutes": 85,
     "distance_nm": 350,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:59"
   },
   {
     "flight_number": "FR238",
@@ -8044,7 +8292,7 @@
     "duration_minutes": 95,
     "distance_nm": 383,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:25"
   },
   {
     "flight_number": "FR8884",
@@ -8057,7 +8305,7 @@
     "duration_minutes": 95,
     "distance_nm": 353,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:15"
   },
   {
     "flight_number": "FR1090",
@@ -8070,7 +8318,7 @@
     "duration_minutes": 80,
     "distance_nm": 301,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR5201",
@@ -8083,7 +8331,7 @@
     "duration_minutes": 70,
     "distance_nm": 259,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:05"
   },
   {
     "flight_number": "FR7796",
@@ -8096,7 +8344,7 @@
     "duration_minutes": 115,
     "distance_nm": 624,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:15"
   },
   {
     "flight_number": "FR5337",
@@ -8109,7 +8357,7 @@
     "duration_minutes": 110,
     "distance_nm": 430,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:30"
   },
   {
     "flight_number": "FR6455",
@@ -8122,7 +8370,7 @@
     "duration_minutes": 95,
     "distance_nm": 406,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:35"
   },
   {
     "flight_number": "FR7776",
@@ -8135,7 +8383,7 @@
     "duration_minutes": 125,
     "distance_nm": 603,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05"
   },
   {
     "flight_number": "FR4207",
@@ -8148,7 +8396,7 @@
     "duration_minutes": 205,
     "distance_nm": 1138,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:55"
   },
   {
     "flight_number": "FR5227",
@@ -8161,7 +8409,7 @@
     "duration_minutes": 170,
     "distance_nm": 999,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR2203",
@@ -8174,7 +8422,7 @@
     "duration_minutes": 135,
     "distance_nm": 727,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:10"
   },
   {
     "flight_number": "FR767",
@@ -8187,7 +8435,7 @@
     "duration_minutes": 75,
     "distance_nm": 244,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:40"
   },
   {
     "flight_number": "FR6818",
@@ -8200,7 +8448,7 @@
     "duration_minutes": 135,
     "distance_nm": 630,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:00"
   },
   {
     "flight_number": "FR5209",
@@ -8213,7 +8461,7 @@
     "duration_minutes": 205,
     "distance_nm": 1264,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR3187",
@@ -8226,7 +8474,7 @@
     "duration_minutes": 155,
     "distance_nm": 774,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:50"
   },
   {
     "flight_number": "FR8358",
@@ -8239,7 +8487,7 @@
     "duration_minutes": 160,
     "distance_nm": 893,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05"
   },
   {
     "flight_number": "FR3216",
@@ -8252,7 +8500,7 @@
     "duration_minutes": 135,
     "distance_nm": 655,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR3059",
@@ -8265,7 +8513,7 @@
     "duration_minutes": 100,
     "distance_nm": 359,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:25"
   },
   {
     "flight_number": "FR690",
@@ -8278,7 +8526,7 @@
     "duration_minutes": 180,
     "distance_nm": 975,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR5482",
@@ -8291,7 +8539,7 @@
     "duration_minutes": 80,
     "distance_nm": 237,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:30"
   },
   {
     "flight_number": "FR3186",
@@ -8304,7 +8552,7 @@
     "duration_minutes": 155,
     "distance_nm": 774,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10"
   },
   {
     "flight_number": "FR3058",
@@ -8317,7 +8565,7 @@
     "duration_minutes": 95,
     "distance_nm": 359,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:20"
   },
   {
     "flight_number": "FR9440",
@@ -8330,7 +8578,7 @@
     "duration_minutes": 90,
     "distance_nm": 277,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:45"
   },
   {
     "flight_number": "FR5376",
@@ -8343,7 +8591,7 @@
     "duration_minutes": 140,
     "distance_nm": 686,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:50"
   },
   {
     "flight_number": "FR3466",
@@ -8356,7 +8604,7 @@
     "duration_minutes": 160,
     "distance_nm": 931,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:25"
   },
   {
     "flight_number": "FR7807",
@@ -8369,7 +8617,7 @@
     "duration_minutes": 130,
     "distance_nm": 643,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:40"
   },
   {
     "flight_number": "FR6552",
@@ -8382,7 +8630,9 @@
     "duration_minutes": 65,
     "distance_nm": 215,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30",
+    "scheduled_arrival_local": "16:35",
+    "note": null
   },
   {
     "flight_number": "FR6360",
@@ -8395,7 +8645,9 @@
     "duration_minutes": 150,
     "distance_nm": 861,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00",
+    "scheduled_arrival_local": "11:30",
+    "note": null
   },
   {
     "flight_number": "FR443",
@@ -8408,7 +8660,7 @@
     "duration_minutes": 55,
     "distance_nm": 123,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:15"
   },
   {
     "flight_number": "FR1081",
@@ -8421,7 +8673,7 @@
     "duration_minutes": 165,
     "distance_nm": 879,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:30"
   },
   {
     "flight_number": "FR7137",
@@ -8434,7 +8686,7 @@
     "duration_minutes": 165,
     "distance_nm": 887,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:30"
   },
   {
     "flight_number": "FR1183",
@@ -8447,7 +8699,7 @@
     "duration_minutes": 95,
     "distance_nm": 336,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:15"
   },
   {
     "flight_number": "FR456",
@@ -8460,7 +8712,7 @@
     "duration_minutes": 60,
     "distance_nm": 166,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:35"
   },
   {
     "flight_number": "FR2745",
@@ -8473,7 +8725,7 @@
     "duration_minutes": 165,
     "distance_nm": 869,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:00"
   },
   {
     "flight_number": "FR7933",
@@ -8486,7 +8738,7 @@
     "duration_minutes": 100,
     "distance_nm": 464,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:25"
   },
   {
     "flight_number": "FR6359",
@@ -8499,7 +8751,9 @@
     "duration_minutes": 165,
     "distance_nm": 861,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:50",
+    "scheduled_arrival_local": "07:35",
+    "note": null
   },
   {
     "flight_number": "FR4010",
@@ -8512,7 +8766,7 @@
     "duration_minutes": 110,
     "distance_nm": 527,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:40"
   },
   {
     "flight_number": "FR4203",
@@ -8525,7 +8779,9 @@
     "duration_minutes": 175,
     "distance_nm": 936,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:45",
+    "scheduled_arrival_local": "08:40",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR1469",
@@ -8538,7 +8794,9 @@
     "duration_minutes": 120,
     "distance_nm": 580,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:10",
+    "scheduled_arrival_local": "18:10",
+    "note": null
   },
   {
     "flight_number": "FR889",
@@ -8551,7 +8809,9 @@
     "duration_minutes": 105,
     "distance_nm": 484,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:05",
+    "scheduled_arrival_local": "13:50",
+    "note": null
   },
   {
     "flight_number": "FR3036",
@@ -8564,7 +8824,7 @@
     "duration_minutes": 165,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:35"
   },
   {
     "flight_number": "FR6355",
@@ -8577,7 +8837,7 @@
     "duration_minutes": 200,
     "distance_nm": 1120,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:35"
   },
   {
     "flight_number": "FR2589",
@@ -8590,7 +8850,7 @@
     "duration_minutes": 225,
     "distance_nm": 1321,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:50"
   },
   {
     "flight_number": "FR2172",
@@ -8603,7 +8863,7 @@
     "duration_minutes": 130,
     "distance_nm": 662,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:05"
   },
   {
     "flight_number": "FR3021",
@@ -8616,7 +8876,7 @@
     "duration_minutes": 145,
     "distance_nm": 695,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "01:15"
   },
   {
     "flight_number": "FR9252",
@@ -8629,7 +8889,7 @@
     "duration_minutes": 150,
     "distance_nm": 783,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:45"
   },
   {
     "flight_number": "FR8875",
@@ -8642,7 +8902,7 @@
     "duration_minutes": 100,
     "distance_nm": 499,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:10"
   },
   {
     "flight_number": "FR4140",
@@ -8655,7 +8915,7 @@
     "duration_minutes": 110,
     "distance_nm": 528,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:15"
   },
   {
     "flight_number": "FR8799",
@@ -8668,7 +8928,7 @@
     "duration_minutes": 110,
     "distance_nm": 551,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:45"
   },
   {
     "flight_number": "FR1748",
@@ -8681,7 +8941,7 @@
     "duration_minutes": 85,
     "distance_nm": 290,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:50"
   },
   {
     "flight_number": "FR6076",
@@ -8694,7 +8954,7 @@
     "duration_minutes": 130,
     "distance_nm": 608,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:45"
   },
   {
     "flight_number": "FR1671",
@@ -8707,7 +8967,9 @@
     "duration_minutes": 120,
     "distance_nm": 519,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:45",
+    "scheduled_arrival_local": "12:45",
+    "note": null
   },
   {
     "flight_number": "FR965",
@@ -8720,7 +8982,7 @@
     "duration_minutes": 115,
     "distance_nm": 541,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00"
   },
   {
     "flight_number": "FR4011",
@@ -8733,7 +8995,7 @@
     "duration_minutes": 105,
     "distance_nm": 527,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:40"
   },
   {
     "flight_number": "FR4013",
@@ -8746,7 +9008,7 @@
     "duration_minutes": 215,
     "distance_nm": 1268,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10"
   },
   {
     "flight_number": "FR5873",
@@ -8759,7 +9021,7 @@
     "duration_minutes": 165,
     "distance_nm": 794,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:05"
   },
   {
     "flight_number": "FR4679",
@@ -8772,7 +9034,7 @@
     "duration_minutes": 80,
     "distance_nm": 317,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:05"
   },
   {
     "flight_number": "FR9918",
@@ -8785,7 +9047,7 @@
     "duration_minutes": 245,
     "distance_nm": 1423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:55"
   },
   {
     "flight_number": "FR384",
@@ -8798,7 +9060,7 @@
     "duration_minutes": 105,
     "distance_nm": 521,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:45"
   },
   {
     "flight_number": "FR7248",
@@ -8811,7 +9073,7 @@
     "duration_minutes": 140,
     "distance_nm": 783,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR6007",
@@ -8824,7 +9086,7 @@
     "duration_minutes": 180,
     "distance_nm": 939,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:45"
   },
   {
     "flight_number": "FR5872",
@@ -8837,7 +9099,7 @@
     "duration_minutes": 170,
     "distance_nm": 794,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:40"
   },
   {
     "flight_number": "FR7814",
@@ -8850,7 +9112,7 @@
     "duration_minutes": 95,
     "distance_nm": 373,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:00"
   },
   {
     "flight_number": "FR362",
@@ -8863,7 +9125,7 @@
     "duration_minutes": 160,
     "distance_nm": 890,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:20"
   },
   {
     "flight_number": "FR5780",
@@ -8876,7 +9138,7 @@
     "duration_minutes": 185,
     "distance_nm": 1061,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:20"
   },
   {
     "flight_number": "FR7035",
@@ -8889,7 +9151,7 @@
     "duration_minutes": 175,
     "distance_nm": 988,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:45"
   },
   {
     "flight_number": "FR2940",
@@ -8902,7 +9164,7 @@
     "duration_minutes": 170,
     "distance_nm": 968,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:25"
   },
   {
     "flight_number": "FR4148",
@@ -8915,7 +9177,7 @@
     "duration_minutes": 160,
     "distance_nm": 891,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR6031",
@@ -8928,7 +9190,7 @@
     "duration_minutes": 150,
     "distance_nm": 815,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:45"
   },
   {
     "flight_number": "FR2538",
@@ -8941,7 +9203,7 @@
     "duration_minutes": 65,
     "distance_nm": 193,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:15"
   },
   {
     "flight_number": "FR6014",
@@ -8954,7 +9216,7 @@
     "duration_minutes": 155,
     "distance_nm": 902,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:15"
   },
   {
     "flight_number": "FR4321",
@@ -8967,7 +9229,9 @@
     "duration_minutes": 130,
     "distance_nm": 642,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:55",
+    "scheduled_arrival_local": "19:05",
+    "note": null
   },
   {
     "flight_number": "FR9924",
@@ -8980,7 +9244,9 @@
     "duration_minutes": 105,
     "distance_nm": 508,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:55",
+    "scheduled_arrival_local": "13:40",
+    "note": null
   },
   {
     "flight_number": "FR7523",
@@ -8993,7 +9259,7 @@
     "duration_minutes": 155,
     "distance_nm": 829,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:15"
   },
   {
     "flight_number": "FR5667",
@@ -9006,7 +9272,7 @@
     "duration_minutes": 200,
     "distance_nm": 1152,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:00"
   },
   {
     "flight_number": "FR815",
@@ -9019,7 +9285,7 @@
     "duration_minutes": 65,
     "distance_nm": 182,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:30"
   },
   {
     "flight_number": "FR7322",
@@ -9032,7 +9298,7 @@
     "duration_minutes": 105,
     "distance_nm": 433,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:25"
   },
   {
     "flight_number": "FR3646",
@@ -9045,7 +9311,7 @@
     "duration_minutes": 150,
     "distance_nm": 789,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:20"
   },
   {
     "flight_number": "FR5021",
@@ -9058,7 +9324,7 @@
     "duration_minutes": 160,
     "distance_nm": 879,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:05"
   },
   {
     "flight_number": "FR96",
@@ -9071,7 +9337,7 @@
     "duration_minutes": 145,
     "distance_nm": 786,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05"
   },
   {
     "flight_number": "FR20",
@@ -9084,7 +9350,7 @@
     "duration_minutes": 70,
     "distance_nm": 188,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:10"
   },
   {
     "flight_number": "FR457",
@@ -9097,7 +9363,7 @@
     "duration_minutes": 60,
     "distance_nm": 166,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:35"
   },
   {
     "flight_number": "FR814",
@@ -9110,7 +9376,7 @@
     "duration_minutes": 70,
     "distance_nm": 182,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:00"
   },
   {
     "flight_number": "FR634",
@@ -9123,7 +9389,7 @@
     "duration_minutes": 60,
     "distance_nm": 162,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:25"
   },
   {
     "flight_number": "FR4038",
@@ -9136,7 +9402,7 @@
     "duration_minutes": 150,
     "distance_nm": 774,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR279",
@@ -9149,7 +9415,7 @@
     "duration_minutes": 105,
     "distance_nm": 498,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05"
   },
   {
     "flight_number": "FR323",
@@ -9162,7 +9428,7 @@
     "duration_minutes": 130,
     "distance_nm": 656,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:05"
   },
   {
     "flight_number": "FR3726",
@@ -9175,7 +9441,7 @@
     "duration_minutes": 170,
     "distance_nm": 903,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:25"
   },
   {
     "flight_number": "FR6190",
@@ -9188,7 +9454,7 @@
     "duration_minutes": 70,
     "distance_nm": 234,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:25"
   },
   {
     "flight_number": "FR84",
@@ -9201,7 +9467,9 @@
     "duration_minutes": 100,
     "distance_nm": 429,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:50",
+    "scheduled_arrival_local": "23:30",
+    "note": null
   },
   {
     "flight_number": "FR4962",
@@ -9214,7 +9482,7 @@
     "duration_minutes": 155,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:00"
   },
   {
     "flight_number": "FR5016",
@@ -9227,7 +9495,9 @@
     "duration_minutes": 120,
     "distance_nm": 627,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:25",
+    "scheduled_arrival_local": "20:25",
+    "note": null
   },
   {
     "flight_number": "FR5377",
@@ -9240,7 +9510,7 @@
     "duration_minutes": 145,
     "distance_nm": 686,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:05"
   },
   {
     "flight_number": "FR1670",
@@ -9253,7 +9523,9 @@
     "duration_minutes": 105,
     "distance_nm": 519,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:10",
+    "scheduled_arrival_local": "14:55",
+    "note": null
   },
   {
     "flight_number": "FR4264",
@@ -9266,7 +9538,7 @@
     "duration_minutes": 120,
     "distance_nm": 610,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR1916",
@@ -9279,7 +9551,7 @@
     "duration_minutes": 170,
     "distance_nm": 913,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:10"
   },
   {
     "flight_number": "FR844",
@@ -9292,7 +9564,9 @@
     "duration_minutes": 120,
     "distance_nm": 584,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:50",
+    "scheduled_arrival_local": "20:50",
+    "note": null
   },
   {
     "flight_number": "FR1470",
@@ -9305,7 +9579,9 @@
     "duration_minutes": 120,
     "distance_nm": 580,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:35",
+    "scheduled_arrival_local": "20:35",
+    "note": null
   },
   {
     "flight_number": "FR5590",
@@ -9318,7 +9594,7 @@
     "duration_minutes": 190,
     "distance_nm": 1053,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:50"
   },
   {
     "flight_number": "FR8246",
@@ -9331,7 +9607,7 @@
     "duration_minutes": 100,
     "distance_nm": 442,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:55"
   },
   {
     "flight_number": "FR4983",
@@ -9344,7 +9620,9 @@
     "duration_minutes": 80,
     "distance_nm": 305,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30",
+    "scheduled_arrival_local": "08:50",
+    "note": null
   },
   {
     "flight_number": "FR5276",
@@ -9357,7 +9635,9 @@
     "duration_minutes": 145,
     "distance_nm": 803,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:30",
+    "scheduled_arrival_local": "21:55",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR6100",
@@ -9370,7 +9650,9 @@
     "duration_minutes": 70,
     "distance_nm": 273,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:40",
+    "scheduled_arrival_local": "08:50",
+    "note": null
   },
   {
     "flight_number": "FR239",
@@ -9383,7 +9665,7 @@
     "duration_minutes": 90,
     "distance_nm": 383,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:55"
   },
   {
     "flight_number": "FR8313",
@@ -9396,7 +9678,7 @@
     "duration_minutes": 150,
     "distance_nm": 882,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR419",
@@ -9409,7 +9691,9 @@
     "duration_minutes": 105,
     "distance_nm": 486,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:45",
+    "scheduled_arrival_local": "18:30",
+    "note": null
   },
   {
     "flight_number": "FR8883",
@@ -9422,7 +9706,7 @@
     "duration_minutes": 95,
     "distance_nm": 353,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:50"
   },
   {
     "flight_number": "FR3433",
@@ -9435,7 +9719,9 @@
     "duration_minutes": 90,
     "distance_nm": 382,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:30",
+    "scheduled_arrival_local": "10:00",
+    "note": null
   },
   {
     "flight_number": "FR8357",
@@ -9448,7 +9734,7 @@
     "duration_minutes": 170,
     "distance_nm": 893,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:50"
   },
   {
     "flight_number": "FR8859",
@@ -9461,7 +9747,7 @@
     "duration_minutes": 240,
     "distance_nm": 1339,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:45"
   },
   {
     "flight_number": "FR4263",
@@ -9474,7 +9760,7 @@
     "duration_minutes": 125,
     "distance_nm": 610,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:05"
   },
   {
     "flight_number": "FR197",
@@ -9487,7 +9773,7 @@
     "duration_minutes": 90,
     "distance_nm": 370,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:40"
   },
   {
     "flight_number": "FR8012",
@@ -9500,7 +9786,7 @@
     "duration_minutes": 190,
     "distance_nm": 1026,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:20"
   },
   {
     "flight_number": "FR4147",
@@ -9513,7 +9799,7 @@
     "duration_minutes": 160,
     "distance_nm": 891,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:50"
   },
   {
     "flight_number": "FR505",
@@ -9526,7 +9812,7 @@
     "duration_minutes": 65,
     "distance_nm": 179,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:00"
   },
   {
     "flight_number": "FR4121",
@@ -9539,7 +9825,7 @@
     "duration_minutes": 160,
     "distance_nm": 886,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:00"
   },
   {
     "flight_number": "FR277",
@@ -9552,7 +9838,7 @@
     "duration_minutes": 100,
     "distance_nm": 442,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:35"
   },
   {
     "flight_number": "FR6587",
@@ -9565,7 +9851,7 @@
     "duration_minutes": 155,
     "distance_nm": 847,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:30"
   },
   {
     "flight_number": "FR829",
@@ -9578,7 +9864,7 @@
     "duration_minutes": 140,
     "distance_nm": 701,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:15"
   },
   {
     "flight_number": "FR3948",
@@ -9591,7 +9877,7 @@
     "duration_minutes": 140,
     "distance_nm": 752,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:00"
   },
   {
     "flight_number": "FR1417",
@@ -9604,7 +9890,9 @@
     "duration_minutes": 100,
     "distance_nm": 499,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "08:00",
+    "scheduled_arrival_local": "09:40",
+    "note": null
   },
   {
     "flight_number": "FR3528",
@@ -9617,7 +9905,7 @@
     "duration_minutes": 85,
     "distance_nm": 323,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:35"
   },
   {
     "flight_number": "FR6454",
@@ -9630,7 +9918,7 @@
     "duration_minutes": 95,
     "distance_nm": 406,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:15"
   },
   {
     "flight_number": "FR3665",
@@ -9643,7 +9931,9 @@
     "duration_minutes": 85,
     "distance_nm": 350,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:20",
+    "scheduled_arrival_local": "20:45",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR3217",
@@ -9656,7 +9946,7 @@
     "duration_minutes": 130,
     "distance_nm": 655,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "11:55"
   },
   {
     "flight_number": "FR5494",
@@ -9669,7 +9959,7 @@
     "duration_minutes": 145,
     "distance_nm": 659,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:15"
   },
   {
     "flight_number": "FR8800",
@@ -9682,7 +9972,7 @@
     "duration_minutes": 115,
     "distance_nm": 551,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:10"
   },
   {
     "flight_number": "FR56",
@@ -9695,7 +9985,7 @@
     "duration_minutes": 170,
     "distance_nm": 909,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:05"
   },
   {
     "flight_number": "FR2588",
@@ -9708,7 +9998,7 @@
     "duration_minutes": 215,
     "distance_nm": 1321,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:05"
   },
   {
     "flight_number": "FR3460",
@@ -9721,7 +10011,9 @@
     "duration_minutes": 100,
     "distance_nm": 387,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:40",
+    "scheduled_arrival_local": "08:20",
+    "note": null
   },
   {
     "flight_number": "FR3645",
@@ -9734,7 +10026,7 @@
     "duration_minutes": 155,
     "distance_nm": 789,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:30"
   },
   {
     "flight_number": "FR4037",
@@ -9747,7 +10039,7 @@
     "duration_minutes": 155,
     "distance_nm": 774,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:00"
   },
   {
     "flight_number": "FR845",
@@ -9760,7 +10052,9 @@
     "duration_minutes": 115,
     "distance_nm": 584,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25",
+    "scheduled_arrival_local": "19:20",
+    "note": null
   },
   {
     "flight_number": "FR3432",
@@ -9773,7 +10067,9 @@
     "duration_minutes": 95,
     "distance_nm": 382,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:30",
+    "scheduled_arrival_local": "08:05",
+    "note": null
   },
   {
     "flight_number": "FR125",
@@ -9786,7 +10082,7 @@
     "duration_minutes": 140,
     "distance_nm": 724,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR3448",
@@ -9799,7 +10095,9 @@
     "duration_minutes": 100,
     "distance_nm": 470,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:35",
+    "scheduled_arrival_local": "11:15",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR3142",
@@ -9812,7 +10110,7 @@
     "duration_minutes": 100,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:05"
   },
   {
     "flight_number": "FR2649",
@@ -9825,7 +10123,7 @@
     "duration_minutes": 160,
     "distance_nm": 837,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:40"
   },
   {
     "flight_number": "FR3683",
@@ -9838,7 +10136,7 @@
     "duration_minutes": 85,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:40"
   },
   {
     "flight_number": "FR4122",
@@ -9851,7 +10149,7 @@
     "duration_minutes": 165,
     "distance_nm": 886,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:55"
   },
   {
     "flight_number": "FR5945",
@@ -9864,7 +10162,7 @@
     "duration_minutes": 160,
     "distance_nm": 855,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:15"
   },
   {
     "flight_number": "FR5046",
@@ -9877,7 +10175,7 @@
     "duration_minutes": 90,
     "distance_nm": 337,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:50"
   },
   {
     "flight_number": "FR2157",
@@ -9890,7 +10188,7 @@
     "duration_minutes": 175,
     "distance_nm": 954,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:10"
   },
   {
     "flight_number": "FR2650",
@@ -9903,7 +10201,7 @@
     "duration_minutes": 155,
     "distance_nm": 837,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:15"
   },
   {
     "flight_number": "FR3081",
@@ -9916,7 +10214,7 @@
     "duration_minutes": 95,
     "distance_nm": 414,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:50"
   },
   {
     "flight_number": "FR4628",
@@ -9929,7 +10227,7 @@
     "duration_minutes": 140,
     "distance_nm": 718,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "19:10"
   },
   {
     "flight_number": "FR196",
@@ -9942,7 +10240,7 @@
     "duration_minutes": 90,
     "distance_nm": 370,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:05"
   },
   {
     "flight_number": "FR257",
@@ -9955,7 +10253,7 @@
     "duration_minutes": 190,
     "distance_nm": 1029,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:00"
   },
   {
     "flight_number": "FR3775",
@@ -9968,7 +10266,9 @@
     "duration_minutes": 85,
     "distance_nm": 375,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:00",
+    "scheduled_arrival_local": "10:25",
+    "note": null
   },
   {
     "flight_number": "FR3449",
@@ -9981,7 +10281,9 @@
     "duration_minutes": 100,
     "distance_nm": 470,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:30",
+    "scheduled_arrival_local": "09:10",
+    "note": "not scheduled on FlightStats' default date - used nearest date from calendar table"
   },
   {
     "flight_number": "FR4012",
@@ -9994,7 +10296,7 @@
     "duration_minutes": 210,
     "distance_nm": 1268,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:05"
   },
   {
     "flight_number": "FR1400",
@@ -10007,7 +10309,7 @@
     "duration_minutes": 150,
     "distance_nm": 754,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:25"
   },
   {
     "flight_number": "FR8087",
@@ -10020,7 +10322,9 @@
     "duration_minutes": 130,
     "distance_nm": 689,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:15",
+    "scheduled_arrival_local": "15:25",
+    "note": null
   },
   {
     "flight_number": "FR4084",
@@ -10033,7 +10337,7 @@
     "duration_minutes": 185,
     "distance_nm": 1009,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:30"
   },
   {
     "flight_number": "FR2597",
@@ -10046,7 +10350,7 @@
     "duration_minutes": 160,
     "distance_nm": 924,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:25"
   },
   {
     "flight_number": "FR5959",
@@ -10059,7 +10363,7 @@
     "duration_minutes": 145,
     "distance_nm": 733,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "07:05"
   },
   {
     "flight_number": "FR645",
@@ -10072,7 +10376,7 @@
     "duration_minutes": 75,
     "distance_nm": 254,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10"
   },
   {
     "flight_number": "FR7522",
@@ -10085,7 +10389,7 @@
     "duration_minutes": 155,
     "distance_nm": 829,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "13:40"
   },
   {
     "flight_number": "FR7808",
@@ -10098,7 +10402,7 @@
     "duration_minutes": 145,
     "distance_nm": 643,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "00:24"
   },
   {
     "flight_number": "FR3035",
@@ -10111,7 +10415,7 @@
     "duration_minutes": 170,
     "distance_nm": 907,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:10"
   },
   {
     "flight_number": "FR8011",
@@ -10124,7 +10428,7 @@
     "duration_minutes": 175,
     "distance_nm": 1026,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "18:06"
   },
   {
     "flight_number": "FR8384",
@@ -10137,7 +10441,7 @@
     "duration_minutes": 155,
     "distance_nm": 822,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:25"
   },
   {
     "flight_number": "FR3143",
@@ -10150,7 +10454,7 @@
     "duration_minutes": 105,
     "distance_nm": 423,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "10:45"
   },
   {
     "flight_number": "FR3949",
@@ -10163,7 +10467,7 @@
     "duration_minutes": 145,
     "distance_nm": 752,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:50"
   },
   {
     "flight_number": "FR371",
@@ -10176,7 +10480,7 @@
     "duration_minutes": 115,
     "distance_nm": 510,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:35"
   },
   {
     "flight_number": "FR9559",
@@ -10189,7 +10493,7 @@
     "duration_minutes": 185,
     "distance_nm": 1010,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "05:45"
   },
   {
     "flight_number": "FR258",
@@ -10202,7 +10506,7 @@
     "duration_minutes": 185,
     "distance_nm": 1029,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "06:10"
   },
   {
     "flight_number": "FR1091",
@@ -10215,7 +10519,7 @@
     "duration_minutes": 75,
     "distance_nm": 301,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "21:00"
   },
   {
     "flight_number": "FR14",
@@ -10228,7 +10532,7 @@
     "duration_minutes": 230,
     "distance_nm": 1300,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:05"
   },
   {
     "flight_number": "FR4689",
@@ -10241,7 +10545,7 @@
     "duration_minutes": 240,
     "distance_nm": 1464,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:50"
   },
   {
     "flight_number": "FR4873",
@@ -10254,7 +10558,9 @@
     "duration_minutes": 85,
     "distance_nm": 359,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:30",
+    "scheduled_arrival_local": "13:55",
+    "note": null
   },
   {
     "flight_number": "FR952",
@@ -10267,7 +10573,7 @@
     "duration_minutes": 120,
     "distance_nm": 549,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:35"
   },
   {
     "flight_number": "FR5015",
@@ -10280,7 +10586,9 @@
     "duration_minutes": 125,
     "distance_nm": 627,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "15:55",
+    "scheduled_arrival_local": "18:00",
+    "note": null
   },
   {
     "flight_number": "FR6402",
@@ -10293,7 +10601,7 @@
     "duration_minutes": 85,
     "distance_nm": 304,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "09:20"
   },
   {
     "flight_number": "FR983",
@@ -10306,7 +10614,7 @@
     "duration_minutes": 155,
     "distance_nm": 801,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "12:40"
   },
   {
     "flight_number": "FR8088",
@@ -10319,7 +10627,9 @@
     "duration_minutes": 135,
     "distance_nm": 689,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "16:00",
+    "scheduled_arrival_local": "17:15",
+    "note": null
   },
   {
     "flight_number": "FR4322",
@@ -10332,7 +10642,9 @@
     "duration_minutes": 135,
     "distance_nm": 642,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "14:15",
+    "scheduled_arrival_local": "16:30",
+    "note": null
   },
   {
     "flight_number": "FR1865",
@@ -10345,7 +10657,7 @@
     "duration_minutes": 155,
     "distance_nm": 806,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "17:10"
   },
   {
     "flight_number": "FR8575",
@@ -10358,7 +10670,7 @@
     "duration_minutes": 260,
     "distance_nm": 1502,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "22:20"
   },
   {
     "flight_number": "FR7531",
@@ -10371,7 +10683,7 @@
     "duration_minutes": 95,
     "distance_nm": 453,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "23:05"
   },
   {
     "flight_number": "FR5715",
@@ -10384,7 +10696,9 @@
     "duration_minutes": 180,
     "distance_nm": 962,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:50",
+    "scheduled_arrival_local": "22:45",
+    "note": null
   },
   {
     "flight_number": "FR458",
@@ -10397,6 +10711,8 @@
     "duration_minutes": 110,
     "distance_nm": 570,
     "days_operated": null,
-    "scheduled_departure_local": null
+    "scheduled_departure_local": "20:05",
+    "scheduled_arrival_local": "21:55",
+    "note": null
   }
 ]
