@@ -3,65 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RYANAIR 738 · FLIGHT GENERATOR</title>
+<title>SimDispatch</title>
 <style>
   :root {
-    --face:        #C0C0C0;  /* classic Windows grey */
-    --face-light:  #DFDFDF;
-    --desktop:     #008080;  /* teal desktop */
-    --titlebar:    #000080;  /* classic blue titlebar */
-    --titlebar-2:  #1084D0;  /* titlebar gradient end */
+    --face:        #ECE9D8;  /* Windows 2000/XP classic grey-beige */
+    --face-dark:   #D4D0C8;
+    --titlebar:    #6B7A99;  /* muted steel blue-grey, 2000-style */
+    --titlebar-2:  #93A3B8;
     --white:       #FFFFFF;
-    --shadow-dk:   #000000;
-    --shadow-md:   #808080;
+    --shadow-dk:   #716F64;
+    --shadow-md:   #ACA899;
     --text:        #000000;
     --text-muted:  #444444;
-    --amber:       #808000;
-    --amber-bg:    #FFFF00;
-    --green:       #003300;
-    --green-bg:    #00FF00;
+    --amber:       #7A6A00;
+    --amber-bg:    #F5EFC0;
+    --green:       #245C24;
+    --green-bg:    #DCEEDC;
     --red:         #FFFFFF;
-    --red-bg:      #800000;
+    --red-bg:      #7A2626;
+    --link:        #2A4B8D;
   }
 
   * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    background: var(--desktop);
+    background: var(--face-dark);
     color: var(--text);
-    font-family: Tahoma, 'MS Sans Serif', Geneva, sans-serif;
+    font-family: 'Courier New', Consolas, monospace;
     font-size: 13px;
     line-height: 1.5;
-  }
-
-  .mono { font-family: 'Courier New', monospace; }
-
-  /* ---- beveled 3D border mixins, via border-color tricks ---- */
-  .bevel-out {
-    border-style: solid; border-width: 2px;
-    border-top-color: var(--white); border-left-color: var(--white);
-    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
-  }
-  .bevel-in {
-    border-style: solid; border-width: 2px;
-    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
-    border-bottom-color: var(--white); border-right-color: var(--white);
   }
 
   .topbar {
     background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2));
     color: #fff;
-    padding: 4px 6px;
+    padding: 5px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--shadow-dk);
   }
-  .topbar .title { font-weight: 700; font-size: 13px; }
-  .topbar .clock { font-family: 'Courier New', monospace; font-size: 12px; color: #fff; }
+  .topbar .title { font-weight: 700; font-size: 13px; letter-spacing: 0.02em; }
+  .topbar .clock { font-size: 12px; }
 
-  main { max-width: 900px; margin: 16px auto; padding: 0 16px 60px; }
+  main { max-width: 920px; margin: 16px auto; padding: 0 16px 60px; }
 
   .panel {
     background: var(--face);
@@ -77,28 +63,53 @@
   }
   .panel-body { padding: 12px 14px; }
 
-  .params-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
-  .field label { display: block; font-size: 12px; color: var(--text); margin-bottom: 4px; font-weight: 400; }
-  .field input {
-    font-family: 'Courier New', monospace; font-size: 14px; padding: 5px 7px;
-    background: var(--white); color: var(--text); width: 110px;
+  .params-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 560px) { .params-grid { grid-template-columns: 1fr; } }
+
+  .field label { display: block; font-size: 12px; color: var(--text); margin-bottom: 3px; }
+  .field .hint { color: var(--text-muted); font-size: 11px; font-weight: normal; }
+  .field input, .field select {
+    font-family: 'Courier New', Consolas, monospace; font-size: 13px; padding: 5px 7px;
+    background: var(--white); color: var(--text); width: 100%;
     border-style: solid; border-width: 2px;
     border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
-  .field input:focus { outline: 1px dotted var(--text); outline-offset: 1px; }
-  button.generate {
-    font-family: Tahoma, sans-serif; font-weight: 400; font-size: 13px;
+  .field input:focus, .field select:focus { outline: 1px dotted var(--text); outline-offset: 1px; }
+  .field-error {
+    color: #7A2626; font-size: 11px; margin-top: 3px; display: none;
+  }
+  .field-error.show { display: block; }
+
+  button.action {
+    font-family: 'Courier New', Consolas, monospace; font-weight: 700; font-size: 13px;
     background: var(--face); color: var(--text); padding: 6px 20px; cursor: pointer;
     border-style: solid; border-width: 2px;
     border-top-color: var(--white); border-left-color: var(--white);
     border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
   }
-  button.generate:active {
+  button.action:active {
     border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
-  button.generate:disabled { color: var(--shadow-md); cursor: default; }
+  button.action:disabled { color: var(--shadow-md); cursor: default; }
+
+  /* ---- itinerary results list ---- */
+  table.itin-list { width: 100%; border-collapse: collapse; }
+  table.itin-list th {
+    text-align: left; font-size: 11px; color: var(--text-muted); font-weight: normal;
+    padding: 4px 6px; border-bottom: 2px solid var(--shadow-md);
+  }
+  table.itin-list td {
+    padding: 5px 6px; border-bottom: 1px solid var(--shadow-md); font-size: 12.5px;
+  }
+  table.itin-list tr.itin-row:hover { background: var(--face-dark); cursor: pointer; }
+  table.itin-list td.select-cell { width: 70px; }
 
   .results-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
   @media (min-width: 700px) {
@@ -111,10 +122,10 @@
   .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; }
   .kv tr:last-child td { border-bottom: none; }
   .kv td.k { color: var(--text); width: 44%; font-size: 12px; }
-  .kv td.v { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; }
+  .kv td.v { font-size: 13px; font-weight: 700; }
 
   .status-chip {
-    display: inline-block; font-family: 'Courier New', monospace; font-size: 11.5px;
+    display: inline-block; font-size: 11.5px;
     font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk);
   }
   .status-ok    { background: var(--green-bg); color: var(--green); }
@@ -122,42 +133,55 @@
   .status-alert { background: var(--red-bg);   color: var(--red); }
 
   .placeholder-text { color: var(--text); font-size: 13px; }
+  .empty-state { padding: 26px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
-  .flight-headline { font-family: 'Courier New', monospace; font-size: 19px; font-weight: 700; margin: 0 0 10px; }
-  .flight-headline .route-arrow { color: var(--text-muted); margin: 0 6px; }
-
-  .empty-state { padding: 30px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
-
-  footer { max-width: 900px; margin: 0 auto; padding: 0 16px 30px; color: #DCE6EF; font-size: 11px; }
+  footer { max-width: 920px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="title">B738_DISPATCH.EXE</div>
-  <div class="clock mono" id="clock">--:--:--Z</div>
+  <div class="title">SimDispatch</div>
+  <div class="clock" id="clock">--:--:--Z</div>
 </div>
 
 <main>
 
   <div class="panel">
-    <div class="panel-header">FLIGHT PARAMETERS</div>
+    <div class="panel-header">SEARCH PARAMETERS</div>
     <div class="panel-body">
-      <div class="params-row">
+      <div class="params-grid">
+        <div class="field">
+          <label for="origin">PREFERRED BASE <span class="hint">(ICAO/IATA, optional)</span></label>
+          <input type="text" id="origin" list="airportList" autocomplete="off" placeholder="e.g. BGY or LIME">
+          <div class="field-error" id="originError">UNKNOWN AIRPORT CODE</div>
+        </div>
+        <div class="field">
+          <label for="destination">PREFERRED DESTINATION <span class="hint">(ICAO/IATA, optional)</span></label>
+          <input type="text" id="destination" list="airportList" autocomplete="off" placeholder="e.g. STN or EGSS">
+          <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
+        </div>
         <div class="field">
           <label for="minutes">TIME AVAILABLE (MIN)</label>
           <input type="number" id="minutes" value="180" min="20" step="5">
         </div>
-        <button class="generate" id="generateBtn" onclick="generateFlight()">GENERATE</button>
+        <div class="field">
+          <label for="legs">NUMBER OF LEGS</label>
+          <select id="legs">
+            <option value="">AUTO</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
       </div>
+      <datalist id="airportList"></datalist>
+      <button class="action" id="searchBtn" onclick="searchFlights()">SEARCH</button>
     </div>
   </div>
 
-  <div id="results">
-    <div class="panel">
-      <div class="empty-state">NO FLIGHT GENERATED. ENTER TIME AVAILABLE AND PRESS GENERATE.</div>
-    </div>
-  </div>
+  <div id="listPanel"></div>
+  <div id="detailPanel"></div>
 
 </main>
 
@@ -182,56 +206,135 @@ function fmtMinutes(min) {
   return `${h}H${String(m).padStart(2, '0')}M`;
 }
 
-async function generateFlight() {
-  const minutes = document.getElementById('minutes').value;
-  const btn = document.getElementById('generateBtn');
-  const results = document.getElementById('results');
+// ---- airport autocomplete ----
+let airportCache = {};
+async function updateAirportList(query) {
+  if (!query || query.length < 1) return;
+  const resp = await fetch(`/airports/search?q=${encodeURIComponent(query)}`);
+  const matches = await resp.json();
+  const list = document.getElementById('airportList');
+  list.innerHTML = '';
+  matches.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.icao;
+    opt.label = `${a.icao} / ${a.iata} - ${a.city}`;
+    list.appendChild(opt);
+    airportCache[a.icao] = a;
+    airportCache[a.iata] = a;
+  });
+}
+['origin', 'destination'].forEach(id => {
+  document.getElementById(id).addEventListener('input', (e) => updateAirportList(e.target.value));
+});
 
+async function validateAirport(fieldId) {
+  const field = document.getElementById(fieldId);
+  const errorEl = document.getElementById(fieldId + 'Error');
+  const value = field.value.trim();
+  if (!value) { errorEl.classList.remove('show'); return true; }
+  const resp = await fetch(`/airports/validate?code=${encodeURIComponent(value)}`);
+  const result = await resp.json();
+  errorEl.classList.toggle('show', !result.valid);
+  return result.valid;
+}
+['origin', 'destination'].forEach(id => {
+  document.getElementById(id).addEventListener('blur', () => validateAirport(id));
+});
+
+// ---- search ----
+async function searchFlights() {
+  const originValid = await validateAirport('origin');
+  const destValid = await validateAirport('destination');
+  if (!originValid || !destValid) return;
+
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const minutes = document.getElementById('minutes').value;
+  const legs = document.getElementById('legs').value;
+
+  const btn = document.getElementById('searchBtn');
   btn.disabled = true;
-  btn.textContent = 'GENERATING...';
+  btn.textContent = 'SEARCHING...';
+
+  document.getElementById('detailPanel').innerHTML = '';
 
   try {
-    const resp = await fetch(`/generate?minutes=${minutes}`);
+    const params = new URLSearchParams({ minutes, legs, origin, destination });
+    const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
-    render(data);
+
+    if (data.error) {
+      document.getElementById('listPanel').innerHTML = `
+        <div class="panel"><div class="empty-state">${data.error}</div></div>`;
+      return;
+    }
+
+    if (data.count === 0) {
+      document.getElementById('listPanel').innerHTML = `
+        <div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. WIDEN THE TIME AVAILABLE OR CLEAR A FILTER.</div></div>`;
+      return;
+    }
+
+    renderList(data.itineraries);
   } catch (err) {
-    results.innerHTML = `<div class="panel"><div class="empty-state">GENERATION FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('listPanel').innerHTML = `
+      <div class="panel"><div class="empty-state">SEARCH FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'GENERATE';
+    btn.textContent = 'SEARCH';
   }
 }
 
-function render(data) {
-  const results = document.getElementById('results');
+function renderList(itineraries) {
+  const rows = itineraries.map(itin => `
+    <tr class="itin-row" onclick="selectItinerary('${itin.flight_numbers.join(',')}')">
+      <td>${itin.flight_numbers.join(' / ')}</td>
+      <td>${itin.path.join(' \u2192 ')}</td>
+      <td>${itin.legs}</td>
+      <td>${fmtMinutes(itin.total_minutes)}</td>
+      <td class="select-cell"><button class="action" onclick="event.stopPropagation(); selectItinerary('${itin.flight_numbers.join(',')}')">SELECT</button></td>
+    </tr>`).join('');
 
-  if (data.error) {
-    results.innerHTML = `
-      <div class="panel">
-        <div class="panel-header">NO ROUTE FOUND</div>
-        <div class="panel-body">
-          <span class="status-chip status-warn">NO MATCH</span>
-          <p class="placeholder-text" style="margin-top:10px;">${data.error} Increase time available and try again.</p>
-        </div>
-      </div>`;
-    return;
+  document.getElementById('listPanel').innerHTML = `
+    <div class="panel">
+      <div class="panel-header">MATCHING ITINERARIES (${itineraries.length})</div>
+      <div class="panel-body">
+        <table class="itin-list">
+          <tr><th>FLIGHT(S)</th><th>ROUTING</th><th>LEGS</th><th>TOTAL TIME</th><th></th></tr>
+          ${rows}
+        </table>
+      </div>
+    </div>`;
+}
+
+// ---- selection -> full conditions ----
+async function selectItinerary(flightNumbers) {
+  const detailPanel = document.getElementById('detailPanel');
+  detailPanel.innerHTML = `<div class="panel"><div class="empty-state">LOADING FLIGHT DETAILS...</div></div>`;
+
+  try {
+    const resp = await fetch(`/select?flights=${encodeURIComponent(flightNumbers)}`);
+    const data = await resp.json();
+    renderDetail(data);
+    detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    detailPanel.innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div></div>`;
   }
+}
 
-  const r = data.route;
+function renderDetail(data) {
+  const detailPanel = document.getElementById('detailPanel');
+  const legs = data.itinerary;
+  const legRows = legs.map((l, i) => `
+    <tr><td class="k">LEG ${i + 1}</td><td class="v">${l.flight_number}: ${l.departure_icao} \u2192 ${l.arrival_icao} (${fmtMinutes(l.duration_minutes)}, ${l.distance_nm} NM)</td></tr>
+  `).join('');
 
-  results.innerHTML = `
+  detailPanel.innerHTML = `
     <div class="results-grid">
     <div class="panel span-2">
-      <div class="panel-header">ROUTE</div>
+      <div class="panel-header">ITINERARY</div>
       <div class="panel-body">
-        <p class="flight-headline">${r.flight_number}<span class="route-arrow">&#8594;</span>${r.departure_icao} / ${r.arrival_icao}</p>
-        <table class="kv">
-          <tr><td class="k">DEPARTURE</td><td class="v">${r.departure_icao} (${r.departure_iata})</td></tr>
-          <tr><td class="k">ARRIVAL</td><td class="v">${r.arrival_icao} (${r.arrival_iata})</td></tr>
-          <tr><td class="k">AIRCRAFT</td><td class="v">B738</td></tr>
-          <tr><td class="k">FLIGHT TIME</td><td class="v">${fmtMinutes(r.duration_minutes)}</td></tr>
-          <tr><td class="k">DISTANCE</td><td class="v">${r.distance_nm} NM (GC)</td></tr>
-        </table>
+        <table class="kv">${legRows}</table>
       </div>
     </div>
 
