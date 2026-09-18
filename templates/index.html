@@ -1,24 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>MSFS Immersion Tool - Step 3 check</title>
-    <style>
-        body { font-family: system-ui, sans-serif; max-width: 500px; margin: 60px auto; padding: 0 20px; }
-        h1 { font-size: 1.3rem; }
-        ul { line-height: 1.8; }
-        .ok { color: #1a7f37; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RYANAIR 738 · FLIGHT GENERATOR</title>
+<style>
+  :root {
+    --face:        #C0C0C0;  /* classic Windows grey */
+    --face-light:  #DFDFDF;
+    --desktop:     #008080;  /* teal desktop */
+    --titlebar:    #000080;  /* classic blue titlebar */
+    --titlebar-2:  #1084D0;  /* titlebar gradient end */
+    --white:       #FFFFFF;
+    --shadow-dk:   #000000;
+    --shadow-md:   #808080;
+    --text:        #000000;
+    --text-muted:  #444444;
+    --amber:       #808000;
+    --amber-bg:    #FFFF00;
+    --green:       #003300;
+    --green-bg:    #00FF00;
+    --red:         #FFFFFF;
+    --red-bg:      #800000;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--desktop);
+    color: var(--text);
+    font-family: Tahoma, 'MS Sans Serif', Geneva, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .mono { font-family: 'Courier New', monospace; }
+
+  /* ---- beveled 3D border mixins, via border-color tricks ---- */
+  .bevel-out {
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  .bevel-in {
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
+
+  .topbar {
+    background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2));
+    color: #fff;
+    padding: 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--shadow-dk);
+  }
+  .topbar .title { font-weight: 700; font-size: 13px; }
+  .topbar .clock { font-family: 'Courier New', monospace; font-size: 12px; color: #fff; }
+
+  main { max-width: 900px; margin: 16px auto; padding: 0 16px 60px; }
+
+  .panel {
+    background: var(--face);
+    margin-bottom: 16px;
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  .panel-header {
+    background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2));
+    color: #fff; font-weight: 700; font-size: 12px;
+    padding: 4px 8px;
+  }
+  .panel-body { padding: 12px 14px; }
+
+  .params-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+  .field label { display: block; font-size: 12px; color: var(--text); margin-bottom: 4px; font-weight: 400; }
+  .field input {
+    font-family: 'Courier New', monospace; font-size: 14px; padding: 5px 7px;
+    background: var(--white); color: var(--text); width: 110px;
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
+  .field input:focus { outline: 1px dotted var(--text); outline-offset: 1px; }
+  button.generate {
+    font-family: Tahoma, sans-serif; font-weight: 400; font-size: 13px;
+    background: var(--face); color: var(--text); padding: 6px 20px; cursor: pointer;
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  button.generate:active {
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
+  button.generate:disabled { color: var(--shadow-md); cursor: default; }
+
+  .results-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 700px) {
+    .results-grid { grid-template-columns: 1fr 1fr; }
+    .results-grid .panel { margin-bottom: 0; }
+    .panel.span-2 { grid-column: 1 / -1; }
+  }
+
+  .kv { width: 100%; border-collapse: collapse; }
+  .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; }
+  .kv tr:last-child td { border-bottom: none; }
+  .kv td.k { color: var(--text); width: 44%; font-size: 12px; }
+  .kv td.v { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; }
+
+  .status-chip {
+    display: inline-block; font-family: 'Courier New', monospace; font-size: 11.5px;
+    font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk);
+  }
+  .status-ok    { background: var(--green-bg); color: var(--green); }
+  .status-warn  { background: var(--amber-bg); color: var(--amber); }
+  .status-alert { background: var(--red-bg);   color: var(--red); }
+
+  .placeholder-text { color: var(--text); font-size: 13px; }
+
+  .flight-headline { font-family: 'Courier New', monospace; font-size: 19px; font-weight: 700; margin: 0 0 10px; }
+  .flight-headline .route-arrow { color: var(--text-muted); margin: 0 6px; }
+
+  .empty-state { padding: 30px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+  footer { max-width: 900px; margin: 0 auto; padding: 0 16px 30px; color: #DCE6EF; font-size: 11px; }
+</style>
 </head>
 <body>
-    <h1>App is running and datasets loaded <span class="ok">&#10003;</span></h1>
-    <ul>
-        <li>Routes: {{ counts.routes }}</li>
-        <li>MEL scenarios: {{ counts.mels }}</li>
-        <li>Delay codes: {{ counts.delay_codes }}</li>
-        <li>LMC events: {{ counts.lmc_events }}</li>
-        <li>Dangerous goods notes: {{ counts.dangerous_goods }}</li>
-    </ul>
-    <p>Nothing else works yet - this page only confirms the app can read its own data. The actual generator comes in step 4.</p>
+
+<div class="topbar">
+  <div class="title">B738_DISPATCH.EXE</div>
+  <div class="clock mono" id="clock">--:--:--Z</div>
+</div>
+
+<main>
+
+  <div class="panel">
+    <div class="panel-header">FLIGHT PARAMETERS</div>
+    <div class="panel-body">
+      <div class="params-row">
+        <div class="field">
+          <label for="minutes">TIME AVAILABLE (MIN)</label>
+          <input type="number" id="minutes" value="180" min="20" step="5">
+        </div>
+        <button class="generate" id="generateBtn" onclick="generateFlight()">GENERATE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="panel">
+      <div class="empty-state">NO FLIGHT GENERATED. ENTER TIME AVAILABLE AND PRESS GENERATE.</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  DATASET: {{ counts.routes }} ROUTES &middot; {{ counts.mels }} MEL SCENARIOS &middot; {{ counts.delay_codes }} DELAY CODES
+</footer>
+
+<script>
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getUTCHours()).padStart(2, '0');
+  const mm = String(now.getUTCMinutes()).padStart(2, '0');
+  const ss = String(now.getUTCSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${hh}:${mm}:${ss}Z`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+function fmtMinutes(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}H${String(m).padStart(2, '0')}M`;
+}
+
+async function generateFlight() {
+  const minutes = document.getElementById('minutes').value;
+  const btn = document.getElementById('generateBtn');
+  const results = document.getElementById('results');
+
+  btn.disabled = true;
+  btn.textContent = 'GENERATING...';
+
+  try {
+    const resp = await fetch(`/generate?minutes=${minutes}`);
+    const data = await resp.json();
+    render(data);
+  } catch (err) {
+    results.innerHTML = `<div class="panel"><div class="empty-state">GENERATION FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'GENERATE';
+  }
+}
+
+function render(data) {
+  const results = document.getElementById('results');
+
+  if (data.error) {
+    results.innerHTML = `
+      <div class="panel">
+        <div class="panel-header">NO ROUTE FOUND</div>
+        <div class="panel-body">
+          <span class="status-chip status-warn">NO MATCH</span>
+          <p class="placeholder-text" style="margin-top:10px;">${data.error} Increase time available and try again.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const r = data.route;
+
+  results.innerHTML = `
+    <div class="results-grid">
+    <div class="panel span-2">
+      <div class="panel-header">ROUTE</div>
+      <div class="panel-body">
+        <p class="flight-headline">${r.flight_number}<span class="route-arrow">&#8594;</span>${r.departure_icao} / ${r.arrival_icao}</p>
+        <table class="kv">
+          <tr><td class="k">DEPARTURE</td><td class="v">${r.departure_icao} (${r.departure_iata})</td></tr>
+          <tr><td class="k">ARRIVAL</td><td class="v">${r.arrival_icao} (${r.arrival_iata})</td></tr>
+          <tr><td class="k">AIRCRAFT</td><td class="v">B738</td></tr>
+          <tr><td class="k">FLIGHT TIME</td><td class="v">${fmtMinutes(r.duration_minutes)}</td></tr>
+          <tr><td class="k">DISTANCE</td><td class="v">${r.distance_nm} NM (GC)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">LOAD &amp; CARGO</div>
+      <div class="panel-body">
+        <table class="kv">
+          <tr><td class="k">PAX</td><td class="v">${data.pax_count} / 189</td></tr>
+          <tr><td class="k">LOAD FACTOR</td><td class="v">${(data.load_factor * 100).toFixed(0)}%</td></tr>
+          <tr><td class="k">CARGO/BAGS</td><td class="v">${data.cargo_weight_kg} KG</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">DANGEROUS GOODS</div>
+      <div class="panel-body">
+        ${data.dangerous_goods.id === 'dg-05'
+          ? `<span class="status-chip status-ok">CLEAR</span><p class="placeholder-text" style="margin-top:8px;">No dangerous goods on this sector.</p>`
+          : `<span class="status-chip status-warn">MANIFEST NOTE</span><p class="placeholder-text" style="margin-top:8px;">${data.dangerous_goods.label}</p>`
+        }
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">MEL STATUS</div>
+      <div class="panel-body">
+        ${data.mel
+          ? `<span class="status-chip status-alert">OPEN ITEM</span>
+             <table class="kv" style="margin-top:8px;">
+               <tr><td class="k">SYSTEM</td><td class="v">${data.mel.system}</td></tr>
+               <tr><td class="k">CATEGORY</td><td class="v">${data.mel.mel_category}</td></tr>
+               <tr><td class="k">DETAIL</td><td class="v" style="font-weight:400;">${data.mel.description}</td></tr>
+             </table>
+             <p class="placeholder-text" style="margin-top:8px;">${data.mel.dispatch_consequence}</p>`
+          : `<span class="status-chip status-ok">SERVICEABLE</span><p class="placeholder-text" style="margin-top:8px;">No open MEL items. Aircraft fully serviceable.</p>`
+        }
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">DELAY</div>
+      <div class="panel-body">
+        ${data.delay
+          ? `<span class="status-chip status-warn">DELAY CODE ${data.delay.iata_code}</span>
+             <p class="placeholder-text" style="margin-top:8px;">${data.delay.description}</p>
+             <table class="kv" style="margin-top:6px;">
+               <tr><td class="k">EXPECTED</td><td class="v">${data.delay.duration_range_minutes[0]}&ndash;${data.delay.duration_range_minutes[1]} MIN</td></tr>
+             </table>`
+          : `<span class="status-chip status-ok">ON TIME</span><p class="placeholder-text" style="margin-top:8px;">No delay reported.</p>`
+        }
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">LAST-MINUTE CHANGE</div>
+      <div class="panel-body">
+        ${data.lmc_event
+          ? `<span class="status-chip status-warn">LMC</span>
+             <p class="placeholder-text" style="margin-top:8px;">${data.lmc_event.description}</p>
+             <table class="kv" style="margin-top:6px;">
+               <tr><td class="k">DELTA</td><td class="v">${data.lmc_event.delta > 0 ? '+' : ''}${data.lmc_event.delta} ${data.lmc_event.unit.toUpperCase()}</td></tr>
+             </table>`
+          : `<span class="status-chip status-ok">NONE</span><p class="placeholder-text" style="margin-top:8px;">Loadsheet unchanged from initial figures.</p>`
+        }
+      </div>
+    </div>
+    </div>
+  `;
+}
+</script>
+
 </body>
 </html>
