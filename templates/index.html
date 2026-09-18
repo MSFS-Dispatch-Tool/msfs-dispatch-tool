@@ -21,6 +21,7 @@
     --green-bg:    #DCEEDC;
     --red:         #FFFFFF;
     --red-bg:      #7A2626;
+    --blue-hi:     #3A5A8C;
   }
 
   * { box-sizing: border-box; }
@@ -46,7 +47,7 @@
   .topbar .title { font-weight: 700; font-size: 13px; letter-spacing: 0.02em; }
   .topbar .clock { font-size: 12px; }
 
-  main { max-width: 980px; margin: 16px auto; padding: 0 16px 60px; }
+  main { max-width: 1000px; margin: 16px auto; padding: 0 16px 60px; }
 
   .panel {
     background: var(--face);
@@ -59,6 +60,7 @@
     background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2));
     color: #fff; font-weight: 700; font-size: 12px;
     padding: 4px 8px;
+    display: flex; justify-content: space-between; align-items: center;
   }
   .panel-body { padding: 12px 14px; }
 
@@ -70,6 +72,7 @@
   }
   @media (max-width: 560px) { .params-grid { grid-template-columns: 1fr; } }
 
+  .field { position: relative; }
   .field label { display: block; font-size: 12px; color: var(--text); margin-bottom: 3px; }
   .field .hint { color: var(--text-muted); font-size: 11px; font-weight: normal; }
   .field input, .field select {
@@ -82,6 +85,29 @@
   .field input:focus, .field select:focus { outline: 1px dotted var(--text); outline-offset: 1px; }
   .field-error { color: #7A2626; font-size: 11px; margin-top: 3px; display: none; }
   .field-error.show { display: block; }
+
+  .checkbox-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .checkbox-row label { font-size: 12px; }
+
+  .custom-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+    background: var(--white);
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+    max-height: 220px; overflow-y: auto;
+    display: none;
+  }
+  .custom-dropdown.open { display: block; }
+  .custom-dropdown .opt {
+    padding: 5px 8px; font-size: 12.5px; cursor: pointer;
+    border-bottom: 1px solid var(--face-dark);
+  }
+  .custom-dropdown .opt:last-child { border-bottom: none; }
+  .custom-dropdown .opt:hover, .custom-dropdown .opt.active { background: var(--blue-hi); color: #fff; }
+  .custom-dropdown .opt .code { font-weight: 700; }
+  .custom-dropdown .opt .place { color: var(--text-muted); font-size: 11px; }
+  .custom-dropdown .opt:hover .place, .custom-dropdown .opt.active .place { color: #DCE3EE; }
 
   button.action {
     font-family: 'Courier New', Consolas, monospace; font-weight: 700; font-size: 13px;
@@ -96,10 +122,10 @@
   }
   button.action:disabled { color: var(--shadow-md); cursor: default; }
   button.action.small { padding: 3px 12px; font-size: 12px; }
+  button.action.danger { color: #7A2626; }
 
-  /* ---- toolbar: sort + filter ---- */
   .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 10px; }
-  .toolbar .field { min-width: 170px; }
+  .toolbar .field { min-width: 160px; }
 
   table.itin-list { width: 100%; border-collapse: collapse; }
   table.itin-list th {
@@ -112,27 +138,41 @@
   table.itin-list td.select-cell { width: 70px; }
   table.itin-list td.detail-cell { background: #F5F3EC; padding: 0; }
 
+  .type-badge { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border: 1px solid var(--shadow-dk); }
+  .type-RT { background: var(--green-bg); color: var(--green); }
+  .type-1W { background: #E4E8EF; color: var(--blue-hi); }
+  .type-RE { background: var(--amber-bg); color: var(--amber); }
+
   .tag-domestic { color: var(--green); font-size: 11.5px; font-weight: 700; }
   .tag-international { color: #6B4B00; font-size: 11.5px; font-weight: 700; }
 
-  /* ---- inline detail block ---- */
+  @media (max-width: 720px) {
+    table.itin-list thead { display: none; }
+    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; }
+    table.itin-list tr.itin-row {
+      border: 2px solid var(--shadow-md); margin-bottom: 8px; padding: 4px 0;
+    }
+    table.itin-list tr.itin-row td { display: block; border-bottom: none; padding: 3px 10px; white-space: normal; }
+    table.itin-list tr.itin-row td.select-cell { padding: 8px 10px 4px; }
+    table.itin-list tr.itin-row td[data-label]::before {
+      content: attr(data-label);
+      display: inline-block; min-width: 110px; color: var(--text-muted); font-size: 10.5px; font-weight: 700;
+    }
+    table.itin-list td.detail-cell { display: block; }
+  }
+
   .detail-inner { padding: 14px 16px; border-top: 2px solid var(--shadow-md); }
   .leg-block { margin-bottom: 14px; border: 1px solid var(--shadow-md); background: var(--white); }
-  .leg-block-header {
-    background: var(--face-dark); font-weight: 700; font-size: 12px; padding: 4px 8px;
-    border-bottom: 1px solid var(--shadow-md);
-  }
+  .leg-block-header { background: var(--face-dark); font-weight: 700; font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--shadow-md); }
   .leg-block-body { padding: 10px 12px; }
 
   .kv { width: 100%; border-collapse: collapse; }
-  .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; }
+  .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; word-break: break-word; }
   .kv tr:last-child td { border-bottom: none; }
-  .kv td.k { color: var(--text); width: 40%; font-size: 12px; }
+  .kv td.k { color: var(--text); width: 42%; font-size: 12px; }
   .kv td.v { font-size: 13px; font-weight: 700; }
 
-  .status-chip {
-    display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk);
-  }
+  .status-chip { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk); }
   .status-ok    { background: var(--green-bg); color: var(--green); }
   .status-warn  { background: var(--amber-bg); color: var(--amber); }
   .status-alert { background: var(--red-bg);   color: var(--red); }
@@ -140,17 +180,23 @@
   .placeholder-text { color: var(--text); font-size: 12.5px; }
   .empty-state { padding: 26px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
-  .mel-block { border: 1px solid var(--shadow-md); background: var(--white); margin-bottom: 14px; }
-
   .weather-block { border: 1px solid var(--shadow-md); background: #F7F6F1; padding: 8px 10px; }
   .weather-row { margin-bottom: 6px; }
   .weather-row:last-child { margin-bottom: 0; }
   .weather-label { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 700; }
   .weather-text { display: block; font-size: 12px; word-break: break-word; }
 
-  .generate-row { text-align: right; margin-top: 6px; }
+  .confirm-row { text-align: right; margin-top: 6px; }
 
-  footer { max-width: 980px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
+  .callsign-display { font-size: 22px; font-weight: 700; letter-spacing: 0.05em; margin: 4px 0 12px; }
+  .leg-status-row {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--shadow-md); background: var(--white); padding: 8px 10px; margin-bottom: 8px;
+  }
+  .leg-status-row.done { background: var(--green-bg); }
+  .leg-status-row.current { background: #FFF7DD; }
+
+  footer { max-width: 1000px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -160,50 +206,15 @@
   <div class="clock" id="clock">--:--:--Z</div>
 </div>
 
-<main>
-
-  <div class="panel">
-    <div class="panel-header">SEARCH PARAMETERS</div>
-    <div class="panel-body">
-      <div class="params-grid">
-        <div class="field">
-          <label for="origin">PREFERRED BASE <span class="hint">(ICAO/IATA, optional)</span></label>
-          <input type="text" id="origin" list="airportList" autocomplete="off" placeholder="e.g. BGY or LIME">
-          <div class="field-error" id="originError">UNKNOWN AIRPORT CODE</div>
-        </div>
-        <div class="field">
-          <label for="destination">PREFERRED DESTINATION <span class="hint">(ICAO/IATA, optional)</span></label>
-          <input type="text" id="destination" list="airportList" autocomplete="off" placeholder="e.g. STN or EGSS">
-          <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
-        </div>
-        <div class="field">
-          <label for="minutes">TIME AVAILABLE (MIN)</label>
-          <input type="number" id="minutes" value="180" min="20" step="5">
-        </div>
-        <div class="field">
-          <label for="legs">NUMBER OF LEGS</label>
-          <select id="legs">
-            <option value="">AUTO</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-        </div>
-      </div>
-      <datalist id="airportList"></datalist>
-      <button class="action" id="searchBtn" onclick="searchFlights()">SEARCH</button>
-    </div>
-  </div>
-
-  <div id="listPanel"></div>
-
-</main>
+<main id="mainContent"></main>
 
 <footer>
   DATASET: {{ counts.routes }} ROUTES &middot; {{ counts.mels }} MEL SCENARIOS &middot; {{ counts.delay_codes }} DELAY CODES
 </footer>
 
 <script>
+const STORAGE_KEY = 'simdispatch_active_flight';
+
 function updateClock() {
   const now = new Date();
   const hh = String(now.getUTCHours()).padStart(2, '0');
@@ -215,28 +226,79 @@ updateClock();
 setInterval(updateClock, 1000);
 
 function fmtMinutes(min) {
+  if (min === null || min === undefined) return 'UNKNOWN';
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${h}H${String(m).padStart(2, '0')}M`;
 }
 
-// ---- airport autocomplete ----
-async function updateAirportList(query) {
-  if (!query || query.length < 1) return;
-  const resp = await fetch(`/airports/search?q=${encodeURIComponent(query)}`);
-  const matches = await resp.json();
-  const list = document.getElementById('airportList');
-  list.innerHTML = '';
-  matches.forEach(a => {
-    const opt = document.createElement('option');
-    opt.value = a.icao;
-    opt.label = `${a.icao} / ${a.iata} - ${a.city}`;
-    list.appendChild(opt);
+function boot() {
+  const active = loadActiveFlight();
+  if (active) {
+    renderRecap(active);
+  } else {
+    renderSearchUI();
+  }
+}
+boot();
+
+function loadActiveFlight() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function saveActiveFlight(flight) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(flight));
+}
+function clearActiveFlight() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function attachAirportDropdown(inputId, dropdownId) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  let items = [];
+  let activeIndex = -1;
+
+  async function query(q) {
+    if (!q) { dropdown.classList.remove('open'); return; }
+    const resp = await fetch(`/airports/search?q=${encodeURIComponent(q)}`);
+    items = await resp.json();
+    renderItems();
+  }
+
+  function renderItems() {
+    if (items.length === 0) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = items.map((a, i) => `
+      <div class="opt${i === activeIndex ? ' active' : ''}" data-icao="${a.icao}">
+        <span class="code">${a.icao} / ${a.iata}</span>
+        <span class="place">${a.city}</span>
+      </div>`).join('');
+    dropdown.classList.add('open');
+    dropdown.querySelectorAll('.opt').forEach((el, i) => {
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); selectItem(i); });
+    });
+  }
+
+  function selectItem(i) {
+    input.value = items[i].icao;
+    dropdown.classList.remove('open');
+    input.dispatchEvent(new Event('change'));
+  }
+
+  input.addEventListener('input', (e) => { activeIndex = -1; query(e.target.value); });
+  input.addEventListener('keydown', (e) => {
+    if (!dropdown.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') { activeIndex = Math.min(activeIndex + 1, items.length - 1); renderItems(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { activeIndex = Math.max(activeIndex - 1, 0); renderItems(); e.preventDefault(); }
+    else if (e.key === 'Enter' && activeIndex >= 0) { selectItem(activeIndex); e.preventDefault(); }
+    else if (e.key === 'Escape') { dropdown.classList.remove('open'); }
+  });
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && e.target !== input) dropdown.classList.remove('open');
   });
 }
-['origin', 'destination'].forEach(id => {
-  document.getElementById(id).addEventListener('input', (e) => updateAirportList(e.target.value));
-});
 
 async function validateAirport(fieldId) {
   const field = document.getElementById(fieldId);
@@ -248,11 +310,53 @@ async function validateAirport(fieldId) {
   errorEl.classList.toggle('show', !result.valid);
   return result.valid;
 }
-['origin', 'destination'].forEach(id => {
-  document.getElementById(id).addEventListener('blur', () => validateAirport(id));
-});
 
-// ---- search ----
+function renderSearchUI() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-header">SEARCH PARAMETERS</div>
+      <div class="panel-body">
+        <div class="params-grid">
+          <div class="field">
+            <label for="origin">PREFERRED BASE <span class="hint">(ICAO/IATA, optional)</span></label>
+            <input type="text" id="origin" autocomplete="off" placeholder="e.g. BGY or LIME">
+            <div class="custom-dropdown" id="originDropdown"></div>
+            <div class="field-error" id="originError">UNKNOWN AIRPORT CODE</div>
+          </div>
+          <div class="field">
+            <label for="destination">PREFERRED DESTINATION <span class="hint">(ICAO/IATA, optional)</span></label>
+            <input type="text" id="destination" autocomplete="off" placeholder="e.g. STN or EGSS">
+            <div class="custom-dropdown" id="destinationDropdown"></div>
+            <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
+          </div>
+          <div class="field">
+            <label for="minutes">TIME AVAILABLE (MIN)</label>
+            <input type="number" id="minutes" value="180" min="20" step="5">
+          </div>
+          <div class="field">
+            <label for="tripType">TRIP TYPE</label>
+            <select id="tripType">
+              <option value="random">RANDOM (MIX)</option>
+              <option value="round_trip">ROUND TRIP ONLY</option>
+              <option value="one_way">ONE WAY ONLY</option>
+            </select>
+            <div class="checkbox-row">
+              <input type="checkbox" id="includeRepositioning">
+              <label for="includeRepositioning">INCLUDE REPOSITIONING (RARE, EMPTY LEGS)</label>
+            </div>
+          </div>
+        </div>
+        <button class="action" id="searchBtn" onclick="searchFlights()">SEARCH</button>
+      </div>
+    </div>
+    <div id="listPanel"></div>
+  `;
+  attachAirportDropdown('origin', 'originDropdown');
+  attachAirportDropdown('destination', 'destinationDropdown');
+  document.getElementById('origin').addEventListener('blur', () => setTimeout(() => validateAirport('origin'), 150));
+  document.getElementById('destination').addEventListener('blur', () => setTimeout(() => validateAirport('destination'), 150));
+}
+
 let currentItineraries = [];
 let expandedKey = null;
 
@@ -264,14 +368,15 @@ async function searchFlights() {
   const origin = document.getElementById('origin').value.trim();
   const destination = document.getElementById('destination').value.trim();
   const minutes = document.getElementById('minutes').value;
-  const legs = document.getElementById('legs').value;
+  const tripType = document.getElementById('tripType').value;
+  const repositioning = document.getElementById('includeRepositioning').checked;
 
   const btn = document.getElementById('searchBtn');
   btn.disabled = true;
   btn.textContent = 'SEARCHING...';
 
   try {
-    const params = new URLSearchParams({ minutes, legs, origin, destination });
+    const params = new URLSearchParams({ minutes, origin, destination, trip_type: tripType, repositioning });
     const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
 
@@ -283,7 +388,6 @@ async function searchFlights() {
       document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. WIDEN THE TIME AVAILABLE OR CLEAR A FILTER.</div></div>`;
       return;
     }
-
     currentItineraries = data.itineraries;
     expandedKey = null;
     renderListPanel();
@@ -299,17 +403,26 @@ function itinKey(itin) { return itin.flight_numbers.join(','); }
 
 function applySortAndFilter(list) {
   const sortBy = document.getElementById('sortBy') ? document.getElementById('sortBy').value : 'flight';
+  const sortDir = document.getElementById('sortDir') ? document.getElementById('sortDir').dataset.dir : 'asc';
   const showFilter = document.getElementById('showFilter') ? document.getElementById('showFilter').value : 'all';
+  const typeFilter = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
 
   let filtered = list;
-  if (showFilter === 'domestic') filtered = list.filter(i => i.domestic);
-  if (showFilter === 'international') filtered = list.filter(i => !i.domestic);
+  if (showFilter === 'domestic') filtered = filtered.filter(i => i.domestic);
+  if (showFilter === 'international') filtered = filtered.filter(i => !i.domestic);
+  if (typeFilter !== 'all') filtered = filtered.filter(i => i.trip_type === typeFilter);
 
   const sorted = [...filtered];
-  if (sortBy === 'flight') sorted.sort((a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}));
-  if (sortBy === 'legs') sorted.sort((a, b) => a.legs - b.legs);
-  if (sortBy === 'departure') sorted.sort((a, b) => a.departure_icao.localeCompare(b.departure_icao));
-  if (sortBy === 'arrival') sorted.sort((a, b) => a.arrival_icao.localeCompare(b.arrival_icao));
+  const cmp = {
+    flight: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}),
+    legs: (a, b) => a.legs - b.legs,
+    departure: (a, b) => a.departure_icao.localeCompare(b.departure_icao),
+    arrival: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao),
+    dep_time: (a, b) => (a.first_departure_zulu || '').localeCompare(b.first_departure_zulu || ''),
+    arr_time: (a, b) => (a.last_arrival_zulu || '').localeCompare(b.last_arrival_zulu || ''),
+  }[sortBy];
+  sorted.sort(cmp);
+  if (sortDir === 'desc') sorted.reverse();
   return sorted;
 }
 
@@ -326,7 +439,13 @@ function renderListPanel() {
               <option value="legs">NUMBER OF LEGS</option>
               <option value="departure">DEPARTURE (A-Z)</option>
               <option value="arrival">ARRIVAL (A-Z)</option>
+              <option value="dep_time">DEPARTURE TIME</option>
+              <option value="arr_time">ARRIVAL TIME</option>
             </select>
+          </div>
+          <div class="field" style="max-width:90px;">
+            <label>DIRECTION</label>
+            <button class="action small" id="sortDir" data-dir="asc" onclick="toggleSortDir()" style="width:100%;">ASC &uarr;</button>
           </div>
           <div class="field">
             <label for="showFilter">SHOW</label>
@@ -336,10 +455,19 @@ function renderListPanel() {
               <option value="international">INTERNATIONAL ONLY</option>
             </select>
           </div>
+          <div class="field">
+            <label for="typeFilter">TYPE</label>
+            <select id="typeFilter" onchange="renderTable()">
+              <option value="all">ALL TYPES</option>
+              <option value="RT">ROUND TRIP</option>
+              <option value="1W">ONE WAY</option>
+              <option value="RE">REPOSITIONING</option>
+            </select>
+          </div>
         </div>
         <table class="itin-list" id="itinTable">
           <thead>
-            <tr><th>FLIGHT(S)</th><th>DEPARTURE</th><th>ARRIVAL</th><th>LEGS</th><th>TOTAL TIME</th><th>TYPE</th><th></th></tr>
+            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>ARRIVAL</th><th>DEP TIME</th><th>ARR TIME</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
           </thead>
           <tbody id="itinTableBody"></tbody>
         </table>
@@ -348,33 +476,42 @@ function renderListPanel() {
   renderTable();
 }
 
+function toggleSortDir() {
+  const btn = document.getElementById('sortDir');
+  const newDir = btn.dataset.dir === 'asc' ? 'desc' : 'asc';
+  btn.dataset.dir = newDir;
+  btn.innerHTML = newDir === 'asc' ? 'ASC &uarr;' : 'DESC &darr;';
+  renderTable();
+}
+
 function renderTable() {
   const sorted = applySortAndFilter(currentItineraries);
   const tbody = document.getElementById('itinTableBody');
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = sorted.map(itin => {
     const key = itinKey(itin);
     const isExpanded = key === expandedKey;
-    const typeTag = itin.domestic
-      ? `<span class="tag-domestic">DOMESTIC</span>`
-      : `<span class="tag-international">INTL</span>`;
+    const typeTag = itin.domestic ? `<span class="tag-domestic">DOMESTIC</span>` : `<span class="tag-international">INTL</span>`;
+    const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
     const row = `
       <tr class="itin-row ${isExpanded ? 'expanded' : ''}" onclick="toggleItinerary('${key}')">
-        <td>${itin.flight_numbers.join(' / ')}</td>
-        <td>${itin.departure_icao} (${itin.departure_country})</td>
-        <td>${itin.arrival_icao} (${itin.arrival_country})</td>
-        <td>${itin.legs}</td>
-        <td>${fmtMinutes(itin.total_minutes)}</td>
-        <td>${typeTag}</td>
-        <td class="select-cell"><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
+        <td data-label="TYPE"><span class="type-badge type-${itin.trip_type}">${itin.trip_type}</span></td>
+        <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
+        <td data-label="DEPARTURE">${itin.departure_icao} (${itin.departure_country}) ${typeTag}</td>
+        <td data-label="ARRIVAL">${itin.arrival_icao} (${itin.arrival_country})</td>
+        <td data-label="DEP TIME">${itin.first_departure_zulu || 'UNKNOWN'}</td>
+        <td data-label="ARR TIME">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
+        <td data-label="LEGS">${itin.legs}</td>
+        <td data-label="TURNAROUND">${turnaround}</td>
+        <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="7" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="9" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
@@ -383,11 +520,7 @@ function renderTable() {
 }
 
 async function toggleItinerary(key) {
-  if (expandedKey === key) {
-    expandedKey = null;
-  } else {
-    expandedKey = key;
-  }
+  expandedKey = (expandedKey === key) ? null : key;
   renderTable();
 }
 
@@ -396,44 +529,37 @@ async function loadDetail(key) {
   try {
     const resp = await fetch(`/select?flights=${encodeURIComponent(key)}`);
     const data = await resp.json();
-    cell.innerHTML = buildDetailHtml(data);
+    cell.innerHTML = buildDetailHtml(data, key);
   } catch (err) {
     cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
   }
 }
 
-function buildDetailHtml(data) {
+function buildDetailHtml(data, key) {
   const legBlocks = data.legs.map((leg, i) => `
     <div class="leg-block">
       <div class="leg-block-header">LEG ${i + 1} &mdash; ${leg.flight_number}</div>
       <div class="leg-block-body">
-
         <table class="kv" style="margin-bottom:10px;">
           <tr><td class="k">DEPARTURE</td><td class="v">${leg.departure_info.icao} / ${leg.departure_info.iata} &mdash; ${leg.departure_info.name} (${leg.departure_info.country})</td></tr>
           <tr><td class="k">ARRIVAL</td><td class="v">${leg.arrival_info.icao} / ${leg.arrival_info.iata} &mdash; ${leg.arrival_info.name} (${leg.arrival_info.country})</td></tr>
+          <tr><td class="k">SCHEDULED DEPARTURE</td><td class="v">${leg.scheduled_departure_zulu || 'UNKNOWN'}</td></tr>
+          <tr><td class="k">SCHEDULED ARRIVAL</td><td class="v">${leg.scheduled_arrival_zulu || 'UNKNOWN'} ${leg.arrival_time_source === 'computed' ? '<span class="placeholder-text">(computed)</span>' : ''}</td></tr>
+          ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v">${fmtMinutes(leg.turnaround_minutes)}</td></tr>` : ''}
           <tr><td class="k">COST INDEX</td><td class="v">${leg.cost_index}</td></tr>
         </table>
-
         <table class="kv" style="margin-bottom:10px;">
           <tr><td class="k">EXPECTED PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
           <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
           <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
         </table>
-        <p class="placeholder-text" style="margin-bottom:10px;">Figures are expected/preliminary and may change before pushback.</p>
-
         <div class="weather-block">
           <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.metar || 'UNAVAILABLE'}</span></div>
           <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.taf || 'UNAVAILABLE'}</span></div>
           <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.metar || 'UNAVAILABLE'}</span></div>
           <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.taf || 'UNAVAILABLE'}</span></div>
         </div>
-
         <p class="placeholder-text" style="margin-top:10px;">
-          ${leg.dangerous_goods.id === 'dg-05'
-            ? `<span class="status-chip status-ok">DG CLEAR</span>`
-            : `<span class="status-chip status-warn">DG: ${leg.dangerous_goods.label}</span>`}
-        </p>
-        <p class="placeholder-text" style="margin-top:8px;">
           ${leg.delay
             ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
             : `<span class="status-chip status-ok">ON TIME</span>`}
@@ -444,16 +570,111 @@ function buildDetailHtml(data) {
   return `
     <div class="detail-inner">
       ${legBlocks}
-      <p class="placeholder-text" style="margin-bottom:10px;">MEL status will be loaded from the SimBrief FPL at a later stage - not shown here. Last-minute changes will be shown at loadsheet sign-off - not shown here.</p>
-      <div class="generate-row">
-        <button class="action" onclick="dummyGenerate('${data.session_id}')">GENERATE (SENDS TO SIMBRIEF)</button>
+      <p class="placeholder-text" style="margin-bottom:10px;">MEL status loads from the SimBrief FPL at a later stage. Dangerous goods and last-minute changes appear at loadsheet sign-off, after CONFIRM.</p>
+      <div class="confirm-row">
+        <button class="action" onclick="confirmFlight('${key}')">CONFIRM</button>
       </div>
     </div>`;
 }
 
-function dummyGenerate(sessionId) {
-  // Placeholder - SimBrief integration (step 5) not wired up yet.
-  alert(`GENERATE pressed for session ${sessionId}.\nSimBrief integration not yet connected - this is a placeholder.`);
+async function confirmFlight(key) {
+  try {
+    const [selectResp, confirmResp] = await Promise.all([
+      fetch(`/select?flights=${encodeURIComponent(key)}`),
+      fetch(`/confirm?flights=${encodeURIComponent(key)}`)
+    ]);
+    const selectData = await selectResp.json();
+    const confirmData = await confirmResp.json();
+
+    const activeFlight = {
+      callsign: confirmData.callsign,
+      dangerous_goods: confirmData.dangerous_goods,
+      lmc_event: confirmData.lmc_event,
+      legs: selectData.legs,
+      leg_status: confirmData.leg_status,
+    };
+    saveActiveFlight(activeFlight);
+    renderRecap(activeFlight);
+  } catch (err) {
+    alert('Could not confirm this flight - check connection and try again.');
+  }
+}
+
+function renderRecap(flight) {
+  const legRows = flight.legs.map((leg, i) => {
+    const status = flight.leg_status[i].status;
+    const isCurrent = status === 'pending' && flight.leg_status.slice(0, i).every(s => s.status === 'done');
+    const rowClass = status === 'done' ? 'done' : (isCurrent ? 'current' : '');
+    return `
+      <div class="leg-status-row ${rowClass}">
+        <div>
+          <strong>LEG ${i + 1} &mdash; ${leg.flight_number}</strong><br>
+          <span class="placeholder-text">${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao} &middot; ${leg.scheduled_departure_zulu || '?'} &rarr; ${leg.scheduled_arrival_zulu || '?'}</span>
+        </div>
+        <div>
+          ${status === 'done'
+            ? `<span class="status-chip status-ok">COMPLETE</span>`
+            : isCurrent
+              ? `<button class="action small" onclick="markLegComplete(${i})">MARK COMPLETE</button>
+                 <button class="action small" onclick="sendLegToSimbrief(${i})">SEND TO SIMBRIEF</button>`
+              : `<span class="status-chip status-warn">WAITING</span>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  const allDone = flight.leg_status.every(s => s.status === 'done');
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-header">
+        <span>ACTIVE FLIGHT</span>
+        <button class="action small danger" onclick="startNewFlight()">NEW FLIGHT</button>
+      </div>
+      <div class="panel-body">
+        <div class="callsign-display">${flight.callsign}</div>
+
+        <div class="leg-block" style="margin-bottom:14px;">
+          <div class="leg-block-header">DANGEROUS GOODS (AT LOADSHEET SIGN-OFF)</div>
+          <div class="leg-block-body">
+            ${flight.dangerous_goods.id === 'dg-05'
+              ? `<span class="status-chip status-ok">CLEAR</span>`
+              : `<span class="status-chip status-warn">MANIFEST NOTE</span> <span class="placeholder-text">${flight.dangerous_goods.label}</span>`}
+          </div>
+        </div>
+
+        <div class="leg-block" style="margin-bottom:14px;">
+          <div class="leg-block-header">LAST-MINUTE CHANGE (AT LOADSHEET SIGN-OFF)</div>
+          <div class="leg-block-body">
+            ${flight.lmc_event
+              ? `<span class="status-chip status-warn">LMC</span> <span class="placeholder-text">${flight.lmc_event.description} (${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()})</span>`
+              : `<span class="status-chip status-ok">NONE</span>`}
+          </div>
+        </div>
+
+        ${legRows}
+
+        ${allDone ? `<p class="placeholder-text" style="margin-top:10px;">All legs complete. Press NEW FLIGHT to search again.</p>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function markLegComplete(index) {
+  const flight = loadActiveFlight();
+  if (!flight) return;
+  flight.leg_status[index].status = 'done';
+  saveActiveFlight(flight);
+  renderRecap(flight);
+}
+
+function sendLegToSimbrief(index) {
+  alert(`Would send leg ${index + 1} to SimBrief here. Not yet connected - placeholder only.`);
+}
+
+function startNewFlight() {
+  if (!confirm('Are you sure? This will discard the current flight.')) return;
+  clearActiveFlight();
+  renderSearchUI();
 }
 </script>
 
