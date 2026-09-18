@@ -125,9 +125,25 @@ def resolve_lmc(item):
     return resolved
 
 
+def pick_cost_index():
+    """
+    Ryanair is widely reported by pilots/dispatchers as running a very low,
+    fuel-conservative cost index - commonly cited as CI 6 for the 737-800
+    fleet (the airline has at times been described in pilot forums as
+    "the world's largest 737-800 operator running CI 6"). Other anecdotal
+    sources put general 737 operators anywhere from 10-40, so there's some
+    disagreement out there - this generator leans on the low, Ryanair-
+    specific figure the person asked for, with a modest spread around it
+    to reflect that a real dispatcher/captain occasionally nudges it up
+    for schedule recovery, not a literal fixed constant every flight.
+    """
+    return round(random.triangular(2, 16, 6))
+
+
 def generate_leg_conditions(dangerous_goods, delay_codes, lmc_events):
     """Rolls the per-sector conditions for a single leg: pax load, cargo,
-    dangerous goods, delay, LMC. Called once per leg in the itinerary."""
+    dangerous goods, delay, LMC, cost index. Called once per leg in the
+    itinerary."""
     load_factor = round(random.triangular(0.65, 0.98, 0.90), 2)
     pax_count = round(189 * load_factor)
     bags_per_pax = random.uniform(0.5, 0.9)
@@ -137,6 +153,7 @@ def generate_leg_conditions(dangerous_goods, delay_codes, lmc_events):
         "pax_count": pax_count,
         "load_factor": load_factor,
         "cargo_weight_kg": cargo_weight_kg,
+        "cost_index": pick_cost_index(),
         "dangerous_goods": resolve_component(weighted_pick(dangerous_goods)),
         "delay": weighted_pick(delay_codes) if random.random() < DELAY_PROBABILITY else None,
         "lmc_event": resolve_lmc(weighted_pick(lmc_events)) if random.random() < LMC_PROBABILITY else None,
