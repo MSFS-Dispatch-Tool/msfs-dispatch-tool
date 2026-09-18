@@ -6,9 +6,9 @@
 <title>SimDispatch</title>
 <style>
   :root {
-    --face:        #ECE9D8;  /* Windows 2000/XP classic grey-beige */
+    --face:        #ECE9D8;
     --face-dark:   #D4D0C8;
-    --titlebar:    #6B7A99;  /* muted steel blue-grey, 2000-style */
+    --titlebar:    #6B7A99;
     --titlebar-2:  #93A3B8;
     --white:       #FFFFFF;
     --shadow-dk:   #716F64;
@@ -21,7 +21,6 @@
     --green-bg:    #DCEEDC;
     --red:         #FFFFFF;
     --red-bg:      #7A2626;
-    --link:        #2A4B8D;
   }
 
   * { box-sizing: border-box; }
@@ -47,7 +46,7 @@
   .topbar .title { font-weight: 700; font-size: 13px; letter-spacing: 0.02em; }
   .topbar .clock { font-size: 12px; }
 
-  main { max-width: 920px; margin: 16px auto; padding: 0 16px 60px; }
+  main { max-width: 980px; margin: 16px auto; padding: 0 16px 60px; }
 
   .panel {
     background: var(--face);
@@ -81,9 +80,7 @@
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
   .field input:focus, .field select:focus { outline: 1px dotted var(--text); outline-offset: 1px; }
-  .field-error {
-    color: #7A2626; font-size: 11px; margin-top: 3px; display: none;
-  }
+  .field-error { color: #7A2626; font-size: 11px; margin-top: 3px; display: none; }
   .field-error.show { display: block; }
 
   button.action {
@@ -98,44 +95,56 @@
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
   button.action:disabled { color: var(--shadow-md); cursor: default; }
+  button.action.small { padding: 3px 12px; font-size: 12px; }
 
-  /* ---- itinerary results list ---- */
+  /* ---- toolbar: sort + filter ---- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 10px; }
+  .toolbar .field { min-width: 170px; }
+
   table.itin-list { width: 100%; border-collapse: collapse; }
   table.itin-list th {
     text-align: left; font-size: 11px; color: var(--text-muted); font-weight: normal;
-    padding: 4px 6px; border-bottom: 2px solid var(--shadow-md);
+    padding: 4px 6px; border-bottom: 2px solid var(--shadow-md); white-space: nowrap;
   }
-  table.itin-list td {
-    padding: 5px 6px; border-bottom: 1px solid var(--shadow-md); font-size: 12.5px;
-  }
+  table.itin-list td { padding: 5px 6px; border-bottom: 1px solid var(--shadow-md); font-size: 12.5px; }
   table.itin-list tr.itin-row:hover { background: var(--face-dark); cursor: pointer; }
+  table.itin-list tr.itin-row.expanded { background: #DDE3EE; }
   table.itin-list td.select-cell { width: 70px; }
+  table.itin-list td.detail-cell { background: #F5F3EC; padding: 0; }
 
-  .results-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-  @media (min-width: 700px) {
-    .results-grid { grid-template-columns: 1fr 1fr; }
-    .results-grid .panel { margin-bottom: 0; }
-    .panel.span-2 { grid-column: 1 / -1; }
+  .tag-domestic { color: var(--green); font-size: 11.5px; font-weight: 700; }
+  .tag-international { color: #6B4B00; font-size: 11.5px; font-weight: 700; }
+
+  /* ---- inline detail block ---- */
+  .detail-inner { padding: 14px 16px; border-top: 2px solid var(--shadow-md); }
+  .leg-block { margin-bottom: 14px; border: 1px solid var(--shadow-md); background: var(--white); }
+  .leg-block-header {
+    background: var(--face-dark); font-weight: 700; font-size: 12px; padding: 4px 8px;
+    border-bottom: 1px solid var(--shadow-md);
   }
+  .leg-block-body { padding: 10px 12px; }
 
   .kv { width: 100%; border-collapse: collapse; }
   .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; }
   .kv tr:last-child td { border-bottom: none; }
-  .kv td.k { color: var(--text); width: 44%; font-size: 12px; }
+  .kv td.k { color: var(--text); width: 40%; font-size: 12px; }
   .kv td.v { font-size: 13px; font-weight: 700; }
 
   .status-chip {
-    display: inline-block; font-size: 11.5px;
-    font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk);
+    display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk);
   }
   .status-ok    { background: var(--green-bg); color: var(--green); }
   .status-warn  { background: var(--amber-bg); color: var(--amber); }
   .status-alert { background: var(--red-bg);   color: var(--red); }
 
-  .placeholder-text { color: var(--text); font-size: 13px; }
+  .placeholder-text { color: var(--text); font-size: 12.5px; }
   .empty-state { padding: 26px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
-  footer { max-width: 920px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
+  .mel-block { border: 1px solid var(--shadow-md); background: var(--white); margin-bottom: 14px; }
+
+  .generate-row { text-align: right; margin-top: 6px; }
+
+  footer { max-width: 980px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -181,7 +190,6 @@
   </div>
 
   <div id="listPanel"></div>
-  <div id="detailPanel"></div>
 
 </main>
 
@@ -207,7 +215,6 @@ function fmtMinutes(min) {
 }
 
 // ---- airport autocomplete ----
-let airportCache = {};
 async function updateAirportList(query) {
   if (!query || query.length < 1) return;
   const resp = await fetch(`/airports/search?q=${encodeURIComponent(query)}`);
@@ -219,8 +226,6 @@ async function updateAirportList(query) {
     opt.value = a.icao;
     opt.label = `${a.icao} / ${a.iata} - ${a.city}`;
     list.appendChild(opt);
-    airportCache[a.icao] = a;
-    airportCache[a.iata] = a;
   });
 }
 ['origin', 'destination'].forEach(id => {
@@ -242,6 +247,9 @@ async function validateAirport(fieldId) {
 });
 
 // ---- search ----
+let currentItineraries = [];
+let expandedKey = null;
+
 async function searchFlights() {
   const originValid = await validateAirport('origin');
   const destValid = await validateAirport('destination');
@@ -256,112 +264,170 @@ async function searchFlights() {
   btn.disabled = true;
   btn.textContent = 'SEARCHING...';
 
-  document.getElementById('detailPanel').innerHTML = '';
-
   try {
     const params = new URLSearchParams({ minutes, legs, origin, destination });
     const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
 
     if (data.error) {
-      document.getElementById('listPanel').innerHTML = `
-        <div class="panel"><div class="empty-state">${data.error}</div></div>`;
+      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">${data.error}</div></div>`;
       return;
     }
-
     if (data.count === 0) {
-      document.getElementById('listPanel').innerHTML = `
-        <div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. WIDEN THE TIME AVAILABLE OR CLEAR A FILTER.</div></div>`;
+      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. WIDEN THE TIME AVAILABLE OR CLEAR A FILTER.</div></div>`;
       return;
     }
 
-    renderList(data.itineraries);
+    currentItineraries = data.itineraries;
+    expandedKey = null;
+    renderListPanel();
   } catch (err) {
-    document.getElementById('listPanel').innerHTML = `
-      <div class="panel"><div class="empty-state">SEARCH FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">SEARCH FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
   } finally {
     btn.disabled = false;
     btn.textContent = 'SEARCH';
   }
 }
 
-function renderList(itineraries) {
-  const rows = itineraries.map(itin => `
-    <tr class="itin-row" onclick="selectItinerary('${itin.flight_numbers.join(',')}')">
-      <td>${itin.flight_numbers.join(' / ')}</td>
-      <td>${itin.path.join(' \u2192 ')}</td>
-      <td>${itin.legs}</td>
-      <td>${fmtMinutes(itin.total_minutes)}</td>
-      <td class="select-cell"><button class="action" onclick="event.stopPropagation(); selectItinerary('${itin.flight_numbers.join(',')}')">SELECT</button></td>
-    </tr>`).join('');
+function itinKey(itin) { return itin.flight_numbers.join(','); }
 
+function applySortAndFilter(list) {
+  const sortBy = document.getElementById('sortBy') ? document.getElementById('sortBy').value : 'flight';
+  const showFilter = document.getElementById('showFilter') ? document.getElementById('showFilter').value : 'all';
+
+  let filtered = list;
+  if (showFilter === 'domestic') filtered = list.filter(i => i.domestic);
+  if (showFilter === 'international') filtered = list.filter(i => !i.domestic);
+
+  const sorted = [...filtered];
+  if (sortBy === 'flight') sorted.sort((a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}));
+  if (sortBy === 'legs') sorted.sort((a, b) => a.legs - b.legs);
+  if (sortBy === 'departure') sorted.sort((a, b) => a.departure_icao.localeCompare(b.departure_icao));
+  if (sortBy === 'arrival') sorted.sort((a, b) => a.arrival_icao.localeCompare(b.arrival_icao));
+  return sorted;
+}
+
+function renderListPanel() {
   document.getElementById('listPanel').innerHTML = `
     <div class="panel">
-      <div class="panel-header">MATCHING ITINERARIES (${itineraries.length})</div>
+      <div class="panel-header">MATCHING ITINERARIES</div>
       <div class="panel-body">
-        <table class="itin-list">
-          <tr><th>FLIGHT(S)</th><th>ROUTING</th><th>LEGS</th><th>TOTAL TIME</th><th></th></tr>
-          ${rows}
+        <div class="toolbar">
+          <div class="field">
+            <label for="sortBy">SORT BY</label>
+            <select id="sortBy" onchange="renderTable()">
+              <option value="flight">FLIGHT NUMBER</option>
+              <option value="legs">NUMBER OF LEGS</option>
+              <option value="departure">DEPARTURE (A-Z)</option>
+              <option value="arrival">ARRIVAL (A-Z)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="showFilter">SHOW</label>
+            <select id="showFilter" onchange="renderTable()">
+              <option value="all">ALL</option>
+              <option value="domestic">DOMESTIC ONLY</option>
+              <option value="international">INTERNATIONAL ONLY</option>
+            </select>
+          </div>
+        </div>
+        <table class="itin-list" id="itinTable">
+          <thead>
+            <tr><th>FLIGHT(S)</th><th>DEPARTURE</th><th>ARRIVAL</th><th>LEGS</th><th>TOTAL TIME</th><th>TYPE</th><th></th></tr>
+          </thead>
+          <tbody id="itinTableBody"></tbody>
         </table>
       </div>
     </div>`;
+  renderTable();
 }
 
-// ---- selection -> full conditions ----
-async function selectItinerary(flightNumbers) {
-  const detailPanel = document.getElementById('detailPanel');
-  detailPanel.innerHTML = `<div class="panel"><div class="empty-state">LOADING FLIGHT DETAILS...</div></div>`;
+function renderTable() {
+  const sorted = applySortAndFilter(currentItineraries);
+  const tbody = document.getElementById('itinTableBody');
 
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(itin => {
+    const key = itinKey(itin);
+    const isExpanded = key === expandedKey;
+    const typeTag = itin.domestic
+      ? `<span class="tag-domestic">DOMESTIC</span>`
+      : `<span class="tag-international">INTL</span>`;
+    const row = `
+      <tr class="itin-row ${isExpanded ? 'expanded' : ''}" onclick="toggleItinerary('${key}')">
+        <td>${itin.flight_numbers.join(' / ')}</td>
+        <td>${itin.departure_icao} (${itin.departure_country})</td>
+        <td>${itin.arrival_icao} (${itin.arrival_country})</td>
+        <td>${itin.legs}</td>
+        <td>${fmtMinutes(itin.total_minutes)}</td>
+        <td>${typeTag}</td>
+        <td class="select-cell"><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
+      </tr>`;
+    const detailRow = isExpanded
+      ? `<tr><td colspan="7" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      : '';
+    return row + detailRow;
+  }).join('');
+
+  if (expandedKey) loadDetail(expandedKey);
+}
+
+async function toggleItinerary(key) {
+  if (expandedKey === key) {
+    expandedKey = null;
+  } else {
+    expandedKey = key;
+  }
+  renderTable();
+}
+
+async function loadDetail(key) {
+  const cell = document.getElementById('detailCell');
   try {
-    const resp = await fetch(`/select?flights=${encodeURIComponent(flightNumbers)}`);
+    const resp = await fetch(`/select?flights=${encodeURIComponent(key)}`);
     const data = await resp.json();
-    renderDetail(data);
-    detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    cell.innerHTML = buildDetailHtml(data);
   } catch (err) {
-    detailPanel.innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div></div>`;
+    cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
   }
 }
 
-function renderDetail(data) {
-  const detailPanel = document.getElementById('detailPanel');
-  const legs = data.itinerary;
-  const legRows = legs.map((l, i) => `
-    <tr><td class="k">LEG ${i + 1}</td><td class="v">${l.flight_number}: ${l.departure_icao} \u2192 ${l.arrival_icao} (${fmtMinutes(l.duration_minutes)}, ${l.distance_nm} NM)</td></tr>
-  `).join('');
-
-  detailPanel.innerHTML = `
-    <div class="results-grid">
-    <div class="panel span-2">
-      <div class="panel-header">ITINERARY</div>
-      <div class="panel-body">
-        <table class="kv">${legRows}</table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">LOAD &amp; CARGO</div>
-      <div class="panel-body">
+function buildDetailHtml(data) {
+  const legBlocks = data.legs.map((leg, i) => `
+    <div class="leg-block">
+      <div class="leg-block-header">LEG ${i + 1} &mdash; ${leg.flight_number}</div>
+      <div class="leg-block-body">
         <table class="kv">
-          <tr><td class="k">PAX</td><td class="v">${data.pax_count} / 189</td></tr>
-          <tr><td class="k">LOAD FACTOR</td><td class="v">${(data.load_factor * 100).toFixed(0)}%</td></tr>
-          <tr><td class="k">CARGO/BAGS</td><td class="v">${data.cargo_weight_kg} KG</td></tr>
+          <tr><td class="k">PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
+          <tr><td class="k">LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
+          <tr><td class="k">CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
         </table>
+        <p class="placeholder-text" style="margin-top:8px;">
+          ${leg.dangerous_goods.id === 'dg-05'
+            ? `<span class="status-chip status-ok">DG CLEAR</span>`
+            : `<span class="status-chip status-warn">DG: ${leg.dangerous_goods.label}</span>`}
+        </p>
+        <p class="placeholder-text" style="margin-top:8px;">
+          ${leg.delay
+            ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
+            : `<span class="status-chip status-ok">ON TIME</span>`}
+        </p>
+        <p class="placeholder-text" style="margin-top:8px;">
+          ${leg.lmc_event
+            ? `<span class="status-chip status-warn">LMC</span> ${leg.lmc_event.description} (${leg.lmc_event.delta > 0 ? '+' : ''}${leg.lmc_event.delta} ${leg.lmc_event.unit.toUpperCase()})`
+            : `<span class="status-chip status-ok">NO LMC</span>`}
+        </p>
       </div>
-    </div>
+    </div>`).join('');
 
-    <div class="panel">
-      <div class="panel-header">DANGEROUS GOODS</div>
-      <div class="panel-body">
-        ${data.dangerous_goods.id === 'dg-05'
-          ? `<span class="status-chip status-ok">CLEAR</span><p class="placeholder-text" style="margin-top:8px;">No dangerous goods on this sector.</p>`
-          : `<span class="status-chip status-warn">MANIFEST NOTE</span><p class="placeholder-text" style="margin-top:8px;">${data.dangerous_goods.label}</p>`
-        }
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">MEL STATUS</div>
-      <div class="panel-body">
+  const melBlock = `
+    <div class="mel-block">
+      <div class="leg-block-header">MEL STATUS (AIRCRAFT-LEVEL, APPLIES TO ALL LEGS)</div>
+      <div class="leg-block-body">
         ${data.mel
           ? `<span class="status-chip status-alert">OPEN ITEM</span>
              <table class="kv" style="margin-top:8px;">
@@ -373,37 +439,21 @@ function renderDetail(data) {
           : `<span class="status-chip status-ok">SERVICEABLE</span><p class="placeholder-text" style="margin-top:8px;">No open MEL items. Aircraft fully serviceable.</p>`
         }
       </div>
-    </div>
+    </div>`;
 
-    <div class="panel">
-      <div class="panel-header">DELAY</div>
-      <div class="panel-body">
-        ${data.delay
-          ? `<span class="status-chip status-warn">DELAY CODE ${data.delay.iata_code}</span>
-             <p class="placeholder-text" style="margin-top:8px;">${data.delay.description}</p>
-             <table class="kv" style="margin-top:6px;">
-               <tr><td class="k">EXPECTED</td><td class="v">${data.delay.duration_range_minutes[0]}&ndash;${data.delay.duration_range_minutes[1]} MIN</td></tr>
-             </table>`
-          : `<span class="status-chip status-ok">ON TIME</span><p class="placeholder-text" style="margin-top:8px;">No delay reported.</p>`
-        }
+  return `
+    <div class="detail-inner">
+      ${legBlocks}
+      ${melBlock}
+      <div class="generate-row">
+        <button class="action" onclick="dummyGenerate('${data.session_id}')">GENERATE (SENDS TO SIMBRIEF)</button>
       </div>
-    </div>
+    </div>`;
+}
 
-    <div class="panel">
-      <div class="panel-header">LAST-MINUTE CHANGE</div>
-      <div class="panel-body">
-        ${data.lmc_event
-          ? `<span class="status-chip status-warn">LMC</span>
-             <p class="placeholder-text" style="margin-top:8px;">${data.lmc_event.description}</p>
-             <table class="kv" style="margin-top:6px;">
-               <tr><td class="k">DELTA</td><td class="v">${data.lmc_event.delta > 0 ? '+' : ''}${data.lmc_event.delta} ${data.lmc_event.unit.toUpperCase()}</td></tr>
-             </table>`
-          : `<span class="status-chip status-ok">NONE</span><p class="placeholder-text" style="margin-top:8px;">Loadsheet unchanged from initial figures.</p>`
-        }
-      </div>
-    </div>
-    </div>
-  `;
+function dummyGenerate(sessionId) {
+  // Placeholder - SimBrief integration (step 5) not wired up yet.
+  alert(`GENERATE pressed for session ${sessionId}.\nSimBrief integration not yet connected - this is a placeholder.`);
 }
 </script>
 
