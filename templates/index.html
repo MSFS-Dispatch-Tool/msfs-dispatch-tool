@@ -142,6 +142,12 @@
 
   .mel-block { border: 1px solid var(--shadow-md); background: var(--white); margin-bottom: 14px; }
 
+  .weather-block { border: 1px solid var(--shadow-md); background: #F7F6F1; padding: 8px 10px; }
+  .weather-row { margin-bottom: 6px; }
+  .weather-row:last-child { margin-bottom: 0; }
+  .weather-label { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 700; }
+  .weather-text { display: block; font-size: 12px; word-break: break-word; }
+
   .generate-row { text-align: right; margin-top: 6px; }
 
   footer { max-width: 980px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
@@ -401,12 +407,28 @@ function buildDetailHtml(data) {
     <div class="leg-block">
       <div class="leg-block-header">LEG ${i + 1} &mdash; ${leg.flight_number}</div>
       <div class="leg-block-body">
-        <table class="kv">
-          <tr><td class="k">PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
-          <tr><td class="k">LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
-          <tr><td class="k">CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
+
+        <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">DEPARTURE</td><td class="v">${leg.departure_info.icao} / ${leg.departure_info.iata} &mdash; ${leg.departure_info.name} (${leg.departure_info.country})</td></tr>
+          <tr><td class="k">ARRIVAL</td><td class="v">${leg.arrival_info.icao} / ${leg.arrival_info.iata} &mdash; ${leg.arrival_info.name} (${leg.arrival_info.country})</td></tr>
+          <tr><td class="k">COST INDEX</td><td class="v">${leg.cost_index}</td></tr>
         </table>
-        <p class="placeholder-text" style="margin-top:8px;">
+
+        <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">EXPECTED PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
+          <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
+          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
+        </table>
+        <p class="placeholder-text" style="margin-bottom:10px;">Figures are expected/preliminary and may change before pushback.</p>
+
+        <div class="weather-block">
+          <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.metar || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.taf || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.metar || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.taf || 'UNAVAILABLE'}</span></div>
+        </div>
+
+        <p class="placeholder-text" style="margin-top:10px;">
           ${leg.dangerous_goods.id === 'dg-05'
             ? `<span class="status-chip status-ok">DG CLEAR</span>`
             : `<span class="status-chip status-warn">DG: ${leg.dangerous_goods.label}</span>`}
@@ -416,35 +438,13 @@ function buildDetailHtml(data) {
             ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
             : `<span class="status-chip status-ok">ON TIME</span>`}
         </p>
-        <p class="placeholder-text" style="margin-top:8px;">
-          ${leg.lmc_event
-            ? `<span class="status-chip status-warn">LMC</span> ${leg.lmc_event.description} (${leg.lmc_event.delta > 0 ? '+' : ''}${leg.lmc_event.delta} ${leg.lmc_event.unit.toUpperCase()})`
-            : `<span class="status-chip status-ok">NO LMC</span>`}
-        </p>
       </div>
     </div>`).join('');
-
-  const melBlock = `
-    <div class="mel-block">
-      <div class="leg-block-header">MEL STATUS (AIRCRAFT-LEVEL, APPLIES TO ALL LEGS)</div>
-      <div class="leg-block-body">
-        ${data.mel
-          ? `<span class="status-chip status-alert">OPEN ITEM</span>
-             <table class="kv" style="margin-top:8px;">
-               <tr><td class="k">SYSTEM</td><td class="v">${data.mel.system}</td></tr>
-               <tr><td class="k">CATEGORY</td><td class="v">${data.mel.mel_category}</td></tr>
-               <tr><td class="k">DETAIL</td><td class="v" style="font-weight:400;">${data.mel.description}</td></tr>
-             </table>
-             <p class="placeholder-text" style="margin-top:8px;">${data.mel.dispatch_consequence}</p>`
-          : `<span class="status-chip status-ok">SERVICEABLE</span><p class="placeholder-text" style="margin-top:8px;">No open MEL items. Aircraft fully serviceable.</p>`
-        }
-      </div>
-    </div>`;
 
   return `
     <div class="detail-inner">
       ${legBlocks}
-      ${melBlock}
+      <p class="placeholder-text" style="margin-bottom:10px;">MEL status will be loaded from the SimBrief FPL at a later stage - not shown here. Last-minute changes will be shown at loadsheet sign-off - not shown here.</p>
       <div class="generate-row">
         <button class="action" onclick="dummyGenerate('${data.session_id}')">GENERATE (SENDS TO SIMBRIEF)</button>
       </div>
