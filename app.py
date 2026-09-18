@@ -5,6 +5,7 @@ SimDispatch - Flask app.
 from flask import Flask, render_template, request, jsonify
 import json
 import os
+import requests
 from generator import (
     resolve_airport, find_itineraries, generate_conditions
 )
@@ -32,6 +33,52 @@ routes_by_flight_number = {r["flight_number"]: r for r in routes}
 
 # Fast country lookup by ICAO code.
 country_by_icao = {a["icao"]: a["country"] for a in airports}
+airports_by_icao = {a["icao"]: a for a in airports}
+
+# aviationweather.gov is the official NOAA/NWS public API - no key needed,
+# but it does require a custom User-Agent and has no CORS support, so this
+# MUST be called server-side (a browser calling it directly would be
+# blocked). Failures degrade gracefully - the frontend just shows
+# "unavailable" rather than the whole request failing.
+WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
+
+
+def fetch_weather_batch(icao_list):
+    unique = sorted(set(icao_list))
+    ids_param = ",".join(unique)
+    result = {icao: {"metar": None, "taf": None} for icao in unique}
+
+    try:
+        resp = requests.get(
+            "https://aviationweather.gov/api/data/metar",
+            params={"ids": ids_param, "format": "json"},
+            headers={"User-Agent": WEATHER_USER_AGENT},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        for item in resp.json():
+            icao = item.get("icaoId")
+            if icao in result:
+                result[icao]["metar"] = item.get("rawOb")
+    except Exception:
+        pass  # leave as None - frontend shows "unavailable"
+
+    try:
+        resp = requests.get(
+            "https://aviationweather.gov/api/data/taf",
+            params={"ids": ids_param, "format": "json"},
+            headers={"User-Agent": WEATHER_USER_AGENT},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        for item in resp.json():
+            icao = item.get("icaoId")
+            if icao in result:
+                result[icao]["taf"] = item.get("rawTAF")
+    except Exception:
+        pass
+
+    return result
 
 
 @app.route("/")
@@ -128,6 +175,33 @@ def select():
         return jsonify({"error": "No flights specified."}), 400
 
     session = generate_conditions(itinerary, mels, delay_codes, lmc_events, dangerous_goods)
+
+    # Enrich each leg with airport detail and weather - one batched METAR
+    # call and one batched TAF call for the whole itinerary, not one per
+    # airport, to keep this reasonable on the free NOAA API's rate limits.
+    icao_needed = set()
+    for leg in itinerary:
+        icao_needed.add(leg["departure_icao"])
+        icao_needed.add(leg["arrival_icao"])
+    weather = fetch_weather_batch(list(icao_needed))
+
+    def airport_info(icao):
+        a = airports_by_icao.get(icao, {})
+        return {
+            "icao": icao,
+            "iata": a.get("iata", ""),
+            "name": a.get("name", "UNKNOWN"),
+            "country": a.get("country", ""),
+        }
+
+    for route_leg, conditions in zip(itinerary, session["legs"]):
+        conditions["departure_info"] = airport_info(route_leg["departure_icao"])
+        conditions["arrival_info"] = airport_info(route_leg["arrival_icao"])
+        conditions["weather"] = {
+            "departure": weather.get(route_leg["departure_icao"], {"metar": None, "taf": None}),
+            "arrival": weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None}),
+        }
+
     return jsonify(session)
 
 
