@@ -3,774 +3,903 @@
     "icao": "EBBR",
     "iata": "BRU",
     "name": "Brussels Airport",
-    "city": "Brussels"
+    "city": "Brussels",
+    "country": "BE"
   },
   {
     "icao": "EBCI",
     "iata": "CRL",
     "name": "Brussels South Charleroi Airport",
-    "city": "Brussels"
+    "city": "Brussels",
+    "country": "BE"
   },
   {
     "icao": "EDDB",
     "iata": "BER",
     "name": "Berlin Brandenburg Airport",
-    "city": "Berlin"
+    "city": "Berlin",
+    "country": "DE"
   },
   {
     "icao": "EDDG",
     "iata": "FMO",
     "name": "Munster Osnabruck Airport",
-    "city": "Munster"
+    "city": "Munster",
+    "country": "DE"
   },
   {
     "icao": "EDDH",
     "iata": "HAM",
     "name": "Hamburg Airport",
-    "city": "Hamburg"
+    "city": "Hamburg",
+    "country": "DE"
   },
   {
     "icao": "EDDK",
     "iata": "CGN",
     "name": "Cologne Bonn Airport",
-    "city": "Cologne"
+    "city": "Cologne",
+    "country": "DE"
   },
   {
     "icao": "EDDN",
     "iata": "NUE",
     "name": "Nuremberg Airport",
-    "city": "Nuremberg"
+    "city": "Nuremberg",
+    "country": "DE"
   },
   {
     "icao": "EDDW",
     "iata": "BRE",
     "name": "Bremen Airport",
-    "city": "Bremen"
+    "city": "Bremen",
+    "country": "DE"
   },
   {
     "icao": "EDFH",
     "iata": "HHN",
     "name": "Frankfurt-Hahn Airport",
-    "city": "Hahn"
+    "city": "Hahn",
+    "country": "DE"
   },
   {
     "icao": "EDJA",
     "iata": "FMM",
     "name": "Memmingen Allgau Airport",
-    "city": "Memmingen"
+    "city": "Memmingen",
+    "country": "DE"
   },
   {
     "icao": "EDLV",
     "iata": "NRN",
     "name": "Niederrhein Airport",
-    "city": "Weeze"
+    "city": "Weeze",
+    "country": "DE"
   },
   {
     "icao": "EDSB",
     "iata": "FKB",
     "name": "Karlsruhe Baden-Baden Airport",
-    "city": "Baden-Baden"
+    "city": "Baden-Baden",
+    "country": "DE"
   },
   {
     "icao": "EGAA",
     "iata": "BFS",
     "name": "Belfast International Airport",
-    "city": "Belfast"
+    "city": "Belfast",
+    "country": "GB"
   },
   {
     "icao": "EGBB",
     "iata": "BHX",
     "name": "Birmingham International Airport",
-    "city": "Birmingham"
+    "city": "Birmingham",
+    "country": "GB"
   },
   {
     "icao": "EGCC",
     "iata": "MAN",
     "name": "Manchester Airport",
-    "city": "Manchester"
+    "city": "Manchester",
+    "country": "GB"
   },
   {
     "icao": "EGFF",
     "iata": "CWL",
     "name": "Cardiff International Airport",
-    "city": "Cardiff"
+    "city": "Cardiff",
+    "country": "GB"
   },
   {
     "icao": "EGGD",
     "iata": "BRS",
     "name": "Bristol International Airport",
-    "city": "Bristol"
+    "city": "Bristol",
+    "country": "GB"
   },
   {
     "icao": "EGGP",
     "iata": "LPL",
     "name": "Liverpool John Lennon Airport",
-    "city": "Liverpool"
+    "city": "Liverpool",
+    "country": "GB"
   },
   {
     "icao": "EGGW",
     "iata": "LTN",
     "name": "London Luton Airport",
-    "city": "London"
+    "city": "London",
+    "country": "GB"
   },
   {
     "icao": "EGHH",
     "iata": "BOH",
     "name": "Bournemouth Airport",
-    "city": "Bournemouth"
+    "city": "Bournemouth",
+    "country": "GB"
   },
   {
     "icao": "EGKK",
     "iata": "LGW",
     "name": "London Gatwick Airport",
-    "city": "London"
+    "city": "London",
+    "country": "GB"
   },
   {
     "icao": "EGNM",
     "iata": "LBA",
     "name": "Leeds Bradford Airport",
-    "city": "Leeds"
+    "city": "Leeds",
+    "country": "GB"
   },
   {
     "icao": "EGNT",
     "iata": "NCL",
     "name": "Newcastle Airport",
-    "city": "Newcastle"
+    "city": "Newcastle",
+    "country": "GB"
   },
   {
     "icao": "EGNX",
     "iata": "EMA",
     "name": "East Midlands Airport",
-    "city": "Nottingham"
+    "city": "Nottingham",
+    "country": "GB"
   },
   {
     "icao": "EGPF",
     "iata": "GLA",
     "name": "Glasgow International Airport",
-    "city": "Glasgow"
+    "city": "Glasgow",
+    "country": "GB"
   },
   {
     "icao": "EGPH",
     "iata": "EDI",
     "name": "Edinburgh Airport",
-    "city": "Edinburgh"
+    "city": "Edinburgh",
+    "country": "GB"
   },
   {
     "icao": "EGPK",
     "iata": "PIK",
     "name": "Glasgow Prestwick Airport",
-    "city": "Glasgow"
+    "city": "Glasgow",
+    "country": "GB"
   },
   {
     "icao": "EGSS",
     "iata": "STN",
     "name": "London Stansted Airport",
-    "city": "London"
+    "city": "London",
+    "country": "GB"
   },
   {
     "icao": "EHAM",
     "iata": "AMS",
     "name": "Amsterdam Airport Schiphol",
-    "city": "Amsterdam"
+    "city": "Amsterdam",
+    "country": "NL"
   },
   {
     "icao": "EHEH",
     "iata": "EIN",
     "name": "Eindhoven Airport",
-    "city": "Eindhoven"
+    "city": "Eindhoven",
+    "country": "NL"
   },
   {
     "icao": "EICK",
     "iata": "ORK",
     "name": "Cork Airport",
-    "city": "Cork"
+    "city": "Cork",
+    "country": "IE"
   },
   {
     "icao": "EIDW",
     "iata": "DUB",
     "name": "Dublin Airport",
-    "city": "Dublin"
+    "city": "Dublin",
+    "country": "IE"
   },
   {
     "icao": "EIKN",
     "iata": "NOC",
     "name": "Ireland West Knock Airport",
-    "city": "Charleston"
+    "city": "Charleston",
+    "country": "IE"
   },
   {
     "icao": "EIKY",
     "iata": "KIR",
     "name": "Kerry Airport",
-    "city": "Killarney"
+    "city": "Killarney",
+    "country": "IE"
   },
   {
     "icao": "EINN",
     "iata": "SNN",
     "name": "Shannon Airport",
-    "city": "Shannon"
+    "city": "Shannon",
+    "country": "IE"
   },
   {
     "icao": "EKCH",
     "iata": "CPH",
     "name": "Copenhagen Kastrup Airport",
-    "city": "Copenhagen"
+    "city": "Copenhagen",
+    "country": "DK"
   },
   {
     "icao": "ELLX",
     "iata": "LUX",
     "name": "Luxembourg-Findel International Airport",
-    "city": "Luxembourg"
+    "city": "Luxembourg",
+    "country": "LU"
   },
   {
     "icao": "ENGM",
     "iata": "OSL",
     "name": "Oslo Gardermoen Airport",
-    "city": "Oslo"
+    "city": "Oslo",
+    "country": "NO"
   },
   {
     "icao": "ENTO",
     "iata": "TRF",
     "name": "Sandefjord Airport Torp",
-    "city": "Torp"
+    "city": "Torp",
+    "country": "NO"
   },
   {
     "icao": "EPGD",
     "iata": "GDN",
     "name": "Gdansk Lech Walesa Airport",
-    "city": "Gdansk"
+    "city": "Gdansk",
+    "country": "PL"
   },
   {
     "icao": "EPKK",
     "iata": "KRK",
     "name": "John Paul II International Airport Krakow-Balice Airport",
-    "city": "Krakow"
+    "city": "Krakow",
+    "country": "PL"
   },
   {
     "icao": "EPKT",
     "iata": "KTW",
     "name": "Katowice International Airport",
-    "city": "Katowice"
+    "city": "Katowice",
+    "country": "PL"
   },
   {
     "icao": "EPLB",
     "iata": "LUZ",
     "name": "Lublin Airport",
-    "city": "Lublin"
+    "city": "Lublin",
+    "country": "PL"
   },
   {
     "icao": "EPMO",
     "iata": "WMI",
     "name": "Warsaw Modlin Airport",
-    "city": "Warsaw"
+    "city": "Warsaw",
+    "country": "PL"
   },
   {
     "icao": "EPPO",
     "iata": "POZ",
     "name": "Poznan-Lawica Airport",
-    "city": "Poznan"
+    "city": "Poznan",
+    "country": "PL"
   },
   {
     "icao": "EPWA",
     "iata": "WAW",
     "name": "Warsaw Chopin Airport",
-    "city": "Warsaw"
+    "city": "Warsaw",
+    "country": "PL"
   },
   {
     "icao": "ESGG",
     "iata": "GOT",
     "name": "Gothenburg-Landvetter Airport",
-    "city": "Gothenburg"
+    "city": "Gothenburg",
+    "country": "SE"
   },
   {
     "icao": "ESMS",
     "iata": "MMX",
     "name": "Malmo Sturup Airport",
-    "city": "Malmo"
+    "city": "Malmo",
+    "country": "SE"
   },
   {
     "icao": "ESSA",
     "iata": "ARN",
     "name": "Stockholm-Arlanda Airport",
-    "city": "Stockholm"
+    "city": "Stockholm",
+    "country": "SE"
   },
   {
     "icao": "EYKA",
     "iata": "KUN",
     "name": "Kaunas International Airport",
-    "city": "Kaunas"
+    "city": "Kaunas",
+    "country": "LT"
   },
   {
     "icao": "EYVI",
     "iata": "VNO",
     "name": "Vilnius International Airport",
-    "city": "Vilnius"
+    "city": "Vilnius",
+    "country": "LT"
   },
   {
     "icao": "GCLP",
     "iata": "LPA",
     "name": "Gran Canaria Airport",
-    "city": "Gran Canaria Island"
+    "city": "Gran Canaria Island",
+    "country": "ES"
   },
   {
     "icao": "GCRR",
     "iata": "ACE",
     "name": "Lanzarote Airport",
-    "city": "Lanzarote Island"
+    "city": "Lanzarote Island",
+    "country": "ES"
   },
   {
     "icao": "GCTS",
     "iata": "TFS",
     "name": "Tenerife South Airport",
-    "city": "Tenerife Island"
+    "city": "Tenerife Island",
+    "country": "ES"
   },
   {
     "icao": "LATI",
     "iata": "TIA",
     "name": "Tirana International Airport Mother Teresa",
-    "city": "Tirana"
+    "city": "Tirana",
+    "country": "AL"
   },
   {
     "icao": "LBSF",
     "iata": "SOF",
     "name": "Sofia Airport",
-    "city": "Sofia"
+    "city": "Sofia",
+    "country": "BG"
   },
   {
     "icao": "LCLK",
     "iata": "LCA",
     "name": "Larnaca International Airport",
-    "city": "Larnarca"
+    "city": "Larnarca",
+    "country": "CY"
   },
   {
     "icao": "LCPH",
     "iata": "PFO",
     "name": "Paphos International Airport",
-    "city": "Paphos"
+    "city": "Paphos",
+    "country": "CY"
   },
   {
     "icao": "LDDU",
     "iata": "DBV",
     "name": "Dubrovnik Airport",
-    "city": "Dubrovnik"
+    "city": "Dubrovnik",
+    "country": "HR"
   },
   {
     "icao": "LDZA",
     "iata": "ZAG",
     "name": "Zagreb Airport",
-    "city": "Zagreb"
+    "city": "Zagreb",
+    "country": "HR"
   },
   {
     "icao": "LDZD",
     "iata": "ZAD",
     "name": "Zemunik Airport",
-    "city": "Zadar"
+    "city": "Zadar",
+    "country": "HR"
   },
   {
     "icao": "LEAL",
     "iata": "ALC",
     "name": "Alicante International Airport",
-    "city": "Alicante"
+    "city": "Alicante",
+    "country": "ES"
   },
   {
     "icao": "LEBL",
     "iata": "BCN",
     "name": "Barcelona International Airport",
-    "city": "Barcelona"
+    "city": "Barcelona",
+    "country": "ES"
   },
   {
     "icao": "LEGE",
     "iata": "GRO",
     "name": "Girona Airport",
-    "city": "Girona"
+    "city": "Girona",
+    "country": "ES"
   },
   {
     "icao": "LEIB",
     "iata": "IBZ",
     "name": "Ibiza Airport",
-    "city": "Ibiza"
+    "city": "Ibiza",
+    "country": "ES"
   },
   {
     "icao": "LEMD",
     "iata": "MAD",
     "name": "Madrid Barajas International Airport",
-    "city": "Madrid"
+    "city": "Madrid",
+    "country": "ES"
   },
   {
     "icao": "LEMG",
     "iata": "AGP",
     "name": "Malaga Airport",
-    "city": "Malaga"
+    "city": "Malaga",
+    "country": "ES"
   },
   {
     "icao": "LEMH",
     "iata": "MAH",
     "name": "Menorca Airport",
-    "city": "Menorca Island"
+    "city": "Menorca Island",
+    "country": "ES"
   },
   {
     "icao": "LEMI",
     "iata": "RMU",
     "name": "Región de Murcia International Airport",
-    "city": "Corvera"
+    "city": "Corvera",
+    "country": "ES"
   },
   {
     "icao": "LEPA",
     "iata": "PMI",
     "name": "Palma De Mallorca Airport",
-    "city": "Palma De Mallorca"
+    "city": "Palma De Mallorca",
+    "country": "ES"
   },
   {
     "icao": "LERS",
     "iata": "REU",
     "name": "Reus Air Base",
-    "city": "Reus"
+    "city": "Reus",
+    "country": "ES"
   },
   {
     "icao": "LEST",
     "iata": "SCQ",
     "name": "Santiago de Compostela Airport",
-    "city": "Santiago de Compostela"
+    "city": "Santiago de Compostela",
+    "country": "ES"
   },
   {
     "icao": "LEVC",
     "iata": "VLC",
     "name": "Valencia Airport",
-    "city": "Valencia"
+    "city": "Valencia",
+    "country": "ES"
   },
   {
     "icao": "LEZL",
     "iata": "SVQ",
     "name": "Sevilla Airport",
-    "city": "Sevilla"
+    "city": "Sevilla",
+    "country": "ES"
   },
   {
     "icao": "LFBH",
     "iata": "LRH",
     "name": "La Rochelle-Ile de Re Airport",
-    "city": "La Rochelle/Ile de Re"
+    "city": "La Rochelle/Ile de Re",
+    "country": "FR"
   },
   {
     "icao": "LFBO",
     "iata": "TLS",
     "name": "Toulouse-Blagnac Airport",
-    "city": "Toulouse/Blagnac"
+    "city": "Toulouse/Blagnac",
+    "country": "FR"
   },
   {
     "icao": "LFBZ",
     "iata": "BIQ",
     "name": "Biarritz-Anglet-Bayonne Airport",
-    "city": "Biarritz/Anglet/Bayonne"
+    "city": "Biarritz/Anglet/Bayonne",
+    "country": "FR"
   },
   {
     "icao": "LFKF",
     "iata": "FSC",
     "name": "Figari Sud-Corse Airport",
-    "city": "Figari Sud-Corse"
+    "city": "Figari Sud-Corse",
+    "country": "FR"
   },
   {
     "icao": "LFML",
     "iata": "MRS",
     "name": "Marseille Provence Airport",
-    "city": "Marseille"
+    "city": "Marseille",
+    "country": "FR"
   },
   {
     "icao": "LFOB",
     "iata": "BVA",
     "name": "Paris Beauvais Tille Airport",
-    "city": "Beauvais/Tille"
+    "city": "Beauvais/Tille",
+    "country": "FR"
   },
   {
     "icao": "LFQQ",
     "iata": "LIL",
     "name": "Lille-Lesquin Airport",
-    "city": "Lille/Lesquin"
+    "city": "Lille/Lesquin",
+    "country": "FR"
   },
   {
     "icao": "LFRS",
     "iata": "NTE",
     "name": "Nantes Atlantique Airport",
-    "city": "Nantes"
+    "city": "Nantes",
+    "country": "FR"
   },
   {
     "icao": "LFSB",
     "iata": "BSL",
     "name": "EuroAirport Basel-Mulhouse-Freiburg Airport",
-    "city": "Bale/Mulhouse"
+    "city": "Bale/Mulhouse",
+    "country": "FR"
   },
   {
     "icao": "LGAV",
     "iata": "ATH",
     "name": "Eleftherios Venizelos International Airport",
-    "city": "Athens"
+    "city": "Athens",
+    "country": "GR"
   },
   {
     "icao": "LGKR",
     "iata": "CFU",
     "name": "Ioannis Kapodistrias International Airport",
-    "city": "Kerkyra Island"
+    "city": "Kerkyra Island",
+    "country": "GR"
   },
   {
     "icao": "LGRP",
     "iata": "RHO",
     "name": "Diagoras Airport",
-    "city": "Rodes Island"
+    "city": "Rodes Island",
+    "country": "GR"
   },
   {
     "icao": "LGSA",
     "iata": "CHQ",
     "name": "Chania International Airport",
-    "city": "Souda"
+    "city": "Souda",
+    "country": "GR"
   },
   {
     "icao": "LGSR",
     "iata": "JTR",
     "name": "Santorini Airport",
-    "city": "Santorini Island"
+    "city": "Santorini Island",
+    "country": "GR"
   },
   {
     "icao": "LGTS",
     "iata": "SKG",
     "name": "Thessaloniki Macedonia International Airport",
-    "city": "Thessaloniki"
+    "city": "Thessaloniki",
+    "country": "GR"
   },
   {
     "icao": "LHBP",
     "iata": "BUD",
     "name": "Budapest Ferenc Liszt International Airport",
-    "city": "Budapest"
+    "city": "Budapest",
+    "country": "HU"
   },
   {
     "icao": "LIBC",
     "iata": "CRV",
     "name": "Crotone Airport",
-    "city": "Crotone"
+    "city": "Crotone",
+    "country": "IT"
   },
   {
     "icao": "LIBD",
     "iata": "BRI",
     "name": "Bari / Palese International Airport",
-    "city": "Bari"
+    "city": "Bari",
+    "country": "IT"
   },
   {
     "icao": "LIBP",
     "iata": "PSR",
     "name": "Pescara International Airport",
-    "city": "Pescara"
+    "city": "Pescara",
+    "country": "IT"
   },
   {
     "icao": "LIBR",
     "iata": "BDS",
     "name": "Brindisi / Casale Airport",
-    "city": "Brindisi"
+    "city": "Brindisi",
+    "country": "IT"
   },
   {
     "icao": "LICA",
     "iata": "SUF",
     "name": "Lamezia Terme Airport",
-    "city": "Lamezia Terme"
+    "city": "Lamezia Terme",
+    "country": "IT"
   },
   {
     "icao": "LICC",
     "iata": "CTA",
     "name": "Catania / Fontanarossa Airport",
-    "city": "Catania"
+    "city": "Catania",
+    "country": "IT"
   },
   {
     "icao": "LICJ",
     "iata": "PMO",
     "name": "Palermo / Punta Raisi Airport",
-    "city": "Palermo"
+    "city": "Palermo",
+    "country": "IT"
   },
   {
     "icao": "LICR",
     "iata": "REG",
     "name": "Reggio Calabria Airport",
-    "city": "Reggio Calabria"
+    "city": "Reggio Calabria",
+    "country": "IT"
   },
   {
     "icao": "LICT",
     "iata": "TPS",
     "name": "Trapani / Birgi Airport",
-    "city": "Trapani"
+    "city": "Trapani",
+    "country": "IT"
   },
   {
     "icao": "LIEA",
     "iata": "AHO",
     "name": "Alghero / Fertilia Airport",
-    "city": "Alghero"
+    "city": "Alghero",
+    "country": "IT"
   },
   {
     "icao": "LIEE",
     "iata": "CAG",
     "name": "Cagliari / Elmas Airport",
-    "city": "Cagliari"
+    "city": "Cagliari",
+    "country": "IT"
   },
   {
     "icao": "LIEO",
     "iata": "OLB",
     "name": "Olbia / Costa Smeralda Airport",
-    "city": "Olbia"
+    "city": "Olbia",
+    "country": "IT"
   },
   {
     "icao": "LIMC",
     "iata": "MXP",
     "name": "Malpensa International Airport",
-    "city": "Milan"
+    "city": "Milan",
+    "country": "IT"
   },
   {
     "icao": "LIME",
     "iata": "BGY",
     "name": "Bergamo / Orio Al Serio Airport",
-    "city": "Bergamo"
+    "city": "Bergamo",
+    "country": "IT"
   },
   {
     "icao": "LIMF",
     "iata": "TRN",
     "name": "Torino / Caselle International Airport",
-    "city": "Torino"
+    "city": "Torino",
+    "country": "IT"
   },
   {
     "icao": "LIMJ",
     "iata": "GOA",
     "name": "Genova / Sestri Cristoforo Colombo Airport",
-    "city": "Genova"
+    "city": "Genova",
+    "country": "IT"
   },
   {
     "icao": "LIPE",
     "iata": "BLQ",
     "name": "Bologna / Borgo Panigale Airport",
-    "city": "Bologna"
+    "city": "Bologna",
+    "country": "IT"
   },
   {
     "icao": "LIPH",
     "iata": "TSF",
     "name": "Treviso / Sant'Angelo Airport",
-    "city": "Treviso"
+    "city": "Treviso",
+    "country": "IT"
   },
   {
     "icao": "LIPQ",
     "iata": "TRS",
     "name": "Trieste / Ronchi Dei Legionari",
-    "city": "Trieste"
+    "city": "Trieste",
+    "country": "IT"
   },
   {
     "icao": "LIPX",
     "iata": "VRN",
     "name": "Verona / Villafranca Airport",
-    "city": "Verona"
+    "city": "Verona",
+    "country": "IT"
   },
   {
     "icao": "LIPY",
     "iata": "AOI",
     "name": "Ancona / Falconara Airport",
-    "city": "Ancona"
+    "city": "Ancona",
+    "country": "IT"
   },
   {
     "icao": "LIPZ",
     "iata": "VCE",
     "name": "Venezia / Tessera -  Marco Polo Airport",
-    "city": "Venezia"
+    "city": "Venezia",
+    "country": "IT"
   },
   {
     "icao": "LIRA",
     "iata": "CIA",
     "name": "Ciampino Airport",
-    "city": "Roma"
+    "city": "Roma",
+    "country": "IT"
   },
   {
     "icao": "LIRF",
     "iata": "FCO",
     "name": "Leonardo Da Vinci (Fiumicino) International Airport",
-    "city": "Rome"
+    "city": "Rome",
+    "country": "IT"
   },
   {
     "icao": "LIRN",
     "iata": "NAP",
     "name": "Napoli / Capodichino International Airport",
-    "city": "Napoli"
+    "city": "Napoli",
+    "country": "IT"
   },
   {
     "icao": "LIRP",
     "iata": "PSA",
     "name": "Pisa / San Giusto - Galileo Galilei International Airport",
-    "city": "Pisa"
+    "city": "Pisa",
+    "country": "IT"
   },
   {
     "icao": "LKPR",
     "iata": "PRG",
     "name": "Vaclav Havel Airport",
-    "city": "Prague"
+    "city": "Prague",
+    "country": "CZ"
   },
   {
     "icao": "LMML",
     "iata": "MLA",
     "name": "Luqa Airport",
-    "city": "Luqa"
+    "city": "Luqa",
+    "country": "MT"
   },
   {
     "icao": "LOWK",
     "iata": "KLU",
     "name": "Klagenfurt Airport",
-    "city": "Klagenfurt am Worthersee"
+    "city": "Klagenfurt am Worthersee",
+    "country": "AT"
   },
   {
     "icao": "LOWW",
     "iata": "VIE",
     "name": "Vienna International Airport",
-    "city": "Vienna"
+    "city": "Vienna",
+    "country": "AT"
   },
   {
     "icao": "LPFR",
     "iata": "FAO",
     "name": "Faro Airport",
-    "city": "Faro"
+    "city": "Faro",
+    "country": "PT"
   },
   {
     "icao": "LPMA",
     "iata": "FNC",
     "name": "Madeira Airport",
-    "city": "Funchal"
+    "city": "Funchal",
+    "country": "PT"
   },
   {
     "icao": "LPPR",
     "iata": "OPO",
     "name": "Francisco de Sa Carneiro Airport",
-    "city": "Porto"
+    "city": "Porto",
+    "country": "PT"
   },
   {
     "icao": "LPPT",
     "iata": "LIS",
     "name": "Lisbon Portela Airport",
-    "city": "Lisbon"
+    "city": "Lisbon",
+    "country": "PT"
   },
   {
     "icao": "LRCL",
     "iata": "CLJ",
     "name": "Cluj-Napoca International Airport",
-    "city": "Cluj-Napoca"
+    "city": "Cluj-Napoca",
+    "country": "RO"
   },
   {
     "icao": "LROP",
     "iata": "OTP",
     "name": "Henri Coanda International Airport",
-    "city": "Bucharest"
+    "city": "Bucharest",
+    "country": "RO"
   },
   {
     "icao": "LYPG",
     "iata": "TGD",
     "name": "Podgorica Airport",
-    "city": "Podgorica"
+    "city": "Podgorica",
+    "country": "ME"
   },
   {
     "icao": "LZIB",
     "iata": "BTS",
     "name": "M. R. Stefanik Airport",
-    "city": "Bratislava"
+    "city": "Bratislava",
+    "country": "SK"
   },
   {
     "icao": "LZKZ",
     "iata": "KSC",
     "name": "Kosice Airport",
-    "city": "Kosice"
+    "city": "Kosice",
+    "country": "SK"
   }
 ]
