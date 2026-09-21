@@ -2,14 +2,15 @@
 SimDispatch - Flask app.
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import json
 import os
 import re
-import uuid
+import secrets
 import requests
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from urllib.parse import urlencode
+import db
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras
@@ -20,6 +21,50 @@ from timeutils import (
 )
 
 app = Flask(__name__)
+
+# Session signing key - set FLASK_SECRET_KEY in the environment so
+# sessions (and therefore logins) survive a restart/redeploy. Without
+# it, a random key is generated at boot and every existing session is
+# invalidated the next time the process restarts.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.permanent_session_lifetime = timedelta(days=30)
+
+# Single shared-password gate for the whole app - not per-user accounts.
+# Unset APP_PASSWORD means the gate is off entirely (today's default, so
+# an existing deployment doesn't get locked out by this code landing
+# before the env var is configured).
+APP_PASSWORD = os.environ.get("APP_PASSWORD")
+
+
+@app.before_request
+def require_login():
+    if not APP_PASSWORD:
+        return
+    if request.endpoint in ("login", "static"):
+        return
+    if not session.get("authenticated"):
+        return redirect(url_for("login", next=request.path))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        entered = request.form.get("password", "")
+        if APP_PASSWORD and secrets.compare_digest(entered, APP_PASSWORD):
+            session.clear()
+            session["authenticated"] = True
+            session.permanent = True
+            return redirect(request.args.get("next") or url_for("index"))
+        error = "Incorrect password."
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -130,7 +175,7 @@ def index():
         "routes": len(routes), "mels": len(mels), "delay_codes": len(delay_codes),
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
-    return render_template("index.html", counts=counts)
+    return render_template("index.html", counts=counts, auth_enabled=bool(APP_PASSWORD))
 
 
 @app.route("/airports/search")
@@ -367,68 +412,50 @@ def confirm():
 
 
 # ---------------------------------------------------------------------
-# PIREP log - a flat JSON file, not a database. This is a personal,
-# single-user tool, so a static file is enough for "a list I can review
-# and clear entries from" - see /pireps below. IMPORTANT: on Render's
-# free tier this disk is ephemeral and does NOT survive a redeploy or a
-# dyno restart/sleep cycle. Treat this log as a same-session convenience,
-# not durable storage, until a real database is wired in.
+# PIREP log - persisted to Postgres (db.py), not local disk. Render's
+# free-tier disk is ephemeral and doesn't survive a redeploy, so if
+# DATABASE_URL isn't configured, these routes degrade explicitly (502)
+# rather than silently writing somewhere that will just lose data again.
 # ---------------------------------------------------------------------
 
-PIREP_STORE_PATH = os.path.join(os.path.dirname(__file__), "storage", "pireps.json")
-
-
-def load_pireps():
-    if not os.path.exists(PIREP_STORE_PATH):
-        return []
+if db.db_available():
     try:
-        with open(PIREP_STORE_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return []
+        db.init_db()
+    except Exception as exc:
+        print(f"[pireps] DATABASE_URL is set but init failed: {exc}")
 
 
-def save_pireps(records):
-    os.makedirs(os.path.dirname(PIREP_STORE_PATH), exist_ok=True)
-    with open(PIREP_STORE_PATH, "w", encoding="utf-8") as f:
-        json.dump(records, f, indent=2)
+def _require_db():
+    if not db.db_available():
+        return jsonify({"error": "No database configured (DATABASE_URL is unset) - the PIREP log is unavailable."}), 502
+    return None
 
 
 @app.route("/pireps", methods=["GET"])
 def list_pireps():
-    records = load_pireps()
-    records.sort(key=lambda r: r.get("submitted_at", ""), reverse=True)
-    return jsonify(records)
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    return jsonify(db.list_pireps())
 
 
 @app.route("/pireps", methods=["POST"])
 def create_pirep():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
     payload = request.get_json(silent=True) or {}
-    record = {
-        "id": uuid.uuid4().hex,
-        "flight_number": payload.get("flight_number", ""),
-        "callsign": payload.get("callsign", ""),
-        "departure_icao": payload.get("departure_icao", ""),
-        "arrival_icao": payload.get("arrival_icao", ""),
-        "aldt": payload.get("aldt", ""),
-        "abit": payload.get("abit", ""),
-        "afad": payload.get("afad"),
-        "no_new_mel_or_non_normal": bool(payload.get("no_new_mel_or_non_normal")),
-        "submitted_at": payload.get("submitted_at") or datetime.utcnow().isoformat() + "Z",
-    }
-    records = load_pireps()
-    records.append(record)
-    save_pireps(records)
+    record = db.create_pirep(payload)
     return jsonify(record), 201
 
 
 @app.route("/pireps/<pirep_id>", methods=["DELETE"])
 def delete_pirep(pirep_id):
-    records = load_pireps()
-    remaining = [r for r in records if r.get("id") != pirep_id]
-    if len(remaining) == len(records):
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    if not db.delete_pirep(pirep_id):
         return jsonify({"error": "PIREP not found."}), 404
-    save_pireps(remaining)
     return jsonify({"deleted": pirep_id})
 
 
