@@ -1048,22 +1048,6 @@ async function renderUserPage() {
 
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
-      <div class="panel-header">USER SETTINGS</div>
-      <div class="panel-body">
-        <div class="field" style="max-width:320px;">
-          <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
-          <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(username)}" placeholder="e.g. jdoe123">
-          <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
-        </div>
-        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-          <button class="action" onclick="saveUserSettings()">SAVE</button>
-          <button class="action small" onclick="boot()">BACK</button>
-          <span class="placeholder-text" id="userSaveStatus"></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-top:14px;">
       <div class="panel-header">PILOT PROFILE</div>
       <div class="panel-body">
         <div class="params-grid">
@@ -1071,11 +1055,28 @@ async function renderUserPage() {
           <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
           <div class="field"><label for="profileBirthDate">BIRTH DATE</label><input type="date" id="profileBirthDate" value="${escAttr(p.birth_date)}"></div>
           <div class="field"><label for="profileNationality">NATIONALITY</label><input type="text" id="profileNationality" autocomplete="off" value="${escAttr(p.nationality)}"></div>
+          <div class="field">
+            <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
+            <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(username)}" placeholder="e.g. jdoe123">
+            <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
+          </div>
         </div>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-          <button class="action" onclick="saveProfile()">SAVE PROFILE</button>
+          <button class="action" onclick="savePilotProfile()">SAVE</button>
+          <button class="action small" onclick="boot()">BACK</button>
           <span class="placeholder-text" id="profileSaveStatus"></span>
         </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">PILOT STATS</div>
+      <div class="panel-body">
+        <table class="kv">
+          <tr><td class="k">TOTAL FLIGHTS (PIREPS FILED)</td><td class="v">${fmtNum(stats.total_flights)}</td></tr>
+          <tr><td class="k">TOTAL FLIGHT TIME</td><td class="v">${stats.total_flight_minutes != null ? fmtMinutes(stats.total_flight_minutes) : 'N/A'}</td></tr>
+        </table>
+        <p class="placeholder-text" style="margin-top:8px;">Flight time is the sum of each leg's EET (expected airborne time) - the app never captures an actual takeoff time, only ALDT/ABIT, so this isn't a measured actual.</p>
       </div>
     </div>
 
@@ -1089,17 +1090,6 @@ async function renderUserPage() {
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
         </div>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">FLYING STATS</div>
-      <div class="panel-body">
-        <table class="kv">
-          <tr><td class="k">TOTAL FLIGHTS (PIREPS FILED)</td><td class="v">${fmtNum(stats.total_flights)}</td></tr>
-          <tr><td class="k">TOTAL FLIGHT TIME</td><td class="v">${stats.total_flight_minutes != null ? fmtMinutes(stats.total_flight_minutes) : 'N/A'}</td></tr>
-        </table>
-        <p class="placeholder-text" style="margin-top:8px;">Flight time is the sum of each leg's EET (expected airborne time) - the app never captures an actual takeoff time, only ALDT/ABIT, so this isn't a measured actual.</p>
       </div>
     </div>
 
@@ -1165,7 +1155,14 @@ async function saveGenerationSettings() {
   }
 }
 
-async function saveProfile() {
+async function savePilotProfile() {
+  const usernameInput = document.getElementById('userSimbriefUsername');
+  const usernameError = document.getElementById('userSimbriefUsernameError');
+  const username = usernameInput.value.trim();
+  const usernameValid = username === '' || /^[A-Za-z0-9_-]{3,30}$/.test(username);
+  usernameError.classList.toggle('show', !usernameValid);
+  if (!usernameValid) return;
+
   const profile = {
     first_name: document.getElementById('profileFirstName').value.trim(),
     last_name: document.getElementById('profileLastName').value.trim(),
@@ -1177,22 +1174,12 @@ async function saveProfile() {
     const resp = await fetch('/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
     if (!resp.ok) throw new Error('save failed');
     currentSettings = await resp.json();
+    if (username) localStorage.setItem(SIMBRIEF_USERNAME_KEY, username);
+    else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
     document.getElementById('profileSaveStatus').textContent = 'SAVED.';
   } catch (err) {
     alert('Could not save the profile. Check the connection (and that a database is configured) and retry.');
   }
-}
-
-function saveUserSettings() {
-  const input = document.getElementById('userSimbriefUsername');
-  const errorEl = document.getElementById('userSimbriefUsernameError');
-  const value = input.value.trim();
-  const valid = value === '' || /^[A-Za-z0-9_-]{3,30}$/.test(value);
-  errorEl.classList.toggle('show', !valid);
-  if (!valid) return;
-  if (value) localStorage.setItem(SIMBRIEF_USERNAME_KEY, value);
-  else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
-  document.getElementById('userSaveStatus').textContent = 'SAVED.';
 }
 
 async function loadPirepLog() {
