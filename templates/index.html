@@ -216,6 +216,40 @@
 .pirep-form label { display:flex; flex-direction:column; gap:2px; font-size:11px; }
 .pirep-form input { width:110px; font-family:"Courier New", monospace; }
 
+.loadsheet-form { margin-top:10px; padding:8px; border:1px solid var(--shadow-md); background:#F7F6F1; }
+.loadsheet-form .fields-row { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-top:8px; }
+.loadsheet-form label { display:flex; flex-direction:column; gap:2px; font-size:11px; }
+.loadsheet-form input { width:110px; font-family:"Courier New", monospace; }
+
+.glossary-btn {
+  position: fixed; right: 14px; bottom: 14px; z-index: 50;
+  font-family: 'Courier New', Consolas, monospace; font-size: 12px; font-weight: 700;
+  background: var(--face); color: var(--text); padding: 6px 12px; cursor: pointer;
+  border-style: solid; border-width: 2px;
+  border-top-color: var(--white); border-left-color: var(--white);
+  border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+}
+.glossary-btn:active {
+  border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+  border-bottom-color: var(--white); border-right-color: var(--white);
+}
+.glossary-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60;
+  align-items: center; justify-content: center;
+}
+.glossary-overlay.open { display: flex; }
+.glossary-modal {
+  width: 92%; max-width: 520px; max-height: 80vh; overflow-y: auto;
+  background: var(--face); border-style: solid; border-width: 2px;
+  border-top-color: var(--white); border-left-color: var(--white);
+  border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+}
+.glossary-modal .panel-header { display:flex; justify-content:space-between; align-items:center; }
+.glossary-modal .panel-body { padding: 10px 12px; }
+.glossary-modal dt { font-weight: 700; margin-top: 8px; }
+.glossary-modal dt:first-child { margin-top: 0; }
+.glossary-modal dd { margin: 2px 0 0 0; color: var(--text-muted); }
+
 </style>
 </head>
 <body>
@@ -233,6 +267,31 @@
 <footer>
   DATASET: {{ counts.routes }} ROUTES &middot; {{ counts.mels }} MEL SCENARIOS &middot; {{ counts.delay_codes }} DELAY CODES
 </footer>
+
+<button class="glossary-btn" onclick="openGlossary()" title="What do these abbreviations mean?">?  TERMS</button>
+<div class="glossary-overlay" id="glossaryOverlay" onclick="if(event.target===this) closeGlossary()">
+  <div class="glossary-modal">
+    <div class="panel-header"><span>DISPATCH TERMS</span><button class="home-btn" onclick="closeGlossary()" title="Close">&times;</button></div>
+    <div class="panel-body">
+      <dl>
+        <dt>SOBT</dt><dd>Scheduled Off-Block Time &mdash; scheduled gate departure.</dd>
+        <dt>STOT</dt><dd>Scheduled Take-Off Time &mdash; SOBT plus taxi-out.</dd>
+        <dt>SLDT</dt><dd>Scheduled Landing Time &mdash; SIBT minus taxi-in.</dd>
+        <dt>SIBT</dt><dd>Scheduled In-Block Time &mdash; scheduled gate arrival.</dd>
+        <dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT).</dd>
+        <dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP.</dd>
+        <dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP.</dd>
+        <dt>EFOB</dt><dd>Estimated Fuel On Board at landing, from the SimBrief OFP.</dd>
+        <dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP.</dd>
+        <dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count.</dd>
+        <dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP.</dd>
+        <dt>ABIT</dt><dd>Actual In-Block Time, entered when filing the PIREP.</dd>
+        <dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared.</dd>
+        <dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg.</dd>
+      </dl>
+    </div>
+  </div>
+</div>
 
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
@@ -605,12 +664,16 @@ function legWeatherBlock(leg) {
 
 function legOfpTable(ofp) {
   if (!ofp) return '';
+  const unit = ofp.weight_unit || 'KG';
   return `
         <table class="kv" style="margin-bottom:10px;">
           <tr><td class="k">SIMBRIEF OFP</td><td class="v">${ofp.callsign || 'N/A'} &mdash; ${ofp.registration || 'REG N/A'} (${ofp.icao_type || 'TYPE N/A'})</td></tr>
           <tr><td class="k">ROUTE</td><td class="v">${ofp.route || 'N/A'}</td></tr>
           <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? ofp.cost_index : 'N/A'}</td></tr>
-          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel_kg ? ofp.block_fuel_kg + ' KG' : 'N/A'}</td></tr>
+          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel !== '' ? ofp.block_fuel + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EZFW</td><td class="v">${ofp.est_zfw !== '' ? ofp.est_zfw + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EFOB</td><td class="v">${ofp.efob !== '' ? ofp.efob + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EPAX</td><td class="v">${ofp.epax !== '' ? ofp.epax : 'N/A'}</td></tr>
         </table>`;
 }
 
@@ -665,6 +728,7 @@ async function confirmFlight(key) {
         simbrief_static_id: null,
         ofp: null,
         loadsheet_signed: false,
+        loadsheet: null,
         pirep: null
       }))
     };
@@ -698,22 +762,60 @@ function initRouteMap(id, leg) {
   map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26] });
 }
 
+function legLmcDgBlock(flight) {
+  const lmc = flight.lmc_event
+    ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}`
+    : `<span class="status-chip status-ok">NO LMC</span>`;
+  const dg = flight.dangerous_goods
+    ? `<span class="status-chip ${flight.dangerous_goods.informational_only ? 'status-ok' : 'status-warn'}">DG</span> ${flight.dangerous_goods.label}`
+    : `<span class="status-chip status-ok">NO DG</span>`;
+  return `<p class="placeholder-text" style="margin-top:8px; margin-bottom:0;">${lmc}<br>${dg}</p>`;
+}
+
 function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
 
 function renderRecap(flight) {
-  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, pirep:null}));
+  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, loadsheet:null, pirep:null}));
   const completedBefore = (index) => flight.leg_status.slice(0, index).every(s => s.status === 'done');
   const legRows = flight.legs.map((leg, i) => {
     const state = flight.leg_state[i];
     const done = flight.leg_status[i].status === 'done';
     const current = !done && completedBefore(i);
+    const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
     let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
     if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
     else if (current && state.simbrief === 'not_sent') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     else if (current && state.simbrief === 'sent') action = `<span class="status-chip status-warn">SENT TO SIMBRIEF — AWAITING OFP</span> <button class="action small" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button> <button class="action small" onclick="prepareLeg(${i})">RE-SEND</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
-    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">AVAILABLE ON SIMBRIEF</span> <button class="action small" onclick="signLoadsheet(${i})">SIGN LOADSHEET</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">OFP RECEIVED</span> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
-    const pirepForm = current && state.loadsheet_signed && !state.pirep ? `<div class="pirep-form" id="pirep-${i}"><label>BLOCK TIME (MIN)<input id="block-${i}" type="number" min="1" required></label><label>FUEL AT DESTINATION (KG)<input id="fuel-${i}" type="number" min="0" required></label><label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO DAMAGE OR NON-NORMAL SITUATIONS</label><button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button></div>` : '';
+
+    const ofp = state.ofp || {};
+    const loadsheetForm = current && state.simbrief === 'available' && !state.loadsheet_signed ? `
+      <div class="loadsheet-form" id="loadsheet-${i}">
+        <table class="kv" style="margin-bottom:0;">
+          <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? ofp.est_zfw + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">ETOW (OFP)</td><td class="v">${ofp.est_tow ? ofp.est_tow + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EFOB (OFP)</td><td class="v">${ofp.efob ? ofp.efob + ' ' + unit : 'N/A'}</td></tr>
+        </table>
+        ${legLmcDgBlock(flight)}
+        <div class="fields-row">
+          <label>ZFW (${unit})<input id="ls-zfw-${i}" type="number" min="0" required></label>
+          <label>FOB (${unit})<input id="ls-fob-${i}" type="number" min="0" required></label>
+          <label>PAX<input id="ls-pax-${i}" type="number" min="0" required></label>
+          <label>CREW<input id="ls-crew-${i}" type="number" min="0" required></label>
+          <button class="action small" onclick="submitLoadsheet(${i})">SIGN LOADSHEET</button>
+        </div>
+      </div>` : '';
+
+    const pirepForm = current && state.loadsheet_signed && !state.pirep ? `
+      <div class="pirep-form" id="pirep-${i}">
+        <label>ALDT (ZULU)<input id="aldt-${i}" type="time" required></label>
+        <label>ABIT (ZULU)<input id="abit-${i}" type="time" required></label>
+        <label>BLOCK-IN FUEL (${unit})<input id="blockfuel-${i}" type="number" min="0" required></label>
+        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO NEW MELS OR NON-NORMAL SITUATIONS</label>
+        <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
+      </div>` : '';
+
     const mapId = `map-recap-${i}`;
     return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}" style="display:block;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
@@ -733,7 +835,9 @@ function renderRecap(flight) {
           ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
           : `<span class="status-chip status-ok">ON TIME</span>`}
       </p>
-      ${state.pirep ? `<div class="placeholder-text">PIREP: ${state.pirep.block_time_minutes} MIN BLOCK · ${state.pirep.fuel_at_destination_kg} KG FOB</div>` : ''}
+      ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${state.loadsheet.zfw} ${unit} &middot; FOB ${state.loadsheet.fob} ${unit} &middot; ${state.loadsheet.pax} PAX &middot; ${state.loadsheet.crew} CREW</div>` : ''}
+      ${loadsheetForm}
+      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; ${state.pirep.block_in_fuel} ${unit} BLOCK-IN FUEL</div>` : ''}
       ${pirepForm}
     </div>`;
   }).join('');
@@ -741,10 +845,10 @@ function renderRecap(flight) {
   const currentIndex = flight.leg_status.findIndex(s => s.status !== 'done');
   const currentOfp = currentIndex >= 0 ? flight.leg_state[currentIndex].ofp : null;
   const dispatchExceptions = currentOfp
-    ? `<span class="status-chip status-ok">${currentOfp.registration || 'REG N/A'}</span> ${currentOfp.icao_type || ''} assigned via SimBrief. MEL/exceptions aren't parsed from the OFP yet.`
-    : `<span class="placeholder-text">Airframe assignment pending, waiting SimBrief connection&hellip;</span>`;
+    ? `<span class="status-chip status-ok">${currentOfp.registration || 'EI-DPN'}</span> ${currentOfp.icao_type || ''} confirmed via SimBrief OFP. MEL/exceptions aren't parsed from the OFP yet.`
+    : `<span class="status-chip status-ok">EI-DPN</span> preselected airframe. MEL/exceptions aren't parsed from the OFP yet.`;
   const simbriefUsernameLine = `<p class="placeholder-text" style="margin-top:8px;">SimBrief username: <strong>${localStorage.getItem(SIMBRIEF_USERNAME_KEY) || 'not set'}</strong> <button class="action small" onclick="changeSimbriefUsername()">CHANGE</button></p>`;
-  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body">${dispatchExceptions}${simbriefUsernameLine}</div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body">${dispatchExceptions}${simbriefUsernameLine}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
@@ -799,8 +903,17 @@ function changeSimbriefUsername() {
   const flight = loadActiveFlight();
   if (flight) renderRecap(flight);
 }
-function signLoadsheet(index) {
+function submitLoadsheet(index) {
+  const zfw = Number(document.getElementById('ls-zfw-' + index).value);
+  const fob = Number(document.getElementById('ls-fob-' + index).value);
+  const pax = Number(document.getElementById('ls-pax-' + index).value);
+  const crew = Number(document.getElementById('ls-crew-' + index).value);
+  if (![zfw, fob, pax, crew].every(Number.isFinite) || zfw < 0 || fob < 0 || pax < 0 || crew < 0) {
+    alert('Enter ZFW, FOB, PAX and CREW to sign the loadsheet.');
+    return;
+  }
   const flight = loadActiveFlight(); if (!flight) return;
+  flight.leg_state[index].loadsheet = {zfw, fob, pax, crew, signed_at: new Date().toISOString()};
   flight.leg_state[index].loadsheet_signed = true;
   saveAndRender(flight);
 }
@@ -808,12 +921,16 @@ function showPirep(index) {
   const el = document.getElementById('pirep-' + index); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 function submitPirep(index) {
-  const block = Number(document.getElementById('block-' + index).value);
-  const fuel = Number(document.getElementById('fuel-' + index).value);
+  const aldt = document.getElementById('aldt-' + index).value;
+  const abit = document.getElementById('abit-' + index).value;
+  const blockFuel = Number(document.getElementById('blockfuel-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
-  if (!Number.isFinite(block) || block <= 0 || !Number.isFinite(fuel) || fuel < 0 || !normal) { alert('Enter block time and fuel at destination, then confirm no damage or non-normal situations.'); return; }
+  if (!aldt || !abit || !Number.isFinite(blockFuel) || blockFuel < 0 || !normal) {
+    alert('Enter ALDT, ABIT and block-in fuel, then confirm no new MELs or non-normal situations.');
+    return;
+  }
   const flight = loadActiveFlight(); if (!flight) return;
-  flight.leg_state[index].pirep = {block_time_minutes:block, fuel_at_destination_kg:fuel, no_damage_or_non_normal:true, submitted_at:new Date().toISOString()};
+  flight.leg_state[index].pirep = {aldt, abit, block_in_fuel: blockFuel, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
   flight.leg_status[index].status = 'done';
   saveAndRender(flight);
 }
@@ -824,6 +941,13 @@ function skipFlight() {
 
 function goHome() {
   renderSearchUI();
+}
+
+function openGlossary() {
+  document.getElementById('glossaryOverlay').classList.add('open');
+}
+function closeGlossary() {
+  document.getElementById('glossaryOverlay').classList.remove('open');
 }
 
 function startNewFlight() {

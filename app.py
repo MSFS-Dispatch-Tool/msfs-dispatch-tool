@@ -61,9 +61,10 @@ WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for rea
 # SimBrief dispatch-redirect / OFP fetch-back integration. Both are
 # SimBrief's public, no-API-key mechanisms - not the gated "API v1" popup
 # flow (that needs an emailed-and-approved key and is out of scope here).
-# Aircraft type/registration are deliberately never sent - selection stays
-# fully manual on SimBrief's side for now.
-SIMBRIEF_AIRLINE_IATA = "FR"  # Ryanair - hardcoded, this tool is RYR-only
+SIMBRIEF_AIRLINE_ICAO = "RYR"  # Ryanair - hardcoded, this tool is RYR-only
+SIMBRIEF_AIRCRAFT_TYPE = {"738": "B738"}
+SIMBRIEF_AIRCRAFT_REG = "EI-DPN"  # pilot's own airframe - preselected so SimBrief
+                                   # doesn't reset other fields after a manual pick
 
 
 def fetch_weather_batch(icao_list):
@@ -302,13 +303,16 @@ def simbrief_redirect_url():
     the pilot a pre-filled form on simbrief.com; they still press Generate
     there themselves. No API key involved.
 
-    Aircraft selection (type/reg/acdata) is deliberately never passed -
-    that stays fully manual on SimBrief's side for now. cargo is also
-    left out: its expected units aren't confirmed from public docs, and a
-    wrong guess would silently mis-fill the form. deph/depm/taxiout/taxiin
-    ARE passed - taxi time feeds directly into SimBrief's fuel planning,
-    so leaving it out was producing a fuel figure the taxi time on our
-    own SOBT/STOT/SLDT/SIBT table didn't match.
+    Aircraft type/reg are preselected to the pilot's own airframe
+    (EI-DPN) - leaving them unset made SimBrief reset other fields once
+    the pilot picked an aircraft manually. acdata (individual payload/
+    performance overrides) and cargo are still left out: cargo's expected
+    units aren't confirmed from public docs, and acdata is airframe
+    minutiae that belongs to the SimBrief-side fleet entry for EI-DPN,
+    not this app. deph/depm/taxiout/taxiin ARE passed - taxi time feeds
+    directly into SimBrief's fuel planning, so leaving it out was
+    producing a fuel figure the taxi time on our own SOBT/STOT/SLDT/SIBT
+    table didn't match.
     """
     flights_raw = request.args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
@@ -337,13 +341,15 @@ def simbrief_redirect_url():
     params = {
         "orig": route_leg["departure_icao"],
         "dest": route_leg["arrival_icao"],
-        "airline": SIMBRIEF_AIRLINE_IATA,
+        "airline": SIMBRIEF_AIRLINE_ICAO,
         "fltnum": "".join(ch for ch in fn if ch.isdigit()),
         "date": simbrief_date_str(),
         "civalue": civalue,
         "pax": pax,
         "taxiout": taxi_minutes(route_leg["departure_icao"], large_airport_lookup),
         "taxiin": taxi_minutes(route_leg["arrival_icao"], large_airport_lookup),
+        "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type", "738"), "B738"),
+        "reg": SIMBRIEF_AIRCRAFT_REG,
     }
 
     # SOBT is deterministic (scraped/derived schedule + today's date), so
@@ -407,6 +413,11 @@ def simbrief_ofp():
     params_block = data.get("params", {})
     fuel = data.get("fuel", {})
     times = data.get("times", {})
+    weights = data.get("weights", {})
+    # Unit for every weight/fuel figure below - SimBrief reports these in
+    # whichever unit the pilot's own profile is set to (not something
+    # this app controls), so it's surfaced rather than assumed.
+    weight_unit = general.get("units") or params_block.get("units") or "KG"
 
     return jsonify({
         "static_id": params_block.get("static_id", ""),
@@ -418,8 +429,13 @@ def simbrief_ofp():
         "initial_altitude_ft": general.get("initial_altitude", ""),
         "registration": aircraft.get("reg", ""),
         "icao_type": aircraft.get("icaocode", ""),
-        "block_fuel_kg": fuel.get("plan_ramp", ""),
+        "weight_unit": weight_unit,
+        "block_fuel": fuel.get("plan_ramp", ""),
         "est_time_enroute_sec": times.get("est_time_enroute", ""),
+        "est_zfw": weights.get("est_zfw", ""),
+        "est_tow": weights.get("est_tow", ""),
+        "efob": fuel.get("plan_landing", ""),
+        "epax": weights.get("pax_count", ""),
     })
 
 
