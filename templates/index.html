@@ -184,6 +184,7 @@
   .kv tr:last-child td { border-bottom: none; }
   .kv td.k { color: var(--text); width: 42%; font-size: 12px; }
   .kv td.v { font-size: 13px; font-weight: 700; }
+  .kv td.v.h { font-size: 11px; color: var(--text-muted); }
 
   .status-chip { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--shadow-dk); }
   .status-ok    { background: var(--green-bg); color: var(--green); }
@@ -222,7 +223,7 @@
 .loadsheet-form input { width:110px; font-family:"Courier New", monospace; }
 
 .glossary-btn {
-  position: fixed; right: 14px; bottom: 14px; z-index: 50;
+  position: fixed; right: 14px; bottom: 14px; z-index: 9000;
   font-family: 'Courier New', Consolas, monospace; font-size: 12px; font-weight: 700;
   background: var(--face); color: var(--text); padding: 6px 12px; cursor: pointer;
   border-style: solid; border-width: 2px;
@@ -234,7 +235,7 @@
   border-bottom-color: var(--white); border-right-color: var(--white);
 }
 .glossary-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60;
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9001;
   align-items: center; justify-content: center;
 }
 .glossary-overlay.open { display: flex; }
@@ -257,6 +258,7 @@
 <div class="topbar">
   <div style="display:flex; align-items:center; gap:8px;">
     <button class="home-btn" onclick="goHome()" title="Back to homepage">&#8962;</button>
+    <button class="home-btn" onclick="renderUserPage()" title="User settings">&#128100;</button>
     <div class="title">SimDispatch</div>
   </div>
   <div class="clock" id="clock">--:--:--Z</div>
@@ -278,7 +280,9 @@
         <dt>STOT</dt><dd>Scheduled Take-Off Time &mdash; SOBT plus taxi-out.</dd>
         <dt>SLDT</dt><dd>Scheduled Landing Time &mdash; SIBT minus taxi-in.</dd>
         <dt>SIBT</dt><dd>Scheduled In-Block Time &mdash; scheduled gate arrival.</dd>
+        <dt>EOBT / ETOT / ELDT / EIBT</dt><dd>Expected Off-Block/Take-Off/Landing/In-Block Time &mdash; the SOBT/STOT/SLDT/SIBT figures shifted by the leg's delay, if any. Equal to the scheduled figure when there's no delay. This is what's sent to SimBrief, not the raw scheduled time.</dd>
         <dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT).</dd>
+        <dt>EBT</dt><dd>Expected Block Time, shown in the itinerary list &mdash; the span from the first leg's departure to the last leg's arrival, including any ground time between legs.</dd>
         <dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP.</dd>
         <dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP.</dd>
         <dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP.</dd>
@@ -424,15 +428,11 @@ function renderSearchUI() {
             <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
           </div>
           <div class="field">
-            <label for="minutes">TIME AVAILABLE (MIN)</label>
-            <input type="number" id="minutes" value="180" min="20" step="5">
-          </div>
-          <div class="field">
-            <label for="tripType">TRIP TYPE</label>
+            <label for="tripType">SECTOR LEGS</label>
             <select id="tripType">
-              <option value="random">RANDOM (MIX)</option>
-              <option value="round_trip">ROUND TRIP ONLY</option>
-              <option value="one_way">ONE WAY ONLY</option>
+              <option value="random" selected>BOTH</option>
+              <option value="one_way">ONE-LEG ONLY</option>
+              <option value="round_trip">MULTI-LEG ONLY</option>
             </select>
             <div class="checkbox-row">
               <input type="checkbox" id="includeRepositioning">
@@ -461,7 +461,6 @@ async function searchFlights() {
 
   const origin = document.getElementById('origin').value.trim();
   const destination = document.getElementById('destination').value.trim();
-  const minutes = document.getElementById('minutes').value;
   const tripType = document.getElementById('tripType').value;
   const repositioning = document.getElementById('includeRepositioning').checked;
 
@@ -470,7 +469,7 @@ async function searchFlights() {
   btn.textContent = 'SEARCHING...';
 
   try {
-    const params = new URLSearchParams({ minutes, origin, destination, trip_type: tripType, repositioning });
+    const params = new URLSearchParams({ origin, destination, trip_type: tripType, repositioning });
     const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
 
@@ -479,7 +478,7 @@ async function searchFlights() {
       return;
     }
     if (data.count === 0) {
-      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. WIDEN THE TIME AVAILABLE OR CLEAR A FILTER.</div></div>`;
+      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. CLEAR A FILTER AND RETRY.</div></div>`;
       return;
     }
     currentItineraries = data.itineraries;
@@ -561,7 +560,7 @@ function renderListPanel() {
         </div>
         <table class="itin-list" id="itinTable">
           <thead>
-            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>ETD</th><th>ETA</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
+            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>ETD</th><th>ETA</th><th>LEGS</th><th>TURNAROUND</th><th>DISTANCE (NM)</th><th>EBT</th><th></th></tr>
           </thead>
           <tbody id="itinTableBody"></tbody>
         </table>
@@ -583,7 +582,7 @@ function renderTable() {
   const tbody = document.getElementById('itinTableBody');
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
@@ -603,10 +602,12 @@ function renderTable() {
         <td data-label="ETA">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
         <td data-label="LEGS">${itin.legs}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
+        <td data-label="DISTANCE (NM)">${itin.total_distance_nm}</td>
+        <td data-label="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="10" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="12" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
@@ -634,13 +635,14 @@ async function loadDetail(key) {
 function legScheduleTable(leg) {
   return `
         <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">SOBT (OFF-BLOCK)</td><td class="v">${leg.sobt || 'N/A'}</td></tr>
-          <tr><td class="k">STOT (TAKE-OFF)</td><td class="v">${leg.stot || 'N/A'}</td></tr>
-          <tr><td class="k">SLDT (LANDING)</td><td class="v">${leg.sldt || 'N/A'}</td></tr>
-          <tr><td class="k">SIBT (IN-BLOCK)</td><td class="v">${leg.sibt || 'N/A'}</td></tr>
-          <tr><td class="k">EET</td><td class="v">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</td></tr>
-          ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v">${leg.turnaround_minutes != null ? fmtMinutes(leg.turnaround_minutes) : 'N/A'}</td></tr>` : ''}
-          <tr><td class="k">COST INDEX</td><td class="v">${leg.cost_index}</td></tr>
+          <tr><td class="k"></td><td class="v h">SCHEDULED</td><td class="v h">EXPECTED</td></tr>
+          <tr><td class="k">OBT (OFF-BLOCK)</td><td class="v">${leg.sobt || 'N/A'}</td><td class="v">${leg.eobt || 'N/A'}</td></tr>
+          <tr><td class="k">TOT (TAKE-OFF)</td><td class="v">${leg.stot || 'N/A'}</td><td class="v">${leg.etot || 'N/A'}</td></tr>
+          <tr><td class="k">LDT (LANDING)</td><td class="v">${leg.sldt || 'N/A'}</td><td class="v">${leg.eldt || 'N/A'}</td></tr>
+          <tr><td class="k">IBT (IN-BLOCK)</td><td class="v">${leg.sibt || 'N/A'}</td><td class="v">${leg.eibt || 'N/A'}</td></tr>
+          <tr><td class="k">EET</td><td class="v" colspan="2">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</td></tr>
+          ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v" colspan="2">${leg.turnaround_minutes != null ? fmtMinutes(leg.turnaround_minutes) : 'N/A'}</td></tr>` : ''}
+          <tr><td class="k">COST INDEX</td><td class="v" colspan="2">${leg.cost_index}</td></tr>
         </table>`;
 }
 
@@ -857,12 +859,14 @@ async function prepareLeg(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
   const staticId = `simdispatch-${Date.now()}-${index}`;
+  const delayMinutes = leg.delay ? Math.max(...leg.delay.duration_range_minutes) : 0;
   const qs = new URLSearchParams({
     flights: leg.flight_number,
     civalue: leg.cost_index,
     pax: leg.pax_count,
     static_id: staticId,
-    callsign: flight.callsigns ? flight.callsigns[index] : ''
+    callsign: flight.callsigns ? flight.callsigns[index] : '',
+    delay_minutes: delayMinutes
   });
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
@@ -900,9 +904,7 @@ async function fetchOfp(index) {
 }
 
 function changeSimbriefUsername() {
-  getSimbriefUsername(true);
-  const flight = loadActiveFlight();
-  if (flight) renderRecap(flight);
+  renderUserPage();
 }
 function submitLoadsheet(index) {
   const zfw = Number(document.getElementById('ls-zfw-' + index).value);
@@ -942,6 +944,32 @@ function skipFlight() {
 
 function goHome() {
   renderSearchUI();
+}
+
+function renderUserPage() {
+  const username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
+  document.getElementById('mainContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-header">USER SETTINGS</div>
+      <div class="panel-body">
+        <div class="field" style="max-width:320px;">
+          <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
+          <input type="text" id="userSimbriefUsername" autocomplete="off" value="${username.replace(/"/g, '&quot;')}" placeholder="e.g. jdoe123">
+        </div>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <button class="action" onclick="saveUserSettings()">SAVE</button>
+          <button class="action small" onclick="boot()">BACK</button>
+          <span class="placeholder-text" id="userSaveStatus"></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function saveUserSettings() {
+  const value = document.getElementById('userSimbriefUsername').value.trim();
+  if (value) localStorage.setItem(SIMBRIEF_USERNAME_KEY, value);
+  else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
+  document.getElementById('userSaveStatus').textContent = 'SAVED.';
 }
 
 function openGlossary() {

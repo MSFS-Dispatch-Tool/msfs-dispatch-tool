@@ -7,7 +7,7 @@ import json
 import os
 import requests
 from collections import Counter
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import urlencode
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
@@ -156,7 +156,6 @@ def airports_validate():
 
 @app.route("/search")
 def search():
-    available_minutes = request.args.get("minutes", default=180, type=int)
     aircraft_type = request.args.get("aircraft", default="738", type=str)
     origin_raw = request.args.get("origin", default="", type=str)
     destination_raw = request.args.get("destination", default="", type=str)
@@ -171,7 +170,7 @@ def search():
         return jsonify({"error": f"Unknown airport code: {destination_raw}"}), 400
 
     itineraries = find_itineraries(
-        routes, rt_pairing, airports, aircraft_type, available_minutes,
+        routes, rt_pairing, airports, aircraft_type,
         origin_icao=origin_icao, destination_icao=destination_icao,
         trip_type=trip_type, include_repositioning=include_repositioning
     )
@@ -181,6 +180,17 @@ def search():
     for itin in itineraries:
         legs = itin["legs"]
         leg_data = [leg_summary_with_times(leg, today) for leg in legs]
+
+        # A round-trip pair is matched by flight-number proximity, not by
+        # which one actually departs first - real rotations sometimes fly
+        # the higher-numbered leg first. Reorder by actual scheduled
+        # departure time whenever both are resolvable, so leg[0] is
+        # always the one that departs first.
+        if itin["trip_type"] == "RT" and len(leg_data) == 2 \
+                and leg_data[0]["_dep_dt"] is not None and leg_data[1]["_dep_dt"] is not None \
+                and leg_data[1]["_dep_dt"] < leg_data[0]["_dep_dt"]:
+            legs = [legs[1], legs[0]]
+            leg_data = [leg_data[1], leg_data[0]]
 
         # turnaround between legs (only meaningful for RT, 2 legs)
         for i in range(1, len(leg_data)):
@@ -195,11 +205,18 @@ def search():
         # legs fly direct, so there's no via airport at all.
         via_icao = legs[0]["arrival_icao"] if itin["trip_type"] == "RT" else None
 
+        first_dep_dt = leg_data[0]["_dep_dt"]
+        last_arr_dt = leg_data[-1]["_arr_dt"]
+        ebt_minutes = round((last_arr_dt - first_dep_dt).total_seconds() / 60) \
+            if first_dep_dt is not None and last_arr_dt is not None else None
+
         summaries.append({
             "trip_type": itin["trip_type"],
             "flight_numbers": [l["flight_number"] for l in legs],
             "path": [legs[0]["departure_icao"]] + [l["arrival_icao"] for l in legs],
             "total_minutes": sum(l["duration_minutes"] for l in legs),
+            "total_distance_nm": sum(l["distance_nm"] for l in legs),
+            "ebt_minutes": ebt_minutes,
             "legs": len(legs),
             "departure_icao": legs[0]["departure_icao"],
             "arrival_icao": legs[-1]["arrival_icao"],
@@ -258,6 +275,27 @@ def select():
         conditions["sldt"] = schedule["sldt"]
         conditions["sibt"] = schedule["sibt"]
         conditions["eet_minutes"] = schedule["eet_minutes"]
+
+        # Expected (E-) times = scheduled (S-) times shifted by the leg's
+        # own delay, if any - the higher end of the range if it's a
+        # range. No delay means expected == scheduled. This is also what
+        # /simbrief/redirect-url sends as deph/depm, not the raw SOBT.
+        delay_minutes = max(conditions["delay"]["duration_range_minutes"]) if conditions["delay"] else 0
+        conditions["expected_delay_minutes"] = delay_minutes
+        sobt_dt, sibt_dt = schedule["_sobt_dt"], schedule["_sibt_dt"]
+        if sobt_dt is not None:
+            delay_delta = timedelta(minutes=delay_minutes)
+            taxi_out = taxi_minutes(route_leg["departure_icao"], large_airport_lookup)
+            taxi_in = taxi_minutes(route_leg["arrival_icao"], large_airport_lookup)
+            stot_dt = sobt_dt + timedelta(minutes=taxi_out)
+            sldt_dt = sibt_dt - timedelta(minutes=taxi_in)
+            conditions["eobt"] = format_zulu(sobt_dt + delay_delta, today)
+            conditions["etot"] = format_zulu(stot_dt + delay_delta, today)
+            conditions["eldt"] = format_zulu(sldt_dt + delay_delta, today)
+            conditions["eibt"] = format_zulu(sibt_dt + delay_delta, today)
+        else:
+            conditions["eobt"] = conditions["etot"] = conditions["eldt"] = conditions["eibt"] = None
+
         leg_times.append((schedule["_sobt_dt"], schedule["_sibt_dt"]))
         legs_out.append(conditions)
 
@@ -355,11 +393,17 @@ def simbrief_redirect_url():
     # SOBT is deterministic (scraped/derived schedule + today's date), so
     # it's recomputed here rather than passed through by the frontend -
     # same input, same output, unlike civalue/pax which are random rolls.
+    # delay_minutes is passed through instead: it's a random roll from
+    # /select, and SimBrief gets the EXPECTED (delay-adjusted) off-block
+    # time, not the raw scheduled one - a flight scheduled off-block at
+    # 12:05Z with a 15min delay allocation should feed SimBrief 12:20Z.
     schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, date.today())
     sobt_dt = schedule["_sobt_dt"]
     if sobt_dt is not None:
-        params["deph"] = sobt_dt.strftime("%H")
-        params["depm"] = sobt_dt.strftime("%M")
+        delay_minutes = request.args.get("delay_minutes", default=0, type=int)
+        expected_dt = sobt_dt + timedelta(minutes=delay_minutes)
+        params["deph"] = expected_dt.strftime("%H")
+        params["depm"] = expected_dt.strftime("%M")
 
     # The confirmed callsign is a one-time random roll from /confirm, not
     # reproducible here - the frontend must pass through the exact one
