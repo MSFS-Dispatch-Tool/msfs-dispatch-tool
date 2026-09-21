@@ -229,17 +229,46 @@ def resolve_lmc(item):
     return resolved
 
 
-def generate_leg_conditions(is_repositioning=False):
+LOAD_FACTOR_LOW = 0.82
+LOAD_FACTOR_MODE = 0.94   # Ryanair's reported ~2025 full-year load factor
+LOAD_FACTOR_HIGH = 0.99
+
+AVG_CHECKED_BAG_KG = 15
+CARGO_SURGE_PROBABILITY = 0.12   # e.g. summer beach-route demand spike
+CARGO_SURGE_MULTIPLIER_RANGE = (1.3, 1.9)
+
+
+def _bag_check_rate(duration_minutes):
+    """Rough, not-derived-from-real-data heuristic: longer sectors see a
+    higher share of passengers checking a bag (more likely to be a
+    leisure/holiday trip needing luggage, vs a short business hop with
+    carry-on only). Calibrated so a ~160min sector lands close to the
+    ~1000kg 'normal' cargo figure requested, capped so it doesn't run
+    away on the longest sectors in the dataset."""
+    return min(0.60, 0.25 + (duration_minutes / 300) * 0.30)
+
+
+def generate_leg_conditions(is_repositioning=False, duration_minutes=0):
     """Pax/cargo/cost index for one leg. Repositioning legs fly empty,
-    with a small chance of some cargo, per spec."""
+    with a small chance of some cargo, per spec.
+
+    Cargo here means checked/hold baggage only (this tool doesn't model
+    belly freight), sized off pax_count and sector length with some
+    built-in randomness and an occasional high-cargo "surge" leg."""
     if is_repositioning:
         pax_count, load_factor = 0, 0.0
         cargo_weight_kg = round(random.uniform(50, 400)) if random.random() < REPOSITIONING_CARGO_CHANCE else 0
     else:
-        load_factor = round(random.triangular(0.65, 0.98, 0.90), 2)
+        load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
         pax_count = round(189 * load_factor)
-        bags_per_pax = random.uniform(0.5, 0.9)
-        cargo_weight_kg = round(pax_count * bags_per_pax * 15)
+
+        bag_rate = _bag_check_rate(duration_minutes)
+        expected_cargo_kg = pax_count * bag_rate * AVG_CHECKED_BAG_KG
+        cargo_weight_kg = round(random.triangular(
+            expected_cargo_kg * 0.75, expected_cargo_kg * 1.3, expected_cargo_kg
+        ))
+        if random.random() < CARGO_SURGE_PROBABILITY:
+            cargo_weight_kg = round(cargo_weight_kg * random.uniform(*CARGO_SURGE_MULTIPLIER_RANGE))
 
     return {
         "pax_count": pax_count,
