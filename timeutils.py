@@ -151,3 +151,27 @@ def turnaround_minutes(prev_arrival_zulu_dt, next_departure_zulu_dt):
     if delta < 0:
         return None
     return round(delta)
+
+
+MIN_TURNAROUND_MINUTES = 30
+
+
+def turnaround_shift(prev_arrival_zulu_dt, next_departure_zulu_dt, minimum_minutes=MIN_TURNAROUND_MINUTES):
+    """
+    How many minutes the next leg's whole schedule needs to be pushed
+    back to guarantee at least `minimum_minutes` of turnaround after the
+    previous leg's arrival. Zero if the gap is already sufficient, or if
+    either time is missing.
+
+    Scraped schedule times occasionally leave an unrealistically short
+    (or even negative) turnaround between two legs of the same rotation.
+    This doesn't invent a different flight - it shifts the second leg's
+    entire schedule later by the deficit, so a real turnaround fits.
+    """
+    if prev_arrival_zulu_dt is None or next_departure_zulu_dt is None:
+        return timedelta(0)
+    gap = next_departure_zulu_dt - prev_arrival_zulu_dt
+    minimum = timedelta(minutes=minimum_minutes)
+    if gap >= minimum:
+        return timedelta(0)
+    return minimum - gap

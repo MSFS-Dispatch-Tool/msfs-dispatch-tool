@@ -5,9 +5,11 @@ SimDispatch - Flask app.
 from flask import Flask, render_template, request, jsonify
 import json
 import os
+import re
+import uuid
 import requests
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from urllib.parse import urlencode
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
@@ -15,7 +17,7 @@ from generator import (
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
-    simbrief_date_str, taxi_minutes
+    turnaround_shift, simbrief_date_str, taxi_minutes
 )
 
 app = Flask(__name__)
@@ -192,6 +194,18 @@ def search():
             legs = [legs[1], legs[0]]
             leg_data = [leg_data[1], leg_data[0]]
 
+        # Even in the right order, scraped schedule times occasionally
+        # leave too little (or a negative) turnaround between the two
+        # legs of a rotation. Push the second leg's whole schedule later
+        # by whatever's needed for a realistic minimum turnaround.
+        if itin["trip_type"] == "RT" and len(leg_data) == 2:
+            shift = turnaround_shift(leg_data[0]["_arr_dt"], leg_data[1]["_dep_dt"])
+            if shift:
+                leg_data[1]["_dep_dt"] += shift
+                leg_data[1]["_arr_dt"] += shift
+                leg_data[1]["scheduled_departure_zulu"] = format_zulu(leg_data[1]["_dep_dt"], today)
+                leg_data[1]["scheduled_arrival_zulu"] = format_zulu(leg_data[1]["_arr_dt"], today)
+
         # turnaround between legs (only meaningful for RT, 2 legs)
         for i in range(1, len(leg_data)):
             leg_data[i]["turnaround_minutes"] = turnaround_minutes(leg_data[i - 1]["_arr_dt"], leg_data[i]["_dep_dt"])
@@ -270,10 +284,31 @@ def select():
             "arrival": weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None}),
         }
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, today)
-        conditions["sobt"] = schedule["sobt"]
-        conditions["stot"] = schedule["stot"]
-        conditions["sldt"] = schedule["sldt"]
-        conditions["sibt"] = schedule["sibt"]
+        sobt_dt, sibt_dt = schedule["_sobt_dt"], schedule["_sibt_dt"]
+
+        # Enforce a minimum realistic turnaround against the previous leg
+        # in this itinerary - scraped schedule times occasionally leave
+        # too little (or a negative) turnaround. Shifts this leg's whole
+        # schedule later by the deficit; never invents a different flight.
+        if sobt_dt is not None and leg_times:
+            prev_sibt_dt = leg_times[-1][1]
+            shift = turnaround_shift(prev_sibt_dt, sobt_dt)
+            if shift:
+                sobt_dt += shift
+                sibt_dt += shift
+
+        if sobt_dt is not None:
+            taxi_out = taxi_minutes(route_leg["departure_icao"], large_airport_lookup)
+            taxi_in = taxi_minutes(route_leg["arrival_icao"], large_airport_lookup)
+            stot_dt = sobt_dt + timedelta(minutes=taxi_out)
+            sldt_dt = sibt_dt - timedelta(minutes=taxi_in)
+            conditions["sobt"] = format_zulu(sobt_dt, today)
+            conditions["stot"] = format_zulu(stot_dt, today)
+            conditions["sldt"] = format_zulu(sldt_dt, today)
+            conditions["sibt"] = format_zulu(sibt_dt, today)
+        else:
+            stot_dt = sldt_dt = None
+            conditions["sobt"] = conditions["stot"] = conditions["sldt"] = conditions["sibt"] = None
         conditions["eet_minutes"] = schedule["eet_minutes"]
 
         # Expected (E-) times = scheduled (S-) times shifted by the leg's
@@ -282,13 +317,8 @@ def select():
         # /simbrief/redirect-url sends as deph/depm, not the raw SOBT.
         delay_minutes = max(conditions["delay"]["duration_range_minutes"]) if conditions["delay"] else 0
         conditions["expected_delay_minutes"] = delay_minutes
-        sobt_dt, sibt_dt = schedule["_sobt_dt"], schedule["_sibt_dt"]
         if sobt_dt is not None:
             delay_delta = timedelta(minutes=delay_minutes)
-            taxi_out = taxi_minutes(route_leg["departure_icao"], large_airport_lookup)
-            taxi_in = taxi_minutes(route_leg["arrival_icao"], large_airport_lookup)
-            stot_dt = sobt_dt + timedelta(minutes=taxi_out)
-            sldt_dt = sibt_dt - timedelta(minutes=taxi_in)
             conditions["eobt"] = format_zulu(sobt_dt + delay_delta, today)
             conditions["etot"] = format_zulu(stot_dt + delay_delta, today)
             conditions["eldt"] = format_zulu(sldt_dt + delay_delta, today)
@@ -296,7 +326,7 @@ def select():
         else:
             conditions["eobt"] = conditions["etot"] = conditions["eldt"] = conditions["eibt"] = None
 
-        leg_times.append((schedule["_sobt_dt"], schedule["_sibt_dt"]))
+        leg_times.append((sobt_dt, sibt_dt))
         legs_out.append(conditions)
 
     for i in range(1, len(legs_out)):
@@ -331,6 +361,72 @@ def confirm():
         "lmc_event": lmc,
         "leg_status": [{"flight_number": fn, "status": "pending"} for fn in flight_numbers],
     })
+
+
+# ---------------------------------------------------------------------
+# PIREP log - a flat JSON file, not a database. This is a personal,
+# single-user tool, so a static file is enough for "a list I can review
+# and clear entries from" - see /pireps below. IMPORTANT: on Render's
+# free tier this disk is ephemeral and does NOT survive a redeploy or a
+# dyno restart/sleep cycle. Treat this log as a same-session convenience,
+# not durable storage, until a real database is wired in.
+# ---------------------------------------------------------------------
+
+PIREP_STORE_PATH = os.path.join(os.path.dirname(__file__), "storage", "pireps.json")
+
+
+def load_pireps():
+    if not os.path.exists(PIREP_STORE_PATH):
+        return []
+    try:
+        with open(PIREP_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_pireps(records):
+    os.makedirs(os.path.dirname(PIREP_STORE_PATH), exist_ok=True)
+    with open(PIREP_STORE_PATH, "w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2)
+
+
+@app.route("/pireps", methods=["GET"])
+def list_pireps():
+    records = load_pireps()
+    records.sort(key=lambda r: r.get("submitted_at", ""), reverse=True)
+    return jsonify(records)
+
+
+@app.route("/pireps", methods=["POST"])
+def create_pirep():
+    payload = request.get_json(silent=True) or {}
+    record = {
+        "id": uuid.uuid4().hex,
+        "flight_number": payload.get("flight_number", ""),
+        "callsign": payload.get("callsign", ""),
+        "departure_icao": payload.get("departure_icao", ""),
+        "arrival_icao": payload.get("arrival_icao", ""),
+        "aldt": payload.get("aldt", ""),
+        "abit": payload.get("abit", ""),
+        "afad": payload.get("afad"),
+        "no_new_mel_or_non_normal": bool(payload.get("no_new_mel_or_non_normal")),
+        "submitted_at": payload.get("submitted_at") or datetime.utcnow().isoformat() + "Z",
+    }
+    records = load_pireps()
+    records.append(record)
+    save_pireps(records)
+    return jsonify(record), 201
+
+
+@app.route("/pireps/<pirep_id>", methods=["DELETE"])
+def delete_pirep(pirep_id):
+    records = load_pireps()
+    remaining = [r for r in records if r.get("id") != pirep_id]
+    if len(remaining) == len(records):
+        return jsonify({"error": "PIREP not found."}), 404
+    save_pireps(remaining)
+    return jsonify({"deleted": pirep_id})
 
 
 @app.route("/simbrief/redirect-url")
@@ -390,20 +486,28 @@ def simbrief_redirect_url():
         "reg": SIMBRIEF_AIRCRAFT_REG,
     }
 
-    # SOBT is deterministic (scraped/derived schedule + today's date), so
-    # it's recomputed here rather than passed through by the frontend -
-    # same input, same output, unlike civalue/pax which are random rolls.
-    # delay_minutes is passed through instead: it's a random roll from
-    # /select, and SimBrief gets the EXPECTED (delay-adjusted) off-block
-    # time, not the raw scheduled one - a flight scheduled off-block at
-    # 12:05Z with a 15min delay allocation should feed SimBrief 12:20Z.
-    schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, date.today())
-    sobt_dt = schedule["_sobt_dt"]
-    if sobt_dt is not None:
-        delay_minutes = request.args.get("delay_minutes", default=0, type=int)
-        expected_dt = sobt_dt + timedelta(minutes=delay_minutes)
-        params["deph"] = expected_dt.strftime("%H")
-        params["depm"] = expected_dt.strftime("%M")
+    # SimBrief gets the EXPECTED (delay-adjusted) off-block time, not the
+    # raw scheduled one - a flight scheduled off-block at 12:05Z with a
+    # 15min delay allocation should feed SimBrief 12:20Z. The frontend
+    # passes through the exact EOBT string /select already computed and
+    # showed the pilot (leg.eobt, e.g. "12:20Z") - that figure also
+    # accounts for the minimum-turnaround shift a second rotation leg
+    # can get, which this route has no way to recompute on its own (it
+    # doesn't know about the previous leg). Only if that's missing
+    # (e.g. a pre-CONFIRM preview) does it fall back to recomputing SOBT
+    # + delay_minutes here.
+    eobt_raw = request.args.get("eobt", default="", type=str).strip()
+    eobt_match = re.match(r"^(\d{2}):(\d{2})", eobt_raw)
+    if eobt_match:
+        params["deph"], params["depm"] = eobt_match.group(1), eobt_match.group(2)
+    else:
+        schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, date.today())
+        sobt_dt = schedule["_sobt_dt"]
+        if sobt_dt is not None:
+            delay_minutes = request.args.get("delay_minutes", default=0, type=int)
+            expected_dt = sobt_dt + timedelta(minutes=delay_minutes)
+            params["deph"] = expected_dt.strftime("%H")
+            params["depm"] = expected_dt.strftime("%M")
 
     # The confirmed callsign is a one-time random roll from /confirm, not
     # reproducible here - the frontend must pass through the exact one

@@ -258,6 +258,7 @@
 <div class="topbar">
   <div style="display:flex; align-items:center; gap:8px;">
     <button class="home-btn" onclick="goHome()" title="Back to homepage">&#8962;</button>
+    <button class="home-btn" onclick="goActiveFlight()" title="Active flight">&#9992;</button>
     <button class="home-btn" onclick="renderUserPage()" title="User settings">&#128100;</button>
     <div class="title">SimDispatch</div>
   </div>
@@ -804,8 +805,8 @@ function renderRecap(flight) {
         <div class="fields-row">
           <label>ZFW (${unit})<input id="ls-zfw-${i}" type="number" min="0" required></label>
           <label>FOB (${unit})<input id="ls-fob-${i}" type="number" min="0" required></label>
-          <label>PAX<input id="ls-pax-${i}" type="number" min="0" required></label>
-          <label>CREW<input id="ls-crew-${i}" type="number" min="0" required></label>
+          <label>PAX<input id="ls-pax-${i}" type="number" min="0" step="1" required></label>
+          <label>CREW<input id="ls-crew-${i}" type="number" min="0" step="1" required></label>
           <button class="action small" onclick="submitLoadsheet(${i})">SIGN LOADSHEET</button>
         </div>
       </div>` : '';
@@ -845,13 +846,7 @@ function renderRecap(flight) {
     </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  const currentIndex = flight.leg_status.findIndex(s => s.status !== 'done');
-  const currentOfp = currentIndex >= 0 ? flight.leg_state[currentIndex].ofp : null;
-  const dispatchExceptions = currentOfp
-    ? `<span class="status-chip status-ok">${currentOfp.registration || 'EI-DPN'}</span> ${currentOfp.icao_type || ''} confirmed via SimBrief OFP. MEL/exceptions aren't parsed from the OFP yet.`
-    : `<span class="status-chip status-ok">EI-DPN</span> preselected airframe. MEL/exceptions aren't parsed from the OFP yet.`;
-  const simbriefUsernameLine = `<p class="placeholder-text" style="margin-top:8px;">SimBrief username: <strong>${localStorage.getItem(SIMBRIEF_USERNAME_KEY) || 'not set'}</strong> <button class="action small" onclick="changeSimbriefUsername()">CHANGE</button></p>`;
-  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body">${dispatchExceptions}${simbriefUsernameLine}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
@@ -866,7 +861,8 @@ async function prepareLeg(index) {
     pax: leg.pax_count,
     static_id: staticId,
     callsign: flight.callsigns ? flight.callsigns[index] : '',
-    delay_minutes: delayMinutes
+    delay_minutes: delayMinutes,
+    eobt: leg.eobt || ''
   });
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
@@ -902,17 +898,14 @@ async function fetchOfp(index) {
     alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.');
   }
 }
-
-function changeSimbriefUsername() {
-  renderUserPage();
-}
 function submitLoadsheet(index) {
   const zfw = Number(document.getElementById('ls-zfw-' + index).value);
   const fob = Number(document.getElementById('ls-fob-' + index).value);
   const pax = Number(document.getElementById('ls-pax-' + index).value);
   const crew = Number(document.getElementById('ls-crew-' + index).value);
-  if (![zfw, fob, pax, crew].every(Number.isFinite) || zfw < 0 || fob < 0 || pax < 0 || crew < 0) {
-    alert('Enter ZFW, FOB, PAX and CREW to sign the loadsheet.');
+  if (!Number.isFinite(zfw) || !Number.isFinite(fob) || zfw < 0 || fob < 0
+      || !Number.isInteger(pax) || pax < 0 || !Number.isInteger(crew) || crew < 0) {
+    alert('Enter ZFW, FOB (any non-negative number), and whole-number PAX and CREW to sign the loadsheet.');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
@@ -923,7 +916,7 @@ function submitLoadsheet(index) {
 function showPirep(index) {
   const el = document.getElementById('pirep-' + index); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
-function submitPirep(index) {
+async function submitPirep(index) {
   const aldt = document.getElementById('aldt-' + index).value;
   const abit = document.getElementById('abit-' + index).value;
   const afad = Number(document.getElementById('afad-' + index).value);
@@ -933,9 +926,28 @@ function submitPirep(index) {
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
-  flight.leg_state[index].pirep = {aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  const leg = flight.legs[index];
+  const pirep = {aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  flight.leg_state[index].pirep = pirep;
   flight.leg_status[index].status = 'done';
   saveAndRender(flight);
+
+  try {
+    await fetch('/pireps', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        flight_number: leg.flight_number,
+        callsign: flight.callsigns ? flight.callsigns[index] : '',
+        departure_icao: leg.departure_info.icao,
+        arrival_icao: leg.arrival_info.icao,
+        ...pirep
+      })
+    });
+  } catch (err) {
+    // The leg is already closed out locally either way - the server-side
+    // PIREP log is a convenience list, not required for the app to work.
+  }
 }
 function skipFlight() {
   if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data.')) return;
@@ -944,6 +956,12 @@ function skipFlight() {
 
 function goHome() {
   renderSearchUI();
+}
+
+function goActiveFlight() {
+  const flight = loadActiveFlight();
+  if (!flight) { alert('No active flight yet. Search and confirm one first.'); return; }
+  renderRecap(flight);
 }
 
 function renderUserPage() {
@@ -955,6 +973,7 @@ function renderUserPage() {
         <div class="field" style="max-width:320px;">
           <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
           <input type="text" id="userSimbriefUsername" autocomplete="off" value="${username.replace(/"/g, '&quot;')}" placeholder="e.g. jdoe123">
+          <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
         </div>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveUserSettings()">SAVE</button>
@@ -962,14 +981,52 @@ function renderUserPage() {
           <span class="placeholder-text" id="userSaveStatus"></span>
         </div>
       </div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">PIREP LOG</div>
+      <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
     </div>`;
+  loadPirepLog();
 }
 
 function saveUserSettings() {
-  const value = document.getElementById('userSimbriefUsername').value.trim();
+  const input = document.getElementById('userSimbriefUsername');
+  const errorEl = document.getElementById('userSimbriefUsernameError');
+  const value = input.value.trim();
+  const valid = value === '' || /^[A-Za-z0-9_-]{3,30}$/.test(value);
+  errorEl.classList.toggle('show', !valid);
+  if (!valid) return;
   if (value) localStorage.setItem(SIMBRIEF_USERNAME_KEY, value);
   else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
   document.getElementById('userSaveStatus').textContent = 'SAVED.';
+}
+
+async function loadPirepLog() {
+  const body = document.getElementById('pirepLogBody');
+  try {
+    const resp = await fetch('/pireps');
+    const records = await resp.json();
+    if (!records.length) { body.innerHTML = '<div class="empty-state">NO PIREPS FILED YET.</div>'; return; }
+    body.innerHTML = `<table class="kv">` + records.map(r => `
+      <tr>
+        <td class="k">${r.flight_number} / ${r.callsign || 'N/A'}<br><span class="placeholder-text">${r.departure_icao} &rarr; ${r.arrival_icao}</span></td>
+        <td class="v">ALDT ${r.aldt}Z &middot; ABIT ${r.abit}Z &middot; AFAD ${r.afad}<br><span class="placeholder-text">${new Date(r.submitted_at).toUTCString()}</span></td>
+        <td class="v"><button class="action small danger" onclick="deletePirepRecord('${r.id}')">DELETE</button></td>
+      </tr>`).join('') + `</table>`;
+  } catch (err) {
+    body.innerHTML = '<div class="empty-state">COULD NOT LOAD PIREP LOG.</div>';
+  }
+}
+
+async function deletePirepRecord(id) {
+  if (!confirm('Delete this PIREP record? This cannot be undone.')) return;
+  try {
+    const resp = await fetch('/pireps/' + encodeURIComponent(id), { method: 'DELETE' });
+    if (!resp.ok) throw new Error('delete failed');
+    loadPirepLog();
+  } catch (err) {
+    alert('Could not delete this record. Check the connection and retry.');
+  }
 }
 
 function openGlossary() {
