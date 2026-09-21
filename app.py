@@ -13,7 +13,10 @@ from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras
 )
-from timeutils import resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes, simbrief_date_str
+from timeutils import (
+    resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
+    simbrief_date_str, taxi_minutes
+)
 
 app = Flask(__name__)
 
@@ -58,8 +61,9 @@ WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for rea
 # SimBrief dispatch-redirect / OFP fetch-back integration. Both are
 # SimBrief's public, no-API-key mechanisms - not the gated "API v1" popup
 # flow (that needs an emailed-and-approved key and is out of scope here).
+# Aircraft type/registration are deliberately never sent - selection stays
+# fully manual on SimBrief's side for now.
 SIMBRIEF_AIRLINE_IATA = "FR"  # Ryanair - hardcoded, this tool is RYR-only
-SIMBRIEF_AIRCRAFT_TYPE = {"738": "B738"}
 
 
 def fetch_weather_batch(icao_list):
@@ -298,10 +302,13 @@ def simbrief_redirect_url():
     the pilot a pre-filled form on simbrief.com; they still press Generate
     there themselves. No API key involved.
 
-    Airframe (acdata/reg) is deliberately not passed - that's configured
-    once as the pilot's own SimBrief profile default. deph/depm/cargo are
-    also left out: their expected units aren't confirmed from public docs,
-    and a wrong guess would silently mis-fill the form.
+    Aircraft selection (type/reg/acdata) is deliberately never passed -
+    that stays fully manual on SimBrief's side for now. cargo is also
+    left out: its expected units aren't confirmed from public docs, and a
+    wrong guess would silently mis-fill the form. deph/depm/taxiout/taxiin
+    ARE passed - taxi time feeds directly into SimBrief's fuel planning,
+    so leaving it out was producing a fuel figure the taxi time on our
+    own SOBT/STOT/SLDT/SIBT table didn't match.
     """
     flights_raw = request.args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
@@ -330,13 +337,32 @@ def simbrief_redirect_url():
     params = {
         "orig": route_leg["departure_icao"],
         "dest": route_leg["arrival_icao"],
-        "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type", "738"), "B738"),
         "airline": SIMBRIEF_AIRLINE_IATA,
         "fltnum": "".join(ch for ch in fn if ch.isdigit()),
         "date": simbrief_date_str(),
         "civalue": civalue,
         "pax": pax,
+        "taxiout": taxi_minutes(route_leg["departure_icao"], large_airport_lookup),
+        "taxiin": taxi_minutes(route_leg["arrival_icao"], large_airport_lookup),
     }
+
+    # SOBT is deterministic (scraped/derived schedule + today's date), so
+    # it's recomputed here rather than passed through by the frontend -
+    # same input, same output, unlike civalue/pax which are random rolls.
+    schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, date.today())
+    sobt_dt = schedule["_sobt_dt"]
+    if sobt_dt is not None:
+        params["deph"] = sobt_dt.strftime("%H")
+        params["depm"] = sobt_dt.strftime("%M")
+
+    # The confirmed callsign is a one-time random roll from /confirm, not
+    # reproducible here - the frontend must pass through the exact one
+    # already shown/confirmed for this leg. Left unset, SimBrief falls
+    # back to airline+fltnum, which is a fine default too.
+    callsign = request.args.get("callsign", default="", type=str).strip()
+    if callsign:
+        params["callsign"] = callsign
+
     static_id = request.args.get("static_id", default="", type=str).strip()
     if static_id:
         params["static_id"] = static_id
