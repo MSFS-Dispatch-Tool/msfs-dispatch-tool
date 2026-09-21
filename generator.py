@@ -1,15 +1,13 @@
 """
 Generator logic for SimDispatch.
 
-Core model, revised: itineraries are built from REAL round-trip pairs
-(same two airports, reversed, sequential-ish flight numbers - the
-fingerprint of an actual rotation) or genuine one-way legs, not arbitrary
-chains of routes that happen to connect. Repositioning legs are
-synthesized separately, only between airports with no scheduled service
-in the dataset at all.
+Core model: itineraries are built from REAL round-trip pairs (same two
+airports, reversed, sequential-ish flight numbers - the fingerprint of
+an actual rotation) or genuine one-way legs, not arbitrary chains of
+routes that happen to connect. Scheduled routes only - no synthesized
+repositioning legs.
 """
 
-import math
 import random
 import string
 import uuid
@@ -22,12 +20,6 @@ DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
                              # LMC at loadsheet-confirm time - see app.py
 
 MAX_ITINERARIES = 40
-REPOSITIONING_PROBABILITY = 0.06   # low, per the person's own spec
-REPOSITIONING_CANDIDATES = 3
-REPOSITIONING_CARGO_CHANCE = 0.20  # "some cargo, if realistic"
-REPOSITIONING_MAX_DURATION_MINUTES = 600  # keeps synthesized empty legs to a
-                                           # realistic single-sector length -
-                                           # there's no user-facing time filter
 
 
 # ---------------------------------------------------------------------
@@ -86,59 +78,8 @@ def resolve_airport(airports, code):
     return None
 
 
-def _haversine_nm(lat1, lon1, lat2, lon2):
-    R_km = 6371.0
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R_km * c * 0.539957
-
-
-def _synthesize_repositioning(airports, existing_pairs, aircraft_type,
-                               origin_icao, destination_icao,
-                               count=REPOSITIONING_CANDIDATES):
-    """
-    Builds synthetic empty-leg options between airports NOT connected by
-    any real route in the dataset. Not a real scheduled flight, so it has
-    no flight number, no scheduled times - just distance/duration derived
-    from great-circle geometry, same as the original route enrichment.
-    """
-    candidates = []
-    pool = [a for a in airports if a.get("lat") is not None]
-    attempts = 0
-    while len(candidates) < count and attempts < 300:
-        attempts += 1
-        a1, a2 = random.sample(pool, 2)
-        if origin_icao and a1["icao"] != origin_icao:
-            continue
-        if destination_icao and a2["icao"] != destination_icao:
-            continue
-        key = tuple(sorted([a1["icao"], a2["icao"]]))
-        if key in existing_pairs:
-            continue  # a real scheduled route already covers this pair
-        dist_nm = _haversine_nm(a1["lat"], a1["lon"], a2["lat"], a2["lon"])
-        duration_minutes = round(dist_nm / 420 * 60) + 25  # rough cruise speed + taxi/climb pad
-        if duration_minutes > REPOSITIONING_MAX_DURATION_MINUTES:
-            continue
-        candidates.append({
-            "flight_number": "REPO" + "".join(random.choices(string.digits, k=3)),
-            "callsign_prefix": None,
-            "departure_iata": a1["iata"], "departure_icao": a1["icao"],
-            "arrival_iata": a2["iata"], "arrival_icao": a2["icao"],
-            "aircraft_type": aircraft_type,
-            "duration_minutes": duration_minutes,
-            "distance_nm": round(dist_nm),
-            "scheduled_departure_local": None,
-            "scheduled_arrival_local": None,
-        })
-    return candidates
-
-
-def find_itineraries(routes, rt_pairing, airports, aircraft_type,
-                      origin_icao=None, destination_icao=None,
-                      trip_type="random", include_repositioning=False):
+def find_itineraries(routes, rt_pairing, origin_icao=None, destination_icao=None,
+                      trip_type="random"):
     """
     trip_type: "random" (mix of RT and 1W), "round_trip" (RT pairs only),
     "one_way" (single legs only).
@@ -154,7 +95,6 @@ def find_itineraries(routes, rt_pairing, airports, aircraft_type,
     it resolves their Zulu times.
     """
     by_flight = {r["flight_number"]: r for r in routes}
-    existing_pairs = {tuple(sorted([r["departure_icao"], r["arrival_icao"]])) for r in routes}
 
     results = []
 
@@ -186,12 +126,6 @@ def find_itineraries(routes, rt_pairing, airports, aircraft_type,
             if destination_icao and r["arrival_icao"] != destination_icao:
                 continue
             results.append({"legs": [r], "trip_type": "1W"})
-
-    if include_repositioning and random.random() < REPOSITIONING_PROBABILITY:
-        for repo in _synthesize_repositioning(
-            airports, existing_pairs, aircraft_type, origin_icao, destination_icao
-        ):
-            results.append({"legs": [repo], "trip_type": "RE"})
 
     random.shuffle(results)
     return results[:MAX_ITINERARIES]
@@ -260,30 +194,25 @@ def _bag_check_rate(duration_minutes):
     return min(0.60, 0.25 + (duration_minutes / 300) * 0.30)
 
 
-def generate_leg_conditions(is_repositioning=False, duration_minutes=0):
-    """Pax/cargo/cost index for one leg. Repositioning legs fly empty,
-    with a small chance of some cargo, per spec.
+def generate_leg_conditions(duration_minutes=0):
+    """Pax/cargo/cost index for one leg.
 
     Cargo here means checked/hold baggage only (this tool doesn't model
     belly freight), sized off pax_count and sector length with some
     built-in randomness and an occasional high-cargo "surge" leg."""
-    if is_repositioning:
-        pax_count, load_factor = 0, 0.0
-        cargo_weight_kg = round(random.uniform(50, 400)) if random.random() < REPOSITIONING_CARGO_CHANCE else 0
+    if random.random() < FULL_FLIGHT_PROBABILITY:
+        load_factor = 1.0
     else:
-        if random.random() < FULL_FLIGHT_PROBABILITY:
-            load_factor = 1.0
-        else:
-            load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
-        pax_count = round(189 * load_factor)
+        load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
+    pax_count = round(189 * load_factor)
 
-        bag_rate = _bag_check_rate(duration_minutes)
-        expected_cargo_kg = pax_count * bag_rate * AVG_CHECKED_BAG_KG
-        cargo_weight_kg = round(random.triangular(
-            expected_cargo_kg * 0.75, expected_cargo_kg * 1.3, expected_cargo_kg
-        ))
-        if random.random() < CARGO_SURGE_PROBABILITY:
-            cargo_weight_kg = round(cargo_weight_kg * random.uniform(*CARGO_SURGE_MULTIPLIER_RANGE))
+    bag_rate = _bag_check_rate(duration_minutes)
+    expected_cargo_kg = pax_count * bag_rate * AVG_CHECKED_BAG_KG
+    cargo_weight_kg = round(random.triangular(
+        expected_cargo_kg * 0.75, expected_cargo_kg * 1.3, expected_cargo_kg
+    ))
+    if random.random() < CARGO_SURGE_PROBABILITY:
+        cargo_weight_kg = round(cargo_weight_kg * random.uniform(*CARGO_SURGE_MULTIPLIER_RANGE))
 
     return {
         "pax_count": pax_count,
