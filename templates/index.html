@@ -566,6 +566,8 @@ function applySortAndFilter(list) {
     arrival: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao),
     dep_time: (a, b) => (a.first_departure_zulu || '').localeCompare(b.first_departure_zulu || ''),
     arr_time: (a, b) => (a.last_arrival_zulu || '').localeCompare(b.last_arrival_zulu || ''),
+    distance: (a, b) => (a.total_distance_nm ?? -1) - (b.total_distance_nm ?? -1),
+    ebt: (a, b) => (a.ebt_minutes ?? -1) - (b.ebt_minutes ?? -1),
   }[sortBy];
   sorted.sort(cmp);
   if (sortDir === 'desc') sorted.reverse();
@@ -587,6 +589,8 @@ function renderListPanel() {
               <option value="arrival">ARRIVAL (A-Z)</option>
               <option value="dep_time">DEPARTURE TIME</option>
               <option value="arr_time">ARRIVAL TIME</option>
+              <option value="distance">TOTAL DISTANCE</option>
+              <option value="ebt">EBT</option>
             </select>
           </div>
           <div class="field" style="max-width:90px;">
@@ -605,8 +609,8 @@ function renderListPanel() {
             <label for="typeFilter">TYPE</label>
             <select id="typeFilter" onchange="renderTable()">
               <option value="all">ALL TYPES</option>
-              <option value="RT">ROUND TRIP</option>
-              <option value="1W">ONE WAY</option>
+              <option value="RT">MULTI LEG</option>
+              <option value="1W">ONE LEG</option>
             </select>
           </div>
         </div>
