@@ -255,15 +255,10 @@ def roll_delay(delay_codes):
 
 
 def generate_callsign():
-    """
-    A personalized RYR-style callsign - NOT the same as the flight number,
-    and not tied to a real registration. Length varies (2-5 chars) to read
-    as "sometimes shorter, sometimes longer", per spec. Generated fresh
-    only at CONFIRM time, never before.
-    """
-    length = random.randint(2, 5)
-    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
-    return f"RYR{suffix}"
+    """Generate RYR followed by one or two digits and one or two letters."""
+    digits = "".join(random.choices(string.digits, k=random.randint(1, 2)))
+    letters = "".join(random.choices(string.ascii_uppercase, k=random.randint(1, 2)))
+    return f"RYR{digits}{letters}"
 
 
 def generate_loadsheet_extras(dangerous_goods, lmc_events):
