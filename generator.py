@@ -19,8 +19,6 @@ LMC_PROBABILITY = 0.50
 DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
                              # LMC at loadsheet-confirm time - see app.py
 
-MAX_ITINERARIES = 40
-
 
 # ---------------------------------------------------------------------
 # Round-trip pairing (computed once at startup from the dataset)
@@ -128,7 +126,7 @@ def find_itineraries(routes, rt_pairing, origin_icao=None, destination_icao=None
             results.append({"legs": [r], "trip_type": "1W"})
 
     random.shuffle(results)
-    return results[:MAX_ITINERARIES]
+    return results
 
 
 # ---------------------------------------------------------------------

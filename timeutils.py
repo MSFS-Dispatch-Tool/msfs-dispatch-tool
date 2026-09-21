@@ -68,6 +68,17 @@ def resolve_leg_times(route, tz_lookup, reference_date=None):
     if route.get("scheduled_arrival_local"):
         arr_dt = local_time_to_zulu_dt(route["scheduled_arrival_local"], arr_tz, reference_date)
         if arr_dt is not None:
+            # The scraped arrival local time has no attached date, just
+            # anchored to the same reference_date as departure - for a
+            # long enough sector, or a big enough timezone gap between
+            # the two airports, that naive same-date conversion can land
+            # BEFORE departure in absolute Zulu terms (e.g. an evening
+            # London departure landing at a "23:xx" local Canaries time
+            # that's actually the same real moment shifted a day back).
+            # Roll it forward a day at a time until it's after departure -
+            # correct for any single leg under 24h, true for this dataset.
+            while arr_dt <= dep_dt:
+                arr_dt += timedelta(days=1)
             return dep_dt, arr_dt, "scraped"
 
     arr_dt = dep_dt + timedelta(minutes=route["duration_minutes"])
@@ -110,6 +121,12 @@ def resolve_leg_schedule(route, tz_lookup, reference_date, taxi_out_minutes):
     sibt_dt = None
     if route.get("scheduled_arrival_local"):
         sibt_dt = local_time_to_zulu_dt(route["scheduled_arrival_local"], arr_tz, reference_date)
+        if sibt_dt is not None:
+            # See the matching comment in resolve_leg_times - same-date
+            # anchoring can otherwise land the scraped arrival before the
+            # departure it belongs to.
+            while sibt_dt <= sobt_dt:
+                sibt_dt += timedelta(days=1)
     if sibt_dt is None:
         sibt_dt = sobt_dt + timedelta(minutes=route["duration_minutes"])
 
