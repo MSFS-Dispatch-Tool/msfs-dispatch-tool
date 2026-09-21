@@ -183,6 +183,14 @@
   .leg-block-header { background: var(--face-dark); font-weight: 700; font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--shadow-md); }
   .leg-block-body { padding: 10px 12px; }
 
+  .leg-block-body summary { cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .gen-items-list {
+    margin-top: 6px; padding: 6px 8px; max-height: 200px; overflow-y: auto;
+    border: 1px solid var(--shadow-md); background: #F7F6F1;
+  }
+  .gen-items-list .checkbox-row { margin-top: 3px; }
+  .gen-items-list .checkbox-row:first-child { margin-top: 0; }
+
   .kv { width: 100%; border-collapse: collapse; }
   .kv td { padding: 4px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; word-break: break-word; }
   .kv tr:last-child td { border-bottom: none; }
@@ -362,6 +370,10 @@ function fmtNum(value) {
   return num.toLocaleString('en-US');
 }
 
+function escAttr(value) {
+  return String(value || '').replace(/"/g, '&quot;');
+}
+
 function boot() {
   const active = loadActiveFlight();
   if (active) {
@@ -494,6 +506,7 @@ let currentItineraries = [];
 let expandedKey = null;
 let pirepLogRecords = [];
 let expandedPirepId = null;
+let currentSettings = null;
 
 async function searchFlights() {
   const originValid = await validateAirport('origin');
@@ -704,6 +717,20 @@ function legWeatherBlock(leg) {
         </div>`;
 }
 
+function legDelayMelBlock(leg) {
+  return `
+        <p class="placeholder-text" style="margin-top:10px;">
+          ${leg.delay
+            ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
+            : `<span class="status-chip status-ok">ON TIME</span>`}
+        </p>
+        <p class="placeholder-text">
+          ${leg.mel
+            ? `<span class="status-chip status-warn">MEL</span> ${leg.mel.system} &mdash; ${leg.mel.description} <em>(${leg.mel.dispatch_consequence})</em>`
+            : `<span class="status-chip status-ok">NO MEL</span>`}
+        </p>`;
+}
+
 function legOfpTable(ofp) {
   if (!ofp) return '';
   const unit = ofp.weight_unit || 'KG';
@@ -732,11 +759,7 @@ function buildDetailHtml(data, key) {
         ${legScheduleTable(leg)}
         ${legLoadTable(leg)}
         ${legWeatherBlock(leg)}
-        <p class="placeholder-text" style="margin-top:10px;">
-          ${leg.delay
-            ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
-            : `<span class="status-chip status-ok">ON TIME</span>`}
-        </p>
+        ${legDelayMelBlock(leg)}
       </div>
     </div>`).join('');
 
@@ -872,11 +895,7 @@ function renderRecap(flight) {
       ${legLoadTable(leg)}
       ${legWeatherBlock(leg)}
       ${legOfpTable(state.ofp)}
-      <p class="placeholder-text" style="margin-top:8px;">
-        ${leg.delay
-          ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
-          : `<span class="status-chip status-ok">ON TIME</span>`}
-      </p>
+      ${legDelayMelBlock(leg)}
       ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
       ${loadsheetForm}
       ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
@@ -1007,15 +1026,33 @@ function goActiveFlight() {
   renderRecap(flight);
 }
 
-function renderUserPage() {
+async function renderUserPage() {
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state">LOADING...</div></div></div>`;
+
+  let settings = null, genOptions = null, stats = null;
+  try {
+    const [settingsResp, optionsResp, statsResp] = await Promise.all([
+      fetch('/settings'), fetch('/generation-options'), fetch('/stats')
+    ]);
+    settings = await settingsResp.json();
+    genOptions = await optionsResp.json();
+    stats = await statsResp.json();
+  } catch (err) {
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD USER SETTINGS. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    return;
+  }
+  currentSettings = settings;
+
   const username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
+  const p = settings.profile;
+
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
       <div class="panel-header">USER SETTINGS</div>
       <div class="panel-body">
         <div class="field" style="max-width:320px;">
           <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
-          <input type="text" id="userSimbriefUsername" autocomplete="off" value="${username.replace(/"/g, '&quot;')}" placeholder="e.g. jdoe123">
+          <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(username)}" placeholder="e.g. jdoe123">
           <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
         </div>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
@@ -1025,11 +1062,125 @@ function renderUserPage() {
         </div>
       </div>
     </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">PILOT PROFILE</div>
+      <div class="panel-body">
+        <div class="params-grid">
+          <div class="field"><label for="profileFirstName">FIRST NAME</label><input type="text" id="profileFirstName" autocomplete="off" value="${escAttr(p.first_name)}"></div>
+          <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
+          <div class="field"><label for="profileBirthDate">BIRTH DATE</label><input type="date" id="profileBirthDate" value="${escAttr(p.birth_date)}"></div>
+          <div class="field"><label for="profileNationality">NATIONALITY</label><input type="text" id="profileNationality" autocomplete="off" value="${escAttr(p.nationality)}"></div>
+        </div>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <button class="action" onclick="saveProfile()">SAVE PROFILE</button>
+          <span class="placeholder-text" id="profileSaveStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">DISPATCH COMPLICATIONS</div>
+      <div class="panel-body">
+        ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief.", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
+        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods.', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
+        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time.', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id)}
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <button class="action" onclick="saveGenerationSettings()">SAVE</button>
+          <span class="placeholder-text" id="generationSaveStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">FLYING STATS</div>
+      <div class="panel-body">
+        <table class="kv">
+          <tr><td class="k">TOTAL FLIGHTS (PIREPS FILED)</td><td class="v">${fmtNum(stats.total_flights)}</td></tr>
+          <tr><td class="k">TOTAL FLIGHT TIME</td><td class="v">${stats.total_flight_minutes != null ? fmtMinutes(stats.total_flight_minutes) : 'N/A'}</td></tr>
+        </table>
+        <p class="placeholder-text" style="margin-top:8px;">Flight time is the sum of each leg's EET (expected airborne time) - the app never captures an actual takeoff time, only ALDT/ABIT, so this isn't a measured actual.</p>
+      </div>
+    </div>
+
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">PIREP LOG</div>
       <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
     </div>`;
   loadPirepLog();
+}
+
+function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn) {
+  const disabledIds = new Set(categorySettings.disabled_codes || categorySettings.disabled_ids || []);
+  const masterOn = categorySettings.enabled !== false;
+  const itemsHtml = items.map(item => {
+    const id = idFn(item);
+    const checked = disabledIds.has(id) ? '' : 'checked';
+    return `<label class="checkbox-row"><input type="checkbox" class="gen-item" data-id="${escAttr(id)}" ${checked} ${masterOn ? '' : 'disabled'}> ${labelFn(item)}</label>`;
+  }).join('');
+  return `
+    <div class="leg-block" style="margin-bottom:12px;">
+      <div class="leg-block-header">
+        <label class="checkbox-row"><input type="checkbox" id="gen-${key}-master" onchange="onCategoryMasterToggle('${key}')" ${masterOn ? 'checked' : ''}> ${title}</label>
+      </div>
+      <div class="leg-block-body">
+        <p class="placeholder-text">${explanation}</p>
+        <details>
+          <summary>ADDITIONAL SETTINGS (${items.length} ITEMS)</summary>
+          <div class="gen-items-list" id="gen-${key}-items">${itemsHtml}</div>
+        </details>
+      </div>
+    </div>`;
+}
+
+function onCategoryMasterToggle(key) {
+  const masterOn = document.getElementById(`gen-${key}-master`).checked;
+  document.querySelectorAll(`#gen-${key}-items input[type=checkbox]`).forEach(cb => { cb.disabled = !masterOn; });
+}
+
+function readCategorySettings(key, disabledFieldName) {
+  const enabled = document.getElementById(`gen-${key}-master`).checked;
+  const disabled = Array.from(document.querySelectorAll(`#gen-${key}-items input[type=checkbox]`))
+    .filter(cb => !cb.checked)
+    .map(cb => cb.dataset.id);
+  return { enabled, [disabledFieldName]: disabled };
+}
+
+async function saveGenerationSettings() {
+  const payload = {
+    profile: currentSettings.profile,
+    generation: {
+      delay: readCategorySettings('delay', 'disabled_codes'),
+      lmc: readCategorySettings('lmc', 'disabled_ids'),
+      mel: readCategorySettings('mel', 'disabled_ids'),
+    }
+  };
+  try {
+    const resp = await fetch('/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    if (!resp.ok) throw new Error('save failed');
+    currentSettings = await resp.json();
+    document.getElementById('generationSaveStatus').textContent = 'SAVED.';
+  } catch (err) {
+    alert('Could not save these settings. Check the connection (and that a database is configured) and retry.');
+  }
+}
+
+async function saveProfile() {
+  const profile = {
+    first_name: document.getElementById('profileFirstName').value.trim(),
+    last_name: document.getElementById('profileLastName').value.trim(),
+    birth_date: document.getElementById('profileBirthDate').value,
+    nationality: document.getElementById('profileNationality').value.trim(),
+  };
+  const payload = { profile, generation: currentSettings.generation };
+  try {
+    const resp = await fetch('/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    if (!resp.ok) throw new Error('save failed');
+    currentSettings = await resp.json();
+    document.getElementById('profileSaveStatus').textContent = 'SAVED.';
+  } catch (err) {
+    alert('Could not save the profile. Check the connection (and that a database is configured) and retry.');
+  }
 }
 
 function saveUserSettings() {
@@ -1094,11 +1245,7 @@ function buildPirepDetailHtml(r) {
     ${legLoadTable(leg)}
     ${legWeatherBlock(leg)}
     ${legOfpTable(r.ofp)}
-    <p class="placeholder-text" style="margin-top:8px;">
-      ${leg.delay
-        ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
-        : `<span class="status-chip status-ok">ON TIME</span>`}
-    </p>
+    ${legDelayMelBlock(leg)}
     ${r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
     ${r.pirep ? `<div class="placeholder-text">PIREP: ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}</div>` : ''}`;
 }

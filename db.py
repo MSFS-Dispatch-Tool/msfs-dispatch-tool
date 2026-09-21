@@ -24,6 +24,19 @@ from psycopg2.extras import Json
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Used whenever settings can't be read (DATABASE_URL unset, no row saved
+# yet, or a query error) - "everything on" matches the app's behavior
+# before these toggles existed, so a missing/broken settings store never
+# silently changes what gets generated.
+DEFAULT_SETTINGS = {
+    "profile": {"first_name": "", "last_name": "", "birth_date": "", "nationality": ""},
+    "generation": {
+        "delay": {"enabled": True, "disabled_codes": []},
+        "lmc": {"enabled": True, "disabled_ids": []},
+        "mel": {"enabled": True, "disabled_ids": []},
+    },
+}
+
 
 def db_available():
     return bool(DATABASE_URL)
@@ -53,6 +66,12 @@ def init_db():
             """)
             cur.execute("ALTER TABLE pireps ADD COLUMN IF NOT EXISTS flight_date DATE")
             cur.execute("ALTER TABLE pireps ADD COLUMN IF NOT EXISTS detail JSONB")
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    id TEXT PRIMARY KEY,
+                    data JSONB NOT NULL
+                )
+            """)
         conn.commit()
 
 
@@ -139,3 +158,53 @@ def delete_pirep(pirep_id):
             deleted = cur.rowcount
         conn.commit()
     return deleted > 0
+
+
+def get_settings():
+    """Merged with DEFAULT_SETTINGS so an older/partial saved row (e.g.
+    missing a category added later) never crashes a caller that expects
+    every key to be present."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data FROM app_settings WHERE id = 'default'")
+            row = cur.fetchone()
+    saved = row[0] if row else {}
+
+    merged = {
+        "profile": {**DEFAULT_SETTINGS["profile"], **(saved.get("profile") or {})},
+        "generation": {},
+    }
+    for category, defaults in DEFAULT_SETTINGS["generation"].items():
+        merged["generation"][category] = {**defaults, **((saved.get("generation") or {}).get(category) or {})}
+    return merged
+
+
+def save_settings(data):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO app_settings (id, data) VALUES ('default', %s)
+                ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
+            """, (Json(data),))
+        conn.commit()
+    return get_settings()
+
+
+def get_stats():
+    """Total filed PIREPs and total flight minutes, the latter summed
+    from each leg's own eet_minutes (the scheduled/expected airborne
+    time) - the app never captures an actual takeoff time, only ALDT/
+    ABIT, so this is the honest figure to total rather than something
+    presented as a measured actual."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT detail FROM pireps")
+            rows = cur.fetchall()
+    total_flights = len(rows)
+    total_minutes = 0
+    for (detail,) in rows:
+        leg = (detail or {}).get("leg") or {}
+        eet = leg.get("eet_minutes")
+        if isinstance(eet, (int, float)):
+            total_minutes += eet
+    return {"total_flights": total_flights, "total_flight_minutes": total_minutes}
