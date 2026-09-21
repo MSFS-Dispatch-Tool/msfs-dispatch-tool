@@ -234,10 +234,20 @@ def resolve_lmc(item):
 LOAD_FACTOR_LOW = 0.82
 LOAD_FACTOR_MODE = 0.94   # Ryanair's reported ~2025 full-year load factor
 LOAD_FACTOR_HIGH = 0.99
+# A plain triangular(0.82, 0.99, 0.94) tapers to ~zero density right at
+# capacity, so a genuinely full house almost never came up - which
+# doesn't match Ryanair's own reputation for pushing flights to (and
+# past, via overbooking) capacity. A flat chance of a full 189/189 house
+# on top of the triangular distribution fixes that without touching the
+# realistic spread for the rest.
+FULL_FLIGHT_PROBABILITY = 0.30
 
 AVG_CHECKED_BAG_KG = 15
 CARGO_SURGE_PROBABILITY = 0.12   # e.g. summer beach-route demand spike
 CARGO_SURGE_MULTIPLIER_RANGE = (1.3, 1.9)
+
+TAXI_OUT_MIN_MINUTES = 10
+TAXI_OUT_MAX_MINUTES = 15
 
 
 def _bag_check_rate(duration_minutes):
@@ -261,7 +271,10 @@ def generate_leg_conditions(is_repositioning=False, duration_minutes=0):
         pax_count, load_factor = 0, 0.0
         cargo_weight_kg = round(random.uniform(50, 400)) if random.random() < REPOSITIONING_CARGO_CHANCE else 0
     else:
-        load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
+        if random.random() < FULL_FLIGHT_PROBABILITY:
+            load_factor = 1.0
+        else:
+            load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
         pax_count = round(189 * load_factor)
 
         bag_rate = _bag_check_rate(duration_minutes)
@@ -278,6 +291,9 @@ def generate_leg_conditions(is_repositioning=False, duration_minutes=0):
         "cargo_weight_kg": cargo_weight_kg,
         "cost_index": pick_cost_index(),
         "delay": None,  # rolled below, per leg, separately
+        # Taxi-out is the only taxi figure that varies (10-15min); taxi-in
+        # is a fixed 10 minutes - see timeutils.TAXI_IN_MINUTES.
+        "taxi_out_minutes": random.randint(TAXI_OUT_MIN_MINUTES, TAXI_OUT_MAX_MINUTES),
     }
 
 
