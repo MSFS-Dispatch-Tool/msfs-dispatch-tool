@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 import db
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
-    generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras
+    generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
@@ -98,6 +98,20 @@ SIMBRIEF_AIRLINE_ICAO = "RYR"  # Ryanair - hardcoded, this tool is RYR-only
 SIMBRIEF_AIRCRAFT_TYPE = {"738": "B738"}
 SIMBRIEF_AIRCRAFT_REG = "EI-DPN"  # pilot's own airframe - preselected so SimBrief
                                    # doesn't reset other fields after a manual pick
+
+
+def get_settings_safe():
+    """Settings used by generation (delay/LMC/MEL enable + per-item
+    toggles). Never raises - falls back to "everything on" (matching
+    behavior from before these toggles existed) if the DB isn't
+    configured or a query fails, so /select and /confirm keep working
+    regardless of the settings store's health."""
+    if not db.db_available():
+        return db.DEFAULT_SETTINGS
+    try:
+        return db.get_settings()
+    except Exception:
+        return db.DEFAULT_SETTINGS
 
 
 def fetch_weather_batch(icao_list):
@@ -303,12 +317,14 @@ def select():
         icao_needed.add(leg["departure_icao"])
         icao_needed.add(leg["arrival_icao"])
     weather = fetch_weather_batch(list(icao_needed))
+    settings = get_settings_safe()
 
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
         conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
-        conditions["delay"] = roll_delay(delay_codes)
+        conditions["delay"] = roll_delay(delay_codes, settings["generation"]["delay"])
+        conditions["mel"] = roll_mel(mels, settings["generation"]["mel"])
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
         conditions["arrival_info"] = airport_info(route_leg["arrival_icao"])
@@ -399,7 +415,8 @@ def confirm():
         return jsonify({"error": "No flights specified."}), 400
 
     callsigns = [generate_callsign() for _ in flight_numbers]
-    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events)
+    settings = get_settings_safe()
+    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"])
 
     return jsonify({
         "confirmation_id": callsigns[0],  # unique enough for this tool's purposes
@@ -457,6 +474,46 @@ def delete_pirep(pirep_id):
     if not db.delete_pirep(pirep_id):
         return jsonify({"error": "PIREP not found."}), 404
     return jsonify({"deleted": pirep_id})
+
+
+# ---------------------------------------------------------------------
+# Pilot profile + generation settings (delay/LMC/MEL enable and
+# per-item toggles), and flying stats derived from the PIREP log.
+# ---------------------------------------------------------------------
+
+@app.route("/generation-options")
+def generation_options():
+    """The full delay/LMC/MEL datasets, trimmed to what the settings
+    page needs to render a labeled checkbox per item."""
+    return jsonify({
+        "delay": [{"code": d["iata_code"], "description": d["description"]} for d in delay_codes],
+        "lmc": [{"id": l["id"], "description": l["description"]} for l in lmc_events],
+        "mel": [{"id": m["id"], "system": m["system"], "description": m["description"]} for m in mels],
+    })
+
+
+@app.route("/settings", methods=["GET"])
+def get_settings_route():
+    return jsonify(get_settings_safe())
+
+
+@app.route("/settings", methods=["POST"])
+def save_settings_route():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    payload = request.get_json(silent=True) or {}
+    return jsonify(db.save_settings(payload))
+
+
+@app.route("/stats")
+def stats_route():
+    if not db.db_available():
+        return jsonify({"total_flights": 0, "total_flight_minutes": 0})
+    try:
+        return jsonify(db.get_stats())
+    except Exception:
+        return jsonify({"total_flights": 0, "total_flight_minutes": 0})
 
 
 @app.route("/simbrief/redirect-url")

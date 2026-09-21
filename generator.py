@@ -226,8 +226,31 @@ def generate_leg_conditions(duration_minutes=0):
     }
 
 
-def roll_delay(delay_codes):
-    return weighted_pick(delay_codes) if random.random() < DELAY_PROBABILITY else None
+def _filter_enabled(items, category_settings, field_name, settings_key):
+    """Applies a generation-settings category dict ({"enabled": bool,
+    settings_key: [...disabled item ids...]}) to an items list: None (no
+    settings, e.g. DATABASE_URL unset) means "everything on", matching
+    the app's long-standing default behavior."""
+    if category_settings is None:
+        return items
+    if not category_settings.get("enabled", True):
+        return []
+    disabled = set(category_settings.get(settings_key) or [])
+    return [item for item in items if item[field_name] not in disabled]
+
+
+def roll_delay(delay_codes, delay_settings=None):
+    pool = _filter_enabled(delay_codes, delay_settings, "iata_code", "disabled_codes")
+    if not pool:
+        return None
+    return weighted_pick(pool) if random.random() < DELAY_PROBABILITY else None
+
+
+def roll_mel(mels, mel_settings=None):
+    pool = _filter_enabled(mels, mel_settings, "id", "disabled_ids")
+    if not pool:
+        return None
+    return resolve_component(weighted_pick(pool)) if random.random() < MEL_PROBABILITY else None
 
 
 def generate_callsign():
@@ -237,9 +260,12 @@ def generate_callsign():
     return f"RYR{digits}{letters}"
 
 
-def generate_loadsheet_extras(dangerous_goods, lmc_events):
+def generate_loadsheet_extras(dangerous_goods, lmc_events, lmc_settings=None):
     """Dangerous goods + last-minute change, rolled together at loadsheet
-    sign-off (CONFIRM), not during route browsing - see app.py /confirm."""
+    sign-off (CONFIRM), not during route browsing - see app.py /confirm.
+    Dangerous goods isn't user-toggleable (out of scope of the LMC/MEL/
+    delay settings) - only LMC is filtered by lmc_settings."""
     dg = resolve_component(weighted_pick(dangerous_goods))
-    lmc = resolve_lmc(weighted_pick(lmc_events)) if random.random() < LMC_PROBABILITY else None
+    pool = _filter_enabled(lmc_events, lmc_settings, "id", "disabled_ids")
+    lmc = resolve_lmc(weighted_pick(pool)) if pool and random.random() < LMC_PROBABILITY else None
     return dg, lmc
