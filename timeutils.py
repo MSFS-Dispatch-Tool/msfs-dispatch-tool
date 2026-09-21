@@ -74,6 +74,62 @@ def resolve_leg_times(route, tz_lookup, reference_date=None):
     return dep_dt, arr_dt, "computed"
 
 
+def taxi_minutes(icao, large_airport_lookup):
+    """15 minutes at a 'large' airport, 10 at a 'small' one. There's no
+    real runway/stand-count data in this dataset, so 'large' is a proxy:
+    airports touched by many scheduled routes in routes_enriched.json
+    (see LARGE_AIRPORT_THRESHOLD in app.py) are treated as large hubs.
+    An airport with no scheduled routes at all (e.g. only ever used as a
+    repositioning endpoint) defaults to small."""
+    return 15 if large_airport_lookup.get(icao, False) else 10
+
+
+def resolve_leg_schedule(route, tz_lookup, large_airport_lookup, reference_date=None):
+    """
+    Returns SOBT/STOT/SLDT/SIBT (all Zulu strings) plus EET in minutes,
+    and the underlying aware datetimes (for turnaround math) under the
+    _sobt_dt/_sibt_dt keys. All fields are None if the route has no
+    resolvable scheduled_departure_local (true for repositioning legs,
+    which have no timetable at all).
+
+    SOBT = scheduled off-block (gate departure) time - the scraped/derived
+           departure time, unchanged from before.
+    SIBT = scheduled in-block (gate arrival) time - the scraped arrival
+           time if present, otherwise SOBT + duration_minutes.
+    STOT = SOBT + taxi-out time at the departure airport.
+    SLDT = SIBT - taxi-in time at the arrival airport.
+    EET  = SLDT - STOT, i.e. the airborne portion only.
+    """
+    dep_tz = tz_lookup.get(route["departure_icao"], "")
+    sobt_dt = local_time_to_zulu_dt(route.get("scheduled_departure_local"), dep_tz, reference_date)
+    if sobt_dt is None:
+        return {"sobt": None, "stot": None, "sldt": None, "sibt": None,
+                "eet_minutes": None, "_sobt_dt": None, "_sibt_dt": None}
+
+    arr_tz = tz_lookup.get(route["arrival_icao"], "")
+    sibt_dt = None
+    if route.get("scheduled_arrival_local"):
+        sibt_dt = local_time_to_zulu_dt(route["scheduled_arrival_local"], arr_tz, reference_date)
+    if sibt_dt is None:
+        sibt_dt = sobt_dt + timedelta(minutes=route["duration_minutes"])
+
+    taxi_out = taxi_minutes(route["departure_icao"], large_airport_lookup)
+    taxi_in = taxi_minutes(route["arrival_icao"], large_airport_lookup)
+    stot_dt = sobt_dt + timedelta(minutes=taxi_out)
+    sldt_dt = sibt_dt - timedelta(minutes=taxi_in)
+    eet_minutes = round((sldt_dt - stot_dt).total_seconds() / 60)
+
+    return {
+        "sobt": format_zulu(sobt_dt, reference_date),
+        "stot": format_zulu(stot_dt, reference_date),
+        "sldt": format_zulu(sldt_dt, reference_date),
+        "sibt": format_zulu(sibt_dt, reference_date),
+        "eet_minutes": eet_minutes,
+        "_sobt_dt": sobt_dt,
+        "_sibt_dt": sibt_dt,
+    }
+
+
 def turnaround_minutes(prev_arrival_zulu_dt, next_departure_zulu_dt):
     """Minutes between one leg's arrival and the next leg's departure.
     Returns None if either side is missing or the numbers don't make
