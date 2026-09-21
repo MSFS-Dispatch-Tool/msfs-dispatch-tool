@@ -236,6 +236,7 @@
 
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
+const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
 
 function updateClock() {
   const now = new Date();
@@ -275,6 +276,17 @@ function saveActiveFlight(flight) {
 }
 function clearActiveFlight() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+function getSimbriefUsername(forcePrompt) {
+  let username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
+  if (!username || forcePrompt) {
+    const entered = prompt('SimBrief username:', username);
+    if (entered === null) return username || null;
+    username = entered.trim();
+    if (username) localStorage.setItem(SIMBRIEF_USERNAME_KEY, username);
+  }
+  return username || null;
 }
 
 function attachAirportDropdown(inputId, dropdownId) {
@@ -591,6 +603,17 @@ function legWeatherBlock(leg) {
         </div>`;
 }
 
+function legOfpTable(ofp) {
+  if (!ofp) return '';
+  return `
+        <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">SIMBRIEF OFP</td><td class="v">${ofp.callsign || 'N/A'} &mdash; ${ofp.registration || 'REG N/A'} (${ofp.icao_type || 'TYPE N/A'})</td></tr>
+          <tr><td class="k">ROUTE</td><td class="v">${ofp.route || 'N/A'}</td></tr>
+          <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? ofp.cost_index : 'N/A'}</td></tr>
+          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel_kg ? ofp.block_fuel_kg + ' KG' : 'N/A'}</td></tr>
+        </table>`;
+}
+
 function buildDetailHtml(data, key) {
   const legBlocks = data.legs.map((leg, i) => `
     <div class="leg-block">
@@ -639,6 +662,8 @@ async function confirmFlight(key) {
       leg_status: confirmData.leg_status,
       leg_state: selectData.legs.map(() => ({
         simbrief: 'not_sent',
+        simbrief_static_id: null,
+        ofp: null,
         loadsheet_signed: false,
         pirep: null
       }))
@@ -676,7 +701,7 @@ function initRouteMap(id, leg) {
 function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
 
 function renderRecap(flight) {
-  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', loadsheet_signed:false, pirep:null}));
+  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, pirep:null}));
   const completedBefore = (index) => flight.leg_status.slice(0, index).every(s => s.status === 'done');
   const legRows = flight.legs.map((leg, i) => {
     const state = flight.leg_state[i];
@@ -684,7 +709,8 @@ function renderRecap(flight) {
     const current = !done && completedBefore(i);
     let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
     if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
-    else if (current && state.simbrief !== 'available') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && state.simbrief === 'not_sent') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && state.simbrief === 'sent') action = `<span class="status-chip status-warn">SENT TO SIMBRIEF — AWAITING OFP</span> <button class="action small" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button> <button class="action small" onclick="prepareLeg(${i})">RE-SEND</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">AVAILABLE ON SIMBRIEF</span> <button class="action small" onclick="signLoadsheet(${i})">SIGN LOADSHEET</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     const pirepForm = current && state.loadsheet_signed && !state.pirep ? `<div class="pirep-form" id="pirep-${i}"><label>BLOCK TIME (MIN)<input id="block-${i}" type="number" min="1" required></label><label>FUEL AT DESTINATION (KG)<input id="fuel-${i}" type="number" min="0" required></label><label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO DAMAGE OR NON-NORMAL SITUATIONS</label><button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button></div>` : '';
@@ -701,6 +727,7 @@ function renderRecap(flight) {
       ${legScheduleTable(leg)}
       ${legLoadTable(leg)}
       ${legWeatherBlock(leg)}
+      ${legOfpTable(state.ofp)}
       <p class="placeholder-text" style="margin-top:8px;">
         ${leg.delay
           ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
@@ -711,14 +738,65 @@ function renderRecap(flight) {
     </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body"><span class="placeholder-text">Airframe assignment pending, waiting SimBrief connection&hellip;</span></div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  const currentIndex = flight.leg_status.findIndex(s => s.status !== 'done');
+  const currentOfp = currentIndex >= 0 ? flight.leg_state[currentIndex].ofp : null;
+  const dispatchExceptions = currentOfp
+    ? `<span class="status-chip status-ok">${currentOfp.registration || 'REG N/A'}</span> ${currentOfp.icao_type || ''} assigned via SimBrief. MEL/exceptions aren't parsed from the OFP yet.`
+    : `<span class="placeholder-text">Airframe assignment pending, waiting SimBrief connection&hellip;</span>`;
+  const simbriefUsernameLine = `<p class="placeholder-text" style="margin-top:8px;">SimBrief username: <strong>${localStorage.getItem(SIMBRIEF_USERNAME_KEY) || 'not set'}</strong> <button class="action small" onclick="changeSimbriefUsername()">CHANGE</button></p>`;
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body">${dispatchExceptions}${simbriefUsernameLine}</div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
-function prepareLeg(index) {
+async function prepareLeg(index) {
   const flight = loadActiveFlight(); if (!flight) return;
-  flight.leg_state[index].simbrief = 'available';
-  saveAndRender(flight);
+  const leg = flight.legs[index];
+  const staticId = `simdispatch-${Date.now()}-${index}`;
+  const qs = new URLSearchParams({
+    flights: leg.flight_number,
+    civalue: leg.cost_index,
+    pax: leg.pax_count,
+    static_id: staticId
+  });
+  try {
+    const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    window.open(data.url, '_blank');
+    flight.leg_state[index].simbrief = 'sent';
+    flight.leg_state[index].simbrief_static_id = staticId;
+    flight.leg_state[index].ofp = null;
+    saveAndRender(flight);
+  } catch (err) {
+    alert('Could not build the SimBrief dispatch link. Check the connection and retry.');
+  }
+}
+
+async function fetchOfp(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const state = flight.leg_state[index];
+  const username = getSimbriefUsername();
+  if (!username) return;
+  try {
+    const resp = await fetch('/simbrief/ofp?username=' + encodeURIComponent(username));
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    if (state.simbrief_static_id && data.static_id && data.static_id !== state.simbrief_static_id) {
+      alert('The most recent SimBrief OFP for this username doesn\'t match the dispatch just sent for this leg. Generate the OFP on SimBrief (in the tab that just opened), then fetch again.');
+      return;
+    }
+    state.ofp = data;
+    state.simbrief = 'available';
+    saveAndRender(flight);
+  } catch (err) {
+    alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.');
+  }
+}
+
+function changeSimbriefUsername() {
+  getSimbriefUsername(true);
+  const flight = loadActiveFlight();
+  if (flight) renderRecap(flight);
 }
 function signLoadsheet(index) {
   const flight = loadActiveFlight(); if (!flight) return;

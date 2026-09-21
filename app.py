@@ -8,11 +8,12 @@ import os
 import requests
 from collections import Counter
 from datetime import date
+from urllib.parse import urlencode
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras
 )
-from timeutils import resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes
+from timeutils import resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes, simbrief_date_str
 
 app = Flask(__name__)
 
@@ -53,6 +54,12 @@ for _r in routes:
 large_airport_lookup = {icao: count >= LARGE_AIRPORT_ROUTE_THRESHOLD for icao, count in _route_touch_counts.items()}
 
 WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
+
+# SimBrief dispatch-redirect / OFP fetch-back integration. Both are
+# SimBrief's public, no-API-key mechanisms - not the gated "API v1" popup
+# flow (that needs an emailed-and-approved key and is out of scope here).
+SIMBRIEF_AIRLINE_IATA = "FR"  # Ryanair - hardcoded, this tool is RYR-only
+SIMBRIEF_AIRCRAFT_TYPE = {"738": "B738"}
 
 
 def fetch_weather_batch(icao_list):
@@ -280,6 +287,113 @@ def confirm():
         "dangerous_goods": dg,
         "lmc_event": lmc,
         "leg_status": [{"flight_number": fn, "status": "pending"} for fn in flight_numbers],
+    })
+
+
+@app.route("/simbrief/redirect-url")
+def simbrief_redirect_url():
+    """
+    Builds a SimBrief "dispatch redirect" URL - a plain link to SimBrief's
+    own dispatch form, pre-filled via query string. Opening it just shows
+    the pilot a pre-filled form on simbrief.com; they still press Generate
+    there themselves. No API key involved.
+
+    Airframe (acdata/reg) is deliberately not passed - that's configured
+    once as the pilot's own SimBrief profile default. deph/depm/cargo are
+    also left out: their expected units aren't confirmed from public docs,
+    and a wrong guess would silently mis-fill the form.
+    """
+    flights_raw = request.args.get("flights", default="", type=str)
+    flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
+    if not flight_numbers:
+        return jsonify({"error": "No flights specified."}), 400
+
+    fn = flight_numbers[0]
+    route_leg = routes_by_flight_number.get(fn)
+    if route_leg is None:
+        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+
+    civalue = request.args.get("civalue", type=int)
+    pax = request.args.get("pax", type=int)
+    if civalue is None or pax is None:
+        # Only hit when the caller doesn't already have confirmed leg
+        # values (e.g. a preview, before CONFIRM has committed a
+        # cost_index/pax_count). An already-confirmed active leg's
+        # frontend call always supplies both, so this never re-rolls
+        # numbers the pilot has already seen and confirmed.
+        conditions = generate_leg_conditions(is_repositioning=False, duration_minutes=route_leg["duration_minutes"])
+        if civalue is None:
+            civalue = conditions["cost_index"]
+        if pax is None:
+            pax = conditions["pax_count"]
+
+    params = {
+        "orig": route_leg["departure_icao"],
+        "dest": route_leg["arrival_icao"],
+        "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type", "738"), "B738"),
+        "airline": SIMBRIEF_AIRLINE_IATA,
+        "fltnum": "".join(ch for ch in fn if ch.isdigit()),
+        "date": simbrief_date_str(),
+        "civalue": civalue,
+        "pax": pax,
+    }
+    static_id = request.args.get("static_id", default="", type=str).strip()
+    if static_id:
+        params["static_id"] = static_id
+
+    return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
+
+
+@app.route("/simbrief/ofp")
+def simbrief_ofp():
+    """
+    Reads back the pilot's most recently generated OFP from SimBrief's
+    public fetch-back endpoint (json=v2, no API key). This always returns
+    whichever OFP is most recent for that SimBrief account - matching
+    static_id (echoed back inside the OFP's params block) against the one
+    this app sent to dispatch.php is how the frontend confirms it got the
+    OFP it just asked for, not a stale one from an earlier session.
+    """
+    username = request.args.get("username", default="", type=str).strip()
+    if not username:
+        return jsonify({"error": "SimBrief username is required."}), 400
+
+    try:
+        resp = requests.get(
+            "https://www.simbrief.com/api/xml.fetcher.php",
+            params={"username": username, "json": "v2"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception:
+        return jsonify({"error": "Could not reach SimBrief, or no OFP is on file for this username."}), 502
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Unexpected response from SimBrief."}), 502
+    if str(data.get("fetch", {}).get("status", "")).lower().startswith("error"):
+        return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
+
+    origin = data.get("origin", {})
+    destination = data.get("destination", {})
+    general = data.get("general", {})
+    aircraft = data.get("aircraft", {})
+    params_block = data.get("params", {})
+    fuel = data.get("fuel", {})
+    times = data.get("times", {})
+
+    return jsonify({
+        "static_id": params_block.get("static_id", ""),
+        "origin_icao": origin.get("icao_code", ""),
+        "destination_icao": destination.get("icao_code", ""),
+        "callsign": f"{general.get('icao_airline', '')}{general.get('flight_number', '')}",
+        "route": general.get("route", ""),
+        "cost_index": general.get("costindex", ""),
+        "initial_altitude_ft": general.get("initial_altitude", ""),
+        "registration": aircraft.get("reg", ""),
+        "icao_type": aircraft.get("icaocode", ""),
+        "block_fuel_kg": fuel.get("plan_ramp", ""),
+        "est_time_enroute_sec": times.get("est_time_enroute", ""),
     })
 
 
