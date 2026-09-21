@@ -130,6 +130,17 @@ def resolve_leg_schedule(route, tz_lookup, large_airport_lookup, reference_date=
     }
 
 
+_SIMBRIEF_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+
+def simbrief_date_str(reference_date=None):
+    """Formats a date the way SimBrief's dispatch-form 'date' field
+    expects: DDMMMYY, e.g. 21SEP26."""
+    d = reference_date or date.today()
+    return f"{d.day:02d}{_SIMBRIEF_MONTHS[d.month - 1]}{d.year % 100:02d}"
+
+
 def turnaround_minutes(prev_arrival_zulu_dt, next_departure_zulu_dt):
     """Minutes between one leg's arrival and the next leg's departure.
     Returns None if either side is missing or the numbers don't make
