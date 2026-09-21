@@ -6,12 +6,13 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 import requests
+from collections import Counter
 from datetime import date
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras
 )
-from timeutils import resolve_leg_times, format_zulu, turnaround_minutes
+from timeutils import resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes
 
 app = Flask(__name__)
 
@@ -37,6 +38,19 @@ tz_by_icao = {a["icao"]: a["tz"] for a in airports}
 airports_by_icao = {a["icao"]: a for a in airports}
 
 rt_pairing = find_round_trip_pairs(routes)
+
+# There's no real runway/stand-count data in this dataset, so "large
+# airport" (for taxi-time purposes - see timeutils.resolve_leg_schedule)
+# is approximated from how many scheduled routes in routes_enriched.json
+# touch that airport. Airports at/above the threshold get a 15-minute
+# taxi allowance each way; everything else gets 10. This is a heuristic,
+# not real airport data - treat STOT/SLDT precision accordingly.
+LARGE_AIRPORT_ROUTE_THRESHOLD = 15
+_route_touch_counts = Counter()
+for _r in routes:
+    _route_touch_counts[_r["departure_icao"]] += 1
+    _route_touch_counts[_r["arrival_icao"]] += 1
+large_airport_lookup = {icao: count >= LARGE_AIRPORT_ROUTE_THRESHOLD for icao, count in _route_touch_counts.items()}
 
 WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
@@ -163,6 +177,11 @@ def search():
         dep_country = country_by_icao.get(legs[0]["departure_icao"], "")
         # "away" airport for RT = leg[0] arrival; for 1W/RE = leg[-1] arrival
         away_country = country_by_icao.get(legs[0]["arrival_icao"], "")
+        # For a round trip the rotation's final airport is always back at
+        # origin, so "VIA" in the UI shows the away/turnaround airport
+        # instead (the outbound leg's arrival). One-way and repositioning
+        # legs fly direct, so there's no via airport at all.
+        via_icao = legs[0]["arrival_icao"] if itin["trip_type"] == "RT" else None
 
         summaries.append({
             "trip_type": itin["trip_type"],
@@ -172,6 +191,7 @@ def search():
             "legs": len(legs),
             "departure_icao": legs[0]["departure_icao"],
             "arrival_icao": legs[-1]["arrival_icao"],
+            "via_icao": via_icao,
             "departure_country": dep_country,
             "arrival_country": away_country,
             "domestic": dep_country != "" and dep_country == away_country,
@@ -211,7 +231,7 @@ def select():
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
-        conditions = generate_leg_conditions(is_repositioning=False)
+        conditions = generate_leg_conditions(is_repositioning=False, duration_minutes=route_leg["duration_minutes"])
         conditions["delay"] = roll_delay(delay_codes)
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
@@ -220,11 +240,13 @@ def select():
             "departure": weather.get(route_leg["departure_icao"], {"metar": None, "taf": None}),
             "arrival": weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None}),
         }
-        dep_dt, arr_dt, arr_source = resolve_leg_times(route_leg, tz_by_icao, today)
-        conditions["scheduled_departure_zulu"] = format_zulu(dep_dt, today)
-        conditions["scheduled_arrival_zulu"] = format_zulu(arr_dt, today)
-        conditions["arrival_time_source"] = arr_source
-        leg_times.append((dep_dt, arr_dt))
+        schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, today)
+        conditions["sobt"] = schedule["sobt"]
+        conditions["stot"] = schedule["stot"]
+        conditions["sldt"] = schedule["sldt"]
+        conditions["sibt"] = schedule["sibt"]
+        conditions["eet_minutes"] = schedule["eet_minutes"]
+        leg_times.append((schedule["_sobt_dt"], schedule["_sibt_dt"]))
         legs_out.append(conditions)
 
     for i in range(1, len(legs_out)):
@@ -237,8 +259,10 @@ def select():
 def confirm():
     """
     Called when the person presses CONFIRM after reviewing a flight.
-    Generates the callsign (only happens here, never earlier) and rolls
-    dangerous goods + LMC together, as the loadsheet-signing moment.
+    Generates a callsign PER LEG (only happens here, never earlier -
+    each flight number/sector gets its own, since real callsigns are
+    per-flight, not per-rotation) and rolls dangerous goods + LMC
+    together, as the loadsheet-signing moment.
     """
     flights_raw = request.args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
@@ -246,12 +270,12 @@ def confirm():
     if not itinerary:
         return jsonify({"error": "No flights specified."}), 400
 
-    callsign = generate_callsign()
+    callsigns = [generate_callsign() for _ in flight_numbers]
     dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events)
 
     return jsonify({
-        "confirmation_id": callsign,  # unique enough for this tool's purposes
-        "callsign": callsign,
+        "confirmation_id": callsigns[0],  # unique enough for this tool's purposes
+        "callsigns": callsigns,           # one per flight_numbers[i], same order
         "flight_numbers": flight_numbers,
         "dangerous_goods": dg,
         "lmc_event": lmc,
