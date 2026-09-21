@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SimDispatch</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root {
     --face:        #ECE9D8;
@@ -46,6 +48,17 @@
   }
   .topbar .title { font-weight: 700; font-size: 13px; letter-spacing: 0.02em; }
   .topbar .clock { font-size: 12px; }
+  .home-btn {
+    font-family: 'Courier New', Consolas, monospace; font-size: 15px; line-height: 1;
+    background: var(--face); color: var(--text); padding: 3px 7px; cursor: pointer;
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  .home-btn:active {
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
 
   main { max-width: 1000px; margin: 16px auto; padding: 0 16px 60px; }
 
@@ -188,7 +201,6 @@
 
   .confirm-row { text-align: right; margin-top: 6px; }
 
-  .callsign-display { font-size: 22px; font-weight: 700; letter-spacing: 0.05em; margin: 4px 0 12px; }
   .leg-status-row {
     display: flex; justify-content: space-between; align-items: center;
     border: 1px solid var(--shadow-md); background: var(--white); padding: 8px 10px; margin-bottom: 8px;
@@ -198,9 +210,8 @@
 
   footer { max-width: 1000px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
 
-.route-sketch { margin:8px 0 4px; max-width:300px; }
-.route-sketch svg { width:100%; height:auto; background:#F7F6F1; border:1px solid var(--shadow-md); }
-.route-sketch text { font:10px "Courier New", monospace; fill:var(--text); }
+.route-map { margin:8px 0 4px; max-width:340px; height:180px; border:1px solid var(--shadow-md); background:#F7F6F1; }
+.route-map .leaflet-tooltip { font-family:'Courier New', Consolas, monospace; font-size:11px; font-weight:700; padding:1px 5px; }
 .pirep-form { margin-top:10px; padding:8px; border:1px solid var(--shadow-md); background:#F7F6F1; display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
 .pirep-form label { display:flex; flex-direction:column; gap:2px; font-size:11px; }
 .pirep-form input { width:110px; font-family:"Courier New", monospace; }
@@ -210,7 +221,10 @@
 <body>
 
 <div class="topbar">
-  <div class="title">SimDispatch</div>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <button class="home-btn" onclick="goHome()" title="Back to homepage">&#8962;</button>
+    <div class="title">SimDispatch</div>
+  </div>
   <div class="clock" id="clock">--:--:--Z</div>
 </div>
 
@@ -475,7 +489,7 @@ function renderListPanel() {
         </div>
         <table class="itin-list" id="itinTable">
           <thead>
-            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>DEP TIME</th><th>ARR TIME</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
+            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>ETD</th><th>ETA</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
           </thead>
           <tbody id="itinTableBody"></tbody>
         </table>
@@ -511,9 +525,10 @@ function renderTable() {
         <td data-label="TYPE"><span class="type-badge type-${itin.trip_type}">${itin.trip_type}</span></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
         <td data-label="DEPARTURE">${itin.departure_icao} (${itin.departure_country}) ${typeTag}</td>
+        <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
         <td data-label="ARRIVAL">${itin.arrival_icao} (${itin.arrival_country})</td>
-        <td data-label="DEP TIME">${itin.first_departure_zulu || 'UNKNOWN'}</td>
-        <td data-label="ARR TIME">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
+        <td data-label="ETD">${itin.first_departure_zulu || 'UNKNOWN'}</td>
+        <td data-label="ETA">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
         <td data-label="LEGS">${itin.legs}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
@@ -538,9 +553,42 @@ async function loadDetail(key) {
     const resp = await fetch(`/select?flights=${encodeURIComponent(key)}`);
     const data = await resp.json();
     cell.innerHTML = buildDetailHtml(data, key);
+    data.legs.forEach((leg, i) => initRouteMap(`map-detail-${key}-${i}`, leg));
   } catch (err) {
     cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
   }
+}
+
+function legScheduleTable(leg) {
+  return `
+        <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">SOBT (OFF-BLOCK)</td><td class="v">${leg.sobt || 'N/A'}</td></tr>
+          <tr><td class="k">STOT (TAKE-OFF)</td><td class="v">${leg.stot || 'N/A'}</td></tr>
+          <tr><td class="k">SLDT (LANDING)</td><td class="v">${leg.sldt || 'N/A'}</td></tr>
+          <tr><td class="k">SIBT (IN-BLOCK)</td><td class="v">${leg.sibt || 'N/A'}</td></tr>
+          <tr><td class="k">EET</td><td class="v">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</td></tr>
+          ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v">${leg.turnaround_minutes != null ? fmtMinutes(leg.turnaround_minutes) : 'N/A'}</td></tr>` : ''}
+          <tr><td class="k">COST INDEX</td><td class="v">${leg.cost_index}</td></tr>
+        </table>`;
+}
+
+function legLoadTable(leg) {
+  return `
+        <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">EXPECTED PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
+          <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
+          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
+        </table>`;
+}
+
+function legWeatherBlock(leg) {
+  return `
+        <div class="weather-block">
+          <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.metar || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.taf || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.metar || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.taf || 'UNAVAILABLE'}</span></div>
+        </div>`;
 }
 
 function buildDetailHtml(data, key) {
@@ -551,22 +599,11 @@ function buildDetailHtml(data, key) {
         <table class="kv" style="margin-bottom:10px;">
           <tr><td class="k">DEPARTURE</td><td class="v">${leg.departure_info.icao} / ${leg.departure_info.iata} &mdash; ${leg.departure_info.name} (${leg.departure_info.country})</td></tr>
           <tr><td class="k">ARRIVAL</td><td class="v">${leg.arrival_info.icao} / ${leg.arrival_info.iata} &mdash; ${leg.arrival_info.name} (${leg.arrival_info.country})</td></tr>
-          <tr><td class="k">SCHEDULED DEPARTURE</td><td class="v">${leg.scheduled_departure_zulu || 'UNKNOWN'}</td></tr>
-          <tr><td class="k">SCHEDULED ARRIVAL</td><td class="v">${leg.scheduled_arrival_zulu || 'UNKNOWN'} ${leg.arrival_time_source === 'computed' ? '<span class="placeholder-text">(computed)</span>' : ''}</td></tr>
-          ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v">${fmtMinutes(leg.turnaround_minutes)}</td></tr>` : ''}
-          <tr><td class="k">COST INDEX</td><td class="v">${leg.cost_index}</td></tr>
         </table>
-        <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">EXPECTED PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
-          <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
-          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
-        </table>
-        <div class="weather-block">
-          <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.metar || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.taf || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.metar || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.taf || 'UNAVAILABLE'}</span></div>
-        </div>
+        ${routeMapDiv(leg, `map-detail-${key}-${i}`)}
+        ${legScheduleTable(leg)}
+        ${legLoadTable(leg)}
+        ${legWeatherBlock(leg)}
         <p class="placeholder-text" style="margin-top:10px;">
           ${leg.delay
             ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
@@ -578,7 +615,7 @@ function buildDetailHtml(data, key) {
   return `
     <div class="detail-inner">
       ${legBlocks}
-      <p class="placeholder-text" style="margin-bottom:10px;">MEL status loads from the SimBrief FPL at a later stage. Dangerous goods and last-minute changes appear at loadsheet sign-off, after CONFIRM.</p>
+      <p class="placeholder-text" style="margin-bottom:10px;">Airframe assignment pending, waiting SimBrief connection&hellip; MEL status will load from the SimBrief FPL once that integration exists. Dangerous goods and last-minute changes appear at loadsheet sign-off, after CONFIRM.</p>
       <div class="confirm-row">
         <button class="action" onclick="confirmFlight('${key}')">CONFIRM</button>
       </div>
@@ -595,7 +632,7 @@ async function confirmFlight(key) {
     const confirmData = await confirmResp.json();
     if (selectData.error || confirmData.error) throw new Error(selectData.error || confirmData.error);
     const activeFlight = {
-      callsign: confirmData.callsign,
+      callsigns: confirmData.callsigns,
       dangerous_goods: confirmData.dangerous_goods,
       lmc_event: confirmData.lmc_event,
       legs: selectData.legs,
@@ -613,11 +650,27 @@ async function confirmFlight(key) {
   }
 }
 
-function routeSketch(leg) {
+function routeMapDiv(leg, id) {
   const a = leg.departure_info, b = leg.arrival_info;
   if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) return '<div class="placeholder-text">ROUTE MAP: N/A</div>';
-  const x1 = 22, y1 = 68, x2 = 278, y2 = 22;
-  return `<div class="route-sketch"><svg viewBox="0 0 300 90" role="img" aria-label="Route from ${a.icao} to ${b.icao}"><path d="M ${x1} ${y1} Q 150 4 ${x2} ${y2}" fill="none" stroke="#3A5A8C" stroke-width="2"/><circle cx="${x1}" cy="${y1}" r="4" fill="#245C24"/><circle cx="${x2}" cy="${y2}" r="4" fill="#7A2626"/><text x="8" y="84">${a.icao}</text><text x="238" y="16">${b.icao}</text></svg></div>`;
+  return `<div class="route-map" id="${id}"></div>`;
+}
+
+function initRouteMap(id, leg) {
+  const el = document.getElementById(id);
+  if (!el || el.dataset.mapInit || typeof L === 'undefined') return;
+  const a = leg.departure_info, b = leg.arrival_info;
+  if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) return;
+  el.dataset.mapInit = '1';
+  const map = L.map(id, { zoomControl: false, scrollWheelZoom: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 11,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  L.marker([a.lat, a.lon]).addTo(map).bindTooltip(a.icao, { permanent: true, direction: 'top', offset: [0, -8] });
+  L.marker([b.lat, b.lon]).addTo(map).bindTooltip(b.icao, { permanent: true, direction: 'top', offset: [0, -8] });
+  L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#3A5A8C', weight: 2, dashArray: '5,5' }).addTo(map);
+  map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26] });
 }
 
 function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
@@ -631,14 +684,35 @@ function renderRecap(flight) {
     const current = !done && completedBefore(i);
     let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
     if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
-    else if (current && state.simbrief !== 'available') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
-    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">AVAILABLE ON SIMBRIEF</span> <button class="action small" onclick="signLoadsheet(${i})">SIGN LOADSHEET</button>`;
-    else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button>`;
+    else if (current && state.simbrief !== 'available') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">AVAILABLE ON SIMBRIEF</span> <button class="action small" onclick="signLoadsheet(${i})">SIGN LOADSHEET</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
     const pirepForm = current && state.loadsheet_signed && !state.pirep ? `<div class="pirep-form" id="pirep-${i}"><label>BLOCK TIME (MIN)<input id="block-${i}" type="number" min="1" required></label><label>FUEL AT DESTINATION (KG)<input id="fuel-${i}" type="number" min="0" required></label><label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO DAMAGE OR NON-NORMAL SITUATIONS</label><button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button></div>` : '';
-    return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}"><div><strong>LEG ${i + 1} — ${leg.flight_number}</strong><br><span class="placeholder-text">${leg.departure_info.icao} → ${leg.arrival_info.icao} · ${leg.scheduled_departure_zulu || 'N/A'} → ${leg.scheduled_arrival_zulu || 'N/A'}</span>${routeSketch(leg)}${state.pirep ? `<div class="placeholder-text">PIREP: ${state.pirep.block_time_minutes} MIN BLOCK · ${state.pirep.fuel_at_destination_kg} KG FOB</div>` : ''}${pirepForm}</div><div>${action}</div></div>`;
+    const mapId = `map-recap-${i}`;
+    return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}" style="display:block;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+        <div>
+          <strong>LEG ${i + 1} — ${leg.flight_number} — ${flight.callsigns ? flight.callsigns[i] : ''}</strong><br>
+          <span class="placeholder-text">${leg.departure_info.icao} → ${leg.arrival_info.icao}</span>
+        </div>
+        <div>${action}</div>
+      </div>
+      ${routeMapDiv(leg, mapId)}
+      ${legScheduleTable(leg)}
+      ${legLoadTable(leg)}
+      ${legWeatherBlock(leg)}
+      <p class="placeholder-text" style="margin-top:8px;">
+        ${leg.delay
+          ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
+          : `<span class="status-chip status-ok">ON TIME</span>`}
+      </p>
+      ${state.pirep ? `<div class="placeholder-text">PIREP: ${state.pirep.block_time_minutes} MIN BLOCK · ${state.pirep.fuel_at_destination_kg} KG FOB</div>` : ''}
+      ${pirepForm}
+    </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span><button class="action small danger" onclick="skipFlight()">SKIP FLIGHT</button></div><div class="panel-body"><div class="callsign-display">${flight.callsign}</div><p class="placeholder-text">Complete each sector in order: SimBrief dispatch status, loadsheet signature, then PIREP. Live SimBrief dispatch integration is pending; the current control records the workflow state only.</p><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body"><span class="placeholder-text">MEL and aircraft identification will be populated when live SimBrief retrieval is implemented.</span></div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body"><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body"><span class="placeholder-text">Airframe assignment pending, waiting SimBrief connection&hellip;</span></div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
 function prepareLeg(index) {
@@ -667,6 +741,10 @@ function submitPirep(index) {
 function skipFlight() {
   if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data.')) return;
   clearActiveFlight(); renderSearchUI();
+}
+
+function goHome() {
+  renderSearchUI();
 }
 
 function startNewFlight() {
