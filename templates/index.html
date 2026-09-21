@@ -756,7 +756,8 @@ async function prepareLeg(index) {
     flights: leg.flight_number,
     civalue: leg.cost_index,
     pax: leg.pax_count,
-    static_id: staticId
+    static_id: staticId,
+    callsign: flight.callsigns ? flight.callsigns[index] : ''
   });
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
