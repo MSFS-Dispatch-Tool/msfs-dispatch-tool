@@ -25,6 +25,9 @@ MAX_ITINERARIES = 40
 REPOSITIONING_PROBABILITY = 0.06   # low, per the person's own spec
 REPOSITIONING_CANDIDATES = 3
 REPOSITIONING_CARGO_CHANCE = 0.20  # "some cargo, if realistic"
+REPOSITIONING_MAX_DURATION_MINUTES = 600  # keeps synthesized empty legs to a
+                                           # realistic single-sector length -
+                                           # there's no user-facing time filter
 
 
 # ---------------------------------------------------------------------
@@ -94,7 +97,7 @@ def _haversine_nm(lat1, lon1, lat2, lon2):
 
 
 def _synthesize_repositioning(airports, existing_pairs, aircraft_type,
-                               available_minutes, origin_icao, destination_icao,
+                               origin_icao, destination_icao,
                                count=REPOSITIONING_CANDIDATES):
     """
     Builds synthetic empty-leg options between airports NOT connected by
@@ -117,7 +120,7 @@ def _synthesize_repositioning(airports, existing_pairs, aircraft_type,
             continue  # a real scheduled route already covers this pair
         dist_nm = _haversine_nm(a1["lat"], a1["lon"], a2["lat"], a2["lon"])
         duration_minutes = round(dist_nm / 420 * 60) + 25  # rough cruise speed + taxi/climb pad
-        if duration_minutes > available_minutes:
+        if duration_minutes > REPOSITIONING_MAX_DURATION_MINUTES:
             continue
         candidates.append({
             "flight_number": "REPO" + "".join(random.choices(string.digits, k=3)),
@@ -133,7 +136,7 @@ def _synthesize_repositioning(airports, existing_pairs, aircraft_type,
     return candidates
 
 
-def find_itineraries(routes, rt_pairing, airports, aircraft_type, available_minutes,
+def find_itineraries(routes, rt_pairing, airports, aircraft_type,
                       origin_icao=None, destination_icao=None,
                       trip_type="random", include_repositioning=False):
     """
@@ -144,6 +147,11 @@ def find_itineraries(routes, rt_pairing, airports, aircraft_type, available_minu
     (the outbound leg's arrival) - not the rotation's final airport,
     which by definition is always back at the origin. "I want a round
     trip to Barcelona" means the away leg lands in Barcelona.
+
+    No time-available filter here by design - every real scheduled
+    itinerary in the dataset is offered, and app.py orders a round trip's
+    two legs by actual scheduled departure time (not flight number) once
+    it resolves their Zulu times.
     """
     by_flight = {r["flight_number"]: r for r in routes}
     existing_pairs = {tuple(sorted([r["departure_icao"], r["arrival_icao"]])) for r in routes}
@@ -169,10 +177,6 @@ def find_itineraries(routes, rt_pairing, airports, aircraft_type, available_minu
             if destination_icao and leg_out["arrival_icao"] != destination_icao:
                 continue
 
-            total_minutes = leg_out["duration_minutes"] + leg_back["duration_minutes"]
-            if total_minutes > available_minutes:
-                continue
-
             results.append({"legs": [leg_out, leg_back], "trip_type": "RT"})
 
     if trip_type in ("random", "one_way"):
@@ -181,13 +185,11 @@ def find_itineraries(routes, rt_pairing, airports, aircraft_type, available_minu
                 continue
             if destination_icao and r["arrival_icao"] != destination_icao:
                 continue
-            if r["duration_minutes"] > available_minutes:
-                continue
             results.append({"legs": [r], "trip_type": "1W"})
 
     if include_repositioning and random.random() < REPOSITIONING_PROBABILITY:
         for repo in _synthesize_repositioning(
-            airports, existing_pairs, aircraft_type, available_minutes, origin_icao, destination_icao
+            airports, existing_pairs, aircraft_type, origin_icao, destination_icao
         ):
             results.append({"legs": [repo], "trip_type": "RE"})
 
