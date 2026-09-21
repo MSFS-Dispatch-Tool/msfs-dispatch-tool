@@ -1288,5 +1288,895 @@
     "tz": "Europe/Bratislava",
     "lat": 48.6631011963,
     "lon": 21.2411003113
+  },
+  {
+    "icao": "EKAH",
+    "iata": "AAR",
+    "name": "Aarhus Airport",
+    "city": "Aarhus",
+    "country": "DK",
+    "tz": "Europe/Copenhagen",
+    "lat": 56.3,
+    "lon": 10.619
+  },
+  {
+    "icao": "EVRA",
+    "iata": "RIX",
+    "name": "Riga International Airport",
+    "city": "Riga",
+    "country": "LV",
+    "tz": "Europe/Riga",
+    "lat": 56.9236,
+    "lon": 23.9711
+  },
+  {
+    "icao": "EGPD",
+    "iata": "ABZ",
+    "name": "Aberdeen Dyce Airport",
+    "city": "Aberdeen",
+    "country": "GB",
+    "tz": "Europe/London",
+    "lat": 57.2019,
+    "lon": -2.19778
+  },
+  {
+    "icao": "GMMX",
+    "iata": "RAK",
+    "name": "Menara Airport",
+    "city": "Marrakech",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 31.6069,
+    "lon": -8.0363
+  },
+  {
+    "icao": "GMAD",
+    "iata": "AGA",
+    "name": "Al Massira Airport",
+    "city": "Agadir",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 30.325,
+    "lon": -9.41307
+  },
+  {
+    "icao": "GMFF",
+    "iata": "FEZ",
+    "name": "Saiss Airport",
+    "city": "Fes",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 33.9273,
+    "lon": -4.97796
+  },
+  {
+    "icao": "GMFO",
+    "iata": "OUD",
+    "name": "Angads Airport",
+    "city": "Oujda",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 34.7872,
+    "lon": -1.92399
+  },
+  {
+    "icao": "GMTT",
+    "iata": "TNG",
+    "name": "Ibn Batouta Airport",
+    "city": "Tangier",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 35.7269,
+    "lon": -5.91689
+  },
+  {
+    "icao": "EPWR",
+    "iata": "WRO",
+    "name": "Copernicus Wrocław Airport",
+    "city": "Wrocław",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 51.1027,
+    "lon": 16.8858
+  },
+  {
+    "icao": "LKTB",
+    "iata": "BRQ",
+    "name": "Brno-Turany Airport",
+    "city": "Brno",
+    "country": "CZ",
+    "tz": "Europe/Prague",
+    "lat": 49.1513,
+    "lon": 16.6944
+  },
+  {
+    "icao": "EGTE",
+    "iata": "EXT",
+    "name": "Exeter International Airport",
+    "city": "Exeter",
+    "country": "GB",
+    "tz": "Europe/London",
+    "lat": 50.7344,
+    "lon": -3.41389
+  },
+  {
+    "icao": "EDHL",
+    "iata": "LBC",
+    "name": "Lubeck Blankensee Airport",
+    "city": "Lubeck",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 53.8054,
+    "lon": 10.7192
+  },
+  {
+    "icao": "EPLL",
+    "iata": "LCJ",
+    "name": "Łódź Władysław Reymont Airport",
+    "city": "Łódź",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 51.7219,
+    "lon": 19.3981
+  },
+  {
+    "icao": "EGNV",
+    "iata": "MME",
+    "name": "Durham Tees Valley Airport",
+    "city": "Durham",
+    "country": "GB",
+    "tz": "Europe/London",
+    "lat": 54.5092,
+    "lon": -1.42941
+  },
+  {
+    "icao": "EGHQ",
+    "iata": "NQY",
+    "name": "Newquay Cornwall Airport",
+    "city": "Newquay",
+    "country": "GB",
+    "tz": "Europe/London",
+    "lat": 50.4406,
+    "lon": -4.99541
+  },
+  {
+    "icao": "LKMT",
+    "iata": "OSR",
+    "name": "Ostrava Leos Janacek Airport",
+    "city": "Ostrava",
+    "country": "CZ",
+    "tz": "Europe/Prague",
+    "lat": 49.6963,
+    "lon": 18.1111
+  },
+  {
+    "icao": "EDLP",
+    "iata": "PAD",
+    "name": "Paderborn Lippstadt Airport",
+    "city": "Paderborn",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 51.6141,
+    "lon": 8.61632
+  },
+  {
+    "icao": "LKPD",
+    "iata": "PED",
+    "name": "Pardubice Airport",
+    "city": "Pardubice",
+    "country": "CZ",
+    "tz": "Europe/Prague",
+    "lat": 50.0134,
+    "lon": 15.7386
+  },
+  {
+    "icao": "GMME",
+    "iata": "RBA",
+    "name": "Rabat-Sale Airport",
+    "city": "Rabat",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 34.0515,
+    "lon": -6.75152
+  },
+  {
+    "icao": "GMTN",
+    "iata": "TTU",
+    "name": "Saniat Rmel Airport",
+    "city": "",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 35.5943,
+    "lon": -5.32002
+  },
+  {
+    "icao": "LEVT",
+    "iata": "VIT",
+    "name": "Vitoria/Foronda Airport",
+    "city": "Alava",
+    "country": "ES",
+    "tz": "Europe/Madrid",
+    "lat": 42.8828,
+    "lon": -2.72447
+  },
+  {
+    "icao": "ESOW",
+    "iata": "VST",
+    "name": "Stockholm Vasteras Airport",
+    "city": "Stockholm / Vasteras",
+    "country": "SE",
+    "tz": "Europe/Stockholm",
+    "lat": 59.5894,
+    "lon": 16.6336
+  },
+  {
+    "icao": "EPBY",
+    "iata": "BZG",
+    "name": "Bydgoszcz Ignacy Jan Paderewski Airport",
+    "city": "Bydgoszcz",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 53.0968,
+    "lon": 17.9777
+  },
+  {
+    "icao": "EDNY",
+    "iata": "FDH",
+    "name": "Friedrichshafen Airport",
+    "city": "Friedrichshafen",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 47.6713,
+    "lon": 9.51149
+  },
+  {
+    "icao": "EFHK",
+    "iata": "HEL",
+    "name": "Helsinki Vantaa Airport",
+    "city": "Helsinki",
+    "country": "FI",
+    "tz": "Europe/Helsinki",
+    "lat": 60.3172,
+    "lon": 24.9633
+  },
+  {
+    "icao": "LOWL",
+    "iata": "LNZ",
+    "name": "Linz Airport",
+    "city": "Linz",
+    "country": "AT",
+    "tz": "Europe/Vienna",
+    "lat": 48.2332,
+    "lon": 14.1875
+  },
+  {
+    "icao": "EGSH",
+    "iata": "NWI",
+    "name": "Norwich International Airport",
+    "city": "Norwich",
+    "country": "GB",
+    "tz": "Europe/London",
+    "lat": 52.6758,
+    "lon": 1.28278
+  },
+  {
+    "icao": "EPRZ",
+    "iata": "RZE",
+    "name": "Rzeszow-Jasionka Airport",
+    "city": "Rzeszow",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 50.11,
+    "lon": 22.019
+  },
+  {
+    "icao": "EDDR",
+    "iata": "SCN",
+    "name": "Saarbrucken Airport",
+    "city": "Saarbrucken",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 49.2146,
+    "lon": 7.10951
+  },
+  {
+    "icao": "LOWS",
+    "iata": "SZG",
+    "name": "Salzburg Airport",
+    "city": "Salzburg",
+    "country": "AT",
+    "tz": "Europe/Vienna",
+    "lat": 47.7933,
+    "lon": 13.0043
+  },
+  {
+    "icao": "ESMX",
+    "iata": "VXO",
+    "name": "Vaxjo Kronoberg Airport",
+    "city": "Vaxjo",
+    "country": "SE",
+    "tz": "Europe/Stockholm",
+    "lat": 56.9291,
+    "lon": 14.728
+  },
+  {
+    "icao": "LQBK",
+    "iata": "BNX",
+    "name": "Banja Luka International Airport",
+    "city": "Banja Luka",
+    "country": "BA",
+    "tz": "Europe/Sarajevo",
+    "lat": 44.9414,
+    "lon": 17.2975
+  },
+  {
+    "icao": "LFMU",
+    "iata": "BZR",
+    "name": "Beziers-Vias Airport",
+    "city": "Beziers/Vias",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 43.3235,
+    "lon": 3.3539
+  },
+  {
+    "icao": "LDRI",
+    "iata": "RJK",
+    "name": "Rijeka Airport",
+    "city": "Rijeka",
+    "country": "HR",
+    "tz": "Europe/Zagreb",
+    "lat": 45.2169,
+    "lon": 14.5703
+  },
+  {
+    "icao": "LQSA",
+    "iata": "SJJ",
+    "name": "Sarajevo International Airport",
+    "city": "Sarajevo",
+    "country": "BA",
+    "tz": "Europe/Sarajevo",
+    "lat": 43.8246,
+    "lon": 18.3315
+  },
+  {
+    "icao": "EETN",
+    "iata": "TLL",
+    "name": "Tallinn Airport",
+    "city": "Tallinn",
+    "country": "EE",
+    "tz": "Europe/Tallinn",
+    "lat": 59.4133,
+    "lon": 24.8328
+  },
+  {
+    "icao": "LGZA",
+    "iata": "ZTH",
+    "name": "Dionysios Solomos Airport",
+    "city": "Zakynthos Island",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 37.7509,
+    "lon": 20.8843
+  },
+  {
+    "icao": "LRBS",
+    "iata": "BBU",
+    "name": "Baneasa International Airport",
+    "city": "Bucharest",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 44.5032,
+    "lon": 26.1021
+  },
+  {
+    "icao": "GMMW",
+    "iata": "NDR",
+    "name": "Nador International Airport",
+    "city": "Nador",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 34.9888,
+    "lon": -3.02821
+  },
+  {
+    "icao": "LIRZ",
+    "iata": "PEG",
+    "name": "Perugia / San Egidio Airport",
+    "city": "Perugia",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 43.0959,
+    "lon": 12.5132
+  },
+  {
+    "icao": "GMMZ",
+    "iata": "OZZ",
+    "name": "Ouarzazate Airport",
+    "city": "Ouarzazate",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 30.9391,
+    "lon": -6.90943
+  },
+  {
+    "icao": "GMMD",
+    "iata": "BEM",
+    "name": "Beni Mellal Airport",
+    "city": "",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 32.4,
+    "lon": -6.33333
+  },
+  {
+    "icao": "LECH",
+    "iata": "CDT",
+    "name": "Castellón Airport",
+    "city": "Castellón de la Plana",
+    "country": "ES",
+    "tz": "Europe/Madrid",
+    "lat": 40.214167,
+    "lon": 0.073667
+  },
+  {
+    "icao": "LGIR",
+    "iata": "HER",
+    "name": "Heraklion International Nikos Kazantzakis Airport",
+    "city": "Heraklion",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 35.3397,
+    "lon": 25.1803
+  },
+  {
+    "icao": "LGKO",
+    "iata": "KGS",
+    "name": "Kos Airport",
+    "city": "Kos Island",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 36.7933,
+    "lon": 27.0917
+  },
+  {
+    "icao": "LGKF",
+    "iata": "EFL",
+    "name": "Kefallinia Airport",
+    "city": "Kefallinia Island",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 38.1201,
+    "lon": 20.5005
+  },
+  {
+    "icao": "GCFV",
+    "iata": "FUE",
+    "name": "Fuerteventura Airport",
+    "city": "Fuerteventura Island",
+    "country": "ES",
+    "tz": "Atlantic/Canary",
+    "lat": 28.4527,
+    "lon": -13.8638
+  },
+  {
+    "icao": "LRIA",
+    "iata": "IAS",
+    "name": "Iasi Airport",
+    "city": "Iasi",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 47.1785,
+    "lon": 27.6206
+  },
+  {
+    "icao": "LGSK",
+    "iata": "JSI",
+    "name": "Skiathos Island National Airport",
+    "city": "Skiathos",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 39.1771,
+    "lon": 23.5037
+  },
+  {
+    "icao": "LGKL",
+    "iata": "KLX",
+    "name": "Kalamata Airport",
+    "city": "Kalamata",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 37.0683,
+    "lon": 22.0255
+  },
+  {
+    "icao": "LFBT",
+    "iata": "LDE",
+    "name": "Tarbes-Lourdes-Pyrenees Airport",
+    "city": "Tarbes/Lourdes/Pyrenees",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 43.1787,
+    "lon": -0.00644
+  },
+  {
+    "icao": "LGPZ",
+    "iata": "PVK",
+    "name": "Aktion National Airport",
+    "city": "Preveza/Lefkada",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 38.9255,
+    "lon": 20.7653
+  },
+  {
+    "icao": "LIRI",
+    "iata": "QSR",
+    "name": "Salerno / Pontecagnano Airport",
+    "city": "Salerno",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 40.6204,
+    "lon": 14.9113
+  },
+  {
+    "icao": "EFRO",
+    "iata": "RVN",
+    "name": "Rovaniemi Airport",
+    "city": "Rovaniemi",
+    "country": "FI",
+    "tz": "Europe/Helsinki",
+    "lat": 66.5648,
+    "lon": 25.8304
+  },
+  {
+    "icao": "LEZG",
+    "iata": "ZAZ",
+    "name": "Zaragoza Air Base",
+    "city": "Zaragoza",
+    "country": "ES",
+    "tz": "Europe/Madrid",
+    "lat": 41.6662,
+    "lon": -1.04155
+  },
+  {
+    "icao": "LFMP",
+    "iata": "PGF",
+    "name": "Perpignan-Rivesaltes (Llabanere) Airport",
+    "city": "Perpignan/Rivesaltes",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 42.7404,
+    "lon": 2.87067
+  },
+  {
+    "icao": "LEXJ",
+    "iata": "SDR",
+    "name": "Santander Airport",
+    "city": "Santander",
+    "country": "ES",
+    "tz": "Europe/Madrid",
+    "lat": 43.4271,
+    "lon": -3.82001
+  },
+  {
+    "icao": "LTFE",
+    "iata": "BJV",
+    "name": "Milas Bodrum International Airport",
+    "city": "Bodrum",
+    "country": "TR",
+    "tz": "Europe/Istanbul",
+    "lat": 37.2506,
+    "lon": 27.6643
+  },
+  {
+    "icao": "LGMK",
+    "iata": "JMK",
+    "name": "Mikonos Airport",
+    "city": "Mykonos Island",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 37.4351,
+    "lon": 25.3481
+  },
+  {
+    "icao": "LFMK",
+    "iata": "CCF",
+    "name": "Carcassonne Airport",
+    "city": "Carcassonne/Salvaza",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 43.216,
+    "lon": 2.30632
+  },
+  {
+    "icao": "LFBE",
+    "iata": "EGC",
+    "name": "Bergerac-Roumaniere Airport",
+    "city": "Bergerac/Roumaniere",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 44.8253,
+    "lon": 0.51861
+  },
+  {
+    "icao": "LBBG",
+    "iata": "BOJ",
+    "name": "Burgas Airport",
+    "city": "Burgas",
+    "country": "BG",
+    "tz": "Europe/Sofia",
+    "lat": 42.5696,
+    "lon": 27.5152
+  },
+  {
+    "icao": "LFBL",
+    "iata": "LIG",
+    "name": "Limoges Airport",
+    "city": "Limoges/Bellegarde",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 45.8628,
+    "lon": 1.17944
+  },
+  {
+    "icao": "LTBS",
+    "iata": "DLM",
+    "name": "Dalaman International Airport",
+    "city": "Dalaman",
+    "country": "TR",
+    "tz": "Europe/Istanbul",
+    "lat": 36.7131,
+    "lon": 28.7925
+  },
+  {
+    "icao": "LIPR",
+    "iata": "RMI",
+    "name": "Rimini / Miramare - Federico Fellini International Airport",
+    "city": "Rimini",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 44.0203,
+    "lon": 12.6117
+  },
+  {
+    "icao": "GMMI",
+    "iata": "ESU",
+    "name": "Mogador Airport",
+    "city": "Essaouira",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 31.3975,
+    "lon": -9.68167
+  },
+  {
+    "icao": "LFSL",
+    "iata": "BVE",
+    "name": "Brive Souillac Airport",
+    "city": "Nespouls",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 45.03967,
+    "lon": 1.4855
+  },
+  {
+    "icao": "LIMZ",
+    "iata": "CUF",
+    "name": "Cuneo / Levaldigi Airport",
+    "city": "Cuneo",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 44.547,
+    "lon": 7.62322
+  },
+  {
+    "icao": "LIPK",
+    "iata": "FRL",
+    "name": "Forli Airport",
+    "city": "Forli",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 44.1948,
+    "lon": 12.0701
+  },
+  {
+    "icao": "LIMP",
+    "iata": "PMF",
+    "name": "Parma Airport",
+    "city": "Parma",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 44.8245,
+    "lon": 10.2964
+  },
+  {
+    "icao": "LYNI",
+    "iata": "INI",
+    "name": "Nis Airport",
+    "city": "Nis",
+    "country": "RS",
+    "tz": "Europe/Belgrade",
+    "lat": 43.3373,
+    "lon": 21.8537
+  },
+  {
+    "icao": "LFTW",
+    "iata": "FNI",
+    "name": "Nimes-Arles-Camargue Airport",
+    "city": "Nimes/Garons",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 43.7574,
+    "lon": 4.41635
+  },
+  {
+    "icao": "LEAM",
+    "iata": "LEI",
+    "name": "Almeria International Airport",
+    "city": "Almeria",
+    "country": "ES",
+    "tz": "Europe/Madrid",
+    "lat": 36.8439,
+    "lon": -2.3701
+  },
+  {
+    "icao": "LDPL",
+    "iata": "PUY",
+    "name": "Pula Airport",
+    "city": "Pula",
+    "country": "HR",
+    "tz": "Europe/Zagreb",
+    "lat": 44.8935,
+    "lon": 13.9222
+  },
+  {
+    "icao": "LGBL",
+    "iata": "VOL",
+    "name": "Nea Anchialos Airport",
+    "city": "Nea Anchialos",
+    "country": "GR",
+    "tz": "Europe/Athens",
+    "lat": 39.2196,
+    "lon": 22.7943
+  },
+  {
+    "icao": "LFGJ",
+    "iata": "DLE",
+    "name": "Dole-Tavaux Airport",
+    "city": "Dole/Tavaux",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 47.039,
+    "lon": 5.42725
+  },
+  {
+    "icao": "LFMN",
+    "iata": "NCE",
+    "name": "Nice-Cote d'Azur Airport",
+    "city": "Nice",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 43.6584,
+    "lon": 7.21587
+  },
+  {
+    "icao": "LDSP",
+    "iata": "SPU",
+    "name": "Split Airport",
+    "city": "Split",
+    "country": "HR",
+    "tz": "Europe/Zagreb",
+    "lat": 43.5389,
+    "lon": 16.298
+  },
+  {
+    "icao": "EPSC",
+    "iata": "SZZ",
+    "name": "Szczecin-Goleniow Solidarność Airport",
+    "city": "Goleniow",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 53.5847,
+    "lon": 14.9022
+  },
+  {
+    "icao": "LFBI",
+    "iata": "PIS",
+    "name": "Poitiers-Biard Airport",
+    "city": "Poitiers/Biard",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 46.5877,
+    "lon": 0.30667
+  },
+  {
+    "icao": "GMFK",
+    "iata": "ERH",
+    "name": "Moulay Ali Cherif Airport",
+    "city": "Errachidia",
+    "country": "MA",
+    "tz": "Africa/Casablanca",
+    "lat": 31.9475,
+    "lon": -4.39833
+  },
+  {
+    "icao": "ESNS",
+    "iata": "SFT",
+    "name": "Skelleftea Airport",
+    "city": "Skelleftea",
+    "country": "SE",
+    "tz": "Europe/Stockholm",
+    "lat": 64.6248,
+    "lon": 21.0769
+  },
+  {
+    "icao": "LBWN",
+    "iata": "VAR",
+    "name": "Varna Airport",
+    "city": "Varna",
+    "country": "BG",
+    "tz": "Europe/Sofia",
+    "lat": 43.2321,
+    "lon": 27.8251
+  },
+  {
+    "icao": "GMMH",
+    "iata": "VIL",
+    "name": "Dakhla Airport",
+    "city": "Dakhla",
+    "country": "EH",
+    "tz": "Africa/Casablanca",
+    "lat": 23.7183,
+    "lon": -15.932
+  },
+  {
+    "icao": "LFOT",
+    "iata": "TUF",
+    "name": "Tours-Val-de-Loire Airport",
+    "city": "Tours/Val de Loire (Loire Valley)",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 47.4322,
+    "lon": 0.72761
+  },
+  {
+    "icao": "LBPD",
+    "iata": "PDV",
+    "name": "Plovdiv International Airport",
+    "city": "Plovdiv",
+    "country": "BG",
+    "tz": "Europe/Sofia",
+    "lat": 42.0678,
+    "lon": 24.8508
+  },
+  {
+    "icao": "EPSY",
+    "iata": "SZY",
+    "name": "Olsztyn-Mazury Airport",
+    "city": "Szymany",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 53.48194,
+    "lon": 20.93778
+  },
+  {
+    "icao": "EYPA",
+    "iata": "PLQ",
+    "name": "Palanga International Airport",
+    "city": "Palanga",
+    "country": "LT",
+    "tz": "Europe/Vilnius",
+    "lat": 55.9732,
+    "lon": 21.0939
+  },
+  {
+    "icao": "LFOK",
+    "iata": "XCR",
+    "name": "Chalons-Vatry Air Base",
+    "city": "Chalons/Vatry",
+    "country": "FR",
+    "tz": "Europe/Paris",
+    "lat": 48.7761,
+    "lon": 4.18449
   }
 ]
