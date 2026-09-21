@@ -319,12 +319,19 @@ def select():
     weather = fetch_weather_batch(list(icao_needed))
     settings = get_settings_safe()
 
+    # A MEL is an aircraft equipment status, not a per-sector event - it
+    # stays deferred on the airframe until rectified, so it's rolled ONCE
+    # for the whole itinerary (this app models a single fixed airframe,
+    # EI-DPN) and applied to every leg of the same rotation, rather than
+    # independently re-rolled per leg.
+    itinerary_mel = roll_mel(mels, settings["generation"]["mel"])
+
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
         conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
         conditions["delay"] = roll_delay(delay_codes, settings["generation"]["delay"])
-        conditions["mel"] = roll_mel(mels, settings["generation"]["mel"])
+        conditions["mel"] = itinerary_mel
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
         conditions["arrival_info"] = airport_info(route_leg["arrival_icao"])

@@ -504,6 +504,7 @@ function renderSearchUI() {
 
 let currentItineraries = [];
 let expandedKey = null;
+let expandedDetailData = null;
 let pirepLogRecords = [];
 let expandedPirepId = null;
 let currentSettings = null;
@@ -673,6 +674,7 @@ function renderTable() {
 
 async function toggleItinerary(key) {
   expandedKey = (expandedKey === key) ? null : key;
+  expandedDetailData = null;
   renderTable();
 }
 
@@ -681,9 +683,11 @@ async function loadDetail(key) {
   try {
     const resp = await fetch(`/select?flights=${encodeURIComponent(key)}`);
     const data = await resp.json();
+    expandedDetailData = data;
     cell.innerHTML = buildDetailHtml(data, key);
     data.legs.forEach((leg, i) => initRouteMap(`map-detail-${key}-${i}`, leg));
   } catch (err) {
+    expandedDetailData = null;
     cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
   }
 }
@@ -779,11 +783,15 @@ function buildDetailHtml(data, key) {
 
 async function confirmFlight(key) {
   try {
-    const [selectResp, confirmResp] = await Promise.all([
-      fetch('/select?flights=' + encodeURIComponent(key)),
-      fetch('/confirm?flights=' + encodeURIComponent(key))
-    ]);
-    const selectData = await selectResp.json();
+    // Reuse exactly what was already fetched and reviewed for this
+    // itinerary (delay/MEL/pax/cost index etc. are random per /select
+    // call) instead of calling /select again, which would silently
+    // confirm a different roll than the one the pilot just looked at.
+    let selectData = expandedKey === key ? expandedDetailData : null;
+    const confirmResp = await fetch('/confirm?flights=' + encodeURIComponent(key));
+    if (!selectData) {
+      selectData = await (await fetch('/select?flights=' + encodeURIComponent(key))).json();
+    }
     const confirmData = await confirmResp.json();
     if (selectData.error || confirmData.error) throw new Error(selectData.error || confirmData.error);
     const activeFlight = {
