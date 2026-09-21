@@ -434,7 +434,11 @@ def simbrief_ofp():
         "est_time_enroute_sec": times.get("est_time_enroute", ""),
         "est_zfw": weights.get("est_zfw", ""),
         "est_tow": weights.get("est_tow", ""),
-        "efob": fuel.get("plan_landing", ""),
+        # EFOB = Estimated Fuel On Board at block-off, i.e. block/ramp
+        # fuel - the planning-stage figure shown alongside EZFW/ETOW.
+        # Not to be confused with AFAD (Actual Fuel At Destination),
+        # which the pilot enters themselves at PIREP time.
+        "efob": fuel.get("plan_ramp", ""),
         "epax": weights.get("pax_count", ""),
     })
 

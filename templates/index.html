@@ -281,11 +281,12 @@
         <dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT).</dd>
         <dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP.</dd>
         <dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP.</dd>
-        <dt>EFOB</dt><dd>Estimated Fuel On Board at landing, from the SimBrief OFP.</dd>
+        <dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP.</dd>
         <dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP.</dd>
         <dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count.</dd>
         <dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP.</dd>
         <dt>ABIT</dt><dd>Actual In-Block Time, entered when filing the PIREP.</dd>
+        <dt>AFAD</dt><dd>Actual Fuel At Destination, entered when filing the PIREP &mdash; not to be confused with EFOB, which is the block fuel planned before departure.</dd>
         <dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared.</dd>
         <dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg.</dd>
       </dl>
@@ -811,8 +812,8 @@ function renderRecap(flight) {
       <div class="pirep-form" id="pirep-${i}">
         <label>ALDT (ZULU)<input id="aldt-${i}" type="time" required></label>
         <label>ABIT (ZULU)<input id="abit-${i}" type="time" required></label>
-        <label>BLOCK-IN FUEL (${unit})<input id="blockfuel-${i}" type="number" min="0" required></label>
-        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO NEW MELS OR NON-NORMAL SITUATIONS</label>
+        <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
+        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log.</label>
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
       </div>` : '';
 
@@ -837,7 +838,7 @@ function renderRecap(flight) {
       </p>
       ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${state.loadsheet.zfw} ${unit} &middot; FOB ${state.loadsheet.fob} ${unit} &middot; ${state.loadsheet.pax} PAX &middot; ${state.loadsheet.crew} CREW</div>` : ''}
       ${loadsheetForm}
-      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; ${state.pirep.block_in_fuel} ${unit} BLOCK-IN FUEL</div>` : ''}
+      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${state.pirep.afad} ${unit}</div>` : ''}
       ${pirepForm}
     </div>`;
   }).join('');
@@ -923,14 +924,14 @@ function showPirep(index) {
 function submitPirep(index) {
   const aldt = document.getElementById('aldt-' + index).value;
   const abit = document.getElementById('abit-' + index).value;
-  const blockFuel = Number(document.getElementById('blockfuel-' + index).value);
+  const afad = Number(document.getElementById('afad-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
-  if (!aldt || !abit || !Number.isFinite(blockFuel) || blockFuel < 0 || !normal) {
-    alert('Enter ALDT, ABIT and block-in fuel, then confirm no new MELs or non-normal situations.');
+  if (!aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
+    alert('Enter ALDT, ABIT and AFAD, then confirm no new MELs or non-normal occurrences.');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
-  flight.leg_state[index].pirep = {aldt, abit, block_in_fuel: blockFuel, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  flight.leg_state[index].pirep = {aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
   flight.leg_status[index].status = 'done';
   saveAndRender(flight);
 }
