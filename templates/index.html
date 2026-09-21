@@ -492,6 +492,8 @@ function renderSearchUI() {
 
 let currentItineraries = [];
 let expandedKey = null;
+let pirepLogRecords = [];
+let expandedPirepId = null;
 
 async function searchFlights() {
   const originValid = await validateAirport('origin');
@@ -964,8 +966,9 @@ async function submitPirep(index) {
   }
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
+  const state = flight.leg_state[index];
   const pirep = {aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
-  flight.leg_state[index].pirep = pirep;
+  state.pirep = pirep;
   flight.leg_status[index].status = 'done';
   saveAndRender(flight);
 
@@ -978,7 +981,10 @@ async function submitPirep(index) {
         callsign: flight.callsigns ? flight.callsigns[index] : '',
         departure_icao: leg.departure_info.icao,
         arrival_icao: leg.arrival_info.icao,
-        ...pirep
+        leg: leg,
+        ofp: state.ofp,
+        loadsheet: state.loadsheet,
+        pirep: pirep
       })
     });
   } catch (err) {
@@ -1042,17 +1048,64 @@ async function loadPirepLog() {
   const body = document.getElementById('pirepLogBody');
   try {
     const resp = await fetch('/pireps');
-    const records = await resp.json();
-    if (!records.length) { body.innerHTML = '<div class="empty-state">NO PIREPS FILED YET.</div>'; return; }
-    body.innerHTML = `<table class="kv">` + records.map(r => `
-      <tr>
-        <td class="k">${r.flight_number} / ${r.callsign || 'N/A'}<br><span class="placeholder-text">${r.departure_icao} &rarr; ${r.arrival_icao}</span></td>
-        <td class="v">ALDT ${r.aldt}Z &middot; ABIT ${r.abit}Z &middot; AFAD ${fmtNum(r.afad)}<br><span class="placeholder-text">${new Date(r.submitted_at).toUTCString()}</span></td>
-        <td class="v"><button class="action small danger" onclick="deletePirepRecord('${r.id}')">DELETE</button></td>
-      </tr>`).join('') + `</table>`;
+    pirepLogRecords = await resp.json();
+    renderPirepLog();
   } catch (err) {
     body.innerHTML = '<div class="empty-state">COULD NOT LOAD PIREP LOG.</div>';
   }
+}
+
+function renderPirepLog() {
+  const body = document.getElementById('pirepLogBody');
+  if (!pirepLogRecords.length) { body.innerHTML = '<div class="empty-state">NO PIREPS FILED YET.</div>'; return; }
+  body.innerHTML = pirepLogRecords.map(r => {
+    const isOpen = r.id === expandedPirepId;
+    const filedAt = r.pirep && r.pirep.submitted_at ? new Date(r.pirep.submitted_at) : new Date(r.submitted_at);
+    const header = `
+      <div class="leg-status-row" style="display:block;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+          <div style="cursor:pointer;" onclick="togglePirepRecord('${r.id}')">
+            <strong>${r.flight_number} — ${r.callsign || 'N/A'}</strong><br>
+            <span class="placeholder-text">${r.departure_icao} &rarr; ${r.arrival_icao} &middot; FLIGHT DATE ${r.flight_date || 'N/A'} &middot; PIREP FILED ${filedAt.toUTCString()}</span>
+          </div>
+          <div>
+            <button class="action small" onclick="togglePirepRecord('${r.id}')">${isOpen ? 'CLOSE' : 'OPEN'}</button>
+            <button class="action small danger" onclick="deletePirepRecord('${r.id}')">DELETE</button>
+          </div>
+        </div>
+        ${isOpen ? buildPirepDetailHtml(r) : ''}
+      </div>`;
+    return header;
+  }).join('');
+  if (expandedPirepId) {
+    const rec = pirepLogRecords.find(r => r.id === expandedPirepId);
+    if (rec && rec.leg && rec.leg.departure_info) initRouteMap(`map-pirep-${rec.id}`, rec.leg);
+  }
+}
+
+function buildPirepDetailHtml(r) {
+  const leg = r.leg;
+  if (!leg) return '<p class="placeholder-text" style="margin-top:8px;">NO FLIGHT DETAIL WAS SAVED WITH THIS PIREP.</p>';
+  const unit = (r.ofp && r.ofp.weight_unit) || 'KG';
+  const mapId = `map-pirep-${r.id}`;
+  return `
+    ${routeMapDiv(leg, mapId)}
+    ${legScheduleTable(leg)}
+    ${legLoadTable(leg)}
+    ${legWeatherBlock(leg)}
+    ${legOfpTable(r.ofp)}
+    <p class="placeholder-text" style="margin-top:8px;">
+      ${leg.delay
+        ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
+        : `<span class="status-chip status-ok">ON TIME</span>`}
+    </p>
+    ${r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
+    ${r.pirep ? `<div class="placeholder-text">PIREP: ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}</div>` : ''}`;
+}
+
+function togglePirepRecord(id) {
+  expandedPirepId = (expandedPirepId === id) ? null : id;
+  renderPirepLog();
 }
 
 async function deletePirepRecord(id) {
@@ -1060,6 +1113,7 @@ async function deletePirepRecord(id) {
   try {
     const resp = await fetch('/pireps/' + encodeURIComponent(id), { method: 'DELETE' });
     if (!resp.ok) throw new Error('delete failed');
+    if (expandedPirepId === id) expandedPirepId = null;
     loadPirepLog();
   } catch (err) {
     alert('Could not delete this record. Check the connection and retry.');
