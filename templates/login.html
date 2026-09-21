@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimDispatch</title>
+<style>
+  :root {
+    --face:        #ECE9D8;
+    --face-dark:   #D4D0C8;
+    --titlebar:    #6B7A99;
+    --titlebar-2:  #93A3B8;
+    --white:       #FFFFFF;
+    --shadow-dk:   #716F64;
+    --shadow-md:   #ACA899;
+    --text:        #000000;
+    --red:         #7A2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: var(--face-dark); color: var(--text);
+    font-family: 'Courier New', Consolas, monospace; font-size: 13px;
+  }
+  .panel {
+    width: 92%; max-width: 340px;
+    background: var(--face); border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  .panel-header {
+    background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2));
+    color: #fff; padding: 6px 10px; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .panel-body { padding: 14px; }
+  label { display: block; font-size: 12px; margin-bottom: 4px; }
+  input[type="password"] {
+    width: 100%; font-family: 'Courier New', Consolas, monospace; font-size: 13px; padding: 6px 7px;
+    background: var(--white); color: var(--text);
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
+  .error { color: var(--red); font-size: 12px; margin: 8px 0 0; }
+  button {
+    margin-top: 12px; width: 100%;
+    font-family: 'Courier New', Consolas, monospace; font-size: 13px; font-weight: 700;
+    background: var(--face); color: var(--text); padding: 7px; cursor: pointer;
+    border-style: solid; border-width: 2px;
+    border-top-color: var(--white); border-left-color: var(--white);
+    border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk);
+  }
+  button:active {
+    border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
+    border-bottom-color: var(--white); border-right-color: var(--white);
+  }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="panel-header">SimDispatch &mdash; LOGIN REQUIRED</div>
+    <div class="panel-body">
+      <form method="POST">
+        <label for="password">PASSWORD</label>
+        <input type="password" id="password" name="password" autofocus required>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        <button type="submit">ENTER</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
