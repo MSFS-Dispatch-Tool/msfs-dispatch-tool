@@ -1,5 +1,5 @@
 """
-SimDispatch - Flask  app.
+SimDispatch - Flask app.
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -72,7 +72,14 @@ def fetch_weather_batch(icao_list):
 
 def airport_info(icao):
     a = airports_by_icao.get(icao, {})
-    return {"icao": icao, "iata": a.get("iata", ""), "name": a.get("name", "UNKNOWN"), "country": a.get("country", "")}
+    return {
+        "icao": icao,
+        "iata": a.get("iata", ""),
+        "name": a.get("name", "UNKNOWN"),
+        "country": a.get("country", ""),
+        "lat": a.get("lat"),
+        "lon": a.get("lon"),
+    }
 
 
 def leg_summary_with_times(route, today):
