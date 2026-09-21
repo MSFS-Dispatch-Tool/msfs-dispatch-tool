@@ -197,6 +197,14 @@
   .leg-status-row.current { background: #FFF7DD; }
 
   footer { max-width: 1000px; margin: 0 auto; padding: 0 16px 30px; color: #3A3A3A; font-size: 11px; }
+
+.route-sketch { margin:8px 0 4px; max-width:300px; }
+.route-sketch svg { width:100%; height:auto; background:#F7F6F1; border:1px solid var(--shadow-md); }
+.route-sketch text { font:10px "Courier New", monospace; fill:var(--text); }
+.pirep-form { margin-top:10px; padding:8px; border:1px solid var(--shadow-md); background:#F7F6F1; display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+.pirep-form label { display:flex; flex-direction:column; gap:2px; font-size:11px; }
+.pirep-form input { width:110px; font-family:"Courier New", monospace; }
+
 </style>
 </head>
 <body>
@@ -226,7 +234,7 @@ updateClock();
 setInterval(updateClock, 1000);
 
 function fmtMinutes(min) {
-  if (min === null || min === undefined) return 'UNKNOWN';
+  if (min === null || min === undefined || Number.isNaN(min)) return 'N/A';
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${h}H${String(m).padStart(2, '0')}M`;
@@ -342,7 +350,7 @@ function renderSearchUI() {
             </select>
             <div class="checkbox-row">
               <input type="checkbox" id="includeRepositioning">
-              <label for="includeRepositioning">INCLUDE REPOSITIONING (RARE, EMPTY LEGS)</label>
+              <label for="includeRepositioning">INCLUDE AD-HOC REPOSITIONING SECTORS</label>
             </div>
           </div>
         </div>
@@ -467,7 +475,7 @@ function renderListPanel() {
         </div>
         <table class="itin-list" id="itinTable">
           <thead>
-            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>ARRIVAL</th><th>DEP TIME</th><th>ARR TIME</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
+            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>DEP TIME</th><th>ARR TIME</th><th>LEGS</th><th>TURNAROUND</th><th></th></tr>
           </thead>
           <tbody id="itinTableBody"></tbody>
         </table>
@@ -489,7 +497,7 @@ function renderTable() {
   const tbody = document.getElementById('itinTableBody');
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
@@ -511,7 +519,7 @@ function renderTable() {
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="9" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="10" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
@@ -580,95 +588,85 @@ function buildDetailHtml(data, key) {
 async function confirmFlight(key) {
   try {
     const [selectResp, confirmResp] = await Promise.all([
-      fetch(`/select?flights=${encodeURIComponent(key)}`),
-      fetch(`/confirm?flights=${encodeURIComponent(key)}`)
+      fetch('/select?flights=' + encodeURIComponent(key)),
+      fetch('/confirm?flights=' + encodeURIComponent(key))
     ]);
     const selectData = await selectResp.json();
     const confirmData = await confirmResp.json();
-
+    if (selectData.error || confirmData.error) throw new Error(selectData.error || confirmData.error);
     const activeFlight = {
       callsign: confirmData.callsign,
       dangerous_goods: confirmData.dangerous_goods,
       lmc_event: confirmData.lmc_event,
       legs: selectData.legs,
       leg_status: confirmData.leg_status,
+      leg_state: selectData.legs.map(() => ({
+        simbrief: 'not_sent',
+        loadsheet_signed: false,
+        pirep: null
+      }))
     };
     saveActiveFlight(activeFlight);
     renderRecap(activeFlight);
   } catch (err) {
-    alert('Could not confirm this flight - check connection and try again.');
+    alert('Could not confirm this flight. Check the connection and retry.');
   }
 }
 
+function routeSketch(leg) {
+  const a = leg.departure_info, b = leg.arrival_info;
+  if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) return '<div class="placeholder-text">ROUTE MAP: N/A</div>';
+  const x1 = 22, y1 = 68, x2 = 278, y2 = 22;
+  return `<div class="route-sketch"><svg viewBox="0 0 300 90" role="img" aria-label="Route from ${a.icao} to ${b.icao}"><path d="M ${x1} ${y1} Q 150 4 ${x2} ${y2}" fill="none" stroke="#3A5A8C" stroke-width="2"/><circle cx="${x1}" cy="${y1}" r="4" fill="#245C24"/><circle cx="${x2}" cy="${y2}" r="4" fill="#7A2626"/><text x="8" y="84">${a.icao}</text><text x="238" y="16">${b.icao}</text></svg></div>`;
+}
+
+function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
+
 function renderRecap(flight) {
+  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', loadsheet_signed:false, pirep:null}));
+  const completedBefore = (index) => flight.leg_status.slice(0, index).every(s => s.status === 'done');
   const legRows = flight.legs.map((leg, i) => {
-    const status = flight.leg_status[i].status;
-    const isCurrent = status === 'pending' && flight.leg_status.slice(0, i).every(s => s.status === 'done');
-    const rowClass = status === 'done' ? 'done' : (isCurrent ? 'current' : '');
-    return `
-      <div class="leg-status-row ${rowClass}">
-        <div>
-          <strong>LEG ${i + 1} &mdash; ${leg.flight_number}</strong><br>
-          <span class="placeholder-text">${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao} &middot; ${leg.scheduled_departure_zulu || '?'} &rarr; ${leg.scheduled_arrival_zulu || '?'}</span>
-        </div>
-        <div>
-          ${status === 'done'
-            ? `<span class="status-chip status-ok">COMPLETE</span>`
-            : isCurrent
-              ? `<button class="action small" onclick="markLegComplete(${i})">MARK COMPLETE</button>
-                 <button class="action small" onclick="sendLegToSimbrief(${i})">SEND TO SIMBRIEF</button>`
-              : `<span class="status-chip status-warn">WAITING</span>`}
-        </div>
-      </div>`;
+    const state = flight.leg_state[i];
+    const done = flight.leg_status[i].status === 'done';
+    const current = !done && completedBefore(i);
+    let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
+    if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
+    else if (current && state.simbrief !== 'available') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
+    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">AVAILABLE ON SIMBRIEF</span> <button class="action small" onclick="signLoadsheet(${i})">SIGN LOADSHEET</button>`;
+    else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button>`;
+    const pirepForm = current && state.loadsheet_signed && !state.pirep ? `<div class="pirep-form" id="pirep-${i}"><label>BLOCK TIME (MIN)<input id="block-${i}" type="number" min="1" required></label><label>FUEL AT DESTINATION (KG)<input id="fuel-${i}" type="number" min="0" required></label><label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I CONFIRM NO DAMAGE OR NON-NORMAL SITUATIONS</label><button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button></div>` : '';
+    return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}"><div><strong>LEG ${i + 1} — ${leg.flight_number}</strong><br><span class="placeholder-text">${leg.departure_info.icao} → ${leg.arrival_info.icao} · ${leg.scheduled_departure_zulu || 'N/A'} → ${leg.scheduled_arrival_zulu || 'N/A'}</span>${routeSketch(leg)}${state.pirep ? `<div class="placeholder-text">PIREP: ${state.pirep.block_time_minutes} MIN BLOCK · ${state.pirep.fuel_at_destination_kg} KG FOB</div>` : ''}${pirepForm}</div><div>${action}</div></div>`;
   }).join('');
-
   const allDone = flight.leg_status.every(s => s.status === 'done');
-
-  document.getElementById('mainContent').innerHTML = `
-    <div class="panel">
-      <div class="panel-header">
-        <span>ACTIVE FLIGHT</span>
-        <button class="action small danger" onclick="startNewFlight()">NEW FLIGHT</button>
-      </div>
-      <div class="panel-body">
-        <div class="callsign-display">${flight.callsign}</div>
-
-        <div class="leg-block" style="margin-bottom:14px;">
-          <div class="leg-block-header">DANGEROUS GOODS (AT LOADSHEET SIGN-OFF)</div>
-          <div class="leg-block-body">
-            ${flight.dangerous_goods.id === 'dg-05'
-              ? `<span class="status-chip status-ok">CLEAR</span>`
-              : `<span class="status-chip status-warn">MANIFEST NOTE</span> <span class="placeholder-text">${flight.dangerous_goods.label}</span>`}
-          </div>
-        </div>
-
-        <div class="leg-block" style="margin-bottom:14px;">
-          <div class="leg-block-header">LAST-MINUTE CHANGE (AT LOADSHEET SIGN-OFF)</div>
-          <div class="leg-block-body">
-            ${flight.lmc_event
-              ? `<span class="status-chip status-warn">LMC</span> <span class="placeholder-text">${flight.lmc_event.description} (${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()})</span>`
-              : `<span class="status-chip status-ok">NONE</span>`}
-          </div>
-        </div>
-
-        ${legRows}
-
-        ${allDone ? `<p class="placeholder-text" style="margin-top:10px;">All legs complete. Press NEW FLIGHT to search again.</p>` : ''}
-      </div>
-    </div>
-  `;
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span><button class="action small danger" onclick="skipFlight()">SKIP FLIGHT</button></div><div class="panel-body"><div class="callsign-display">${flight.callsign}</div><p class="placeholder-text">Complete each sector in order: SimBrief dispatch status, loadsheet signature, then PIREP. Live SimBrief dispatch integration is pending; the current control records the workflow state only.</p><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">DISPATCH EXCEPTIONS</div><div class="leg-block-body"><span class="placeholder-text">MEL and aircraft identification will be populated when live SimBrief retrieval is implemented.</span></div></div><div class="leg-block" style="margin-bottom:14px"><div class="leg-block-header">LOADSHEET CHANGES</div><div class="leg-block-body">${flight.lmc_event ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}` : '<span class="status-chip status-ok">NO LMC</span>'}</div></div>${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
 }
 
-function markLegComplete(index) {
-  const flight = loadActiveFlight();
-  if (!flight) return;
+function prepareLeg(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  flight.leg_state[index].simbrief = 'available';
+  saveAndRender(flight);
+}
+function signLoadsheet(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  flight.leg_state[index].loadsheet_signed = true;
+  saveAndRender(flight);
+}
+function showPirep(index) {
+  const el = document.getElementById('pirep-' + index); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function submitPirep(index) {
+  const block = Number(document.getElementById('block-' + index).value);
+  const fuel = Number(document.getElementById('fuel-' + index).value);
+  const normal = document.getElementById('normal-' + index).checked;
+  if (!Number.isFinite(block) || block <= 0 || !Number.isFinite(fuel) || fuel < 0 || !normal) { alert('Enter block time and fuel at destination, then confirm no damage or non-normal situations.'); return; }
+  const flight = loadActiveFlight(); if (!flight) return;
+  flight.leg_state[index].pirep = {block_time_minutes:block, fuel_at_destination_kg:fuel, no_damage_or_non_normal:true, submitted_at:new Date().toISOString()};
   flight.leg_status[index].status = 'done';
-  saveActiveFlight(flight);
-  renderRecap(flight);
+  saveAndRender(flight);
 }
-
-function sendLegToSimbrief(index) {
-  alert(`Would send leg ${index + 1} to SimBrief here. Not yet connected - placeholder only.`);
+function skipFlight() {
+  if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data.')) return;
+  clearActiveFlight(); renderSearchUI();
 }
 
 function startNewFlight() {
