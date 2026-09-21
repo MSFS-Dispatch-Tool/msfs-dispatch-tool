@@ -8,7 +8,6 @@ import os
 import re
 import uuid
 import requests
-from collections import Counter
 from datetime import date, datetime, timedelta
 from urllib.parse import urlencode
 from generator import (
@@ -17,7 +16,7 @@ from generator import (
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
-    turnaround_shift, simbrief_date_str, taxi_minutes
+    turnaround_shift, simbrief_date_str, TAXI_IN_MINUTES
 )
 
 app = Flask(__name__)
@@ -44,19 +43,6 @@ tz_by_icao = {a["icao"]: a["tz"] for a in airports}
 airports_by_icao = {a["icao"]: a for a in airports}
 
 rt_pairing = find_round_trip_pairs(routes)
-
-# There's no real runway/stand-count data in this dataset, so "large
-# airport" (for taxi-time purposes - see timeutils.resolve_leg_schedule)
-# is approximated from how many scheduled routes in routes_enriched.json
-# touch that airport. Airports at/above the threshold get a 15-minute
-# taxi allowance each way; everything else gets 10. This is a heuristic,
-# not real airport data - treat STOT/SLDT precision accordingly.
-LARGE_AIRPORT_ROUTE_THRESHOLD = 15
-_route_touch_counts = Counter()
-for _r in routes:
-    _route_touch_counts[_r["departure_icao"]] += 1
-    _route_touch_counts[_r["arrival_icao"]] += 1
-large_airport_lookup = {icao: count >= LARGE_AIRPORT_ROUTE_THRESHOLD for icao, count in _route_touch_counts.items()}
 
 WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
@@ -114,6 +100,13 @@ def leg_summary_with_times(route, today):
     """Shared by /search (list view) and /select (detail view): airport
     info, cost-agnostic route facts, and Zulu dep/arr times."""
     dep_dt, arr_dt, arr_source = resolve_leg_times(route, tz_by_icao, today)
+    # Arrival's "(+Nd)" suffix is relative to THIS leg's own departure
+    # date, not "today" - a local-midnight departure at an airport east
+    # of UTC legitimately lands on "yesterday" in Zulu (flagged on
+    # departure), but an arrival an hour later isn't a further day
+    # change and showing the same "-1d" on both just reads as a
+    # contradiction.
+    arr_reference = dep_dt.date() if dep_dt is not None else today
     return {
         "flight_number": route["flight_number"],
         "departure_info": airport_info(route["departure_icao"]),
@@ -121,7 +114,7 @@ def leg_summary_with_times(route, today):
         "duration_minutes": route["duration_minutes"],
         "distance_nm": route["distance_nm"],
         "scheduled_departure_zulu": format_zulu(dep_dt, today),
-        "scheduled_arrival_zulu": format_zulu(arr_dt, today),
+        "scheduled_arrival_zulu": format_zulu(arr_dt, arr_reference),
         "arrival_time_source": arr_source,
         "_dep_dt": dep_dt, "_arr_dt": arr_dt,  # internal, stripped before jsonify
     }
@@ -204,7 +197,7 @@ def search():
                 leg_data[1]["_dep_dt"] += shift
                 leg_data[1]["_arr_dt"] += shift
                 leg_data[1]["scheduled_departure_zulu"] = format_zulu(leg_data[1]["_dep_dt"], today)
-                leg_data[1]["scheduled_arrival_zulu"] = format_zulu(leg_data[1]["_arr_dt"], today)
+                leg_data[1]["scheduled_arrival_zulu"] = format_zulu(leg_data[1]["_arr_dt"], leg_data[1]["_dep_dt"].date())
 
         # turnaround between legs (only meaningful for RT, 2 legs)
         for i in range(1, len(leg_data)):
@@ -283,7 +276,8 @@ def select():
             "departure": weather.get(route_leg["departure_icao"], {"metar": None, "taf": None}),
             "arrival": weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None}),
         }
-        schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, today)
+        taxi_out = conditions["taxi_out_minutes"]
+        schedule = resolve_leg_schedule(route_leg, tz_by_icao, today, taxi_out)
         sobt_dt, sibt_dt = schedule["_sobt_dt"], schedule["_sibt_dt"]
 
         # Enforce a minimum realistic turnaround against the previous leg
@@ -298,15 +292,26 @@ def select():
                 sibt_dt += shift
 
         if sobt_dt is not None:
-            taxi_out = taxi_minutes(route_leg["departure_icao"], large_airport_lookup)
-            taxi_in = taxi_minutes(route_leg["arrival_icao"], large_airport_lookup)
+            # STOT/SLDT/SIBT get their "(+Nd)" suffix relative to THIS
+            # LEG's own SOBT date, not the external "today" reference.
+            # SOBT itself is the one row that says how this leg's Zulu
+            # clock relates to today (e.g. a local-midnight departure at
+            # an eastern-of-UTC airport is legitimately "yesterday" in
+            # Zulu) - repeating that same offset on every other row of
+            # the same leg, when nothing actually crosses a further day
+            # boundary, just reads as a contradiction ("how can arrival
+            # be a different day from departure when they're an hour
+            # apart?"), so those rows are only flagged if THEY cross a
+            # boundary SOBT didn't already.
+            sobt_date = sobt_dt.date()
             stot_dt = sobt_dt + timedelta(minutes=taxi_out)
-            sldt_dt = sibt_dt - timedelta(minutes=taxi_in)
+            sldt_dt = sibt_dt - timedelta(minutes=TAXI_IN_MINUTES)
             conditions["sobt"] = format_zulu(sobt_dt, today)
-            conditions["stot"] = format_zulu(stot_dt, today)
-            conditions["sldt"] = format_zulu(sldt_dt, today)
-            conditions["sibt"] = format_zulu(sibt_dt, today)
+            conditions["stot"] = format_zulu(stot_dt, sobt_date)
+            conditions["sldt"] = format_zulu(sldt_dt, sobt_date)
+            conditions["sibt"] = format_zulu(sibt_dt, sobt_date)
         else:
+            sobt_date = None
             stot_dt = sldt_dt = None
             conditions["sobt"] = conditions["stot"] = conditions["sldt"] = conditions["sibt"] = None
         conditions["eet_minutes"] = schedule["eet_minutes"]
@@ -315,14 +320,17 @@ def select():
         # own delay, if any - the higher end of the range if it's a
         # range. No delay means expected == scheduled. This is also what
         # /simbrief/redirect-url sends as deph/depm, not the raw SOBT.
+        # Same day-suffix anchoring as above: EOBT vs today (it's the
+        # same kind of figure as SOBT), ETOT/ELDT/EIBT vs this leg's own
+        # SOBT date.
         delay_minutes = max(conditions["delay"]["duration_range_minutes"]) if conditions["delay"] else 0
         conditions["expected_delay_minutes"] = delay_minutes
         if sobt_dt is not None:
             delay_delta = timedelta(minutes=delay_minutes)
             conditions["eobt"] = format_zulu(sobt_dt + delay_delta, today)
-            conditions["etot"] = format_zulu(stot_dt + delay_delta, today)
-            conditions["eldt"] = format_zulu(sldt_dt + delay_delta, today)
-            conditions["eibt"] = format_zulu(sibt_dt + delay_delta, today)
+            conditions["etot"] = format_zulu(stot_dt + delay_delta, sobt_date)
+            conditions["eldt"] = format_zulu(sldt_dt + delay_delta, sobt_date)
+            conditions["eibt"] = format_zulu(sibt_dt + delay_delta, sobt_date)
         else:
             conditions["eobt"] = conditions["etot"] = conditions["eldt"] = conditions["eibt"] = None
 
@@ -460,17 +468,20 @@ def simbrief_redirect_url():
 
     civalue = request.args.get("civalue", type=int)
     pax = request.args.get("pax", type=int)
-    if civalue is None or pax is None:
+    taxi_out = request.args.get("taxi_out_minutes", type=int)
+    if civalue is None or pax is None or taxi_out is None:
         # Only hit when the caller doesn't already have confirmed leg
         # values (e.g. a preview, before CONFIRM has committed a
-        # cost_index/pax_count). An already-confirmed active leg's
-        # frontend call always supplies both, so this never re-rolls
-        # numbers the pilot has already seen and confirmed.
+        # cost_index/pax_count/taxi_out_minutes). An already-confirmed
+        # active leg's frontend call always supplies all three, so this
+        # never re-rolls numbers the pilot has already seen and confirmed.
         conditions = generate_leg_conditions(is_repositioning=False, duration_minutes=route_leg["duration_minutes"])
         if civalue is None:
             civalue = conditions["cost_index"]
         if pax is None:
             pax = conditions["pax_count"]
+        if taxi_out is None:
+            taxi_out = conditions["taxi_out_minutes"]
 
     params = {
         "orig": route_leg["departure_icao"],
@@ -480,8 +491,8 @@ def simbrief_redirect_url():
         "date": simbrief_date_str(),
         "civalue": civalue,
         "pax": pax,
-        "taxiout": taxi_minutes(route_leg["departure_icao"], large_airport_lookup),
-        "taxiin": taxi_minutes(route_leg["arrival_icao"], large_airport_lookup),
+        "taxiout": taxi_out,
+        "taxiin": TAXI_IN_MINUTES,
         "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type", "738"), "B738"),
         "reg": SIMBRIEF_AIRCRAFT_REG,
     }
@@ -501,7 +512,7 @@ def simbrief_redirect_url():
     if eobt_match:
         params["deph"], params["depm"] = eobt_match.group(1), eobt_match.group(2)
     else:
-        schedule = resolve_leg_schedule(route_leg, tz_by_icao, large_airport_lookup, date.today())
+        schedule = resolve_leg_schedule(route_leg, tz_by_icao, date.today(), taxi_out)
         sobt_dt = schedule["_sobt_dt"]
         if sobt_dt is not None:
             delay_minutes = request.args.get("delay_minutes", default=0, type=int)

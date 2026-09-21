@@ -19,6 +19,8 @@
     --text-muted:  #444444;
     --amber:       #7A6A00;
     --amber-bg:    #F5EFC0;
+    --orange:      #A34E00;
+    --orange-bg:   #FBE2C4;
     --green:       #245C24;
     --green-bg:    #DCEEDC;
     --red:         #FFFFFF;
@@ -154,13 +156,13 @@
   table.itin-list td.select-cell { width: 70px; }
   table.itin-list td.detail-cell { background: #F5F3EC; padding: 0; }
 
-  .type-badge { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border: 1px solid var(--shadow-dk); }
+  .type-badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border: 1px solid var(--shadow-dk); }
   .type-RT { background: var(--green-bg); color: var(--green); }
   .type-1W { background: #E4E8EF; color: var(--blue-hi); }
   .type-RE { background: var(--amber-bg); color: var(--amber); }
-
-  .tag-domestic { color: var(--green); font-size: 11.5px; font-weight: 700; }
-  .tag-international { color: #6B4B00; font-size: 11.5px; font-weight: 700; }
+  .type-DOM { background: var(--green-bg); color: var(--green); }
+  .type-INT { background: var(--orange-bg); color: var(--orange); }
+  .type-cell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 
   @media (max-width: 720px) {
     table.itin-list thead { display: none; }
@@ -332,6 +334,7 @@
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
 const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
+const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L', RE: 'RE' };
 
 function updateClock() {
   const now = new Date();
@@ -348,6 +351,13 @@ function fmtMinutes(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${h}H${String(m).padStart(2, '0')}M`;
+}
+
+function fmtNum(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 'N/A';
+  return num.toLocaleString('en-US');
 }
 
 function boot() {
@@ -620,20 +630,20 @@ function renderTable() {
   tbody.innerHTML = sorted.map(itin => {
     const key = itinKey(itin);
     const isExpanded = key === expandedKey;
-    const typeTag = itin.domestic ? `<span class="tag-domestic">DOMESTIC</span>` : `<span class="tag-international">INTL</span>`;
+    const domTag = itin.domestic ? `<span class="type-badge type-DOM">DOM</span>` : `<span class="type-badge type-INT">INT</span>`;
     const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
     const row = `
       <tr class="itin-row ${isExpanded ? 'expanded' : ''}" onclick="toggleItinerary('${key}')">
-        <td data-label="TYPE"><span class="type-badge type-${itin.trip_type}">${itin.trip_type}</span></td>
+        <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
-        <td data-label="DEPARTURE">${itin.departure_icao} (${itin.departure_country}) ${typeTag}</td>
+        <td data-label="DEPARTURE">${itin.departure_icao} (${itin.departure_country})</td>
         <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
         <td data-label="ARRIVAL">${itin.arrival_icao} (${itin.arrival_country})</td>
         <td data-label="ETD">${itin.first_departure_zulu || 'UNKNOWN'}</td>
         <td data-label="ETA">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
         <td data-label="LEGS">${itin.legs}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
-        <td data-label="DISTANCE (NM)">${itin.total_distance_nm}</td>
+        <td data-label="DISTANCE (NM)">${fmtNum(itin.total_distance_nm)}</td>
         <td data-label="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
@@ -673,16 +683,16 @@ function legScheduleTable(leg) {
           <tr><td class="k">IBT (IN-BLOCK)</td><td class="v">${leg.sibt || 'N/A'}</td><td class="v">${leg.eibt || 'N/A'}</td></tr>
           <tr><td class="k">EET</td><td class="v" colspan="2">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</td></tr>
           ${leg.turnaround_minutes !== undefined ? `<tr><td class="k">TURNAROUND (FROM PREV LEG)</td><td class="v" colspan="2">${leg.turnaround_minutes != null ? fmtMinutes(leg.turnaround_minutes) : 'N/A'}</td></tr>` : ''}
-          <tr><td class="k">COST INDEX</td><td class="v" colspan="2">${leg.cost_index}</td></tr>
+          <tr><td class="k">COST INDEX</td><td class="v" colspan="2">${fmtNum(leg.cost_index)}</td></tr>
         </table>`;
 }
 
 function legLoadTable(leg) {
   return `
         <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">EXPECTED PAX</td><td class="v">${leg.pax_count} / 189</td></tr>
+          <tr><td class="k">EXPECTED PAX</td><td class="v">${fmtNum(leg.pax_count)} / 189</td></tr>
           <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
-          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${leg.cargo_weight_kg} KG</td></tr>
+          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${fmtNum(leg.cargo_weight_kg)} KG</td></tr>
         </table>`;
 }
 
@@ -703,11 +713,11 @@ function legOfpTable(ofp) {
         <table class="kv" style="margin-bottom:10px;">
           <tr><td class="k">SIMBRIEF OFP</td><td class="v">${ofp.callsign || 'N/A'} &mdash; ${ofp.registration || 'REG N/A'} (${ofp.icao_type || 'TYPE N/A'})</td></tr>
           <tr><td class="k">ROUTE</td><td class="v">${ofp.route || 'N/A'}</td></tr>
-          <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? ofp.cost_index : 'N/A'}</td></tr>
-          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel !== '' ? ofp.block_fuel + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EZFW</td><td class="v">${ofp.est_zfw !== '' ? ofp.est_zfw + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EFOB</td><td class="v">${ofp.efob !== '' ? ofp.efob + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EPAX</td><td class="v">${ofp.epax !== '' ? ofp.epax : 'N/A'}</td></tr>
+          <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? fmtNum(ofp.cost_index) : 'N/A'}</td></tr>
+          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel !== '' ? fmtNum(ofp.block_fuel) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EZFW</td><td class="v">${ofp.est_zfw !== '' ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EFOB</td><td class="v">${ofp.efob !== '' ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EPAX</td><td class="v">${ofp.epax !== '' ? fmtNum(ofp.epax) : 'N/A'}</td></tr>
         </table>`;
 }
 
@@ -827,9 +837,9 @@ function renderRecap(flight) {
     const loadsheetForm = current && state.simbrief === 'available' && !state.loadsheet_signed ? `
       <div class="loadsheet-form" id="loadsheet-${i}">
         <table class="kv" style="margin-bottom:0;">
-          <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? ofp.est_zfw + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">ETOW (OFP)</td><td class="v">${ofp.est_tow ? ofp.est_tow + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EFOB (OFP)</td><td class="v">${ofp.efob ? ofp.efob + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">ETOW (OFP)</td><td class="v">${ofp.est_tow ? fmtNum(ofp.est_tow) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EFOB (OFP)</td><td class="v">${ofp.efob ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
         </table>
         ${legLmcDgBlock(flight)}
         <div class="fields-row">
@@ -869,9 +879,9 @@ function renderRecap(flight) {
           ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
           : `<span class="status-chip status-ok">ON TIME</span>`}
       </p>
-      ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${state.loadsheet.zfw} ${unit} &middot; FOB ${state.loadsheet.fob} ${unit} &middot; ${state.loadsheet.pax} PAX &middot; ${state.loadsheet.crew} CREW</div>` : ''}
+      ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
       ${loadsheetForm}
-      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${state.pirep.afad} ${unit}</div>` : ''}
+      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
       ${pirepForm}
     </div>`;
   }).join('');
@@ -892,7 +902,8 @@ async function prepareLeg(index) {
     static_id: staticId,
     callsign: flight.callsigns ? flight.callsigns[index] : '',
     delay_minutes: delayMinutes,
-    eobt: leg.eobt || ''
+    eobt: leg.eobt || '',
+    taxi_out_minutes: leg.taxi_out_minutes
   });
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
@@ -1040,7 +1051,7 @@ async function loadPirepLog() {
     body.innerHTML = `<table class="kv">` + records.map(r => `
       <tr>
         <td class="k">${r.flight_number} / ${r.callsign || 'N/A'}<br><span class="placeholder-text">${r.departure_icao} &rarr; ${r.arrival_icao}</span></td>
-        <td class="v">ALDT ${r.aldt}Z &middot; ABIT ${r.abit}Z &middot; AFAD ${r.afad}<br><span class="placeholder-text">${new Date(r.submitted_at).toUTCString()}</span></td>
+        <td class="v">ALDT ${r.aldt}Z &middot; ABIT ${r.abit}Z &middot; AFAD ${fmtNum(r.afad)}<br><span class="placeholder-text">${new Date(r.submitted_at).toUTCString()}</span></td>
         <td class="v"><button class="action small danger" onclick="deletePirepRecord('${r.id}')">DELETE</button></td>
       </tr>`).join('') + `</table>`;
   } catch (err) {
