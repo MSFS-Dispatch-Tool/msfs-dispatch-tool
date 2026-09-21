@@ -84,8 +84,8 @@ def resolve_leg_schedule(route, tz_lookup, reference_date, taxi_out_minutes):
     """
     Returns the underlying aware SOBT/SIBT datetimes (under _sobt_dt/
     _sibt_dt) plus EET in minutes. All fields are None if the route has
-    no resolvable scheduled_departure_local (true for repositioning
-    legs, which have no timetable at all).
+    no resolvable scheduled_departure_local - a defensive fallback,
+    since every route in the current dataset has one.
 
     Callers derive STOT/SLDT themselves from _sobt_dt/_sibt_dt plus
     taxi_out_minutes/TAXI_IN_MINUTES (see app.py's /select) - this

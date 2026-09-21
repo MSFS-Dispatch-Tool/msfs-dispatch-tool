@@ -151,11 +151,9 @@ def airports_validate():
 
 @app.route("/search")
 def search():
-    aircraft_type = request.args.get("aircraft", default="738", type=str)
     origin_raw = request.args.get("origin", default="", type=str)
     destination_raw = request.args.get("destination", default="", type=str)
     trip_type = request.args.get("trip_type", default="random", type=str)
-    include_repositioning = request.args.get("repositioning", default="false", type=str) == "true"
 
     origin_icao = resolve_airport(airports, origin_raw) if origin_raw else None
     if origin_raw and origin_icao is None:
@@ -165,9 +163,9 @@ def search():
         return jsonify({"error": f"Unknown airport code: {destination_raw}"}), 400
 
     itineraries = find_itineraries(
-        routes, rt_pairing, airports, aircraft_type,
+        routes, rt_pairing,
         origin_icao=origin_icao, destination_icao=destination_icao,
-        trip_type=trip_type, include_repositioning=include_repositioning
+        trip_type=trip_type
     )
 
     today = date.today()
@@ -204,12 +202,12 @@ def search():
             leg_data[i]["turnaround_minutes"] = turnaround_minutes(leg_data[i - 1]["_arr_dt"], leg_data[i]["_dep_dt"])
 
         dep_country = country_by_icao.get(legs[0]["departure_icao"], "")
-        # "away" airport for RT = leg[0] arrival; for 1W/RE = leg[-1] arrival
+        # "away" airport for RT = leg[0] arrival; for 1W = leg[-1] arrival
         away_country = country_by_icao.get(legs[0]["arrival_icao"], "")
         # For a round trip the rotation's final airport is always back at
         # origin, so "VIA" in the UI shows the away/turnaround airport
-        # instead (the outbound leg's arrival). One-way and repositioning
-        # legs fly direct, so there's no via airport at all.
+        # instead (the outbound leg's arrival). One-way legs fly direct,
+        # so there's no via airport at all.
         via_icao = legs[0]["arrival_icao"] if itin["trip_type"] == "RT" else None
 
         first_dep_dt = leg_data[0]["_dep_dt"]
@@ -248,9 +246,6 @@ def select():
     for fn in flight_numbers:
         leg = routes_by_flight_number.get(fn)
         if leg is None:
-            # repositioning legs aren't in routes_by_flight_number - the
-            # frontend re-sends the full synthesized leg object for those
-            # instead of just a flight number (see JS side).
             return jsonify({"error": f"Unknown flight number: {fn}"}), 400
         itinerary.append(leg)
 
@@ -267,7 +262,7 @@ def select():
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
-        conditions = generate_leg_conditions(is_repositioning=False, duration_minutes=route_leg["duration_minutes"])
+        conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
         conditions["delay"] = roll_delay(delay_codes)
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
@@ -475,7 +470,7 @@ def simbrief_redirect_url():
         # cost_index/pax_count/taxi_out_minutes). An already-confirmed
         # active leg's frontend call always supplies all three, so this
         # never re-rolls numbers the pilot has already seen and confirmed.
-        conditions = generate_leg_conditions(is_repositioning=False, duration_minutes=route_leg["duration_minutes"])
+        conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
         if civalue is None:
             civalue = conditions["cost_index"]
         if pax is None:

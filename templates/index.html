@@ -159,7 +159,6 @@
   .type-badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border: 1px solid var(--shadow-dk); }
   .type-RT { background: var(--green-bg); color: var(--green); }
   .type-1W { background: #E4E8EF; color: var(--blue-hi); }
-  .type-RE { background: var(--amber-bg); color: var(--amber); }
   .type-DOM { background: var(--green-bg); color: var(--green); }
   .type-INT { background: var(--orange-bg); color: var(--orange); }
   .type-cell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
@@ -334,7 +333,7 @@
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
 const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
-const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L', RE: 'RE' };
+const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
 function updateClock() {
   const now = new Date();
@@ -475,10 +474,6 @@ function renderSearchUI() {
               <option value="one_way">ONE-LEG ONLY</option>
               <option value="round_trip">MULTI-LEG ONLY</option>
             </select>
-            <div class="checkbox-row">
-              <input type="checkbox" id="includeRepositioning">
-              <label for="includeRepositioning">INCLUDE AD-HOC REPOSITIONING SECTORS</label>
-            </div>
           </div>
         </div>
         <button class="action" id="searchBtn" onclick="searchFlights()">SEARCH</button>
@@ -503,14 +498,13 @@ async function searchFlights() {
   const origin = document.getElementById('origin').value.trim();
   const destination = document.getElementById('destination').value.trim();
   const tripType = document.getElementById('tripType').value;
-  const repositioning = document.getElementById('includeRepositioning').checked;
 
   const btn = document.getElementById('searchBtn');
   btn.disabled = true;
   btn.textContent = 'SEARCHING...';
 
   try {
-    const params = new URLSearchParams({ origin, destination, trip_type: tripType, repositioning });
+    const params = new URLSearchParams({ origin, destination, trip_type: tripType });
     const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
 
@@ -595,7 +589,6 @@ function renderListPanel() {
               <option value="all">ALL TYPES</option>
               <option value="RT">ROUND TRIP</option>
               <option value="1W">ONE WAY</option>
-              <option value="RE">REPOSITIONING</option>
             </select>
           </div>
         </div>
