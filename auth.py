@@ -46,6 +46,14 @@ ADMIN_EMAILS = {
     if e.strip()
 }
 
+# Cloudflare Turnstile - shown on login/signup. Unset TURNSTILE_SECRET_KEY
+# means verification is skipped entirely (matches this app's long-standing
+# "missing config = feature off, not broken" pattern for local dev).
+TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY")
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY")
+
+AVATAR_BUCKET = "avatars"
+
 AUTH_TIMEOUT = 10
 
 
@@ -212,3 +220,77 @@ def admin_delete_user(user_id):
     )
     if resp.status_code >= 400 and resp.status_code != 404:
         _raise_for_gotrue_error(resp)
+
+
+# ---------------------------------------------------------------------
+# Cloudflare Turnstile (captcha) - server-side verification only; the
+# widget itself is rendered client-side against TURNSTILE_SITE_KEY.
+# ---------------------------------------------------------------------
+
+def turnstile_available():
+    return bool(TURNSTILE_SECRET_KEY)
+
+
+def verify_turnstile(token, remote_ip=None):
+    """True if the token is valid, or if Turnstile isn't configured
+    (local dev without the secret set - matches every other optional
+    integration in this file)."""
+    if not TURNSTILE_SECRET_KEY:
+        return True
+    if not token:
+        return False
+    payload = {"secret": TURNSTILE_SECRET_KEY, "response": token}
+    if remote_ip:
+        payload["remoteip"] = remote_ip
+    try:
+        resp = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data=payload,
+            timeout=AUTH_TIMEOUT,
+        )
+        return bool(resp.json().get("success"))
+    except requests.RequestException:
+        return False
+
+
+# ---------------------------------------------------------------------
+# Supabase Storage (profile photos) - service-role key, server-side
+# uploads only. The bucket is created automatically at app startup
+# (see ensure_avatar_bucket) rather than requiring a manual dashboard
+# step, the same way init_db() creates its own tables.
+# ---------------------------------------------------------------------
+
+def ensure_avatar_bucket():
+    """Idempotent: creates the public avatar-photos bucket if it
+    doesn't already exist. Safe to call on every app startup."""
+    resp = requests.post(
+        f"{SUPABASE_URL}/storage/v1/bucket",
+        headers=_service_headers(),
+        json={"id": AVATAR_BUCKET, "name": AVATAR_BUCKET, "public": True,
+              "file_size_limit": 2 * 1024 * 1024,
+              "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]},
+        timeout=AUTH_TIMEOUT,
+    )
+    # 400/409 here just means the bucket already exists - not an error.
+    if resp.status_code >= 400 and "already exists" not in resp.text.lower():
+        raise AuthError(f"Could not create avatar storage bucket: {resp.text}")
+
+
+def upload_avatar(path, data, content_type):
+    """Uploads (overwriting any existing file at the same path) and
+    returns the public URL. path is typically the user's id plus an
+    extension, e.g. '<uuid>.jpg'."""
+    resp = requests.post(
+        f"{SUPABASE_URL}/storage/v1/object/{AVATAR_BUCKET}/{path}",
+        headers={
+            "apikey": SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        },
+        data=data,
+        timeout=AUTH_TIMEOUT,
+    )
+    if resp.status_code >= 400:
+        raise AuthError(f"Photo upload failed: {resp.text}")
+    return f"{SUPABASE_URL}/storage/v1/object/public/{AVATAR_BUCKET}/{path}"

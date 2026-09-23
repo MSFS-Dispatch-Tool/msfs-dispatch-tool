@@ -342,6 +342,8 @@
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
 const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
+const CURRENT_USER_EMAIL = {{ current_user_email|tojson }};
+const COUNTRIES = {{ countries|tojson }};
 const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
 function updateClock() {
@@ -462,7 +464,7 @@ async function validateAirport(fieldId) {
   return result.valid;
 }
 
-function renderSearchUI() {
+async function renderSearchUI() {
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
       <div class="panel-header">SEARCH PARAMETERS</div>
@@ -498,6 +500,14 @@ function renderSearchUI() {
   attachAirportDropdown('destination', 'destinationDropdown');
   document.getElementById('origin').addEventListener('blur', () => setTimeout(() => validateAirport('origin'), 150));
   document.getElementById('destination').addEventListener('blur', () => setTimeout(() => validateAirport('destination'), 150));
+
+  // Prefill from the pilot's preferred base (set during onboarding /
+  // account settings) so a returning pilot doesn't retype it every visit.
+  try {
+    const settings = await (await fetch('/settings')).json();
+    const base = settings.profile && settings.profile.preferred_base;
+    if (base) document.getElementById('origin').value = base;
+  } catch (err) { /* non-critical - search still works without a prefill */ }
 }
 
 let currentItineraries = [];
@@ -1036,57 +1046,185 @@ function goActiveFlight() {
   renderRecap(flight);
 }
 
+function calcAge(birthDateStr) {
+  if (!birthDateStr) return null;
+  const dob = new Date(birthDateStr);
+  if (isNaN(dob)) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function avatarHtml(profile, size) {
+  size = size || 64;
+  if (profile.photo_url) {
+    return `<img src="${escAttr(profile.photo_url)}" alt="" style="width:${size}px; height:${size}px; border-radius:50%; object-fit:cover; flex-shrink:0;">`;
+  }
+  const initial = ((profile.username || profile.first_name || '?').trim().charAt(0) || '?').toUpperCase();
+  return `<div style="width:${size}px; height:${size}px; border-radius:50%; background:var(--titlebar); color:#fff; display:flex; align-items:center; justify-content:center; font-size:${Math.round(size * 0.4)}px; font-weight:700; flex-shrink:0;">${initial}</div>`;
+}
+
 async function renderUserPage() {
   document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state">LOADING...</div></div></div>`;
 
-  let settings = null, genOptions = null, stats = null;
+  let settings = null, stats = null;
   try {
-    const [settingsResp, optionsResp, statsResp] = await Promise.all([
-      fetch('/settings'), fetch('/generation-options'), fetch('/stats')
-    ]);
+    const [settingsResp, statsResp] = await Promise.all([fetch('/settings'), fetch('/stats')]);
     settings = await settingsResp.json();
-    genOptions = await optionsResp.json();
     stats = await statsResp.json();
   } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD USER SETTINGS. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD YOUR PROFILE. CHECK THE CONNECTION AND RETRY.</div></div>`;
     return;
   }
   currentSettings = settings;
-
-  const username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
   const p = settings.profile;
+  const age = calcAge(p.birth_date);
+  const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ');
+  const metaParts = [];
+  if (age != null) metaParts.push(`AGE ${age}`);
+  if (p.nationality) metaParts.push(escAttr(p.nationality));
+  if (p.preferred_base) metaParts.push(`BASE ${escAttr(p.preferred_base)}`);
 
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
-      <div class="panel-header">PILOT PROFILE</div>
-      <div class="panel-body">
-        <div class="params-grid">
-          <div class="field"><label for="profileFirstName">FIRST NAME</label><input type="text" id="profileFirstName" autocomplete="off" value="${escAttr(p.first_name)}"></div>
-          <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
-          <div class="field"><label for="profileBirthDate">BIRTH DATE</label><input type="date" id="profileBirthDate" value="${escAttr(p.birth_date)}"></div>
-          <div class="field"><label for="profileNationality">NATIONALITY</label><input type="text" id="profileNationality" autocomplete="off" value="${escAttr(p.nationality)}"></div>
-          <div class="field">
-            <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
-            <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(username)}" placeholder="e.g. jdoe123">
-            <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
-          </div>
-        </div>
-        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-          <button class="action" onclick="savePilotProfile()">SAVE</button>
-          <button class="action small" onclick="boot()">BACK</button>
-          <span class="placeholder-text" id="profileSaveStatus"></span>
+      <div class="panel-header">
+        PILOT PROFILE
+        <button class="action small" onclick="renderAccountSettings()">ACCOUNT SETTINGS</button>
+      </div>
+      <div class="panel-body" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        ${avatarHtml(p, 64)}
+        <div>
+          <div style="font-size:16px; font-weight:700;">${p.username ? escAttr(p.username) : 'NO USERNAME SET'}</div>
+          ${fullName ? `<div class="placeholder-text">${escAttr(fullName)}</div>` : ''}
+          ${metaParts.length ? `<div class="placeholder-text">${metaParts.join(' &middot; ')}</div>` : ''}
         </div>
       </div>
     </div>
 
     <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">PILOT STATS</div>
+      <div class="panel-header">FLYING STATS</div>
       <div class="panel-body">
         <table class="kv">
           <tr><td class="k">TOTAL FLIGHTS (PIREPS FILED)</td><td class="v">${fmtNum(stats.total_flights)}</td></tr>
           <tr><td class="k">TOTAL FLIGHT TIME</td><td class="v">${stats.total_flight_minutes != null ? fmtMinutes(stats.total_flight_minutes) : 'N/A'}</td></tr>
         </table>
         <p class="placeholder-text" style="margin-top:8px;">Flight time is the sum of each leg's EET (expected airborne time) - the app never captures an actual takeoff time, only ALDT/ABIT, so this isn't a measured actual.</p>
+        <div id="monthlyChart" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">DESTINATIONS REACHED</div>
+      <div class="panel-body">
+        <div id="destinationsMap" class="route-map" style="max-width:none; height:320px;"></div>
+        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">PIREP LOG</div>
+      <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
+    </div>`;
+
+  renderMonthlyChart(stats.monthly || []);
+  initDestinationsMap('destinationsMap', stats.airports || [], p.preferred_base);
+  loadPirepLog();
+}
+
+function renderMonthlyChart(monthly) {
+  const el = document.getElementById('monthlyChart');
+  if (!el) return;
+  if (!monthly.length) { el.innerHTML = '<p class="placeholder-text">No flights logged yet.</p>'; return; }
+  const recent = monthly.slice(-12);
+  const max = Math.max(...recent.map(m => m.flights), 1);
+  const bars = recent.map(m => {
+    const pct = Math.max(4, Math.round((m.flights / max) * 100));
+    const [year, mo] = m.month.split('-');
+    const label = new Date(Number(year), Number(mo) - 1, 1).toLocaleDateString(undefined, { month: 'short' });
+    return `
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+        <div style="font-size:11px; color:var(--text-muted);">${m.flights}</div>
+        <div style="width:100%; max-width:28px; height:80px; display:flex; align-items:flex-end; background:var(--face-dark); border-radius:3px;" title="${m.month}">
+          <div style="width:100%; height:${pct}%; background:var(--titlebar); border-radius:3px 3px 0 0;"></div>
+        </div>
+        <div style="font-size:10.5px; color:var(--text-muted);">${label}</div>
+      </div>`;
+  }).join('');
+  el.innerHTML = `<div style="display:flex; gap:6px; align-items:flex-end;">${bars}</div>`;
+}
+
+function initDestinationsMap(id, airports, baseIcao) {
+  const el = document.getElementById(id);
+  if (!el || typeof L === 'undefined') return;
+  const plottable = airports.filter(a => a.lat != null && a.lon != null);
+  if (!plottable.length) { el.outerHTML = '<div class="empty-state">NO FLIGHTS LOGGED YET.</div>'; return; }
+  const map = L.map(id, { zoomControl: true, scrollWheelZoom: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 11, attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  const points = [];
+  plottable.forEach(a => {
+    points.push([a.lat, a.lon]);
+    const isBase = baseIcao && a.icao === baseIcao;
+    const marker = L.circleMarker([a.lat, a.lon], {
+      radius: isBase ? 8 : 6,
+      color: isBase ? '#B42318' : '#2563EB',
+      fillColor: isBase ? '#B42318' : '#2563EB',
+      fillOpacity: 0.85, weight: 2,
+    }).addTo(map);
+    marker.bindTooltip(`${a.icao}${a.name ? ' — ' + a.name : ''} (${a.count} visit${a.count === 1 ? '' : 's'})${isBase ? ' — BASE' : ''}`);
+  });
+  map.fitBounds(L.latLngBounds(points), { padding: [30, 30] });
+}
+
+async function renderAccountSettings() {
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state">LOADING...</div></div></div>`;
+
+  let settings = null, genOptions = null;
+  try {
+    const [settingsResp, optionsResp] = await Promise.all([fetch('/settings'), fetch('/generation-options')]);
+    settings = await settingsResp.json();
+    genOptions = await optionsResp.json();
+  } catch (err) {
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD ACCOUNT SETTINGS. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    return;
+  }
+  currentSettings = settings;
+  const p = settings.profile;
+  const simbriefUsername = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
+  const countryOptions = COUNTRIES.map(c => `<option value="${escAttr(c)}" ${p.nationality === c ? 'selected' : ''}>${c}</option>`).join('');
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="panel">
+      <div class="panel-header">
+        ACCOUNT SETTINGS
+        <button class="action small" onclick="renderUserPage()">BACK TO PROFILE</button>
+      </div>
+      <div class="panel-body">
+        <div class="params-grid">
+          <div class="field"><label for="acctEmail">EMAIL</label><input type="text" id="acctEmail" value="${escAttr(CURRENT_USER_EMAIL)}" disabled></div>
+          <div class="field"><label for="acctUsername">USERNAME</label><input type="text" id="acctUsername" value="${escAttr(p.username)}" disabled></div>
+          <div class="field"><label for="profileFirstName">FIRST NAME</label><input type="text" id="profileFirstName" autocomplete="off" value="${escAttr(p.first_name)}"></div>
+          <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
+          <div class="field"><label for="profileBirthDate">BIRTH DATE <span class="hint">(optional)</span></label><input type="date" id="profileBirthDate" value="${escAttr(p.birth_date)}"></div>
+          <div class="field">
+            <label for="profileNationality">NATIONALITY <span class="hint">(optional)</span></label>
+            <select id="profileNationality"><option value="">&mdash;</option>${countryOptions}</select>
+          </div>
+          <div class="field"><label for="profilePreferredBase">PREFERRED BASE <span class="hint">(optional, ICAO/IATA)</span></label><input type="text" id="profilePreferredBase" autocomplete="off" maxlength="4" style="text-transform:uppercase;" value="${escAttr(p.preferred_base)}"></div>
+          <div class="field">
+            <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
+            <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(simbriefUsername)}" placeholder="e.g. jdoe123">
+            <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
+          </div>
+        </div>
+        <p class="placeholder-text">Email, username and password can't be changed here yet.</p>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <button class="action" onclick="savePilotProfile()">SAVE</button>
+          <span class="placeholder-text" id="profileSaveStatus"></span>
+        </div>
       </div>
     </div>
 
@@ -1101,13 +1239,7 @@ async function renderUserPage() {
           <span class="placeholder-text" id="generationSaveStatus"></span>
         </div>
       </div>
-    </div>
-
-    <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">PIREP LOG</div>
-      <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
     </div>`;
-  loadPirepLog();
 }
 
 function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn) {
@@ -1174,10 +1306,12 @@ async function savePilotProfile() {
   if (!usernameValid) return;
 
   const profile = {
+    ...currentSettings.profile,
     first_name: document.getElementById('profileFirstName').value.trim(),
     last_name: document.getElementById('profileLastName').value.trim(),
     birth_date: document.getElementById('profileBirthDate').value,
-    nationality: document.getElementById('profileNationality').value.trim(),
+    nationality: document.getElementById('profileNationality').value,
+    preferred_base: document.getElementById('profilePreferredBase').value.trim().toUpperCase(),
   };
   const payload = { profile, generation: currentSettings.generation };
   try {

@@ -1,11 +1,12 @@
 {% extends "public_base.html" %}
-{% block title %}VirtualDispatch &mdash; Ryanair 737-800 dispatch immersion for MSFS{% endblock %}
+{% block title %}VirtualDispatch &mdash; Flight simulator dispatch, done properly{% endblock %}
+{% block meta_description %}VirtualDispatch generates real dispatch data for your flight simulator flights: routes, weather, loadsheets, equipment status and delays, so every leg starts with a proper briefing.{% endblock %}
 {% block content %}
 
 <section class="hero">
   <div class="container">
     <h1>Fly the paperwork, not just the aircraft.</h1>
-    <p class="lead">VirtualDispatch generates real dispatch data &mdash; routes, weather, loadsheets, MELs, delays &mdash; for your Ryanair 737-800 flights in Microsoft Flight Simulator, so every leg starts with a proper briefing instead of a blank map.</p>
+    <p class="lead">VirtualDispatch generates real dispatch data &mdash; routes, weather, loadsheets, equipment status, delays &mdash; for your flights in Microsoft Flight Simulator, so every leg starts with a proper briefing instead of a blank map.</p>
     <div class="actions">
       <a href="/signup" class="btn btn-primary">Create a free account</a>
       <a href="/#features" class="btn btn-secondary">See how it works</a>
@@ -13,10 +14,16 @@
   </div>
 </section>
 
+<section>
+  <div class="container">
+    <img src="{{ url_for('static', filename='img/screenshot-search.png') }}" alt="VirtualDispatch route search screen" style="width:100%; border-radius:var(--radius); border:1px solid var(--shadow-md); box-shadow:0 8px 24px rgba(16,24,40,0.08);">
+  </div>
+</section>
+
 <section id="features">
   <div class="container">
     <h2>Everything a real dispatch desk hands you</h2>
-    <p class="section-lead">Pick a route from the real Ryanair 737-800 network, and VirtualDispatch builds the rest of the flight around it.</p>
+    <p class="section-lead">Pick a route from a real scheduled network, and VirtualDispatch builds the rest of the flight around it.</p>
     <div class="feature-grid">
 
       <div class="feature-card">
@@ -24,7 +31,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </div>
         <h3>Real routes, real schedules</h3>
-        <p>Search the actual Ryanair 737-800 network and get scheduled times, sector length and turnaround derived from real scheduling data.</p>
+        <p>Search a real scheduled network and get scheduled times, sector length and turnaround derived from real scheduling data.</p>
       </div>
 
       <div class="feature-card">
@@ -39,7 +46,7 @@
         <div class="icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         </div>
-        <h3>MELs, delays &amp; last-minute changes</h3>
+        <h3>Equipment status, delays &amp; last-minute changes</h3>
         <p>Randomized equipment defects, delay codes and load changes &mdash; toggle each category on or off from your profile to match how much complexity you want.</p>
       </div>
 
@@ -55,8 +62,8 @@
         <div class="icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h1"/></svg>
         </div>
-        <h3>PIREP log</h3>
-        <p>File a PIREP at the end of each flight and keep a running log &mdash; every leg's full briefing, reopenable anytime.</p>
+        <h3>PIREP log &amp; flying stats</h3>
+        <p>File a PIREP at the end of each flight and keep a running log, with charts and a map of everywhere you've flown.</p>
       </div>
 
       <div class="feature-card">
@@ -85,16 +92,24 @@
       <li>
         <div>
           <h4>Pick a route</h4>
-          <p>Search the Ryanair network by airport, or browse a randomized itinerary.</p>
+          <p>Search the scheduled network by airport, or browse a randomized itinerary.</p>
         </div>
       </li>
       <li>
         <div>
           <h4>Fly the briefing</h4>
-          <p>Review weather, loadsheet and any MEL/delay, send it to SimBrief, and fly.</p>
+          <p>Review weather, loadsheet and any equipment status or delay, send it to SimBrief, and fly.</p>
         </div>
       </li>
     </ul>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Track every leg you fly</h2>
+    <p class="section-lead">A PIREP log, flying stats, and a map of every destination you've reached &mdash; your base airport marked out from the rest.</p>
+    <img src="{{ url_for('static', filename='img/screenshot-profile.png') }}" alt="VirtualDispatch pilot profile with stats and destinations map" style="width:100%; border-radius:var(--radius); border:1px solid var(--shadow-md); box-shadow:0 8px 24px rgba(16,24,40,0.08);">
   </div>
 </section>
 
