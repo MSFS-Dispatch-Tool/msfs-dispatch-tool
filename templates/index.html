@@ -883,7 +883,7 @@ function legScheduleTable(leg) {
 function legLoadTable(leg) {
   return `
         <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">EXPECTED PAX</td><td class="v">${fmtNum(leg.pax_count)} / 189</td></tr>
+          <tr><td class="k">EXPECTED PAX</td><td class="v">${fmtNum(leg.pax_count)} / ${fmtNum(leg.seat_capacity)}</td></tr>
           <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
           <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${fmtNum(leg.cargo_weight_kg)} KG</td></tr>
         </table>`;
