@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlencode
 import db
 import auth
+import blog
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras
@@ -36,7 +37,17 @@ app.permanent_session_lifetime = timedelta(days=30)
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
 PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session",
-                    "resend_verification_route", "request_password_reset_route", "static"}
+                    "resend_verification_route", "request_password_reset_route", "static",
+                    "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
+
+
+@app.context_processor
+def inject_template_globals():
+    today = date.today()
+    return {
+        "current_year": today.year,
+        "legal_updated": today.strftime("%B %-d, %Y") if os.name != "nt" else today.strftime("%B %d, %Y"),
+    }
 
 
 def current_user():
@@ -125,7 +136,7 @@ def login():
         try:
             token_response = auth.sign_in(email, password)
             _store_session(token_response)
-            return redirect(request.args.get("next") or url_for("index"))
+            return redirect(request.args.get("next") or url_for("dispatch_app"))
         except auth.AuthError as exc:
             error = exc.message
     return render_template("login.html", mode="login", error=error, notice=notice)
@@ -203,7 +214,7 @@ def _is_admin():
 @app.route("/admin/users")
 def admin_users_page():
     if not auth.auth_available() or not _is_admin():
-        return redirect(url_for("index"))
+        return redirect(url_for("dispatch_app"))
     return render_template("admin_users.html")
 
 
@@ -362,11 +373,44 @@ def strip_internal(d):
 
 @app.route("/")
 def index():
+    return render_template("landing.html")
+
+
+@app.route("/app")
+def dispatch_app():
     counts = {
         "routes": len(routes), "mels": len(mels), "delay_codes": len(delay_codes),
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
     return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin())
+
+
+@app.route("/blog")
+def blog_index():
+    return render_template("blog_index.html", posts=blog.list_posts())
+
+
+@app.route("/blog/<slug>")
+def blog_post(slug):
+    post = blog.get_post(slug)
+    if not post:
+        return render_template("blog_index.html", posts=blog.list_posts()), 404
+    return render_template("blog_post.html", post=post)
+
+
+@app.route("/privacy")
+def legal_privacy():
+    return render_template("legal_privacy.html")
+
+
+@app.route("/terms")
+def legal_terms():
+    return render_template("legal_terms.html")
+
+
+@app.route("/cookies")
+def legal_cookies():
+    return render_template("legal_cookies.html")
 
 
 @app.route("/airports/search")

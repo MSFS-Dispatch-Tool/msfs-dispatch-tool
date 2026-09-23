@@ -1,0 +1,21 @@
+{% extends "public_base.html" %}
+{% block title %}Blog &mdash; VirtualDispatch{% endblock %}
+{% block content %}
+<section>
+  <div class="container">
+    <h2>Blog</h2>
+    <p class="section-lead">Development updates and notes on where VirtualDispatch is headed.</p>
+    <div class="blog-list">
+      {% for post in posts %}
+      <a class="blog-card" href="{{ url_for('blog_post', slug=post.slug) }}">
+        <div class="date">{{ post.date_display }}</div>
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.summary }}</p>
+      </a>
+      {% else %}
+      <p class="section-lead">No posts yet &mdash; check back soon.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

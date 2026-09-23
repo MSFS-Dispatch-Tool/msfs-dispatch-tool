@@ -1,0 +1,53 @@
+{% extends "public_base.html" %}
+{% block title %}Privacy Policy &mdash; VirtualDispatch{% endblock %}
+{% block content %}
+<section>
+  <div class="container legal-page">
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated {{ legal_updated }}</div>
+
+    <p>This Privacy Policy explains how VirtualDispatch ("VirtualDispatch", "we", "us") collects, uses and protects personal data when you use the service at virtualdispatch.app (the "Service").</p>
+
+    <h2>1. Data controller</h2>
+    <p>VirtualDispatch is currently operated by an individual based in Italy, not yet through a registered company. For the purposes of the EU General Data Protection Regulation (GDPR), the operator of virtualdispatch.app acts as the data controller for personal data processed through the Service. You can contact us at <a href="mailto:privacy@virtualdispatch.app">privacy@virtualdispatch.app</a> for any privacy-related request.</p>
+
+    <h2>2. What data we collect</h2>
+    <ul>
+      <li><strong>Account data:</strong> the email address and password you provide when creating an account. Passwords are never stored by us in readable form &mdash; account authentication is handled by our identity provider, Supabase Auth, which stores only a salted hash.</li>
+      <li><strong>Profile data:</strong> optional profile fields you choose to fill in (first name, last name, birth date, nationality, SimBrief username).</li>
+      <li><strong>Service usage data:</strong> the PIREPs you file, your generation settings (which delay/MEL/LMC categories are enabled), and derived flying statistics &mdash; all tied to your account and visible only to you.</li>
+      <li><strong>Technical data:</strong> standard web server logs (IP address, browser user agent, request timestamps) collected automatically by our hosting provider for security and reliability purposes.</li>
+      <li><strong>Cookies:</strong> see our <a href="/cookies">Cookie Policy</a> for details.</li>
+    </ul>
+
+    <h2>3. Why we process your data</h2>
+    <ul>
+      <li>To create and manage your account, and to provide the core functionality of the Service (contract performance).</li>
+      <li>To send you account-related emails: email verification, password reset, and important service notices (contract performance / legitimate interest).</li>
+      <li>To maintain the security and integrity of the Service, including preventing abuse (legitimate interest).</li>
+      <li>With your consent, to understand how the Service is used through analytics, where enabled (consent &mdash; see our <a href="/cookies">Cookie Policy</a>).</li>
+    </ul>
+
+    <h2>4. Who we share data with</h2>
+    <p>We use the following sub-processors to operate the Service. Each processes data on our behalf under their own data processing terms:</p>
+    <ul>
+      <li><strong>Supabase</strong> &mdash; hosts our database and provides account authentication/email verification.</li>
+      <li><strong>Render</strong> &mdash; hosts the application itself.</li>
+      <li><strong>Resend</strong> &mdash; delivers transactional account emails (verification, password reset).</li>
+    </ul>
+    <p>These providers may process data on infrastructure located outside the European Economic Area. Where this is the case, they provide appropriate safeguards (such as Standard Contractual Clauses) for the transfer. We do not sell your personal data to third parties, and we do not share it for third-party advertising purposes.</p>
+
+    <h2>5. How long we keep your data</h2>
+    <p>We keep your account and associated data for as long as your account remains active. If you delete your account (or ask us to), we will delete your associated data within a reasonable time, except where we are required to retain certain records by law.</p>
+
+    <h2>6. Your rights</h2>
+    <p>Under the GDPR, you have the right to access, correct, delete, restrict, or port your personal data, and to object to certain processing. To exercise any of these rights, contact us at <a href="mailto:privacy@virtualdispatch.app">privacy@virtualdispatch.app</a>. You also have the right to lodge a complaint with the Italian data protection authority, the <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>, or with your own country's supervisory authority.</p>
+
+    <h2>7. Changes to this policy</h2>
+    <p>We may update this Privacy Policy from time to time. We'll update the "Last updated" date above when we do. Continued use of the Service after a change constitutes acceptance of the updated policy.</p>
+
+    <h2>8. Contact</h2>
+    <p>Questions about this policy? Reach us at <a href="mailto:privacy@virtualdispatch.app">privacy@virtualdispatch.app</a>.</p>
+  </div>
+</section>
+{% endblock %}
