@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SimDispatch</title>
+<title>VirtualDispatch</title>
 <style>
   :root {
     --face:        #ECE9D8;
@@ -68,7 +68,7 @@
 </head>
 <body>
   <div class="panel">
-    <div class="panel-header">SimDispatch &mdash; {{ "CREATE ACCOUNT" if mode == "signup" else "SIGN IN" }}</div>
+    <div class="panel-header">VirtualDispatch &mdash; {{ "CREATE ACCOUNT" if mode == "signup" else "SIGN IN" }}</div>
     <div class="panel-body">
       <form method="POST" action="{{ url_for('signup') if mode == 'signup' else url_for('login', next=request.args.get('next')) }}">
         <label for="email">EMAIL</label>

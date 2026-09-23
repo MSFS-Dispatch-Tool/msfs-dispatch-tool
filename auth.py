@@ -1,5 +1,5 @@
 """
-Supabase Auth (GoTrue) integration for SimDispatch.
+Supabase Auth (GoTrue) integration for VirtualDispatch.
 
 This app already runs its Postgres on Supabase, so account signup/login/
 email-verification rides on the same project's built-in Auth service

@@ -1,5 +1,5 @@
 """
-Generator logic for SimDispatch.
+Generator logic for VirtualDispatch.
 
 Core model: itineraries are built from REAL round-trip pairs (same two
 airports, reversed, sequential-ish flight numbers - the fingerprint of
