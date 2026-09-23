@@ -53,7 +53,7 @@ img { max-width: 100%; }
   font-weight: 700; font-size: 17px; color: var(--text); text-decoration: none;
   display: flex; align-items: center; gap: 8px;
 }
-.site-nav .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--titlebar); display: inline-block; }
+.site-nav .brand img { width: 34px; height: 34px; border-radius: 50%; display: block; }
 .site-nav .links { display: flex; align-items: center; gap: 28px; }
 .site-nav .links a { color: var(--text-muted); text-decoration: none; font-size: 14.5px; font-weight: 500; }
 .site-nav .links a:hover { color: var(--text); }
