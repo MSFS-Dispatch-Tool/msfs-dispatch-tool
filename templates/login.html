@@ -15,65 +15,86 @@
     --face-dark:   #F3F4F6;
     --titlebar:    #1D4ED8;
     --titlebar-2:  #2563EB;
-    --white:       #FFFFFF;
-    --shadow-dk:   #D0D5DD;
     --text:        #101828;
     --text-muted:  #667085;
+    --border:      #D0D5DD;
     --red:         #B42318;
-    --amber:       #B54708;
     --green:       #067647;
+
+    /* Same 4px spacing scale as onboarding.html - keep the two in sync. */
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-7: 28px;
+
+    --radius: 8px;
+    --control-height: 44px;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
     background: var(--face-dark); color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    padding: 24px 0;
+    font-size: 14px; line-height: 1.5;
+    padding: var(--sp-6) 0;
   }
   .panel {
-    width: 92%; max-width: 380px;
-    background: var(--face); border: 1px solid var(--shadow-dk); border-radius: 12px;
+    width: 92%; max-width: 400px;
+    background: var(--face); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: 0 4px 16px rgba(16,24,40,0.08);
     overflow: hidden;
   }
   .panel-header {
     background: var(--titlebar);
-    color: #fff; padding: 18px 22px; font-weight: 600; font-size: 15px; letter-spacing: 0.01em;
+    color: #fff; padding: var(--sp-6) var(--sp-7); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
   }
-  .panel-body { padding: 22px; }
-  label { display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 5px; margin-top: 14px; }
-  label:first-child { margin-top: 0; }
+  .panel-body { padding: var(--sp-7); }
+
+  .field { margin-bottom: var(--sp-5); }
+  .field:last-of-type { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: var(--sp-2); }
+
   input[type="password"], input[type="email"] {
-    width: 100%; font-family: inherit; font-size: 14px; padding: 9px 11px;
-    background: var(--white); color: var(--text);
-    border: 1px solid var(--shadow-dk); border-radius: 6px;
+    width: 100%; height: var(--control-height); font-family: inherit; font-size: 14px; padding: 0 var(--sp-3);
+    background: var(--face); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
   }
   input[type="password"]:focus, input[type="email"]:focus {
     outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
   }
-  .password-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .strength-bar { height: 4px; border-radius: 2px; background: var(--face-dark); margin-top: 7px; overflow: hidden; }
+
+  .password-hint { font-size: 12px; color: var(--text-muted); margin: var(--sp-2) 0 0; }
+  .strength-bar { height: 4px; border-radius: 2px; background: var(--face-dark); margin-top: var(--sp-2); overflow: hidden; }
   .strength-bar-fill { height: 100%; width: 0%; border-radius: 2px; background: var(--red); transition: width 0.15s ease, background 0.15s ease; }
-  .strength-label { font-size: 11px; margin-top: 3px; color: var(--text-muted); }
-  .remember-row { display: flex; align-items: center; gap: 7px; margin-top: 14px; }
-  .remember-row label { margin: 0; font-size: 12.5px; font-weight: 400; }
-  .error { color: var(--red); font-size: 12.5px; margin: 12px 0 0; }
-  .notice { color: var(--green); font-size: 12.5px; margin: 12px 0 0; }
-  .cf-turnstile { margin-top: 16px; }
-  button {
-    margin-top: 18px; width: 100%;
-    font-family: inherit; font-size: 14px; font-weight: 600;
-    background: var(--titlebar); color: #fff; padding: 10px; cursor: pointer;
-    border: none; border-radius: 6px; transition: background 0.12s ease;
+  .strength-label { font-size: 12px; margin-top: var(--sp-1); color: var(--text-muted); }
+
+  .remember-row { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-5); }
+  .remember-row label { margin: 0; font-size: 13px; font-weight: 400; }
+
+  .cf-turnstile { margin-bottom: var(--sp-5); }
+
+  .error {
+    color: var(--red); font-size: 13px; margin: 0 0 var(--sp-5);
+    padding: var(--sp-3); background: #FEF3F2; border: 1px solid #FDA29B; border-radius: var(--radius);
   }
-  button:hover { background: var(--titlebar-2); }
-  .switch { margin-top: 16px; font-size: 13px; text-align: center; color: var(--text-muted); }
+  .notice {
+    color: var(--green); font-size: 13px; margin: 0 0 var(--sp-5);
+    padding: var(--sp-3); background: #ECFDF3; border: 1px solid #A6F4C5; border-radius: var(--radius);
+  }
+
+  button[type="submit"] {
+    width: 100%; height: var(--control-height);
+    font-family: inherit; font-size: 14.5px; font-weight: 600;
+    background: var(--titlebar); color: #fff; cursor: pointer;
+    border: none; border-radius: var(--radius); transition: background 0.12s ease;
+  }
+  button[type="submit"]:hover { background: var(--titlebar-2); }
+
+  .switch { margin-top: var(--sp-5); font-size: 13.5px; text-align: center; color: var(--text-muted); }
   .switch a { color: var(--titlebar); font-weight: 500; text-decoration: none; }
   .switch a:hover { text-decoration: underline; }
-  .forgot { margin-top: 8px; font-size: 12px; text-align: right; }
+
+  .forgot { margin-top: var(--sp-3); font-size: 12.5px; text-align: right; }
   .forgot button {
-    all: unset; cursor: pointer; color: var(--titlebar); font-size: 12px;
+    all: unset; cursor: pointer; color: var(--titlebar); font-size: 12.5px;
     text-decoration: underline; font-family: inherit;
   }
 </style>
@@ -82,20 +103,30 @@
   <div class="panel">
     <div class="panel-header">VirtualDispatch &mdash; {{ "Create account" if mode == "signup" else "Sign in" }}</div>
     <div class="panel-body">
+      {% if error %}<p class="error">{{ error }}</p>{% endif %}
+      {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
       <form method="POST" action="{{ url_for('signup') if mode == 'signup' else url_for('login', next=request.args.get('next')) }}" id="authForm">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" autofocus required>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autofocus required>
+        </div>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required minlength="8"
-               {% if mode == "signup" %}oninput="updateStrength()"{% endif %}>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required minlength="8"
+                 {% if mode == "signup" %}oninput="updateStrength()"{% endif %}>
+          {% if mode == "signup" %}
+          <p class="password-hint">At least 8 characters, with a letter, a number, and a symbol.</p>
+          <div class="strength-bar"><div class="strength-bar-fill" id="strengthFill"></div></div>
+          <div class="strength-label" id="strengthLabel">&nbsp;</div>
+          {% endif %}
+        </div>
+
         {% if mode == "signup" %}
-        <p class="password-hint">At least 8 characters, with a letter, a number, and a symbol.</p>
-        <div class="strength-bar"><div class="strength-bar-fill" id="strengthFill"></div></div>
-        <div class="strength-label" id="strengthLabel">&nbsp;</div>
-
-        <label for="password_confirm">Confirm password</label>
-        <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+        <div class="field">
+          <label for="password_confirm">Confirm password</label>
+          <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
+        </div>
         {% endif %}
 
         {% if mode != "signup" %}
@@ -109,8 +140,6 @@
         <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
         {% endif %}
 
-        {% if error %}<p class="error">{{ error }}</p>{% endif %}
-        {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
         <button type="submit">{{ "Create account" if mode == "signup" else "Sign in" }}</button>
       </form>
       {% if mode != "signup" %}
@@ -141,7 +170,7 @@
       const value = document.getElementById('password').value;
       const fill = document.getElementById('strengthFill');
       const label = document.getElementById('strengthLabel');
-      if (!value) { fill.style.width = '0%'; fill.style.background = '#B42318'; label.textContent = ' '; return; }
+      if (!value) { fill.style.width = '0%'; fill.style.background = '#B42318'; label.textContent = ' '; return; }
 
       let score = 0;
       if (value.length >= 8) score++;

@@ -11,50 +11,104 @@
 <style>
   :root {
     --face: #FFFFFF; --face-dark: #F3F4F6; --titlebar: #1D4ED8; --titlebar-2: #2563EB;
-    --text: #101828; --text-muted: #667085; --shadow-dk: #D0D5DD; --red: #B42318;
+    --text: #101828; --text-muted: #667085; --border: #D0D5DD; --red: #B42318;
+
+    /* 4px spacing scale - every margin/padding/gap below is one of these,
+       never an arbitrary number, so the vertical rhythm reads as deliberate. */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+    --sp-7: 28px;
+    --sp-8: 32px;
+
+    --radius: 8px;
+    --control-height: 44px;   /* comfortable click target; every input/button/select shares it */
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: var(--face-dark); color: var(--text); padding: 24px 0;
+    background: var(--face-dark); color: var(--text); padding: var(--sp-6) 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px;
+    font-size: 14px; line-height: 1.5;
   }
+
   .panel {
     width: 92%; max-width: 480px;
-    background: var(--face); border: 1px solid var(--shadow-dk); border-radius: 12px;
+    background: var(--face); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: 0 4px 16px rgba(16,24,40,0.08); overflow: hidden;
   }
-  .panel-header { background: var(--titlebar); color: #fff; padding: 18px 22px; }
-  .panel-header h1 { font-size: 17px; margin: 0 0 4px; font-weight: 600; }
-  .panel-header p { margin: 0; font-size: 13px; opacity: 0.9; }
-  .panel-body { padding: 22px; }
-  label { display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 5px; margin-top: 16px; }
-  label:first-child { margin-top: 0; }
-  .hint { font-weight: 400; color: var(--text-muted); font-size: 11.5px; }
-  input[type="text"], input[type="date"], select {
-    width: 100%; font-family: inherit; font-size: 14px; padding: 9px 11px;
-    background: var(--face); color: var(--text);
-    border: 1px solid var(--shadow-dk); border-radius: 6px;
+  .panel-header { background: var(--titlebar); color: #fff; padding: var(--sp-6) var(--sp-7); }
+  .panel-header h1 { font-size: 18px; margin: 0 0 var(--sp-1); font-weight: 600; line-height: 1.3; }
+  .panel-header p { margin: 0; font-size: 13.5px; opacity: 0.85; line-height: 1.4; }
+  .panel-body { padding: var(--sp-7); }
+
+  /* Every label+input pair is a .field - one rule controls the rhythm
+     between all of them, instead of ad-hoc margins per element. */
+  .field, .row2 { margin-bottom: var(--sp-5); }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: var(--sp-2);
   }
-  input:focus, select:focus { outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .photo-row { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+  .field .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
+  input[type="text"], input[type="date"], select {
+    width: 100%; height: var(--control-height); font-family: inherit; font-size: 14px;
+    padding: 0 var(--sp-3);
+    background: var(--face); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+  }
+  input:focus, select:focus, .file-btn:focus-within {
+    outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23667085' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--sp-3) center; padding-right: var(--sp-7); }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--sp-4); }
+  .row2 .field { margin-bottom: 0; }
+
+  /* Profile photo: a fixed-size preview circle next to a styled file
+     control. The control's height matches every other input
+     (--control-height) so nothing in the form looks arbitrarily sized. */
+  .photo-field { display: flex; align-items: flex-start; gap: var(--sp-4); margin-bottom: var(--sp-6); }
   .photo-preview {
     width: 56px; height: 56px; border-radius: 50%; background: var(--face-dark);
     display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
-    border: 1px solid var(--shadow-dk); color: var(--text-muted); font-size: 11px;
+    border: 1px solid var(--border); color: var(--text-muted); font-size: 10.5px; text-align: center;
+    margin-top: var(--sp-2); /* optically aligns preview's center with the label+control block */
   }
   .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-  .error { color: var(--red); font-size: 12.5px; margin: 14px 0 0; }
-  button {
-    margin-top: 22px; width: 100%; font-family: inherit; font-size: 14px; font-weight: 600;
-    background: var(--titlebar); color: #fff; padding: 10px; cursor: pointer;
-    border: none; border-radius: 6px;
+  .photo-field .field { flex: 1; margin-bottom: 0; }
+  label.file-btn {
+    display: inline-flex; align-items: center; height: var(--control-height);
+    padding: 0 var(--sp-4); border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 13.5px; font-weight: 500; color: var(--text); cursor: pointer;
+    background: var(--face);
   }
-  button:hover { background: var(--titlebar-2); }
-  .skip { text-align: center; margin-top: 12px; }
-  .skip a { color: var(--text-muted); font-size: 12.5px; text-decoration: underline; }
+  .file-btn:hover { background: var(--face-dark); }
+  /* #photo is a sibling of .file-btn, not a descendant, so it needs its
+     own id-scoped rule to stay hidden regardless of DOM position. */
+  #photo {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none;
+  }
+  .file-name { display: block; margin-top: var(--sp-2); font-size: 12px; color: var(--text-muted); }
+
+  .error {
+    color: var(--red); font-size: 13px; margin: 0 0 var(--sp-5);
+    padding: var(--sp-3); background: #FEF3F2; border: 1px solid #FDA29B; border-radius: var(--radius);
+  }
+
+  button[type="submit"] {
+    margin-top: var(--sp-7); width: 100%; height: var(--control-height);
+    font-family: inherit; font-size: 14.5px; font-weight: 600;
+    background: var(--titlebar); color: #fff; cursor: pointer;
+    border: none; border-radius: var(--radius);
+  }
+  button[type="submit"]:hover { background: var(--titlebar-2); }
+
+  .skip { text-align: center; margin-top: var(--sp-4); }
+  .skip a { color: var(--text-muted); font-size: 13px; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -65,34 +119,40 @@
     </div>
     <div class="panel-body">
       <form method="POST" enctype="multipart/form-data">
-        <div class="photo-row">
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+        <div class="photo-field">
           <div class="photo-preview" id="photoPreview">No photo</div>
-          <div style="flex:1;">
-            <label for="photo" style="margin:0;">Profile photo <span class="hint">(optional, JPEG/PNG/WebP, max 2MB)</span></label>
+          <div class="field">
+            <label for="photo">Profile photo <span class="hint">(optional)</span></label>
+            <label class="file-btn" for="photo">Choose file&hellip;</label>
             <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp">
+            <span class="file-name" id="fileName">JPEG, PNG or WebP, up to 2MB</span>
           </div>
         </div>
 
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required pattern="[A-Za-z0-9_]{3,20}" autocomplete="off">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required pattern="[A-Za-z0-9_]{3,20}" autocomplete="off">
+        </div>
 
         <div class="row2">
-          <div>
+          <div class="field">
             <label for="first_name">First name <span class="hint">(optional)</span></label>
             <input type="text" id="first_name" name="first_name" autocomplete="off">
           </div>
-          <div>
+          <div class="field">
             <label for="last_name">Last name <span class="hint">(optional)</span></label>
             <input type="text" id="last_name" name="last_name" autocomplete="off">
           </div>
         </div>
 
         <div class="row2">
-          <div>
+          <div class="field">
             <label for="birth_date">Date of birth <span class="hint">(optional)</span></label>
             <input type="date" id="birth_date" name="birth_date">
           </div>
-          <div>
+          <div class="field">
             <label for="nationality">Nationality <span class="hint">(optional)</span></label>
             <select id="nationality" name="nationality">
               <option value="">&mdash;</option>
@@ -101,10 +161,11 @@
           </div>
         </div>
 
-        <label for="preferred_base">Preferred base <span class="hint">(optional, ICAO or IATA &mdash; e.g. EIDW or DUB)</span></label>
-        <input type="text" id="preferred_base" name="preferred_base" autocomplete="off" maxlength="4" style="text-transform:uppercase;">
+        <div class="field">
+          <label for="preferred_base">Preferred base <span class="hint">(optional, ICAO or IATA &mdash; e.g. EIDW or DUB)</span></label>
+          <input type="text" id="preferred_base" name="preferred_base" autocomplete="off" maxlength="4" style="text-transform:uppercase;">
+        </div>
 
-        {% if error %}<p class="error">{{ error }}</p>{% endif %}
         <button type="submit">Continue</button>
       </form>
       <div class="skip"><a href="{{ url_for('dispatch_app') }}">Skip for now</a></div>
@@ -114,7 +175,13 @@
     document.getElementById('photo').addEventListener('change', function (e) {
       const file = e.target.files[0];
       const preview = document.getElementById('photoPreview');
-      if (!file) { preview.textContent = 'No photo'; return; }
+      const fileName = document.getElementById('fileName');
+      if (!file) {
+        preview.textContent = 'No photo';
+        fileName.textContent = 'JPEG, PNG or WebP, up to 2MB';
+        return;
+      }
+      fileName.textContent = file.name;
       const reader = new FileReader();
       reader.onload = function (ev) { preview.innerHTML = `<img src="${ev.target.result}" alt="">`; };
       reader.readAsDataURL(file);
