@@ -4,9 +4,16 @@
 {% block content %}
 
 <section class="hero">
-  <div class="container">
-    <h1>Fly the paperwork, not just the aircraft.</h1>
-    <p class="lead">VirtualDispatch generates real dispatch data &mdash; routes, weather, loadsheets, equipment status, delays &mdash; for your flights in Microsoft Flight Simulator, so every leg starts with a proper briefing instead of a blank map.</p>
+  <div class="hero-media">
+    <!-- Placeholder still: swap this <img> for a <video autoplay muted
+         loop playsinline> with the same class once real footage is
+         shot - .hero-media-overlay and layout need no changes. -->
+    <img src="{{ url_for('static', filename='img/hero-flight.jpg') }}" alt="" class="hero-media-asset">
+    <div class="hero-media-overlay"></div>
+  </div>
+  <div class="container hero-content">
+    <h1>Every route is a decision. Every decision is yours.</h1>
+    <p class="lead">Pick your route. Then answer for it: real weather, an equipment defect to work around, a loadsheet you sign before departure. This is simulation pushed one step further. Not paperwork. Responsibility.</p>
     <div class="actions">
       <a href="/signup" class="btn btn-primary">Create a free account</a>
       <a href="/#features" class="btn btn-secondary">See how it works</a>
