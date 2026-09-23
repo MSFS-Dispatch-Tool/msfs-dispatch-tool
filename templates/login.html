@@ -15,6 +15,7 @@
     --shadow-md:   #ACA899;
     --text:        #000000;
     --red:         #7A2626;
+    --green:       #2C6B2C;
   }
   * { box-sizing: border-box; }
   body {
@@ -33,15 +34,17 @@
     color: #fff; padding: 6px 10px; font-weight: 700; letter-spacing: 0.02em;
   }
   .panel-body { padding: 14px; }
-  label { display: block; font-size: 12px; margin-bottom: 4px; }
-  input[type="password"] {
+  label { display: block; font-size: 12px; margin-bottom: 4px; margin-top: 10px; }
+  label:first-child { margin-top: 0; }
+  input[type="password"], input[type="email"] {
     width: 100%; font-family: 'Courier New', Consolas, monospace; font-size: 13px; padding: 6px 7px;
     background: var(--white); color: var(--text);
     border-style: solid; border-width: 2px;
     border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
-  .error { color: var(--red); font-size: 12px; margin: 8px 0 0; }
+  .error { color: var(--red); font-size: 12px; margin: 10px 0 0; }
+  .notice { color: var(--green); font-size: 12px; margin: 10px 0 0; }
   button {
     margin-top: 12px; width: 100%;
     font-family: 'Courier New', Consolas, monospace; font-size: 13px; font-weight: 700;
@@ -54,18 +57,48 @@
     border-top-color: var(--shadow-dk); border-left-color: var(--shadow-dk);
     border-bottom-color: var(--white); border-right-color: var(--white);
   }
+  .switch { margin-top: 12px; font-size: 12px; text-align: center; }
+  .switch a { color: var(--titlebar); }
+  .forgot { margin-top: 6px; font-size: 11px; text-align: right; }
+  .forgot button {
+    all: unset; cursor: pointer; color: var(--titlebar); font-size: 11px;
+    text-decoration: underline; font-family: 'Courier New', Consolas, monospace;
+  }
 </style>
 </head>
 <body>
   <div class="panel">
-    <div class="panel-header">SimDispatch &mdash; LOGIN REQUIRED</div>
+    <div class="panel-header">SimDispatch &mdash; {{ "CREATE ACCOUNT" if mode == "signup" else "SIGN IN" }}</div>
     <div class="panel-body">
-      <form method="POST">
+      <form method="POST" action="{{ url_for('signup') if mode == 'signup' else url_for('login', next=request.args.get('next')) }}">
+        <label for="email">EMAIL</label>
+        <input type="email" id="email" name="email" autofocus required>
         <label for="password">PASSWORD</label>
-        <input type="password" id="password" name="password" autofocus required>
+        <input type="password" id="password" name="password" required minlength="6">
         {% if error %}<p class="error">{{ error }}</p>{% endif %}
-        <button type="submit">ENTER</button>
+        {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
+        <button type="submit">{{ "CREATE ACCOUNT" if mode == "signup" else "SIGN IN" }}</button>
       </form>
+      {% if mode != "signup" %}
+      <form method="POST" action="{{ url_for('request_password_reset_route') }}" class="forgot"
+            onsubmit="this.email.value = document.getElementById('email').value; return true;">
+        <input type="hidden" name="email">
+        <button type="submit">forgot password?</button>
+      </form>
+      {% else %}
+      <form method="POST" action="{{ url_for('resend_verification_route') }}" class="forgot"
+            onsubmit="this.email.value = document.getElementById('email').value; return true;">
+        <input type="hidden" name="email">
+        <button type="submit">didn't get the email? resend</button>
+      </form>
+      {% endif %}
+      <div class="switch">
+        {% if mode == "signup" %}
+          Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+        {% else %}
+          New here? <a href="{{ url_for('signup') }}">Create an account</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 </body>

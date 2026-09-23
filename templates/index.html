@@ -293,6 +293,7 @@
   </div>
   <div style="display:flex; align-items:center; gap:10px;">
     <div class="clock" id="clock">--:--:--Z</div>
+    {% if is_admin %}<a class="home-btn" href="/admin/users" title="Manage users" style="text-decoration:none; font-size:11px; padding:4px 8px;">ADMIN</a>{% endif %}
     {% if auth_enabled %}<a class="home-btn" href="/logout" title="Log out" style="text-decoration:none; font-size:11px; padding:4px 8px;">LOG OUT</a>{% endif %}
   </div>
 </div>
