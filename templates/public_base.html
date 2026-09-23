@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}VirtualDispatch{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}VirtualDispatch is a Ryanair 737-800 dispatch immersion tool for Microsoft Flight Simulator.{% endblock %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="/"><span class="dot"></span>VirtualDispatch</a>
+    <button class="menu-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="links" id="navLinks">
+      <a href="/#features">Features</a>
+      <a href="/blog">Blog</a>
+      <a href="/app" class="cta">Open app</a>
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h5>Product</h5>
+        <a href="/">Overview</a>
+        <a href="/#features">Features</a>
+        <a href="/app">Open app</a>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <a href="/blog">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/cookies">Cookie Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {{ current_year }} VirtualDispatch</span>
+      <span>Not affiliated with Ryanair DAC or Microsoft Flight Simulator. For flight simulation use only.</span>
+    </div>
+  </div>
+</footer>
+
+<div id="cookie-banner">
+  <p>We use strictly-necessary cookies to run your account and session. With your consent, we'd also like to use analytics cookies to understand how the app is used. See our <a href="/cookies">Cookie Policy</a>.</p>
+  <div class="cookie-actions">
+    <button class="btn btn-primary" id="cookie-accept">Accept analytics</button>
+    <button class="btn btn-secondary" id="cookie-reject">Reject</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/cookie-consent.js') }}"></script>
+<script>
+  var navToggle = document.getElementById('navToggle');
+  var navLinks = document.getElementById('navLinks');
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      var open = navLinks.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

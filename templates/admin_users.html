@@ -4,36 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VirtualDispatch &mdash; Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --face: #ECE9D8; --face-dark: #D4D0C8; --titlebar: #6B7A99; --titlebar-2: #93A3B8;
-    --white: #FFFFFF; --shadow-dk: #716F64; --text: #000000; --red: #7A2626; --green: #2C6B2C;
+    --face: #FFFFFF; --face-dark: #F3F4F6; --titlebar: #1D4ED8; --titlebar-2: #2563EB;
+    --white: #FFFFFF; --shadow-dk: #D0D5DD; --shadow-md: #E4E7EC;
+    --text: #101828; --text-muted: #667085; --red: #B42318; --red-bg: #FEF3F2; --green: #067647;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--face-dark); color: var(--text);
-         font-family: 'Courier New', Consolas, monospace; font-size: 13px; padding: 16px; }
-  .panel { max-width: 900px; margin: 0 auto; background: var(--face); border-style: solid; border-width: 2px;
-           border-top-color: var(--white); border-left-color: var(--white);
-           border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk); }
-  .panel-header { background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2)); color: #fff;
-                  padding: 6px 10px; font-weight: 700; display: flex; justify-content: space-between; }
-  .panel-header a { color: #fff; }
-  .panel-body { padding: 14px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { border: 1px solid var(--shadow-dk); padding: 5px 7px; text-align: left; white-space: nowrap; }
-  th { background: var(--face-dark); }
-  .banned { color: var(--red); font-weight: 700; }
+         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+         font-size: 14px; padding: 20px; }
+  .panel { max-width: 960px; margin: 0 auto; background: var(--face); border: 1px solid var(--shadow-md);
+           border-radius: 10px; box-shadow: 0 1px 2px rgba(16,24,40,0.06); overflow: hidden; }
+  .panel-header { background: var(--titlebar); color: #fff;
+                  padding: 14px 18px; font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .panel-header a { color: #fff; font-size: 13px; text-decoration: none; opacity: 0.9; }
+  .panel-header a:hover { opacity: 1; text-decoration: underline; }
+  .panel-body { padding: 18px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--shadow-md); padding: 9px 10px; text-align: left; white-space: nowrap; }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .banned { color: var(--red); font-weight: 600; }
   .ok { color: var(--green); }
-  button { font-family: inherit; font-size: 11px; padding: 3px 8px; cursor: pointer; margin-right: 4px; }
-  .empty-state, .error-state { padding: 10px; }
+  button { font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 10px; cursor: pointer;
+           margin-right: 6px; border: 1px solid var(--shadow-dk); border-radius: 6px; background: var(--face); }
+  button:hover { background: var(--face-dark); }
+  .empty-state, .error-state { padding: 14px 0; }
   .error-state { color: var(--red); }
 </style>
 </head>
 <body>
   <div class="panel">
     <div class="panel-header">
-      <span>VirtualDispatch &mdash; USER MANAGEMENT</span>
-      <a href="/">&larr; back to app</a>
+      <span>VirtualDispatch &mdash; User management</span>
+      <a href="/app">&larr; Back to app</a>
     </div>
     <div class="panel-body" id="body">Loading&hellip;</div>
   </div>
@@ -49,18 +56,18 @@ async function load() {
       const banned = !!u.banned_until && new Date(u.banned_until) > new Date();
       return `<tr>
         <td>${esc(u.email || '')}</td>
-        <td class="${u.email_confirmed_at ? 'ok' : ''}">${u.email_confirmed_at ? 'VERIFIED' : 'PENDING'}</td>
+        <td class="${u.email_confirmed_at ? 'ok' : ''}">${u.email_confirmed_at ? 'Verified' : 'Pending'}</td>
         <td>${fmt(u.created_at)}</td>
         <td>${fmt(u.last_sign_in_at)}</td>
-        <td class="${banned ? 'banned' : ''}">${banned ? 'BANNED' : 'ACTIVE'}</td>
+        <td class="${banned ? 'banned' : ''}">${banned ? 'Banned' : 'Active'}</td>
         <td>
-          <button onclick="ban('${u.id}', ${!banned})">${banned ? 'UNBAN' : 'BAN'}</button>
-          <button onclick="del('${u.id}', '${esc(u.email || '')}')">DELETE</button>
+          <button onclick="ban('${u.id}', ${!banned})">${banned ? 'Unban' : 'Ban'}</button>
+          <button onclick="del('${u.id}', '${esc(u.email || '')}')">Delete</button>
         </td>
       </tr>`;
     }).join('');
     body.innerHTML = `<table>
-      <thead><tr><th>EMAIL</th><th>STATUS</th><th>CREATED</th><th>LAST SIGN-IN</th><th>ACCESS</th><th></th></tr></thead>
+      <thead><tr><th>Email</th><th>Status</th><th>Created</th><th>Last sign-in</th><th>Access</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
   } catch (err) {

@@ -1,0 +1,13 @@
+{% extends "public_base.html" %}
+{% block title %}{{ post.title }} &mdash; VirtualDispatch{% endblock %}
+{% block meta_description %}{{ post.summary }}{% endblock %}
+{% block content %}
+<section>
+  <div class="container blog-post">
+    <a class="back-link" href="{{ url_for('blog_index') }}">&larr; All posts</a>
+    <div class="date">{{ post.date_display }}</div>
+    <h1>{{ post.title }}</h1>
+    <div class="post-body">{{ post.html|safe }}</div>
+  </div>
+</section>
+{% endblock %}
