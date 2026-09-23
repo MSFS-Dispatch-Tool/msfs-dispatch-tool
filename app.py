@@ -443,11 +443,17 @@ lmc_events = load_json("lmc_events.json")
 dangerous_goods = load_json("dangerous_goods.json")
 airports = load_json("airports.json")
 countries = load_json("countries.json")
+# Worldwide airport reference (OurAirports, public domain), separate from
+# the Ryanair route-network `airports` above - used only for the preferred
+# base picker and destinations map, never for route search, since a
+# pilot's home base can be any real airport, not just one Ryanair serves.
+airports_world = load_json("airports_world.json")
 
 routes_by_flight_number = {r["flight_number"]: r for r in routes}
 country_by_icao = {a["icao"]: a["country"] for a in airports}
 tz_by_icao = {a["icao"]: a["tz"] for a in airports}
 airports_by_icao = {a["icao"]: a for a in airports}
+airports_world_by_icao = {a["icao"]: a for a in airports_world}
 
 rt_pairing = find_round_trip_pairs(routes)
 
@@ -603,6 +609,19 @@ def airports_validate():
     code = request.args.get("code", "")
     icao = resolve_airport(airports, code)
     return jsonify({"valid": icao is not None, "icao": icao})
+
+
+@app.route("/airports/search/world")
+def airports_search_world():
+    """Same shape as /airports/search but scoped to the full worldwide
+    dataset - used by the preferred base picker, which isn't limited to
+    airports Ryanair actually serves."""
+    q = request.args.get("q", "").strip().upper()
+    if not q:
+        return jsonify([])
+    matches = [a for a in airports_world
+               if a["icao"].startswith(q) or a["iata"].startswith(q) or a["city"].upper().startswith(q)]
+    return jsonify(matches[:15])
 
 
 @app.route("/search")
@@ -988,10 +1007,19 @@ def stats_route():
     except Exception:
         return jsonify(empty)
     for entry in result["airports"]:
-        info = airports_by_icao.get(entry["icao"], {})
+        info = airports_by_icao.get(entry["icao"]) or airports_world_by_icao.get(entry["icao"], {})
         entry["name"] = info.get("name")
         entry["lat"] = info.get("lat")
         entry["lon"] = info.get("lon")
+
+    base = get_settings_safe()["profile"].get("preferred_base")
+    if base and not any(entry["icao"] == base for entry in result["airports"]):
+        info = airports_by_icao.get(base) or airports_world_by_icao.get(base)
+        if info:
+            result["airports"].append({
+                "icao": base, "count": 0,
+                "name": info.get("name"), "lat": info.get("lat"), "lon": info.get("lon"),
+            })
     return jsonify(result)
 
 
