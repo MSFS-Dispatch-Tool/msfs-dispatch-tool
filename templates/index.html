@@ -277,111 +277,6 @@
 
 .route-map { margin:8px 0 4px; max-width:340px; height:180px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); }
 .route-map .leaflet-tooltip { font-family: inherit; font-size:11px; font-weight:700; padding:1px 5px; }
-
-/* Active flight briefing redesign ("af-" prefix) */
-.mono { font-family: 'SF Mono', 'Consolas', 'Menlo', 'Courier New', monospace; }
-
-.af-card { border: 1px solid var(--shadow-md); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow-card); margin-bottom: 16px; overflow: hidden; }
-.af-card.af-current { border-color: var(--titlebar-2); }
-.af-compact { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
-.af-compact-id { font-size: 14px; font-weight: 600; }
-.af-compact-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
-.af-compact details { width: 100%; }
-.af-compact summary { cursor: pointer; font-size: 12px; color: var(--titlebar); font-weight: 600; margin-top: 8px; list-style: none; }
-.af-compact summary::-webkit-details-marker { display: none; }
-.af-compact summary::before { content: '▸ '; }
-.af-compact details[open] summary::before { content: '▾ '; }
-
-.af-header { padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; justify-content: space-between; background: var(--face-dark); border-bottom: 1px solid var(--shadow-md); }
-.af-header-main { min-width: 240px; flex: 1; }
-.af-route-title { font-size: 22px; font-weight: 700; line-height: 1.25; }
-.af-codes { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
-.af-meta-row { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
-.af-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-.af-map { flex: 0 0 auto; width: 320px; max-width: 100%; height: 200px; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); }
-@media (max-width: 760px) { .af-map { width: 100%; } }
-
-.af-section { padding: 16px 20px; border-bottom: 1px solid var(--shadow-md); }
-.af-section:last-child { border-bottom: none; }
-.af-section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
-.af-section-hint { font-size: 11.5px; color: var(--text-muted); font-weight: normal; text-transform: none; letter-spacing: normal; margin-left: 6px; }
-
-.af-schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 560px) { .af-schedule-grid { grid-template-columns: 1fr; } }
-.af-schedule-block { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); padding: 12px 14px; }
-.af-schedule-block-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-.af-schedule-primary { font-size: 22px; font-weight: 700; margin: 4px 0 2px; }
-.af-schedule-secondary { font-size: 13px; color: var(--text-muted); }
-.af-delay-tag { display: inline-block; margin-top: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
-.af-delay-tag.on-time { background: var(--green-bg); color: var(--green); }
-.af-delay-tag.late { background: var(--amber-bg); color: var(--amber); }
-.af-delay-tag.early { background: var(--accent-bg); color: var(--blue-hi); }
-.af-delay-tag.unknown { background: var(--shadow-md); color: var(--text-muted); }
-
-.af-note-card { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; }
-.af-note-card:last-child { margin-bottom: 0; }
-.af-note-card.warn { border-color: #FEC84B; background: var(--amber-bg); }
-.af-note-cat { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
-.af-note-heading { font-size: 13.5px; font-weight: 600; margin-top: 2px; }
-.af-note-card summary { cursor: pointer; font-size: 12px; color: var(--titlebar); font-weight: 600; margin-top: 6px; list-style: none; }
-.af-note-card summary::-webkit-details-marker { display: none; }
-.af-note-card summary::before { content: '▸ full text'; }
-.af-note-card details[open] summary::before { content: '▾ full text'; }
-.af-note-full { margin-top: 6px; font-size: 12.5px; color: var(--text-muted); }
-
-.af-kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
-@media (max-width: 560px) { .af-kv-grid { grid-template-columns: 1fr; } }
-.af-kv-item .k { font-size: 11.5px; color: var(--text-muted); }
-.af-kv-item .v { font-size: 14px; font-weight: 600; }
-.af-kv-item .v .unit { font-weight: 500; color: var(--text-muted); font-size: 12px; }
-.af-kv-item .src { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.02em; }
-.af-use-for-sim { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: var(--green-bg); color: var(--green); text-transform: uppercase; }
-.af-copy-btn { margin-left: 8px; }
-.af-mismatch-banner, .af-error-banner {
-  border: 1px solid #FDA29B; background: var(--red-bg); color: var(--red);
-  border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12.5px; margin-bottom: 10px;
-}
-
-.af-load-bar-track { height: 8px; border-radius: 4px; background: var(--face-dark); overflow: hidden; margin-top: 6px; }
-.af-load-bar-fill { height: 100%; background: var(--titlebar); border-radius: 4px; }
-
-.af-weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 560px) { .af-weather-grid { grid-template-columns: 1fr; } }
-.af-weather-card { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); padding: 10px 12px; }
-.af-weather-card-title { font-size: 12.5px; font-weight: 700; margin-bottom: 6px; }
-.af-weather-card details { margin-top: 6px; }
-.af-weather-card summary { cursor: pointer; font-size: 12px; color: var(--titlebar); font-weight: 600; list-style: none; }
-.af-weather-card summary::-webkit-details-marker { display: none; }
-.af-weather-raw { margin-top: 4px; font-size: 12px; word-break: break-word; }
-
-details.af-collapsible { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); }
-details.af-collapsible summary {
-  cursor: pointer; padding: 9px 12px; font-size: 12.5px; font-weight: 600; list-style: none;
-}
-details.af-collapsible summary::-webkit-details-marker { display: none; }
-details.af-collapsible summary::before { content: '▸ '; }
-details.af-collapsible[open] summary::before { content: '▾ '; }
-details.af-collapsible .af-collapsible-body { padding: 0 12px 12px; }
-
-.af-actions-bar { padding: 16px 20px; background: var(--face-dark); }
-.af-checklist { list-style: none; padding: 0; margin: 0 0 12px; font-size: 12.5px; }
-.af-checklist li { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: var(--text-muted); }
-.af-checklist li .ok { color: var(--green); }
-.af-checklist li .warn { color: var(--amber); }
-.af-actions-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-button.action.af-primary { padding: 11px 26px; font-size: 14.5px; }
-button.action.af-tertiary-danger { background: transparent; color: var(--red); border: 1px solid var(--red); font-weight: 600; }
-button.action.af-tertiary-danger:hover { background: var(--red-bg); }
-
-.skip-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(16,24,40,0.45); z-index: 9001;
-  align-items: center; justify-content: center; padding: 16px;
-}
-.skip-overlay.open { display: flex; }
-.skip-modal { width: 92%; max-width: 440px; background: var(--face); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(16,24,40,0.24); }
-.skip-modal .panel-header { font-weight: 600; }
-.skip-modal .panel-body { padding: 14px 16px; }
-.skip-modal p { font-size: 13.5px; line-height: 1.5; margin: 0; }
 .pirep-form { margin-top:10px; padding:10px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
 .pirep-form label { display:flex; flex-direction:column; gap:2px; font-size:11.5px; }
 .pirep-form input { width:110px; font-family: inherit; }
@@ -548,19 +443,6 @@ button.action.af-tertiary-danger:hover { background: var(--red-bg); }
       </div>
 
       <div class="empty-state" id="glossaryNoMatch" style="display:none; margin-top:10px;">NO TERMS MATCH THIS SEARCH.</div>
-    </div>
-  </div>
-</div>
-
-<div class="skip-overlay" id="skipOverlay" onclick="if(event.target===this) closeSkipDialog()">
-  <div class="skip-modal" role="dialog" aria-modal="true" aria-labelledby="skipDialogTitle">
-    <div class="panel-header"><span id="skipDialogTitle">Skip this leg?</span></div>
-    <div class="panel-body">
-      <p id="skipDialogBody"></p>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="action small" id="skipCancelBtn" onclick="closeSkipDialog()">CANCEL</button>
-        <button class="action small danger" onclick="confirmSkipLeg()">SKIP THIS LEG</button>
-      </div>
     </div>
   </div>
 </div>
@@ -1130,344 +1012,42 @@ function initRouteMap(id, leg) {
   map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26] });
 }
 
-// ---------------------------------------------------------------------
-// Active flight briefing page (renderRecap and its section builders)
-// ---------------------------------------------------------------------
-
-function fmtDelayMinutes(min) {
-  if (min == null) return 'NOT AVAILABLE';
-  return min === 0 ? 'ON TIME' : `+${min} MIN`;
-}
-function delayTagClass(min) {
-  if (min == null) return 'unknown';
-  return min === 0 ? 'on-time' : 'late';
-}
-
-function afRouteMapDiv(leg, id) {
-  const a = leg.departure_info, b = leg.arrival_info;
-  if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) {
-    return `<div class="af-map" style="display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:12px;">ROUTE MAP UNAVAILABLE</div>`;
-  }
-  return `<div class="af-map" id="${id}"></div>`;
-}
-
-function afHeaderSection(flight, leg, i, state, done, skipped, current) {
-  const total = flight.legs.length;
-  const callsign = flight.callsigns ? flight.callsigns[i] : '';
-  const ofp = state.ofp;
-  const aircraft = ofp && (ofp.icao_type || ofp.registration)
-    ? `${ofp.icao_type || ''}${ofp.icao_type && ofp.registration ? ' — ' : ''}${ofp.registration || ''}`
-    : '';
-
-  let workflowTag, workflowClass;
-  if (done) { workflowTag = 'COMPLETED'; workflowClass = 'status-ok'; }
-  else if (skipped) { workflowTag = 'SKIPPED'; workflowClass = 'status-warn'; }
-  else if (!current) { workflowTag = 'WAITING FOR PREVIOUS LEG'; workflowClass = 'status-warn'; }
-  else if (state.loadsheet_signed) { workflowTag = 'LOADSHEET SIGNED'; workflowClass = 'status-ok'; }
-  else if (state.simbrief === 'available') { workflowTag = 'AWAITING LOADSHEET SIGN-OFF'; workflowClass = 'status-ok'; }
-  else if (state.simbrief === 'sent') { workflowTag = 'AWAITING OFP'; workflowClass = 'status-warn'; }
-  else { workflowTag = 'AWAITING SIMBRIEF DISPATCH'; workflowClass = 'status-warn'; }
-
-  let ofpTag, ofpClass;
-  if (ofp) { ofpTag = 'OFP RECEIVED'; ofpClass = 'status-ok'; }
-  else if (state.ofp_error) { ofpTag = 'IMPORT FAILED'; ofpClass = 'status-warn'; }
-  else if (state.simbrief === 'sent') { ofpTag = 'OFP PENDING'; ofpClass = 'status-warn'; }
-  else { ofpTag = 'NOT GENERATED'; ofpClass = 'status-warn'; }
-
-  return `
-    <div class="af-header">
-      <div class="af-header-main">
-        <div class="af-route-title">${leg.departure_info.name || leg.departure_info.icao} → ${leg.arrival_info.name || leg.arrival_info.icao}</div>
-        <div class="af-codes mono">${leg.departure_info.icao} → ${leg.arrival_info.icao}</div>
-        <div class="af-meta-row">
-          <span>${leg.flight_number}${callsign ? ' · ' + callsign : ''}</span>
-          <span>·</span>
-          <span>Leg ${i + 1} of ${total}</span>
-          ${aircraft ? `<span>·</span><span>${aircraft}</span>` : ''}
-        </div>
-        <div class="af-tags">
-          <span class="status-chip ${workflowClass}">${workflowTag}</span>
-          <span class="status-chip ${ofpClass}">${ofpTag}</span>
-        </div>
-      </div>
-      ${afRouteMapDiv(leg, `map-recap-${i}`)}
-    </div>`;
-}
-
-function afScheduleBlock(label, icao, primary, secondary, delayMinutes) {
-  return `
-    <div class="af-schedule-block">
-      <div class="af-schedule-block-label">${label} — ${icao}</div>
-      <div class="af-schedule-primary">${primary || 'N/A'}</div>
-      <div class="af-schedule-secondary">Scheduled: ${secondary || 'N/A'}</div>
-      <span class="af-delay-tag ${delayTagClass(delayMinutes)}">${fmtDelayMinutes(delayMinutes)}</span>
-    </div>`;
-}
-
-function afScheduleSection(leg) {
-  const dep = afScheduleBlock('DEPARTURE', leg.departure_info.icao, leg.eobt, leg.sobt, leg.expected_delay_minutes);
-  const arr = afScheduleBlock('ARRIVAL', leg.arrival_info.icao, leg.eibt, leg.sibt, leg.expected_delay_minutes);
-  // Block time = OBT to IBT (gate to gate); EET = STOT to SLDT (airborne
-  // only). Taxi-in is a fixed 10min app-wide (see timeutils.TAXI_IN_MINUTES);
-  // taxi-out is the per-leg rolled figure already sent to SimBrief.
-  const blockMinutes = leg.eet_minutes != null && leg.taxi_out_minutes != null
-    ? leg.eet_minutes + leg.taxi_out_minutes + 10 : null;
-  const detail = `
-    <table class="kv" style="margin:0;">
-      <tr><td class="k"></td><td class="v h">SCHEDULED</td><td class="v h">EXPECTED</td></tr>
-      <tr><td class="k">OFF-BLOCK (OBT)</td><td class="v">${leg.sobt || 'N/A'}</td><td class="v">${leg.eobt || 'N/A'}</td></tr>
-      <tr><td class="k">TAKE-OFF (TOT)</td><td class="v">${leg.stot || 'N/A'}</td><td class="v">${leg.etot || 'N/A'}</td></tr>
-      <tr><td class="k">LANDING (LDT)</td><td class="v">${leg.sldt || 'N/A'}</td><td class="v">${leg.eldt || 'N/A'}</td></tr>
-      <tr><td class="k">IN-BLOCK (IBT)</td><td class="v">${leg.sibt || 'N/A'}</td><td class="v">${leg.eibt || 'N/A'}</td></tr>
-      <tr><td class="k">BLOCK TIME</td><td class="v" colspan="2">${blockMinutes != null ? fmtMinutes(blockMinutes) : 'N/A'}</td></tr>
-      <tr><td class="k">EET (AIRBORNE)</td><td class="v" colspan="2">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</td></tr>
-    </table>`;
-  return `
-    <div class="af-section">
-      <div class="af-section-title">SCHEDULE <span class="af-section-hint">ALL TIMES UTC</span></div>
-      <div class="af-schedule-grid">${dep}${arr}</div>
-      <details class="af-collapsible" style="margin-top:12px;">
-        <summary>DETAILED TIMELINE</summary>
-        <div class="af-collapsible-body">${detail}</div>
-      </details>
-    </div>`;
-}
-
-function afOperationalNotesSection(leg, flight, includeFlightLevel) {
-  const notes = [];
-  if (leg.delay) {
-    notes.push({
-      cat: 'DELAY', warn: true,
-      heading: `${leg.delay.iata_code} — ${leg.delay.description}`,
-      full: `${leg.delay.iata_code}: ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}–${leg.delay.duration_range_minutes[1]} min).`,
-    });
-  }
-  if (leg.mel) {
-    notes.push({
-      cat: 'MEL', warn: true,
-      heading: `${leg.mel.system} — MEL relief`,
-      full: `${leg.mel.description} — ${leg.mel.dispatch_consequence}`,
-    });
-  }
-  if (includeFlightLevel && flight.lmc_event) {
-    const delta = `${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}`;
-    notes.push({ cat: 'LMC', warn: true, heading: `Last-minute change — ${delta}`, full: `${flight.lmc_event.description}: ${delta}.` });
-  }
-  if (includeFlightLevel && flight.dangerous_goods) {
-    notes.push({
-      cat: flight.dangerous_goods.informational_only ? 'INFORMATION' : 'RESTRICTION',
-      warn: !flight.dangerous_goods.informational_only,
-      heading: 'Dangerous goods', full: flight.dangerous_goods.label,
-    });
-  }
-  const cards = notes.map(n => `
-    <div class="af-note-card ${n.warn ? 'warn' : ''}">
-      <div class="af-note-cat">${n.cat}</div>
-      <div class="af-note-heading">${n.heading}</div>
-      <details><summary></summary><div class="af-note-full">${n.full}</div></details>
-    </div>`).join('');
-  return `
-    <div class="af-section">
-      <div class="af-section-title">OPERATIONAL NOTES</div>
-      ${notes.length ? cards : '<p class="placeholder-text">No operational exceptions reported for this leg.</p>'}
-    </div>`;
-}
-
-function afDispatchSummarySection(leg, state) {
-  const ofp = state.ofp;
-  const unit = (ofp && ofp.weight_unit) || 'KG';
-  const scenarioCI = leg.cost_index;
-  const ofpCI = ofp && ofp.cost_index !== '' && ofp.cost_index != null ? ofp.cost_index : null;
-  const ciMismatch = ofpCI != null && Number(ofpCI) !== Number(scenarioCI);
-
-  const ciItems = ofp
-    ? `
-      <div class="af-kv-item"><div class="k">SCENARIO COST INDEX</div><div class="v">${fmtNum(scenarioCI)}</div></div>
-      <div class="af-kv-item"><div class="k">SIMBRIEF OFP COST INDEX</div><div class="v">${ofpCI != null ? fmtNum(ofpCI) : 'N/A'}${ofpCI != null ? '<span class="af-use-for-sim">USE FOR SIMULATOR</span>' : ''}</div></div>`
-    : `<div class="af-kv-item"><div class="k">SCENARIO COST INDEX <span class="af-use-for-sim">USE FOR SIMULATOR</span></div><div class="v">${fmtNum(scenarioCI)}</div></div>`;
-
-  const routeHtml = ofp && ofp.route
-    ? `<span class="mono">${escAttr(ofp.route)}</span> <button class="action small af-copy-btn" data-route="${escAttr(ofp.route)}" onclick="copyRoute(this)">COPY ROUTE</button>`
-    : `<span class="mono">${leg.departure_info.icao} → ${leg.arrival_info.icao}</span>`;
-
-  return `
-    <div class="af-section">
-      <div class="af-section-title">DISPATCH SUMMARY</div>
-      ${ciMismatch ? `<div class="af-mismatch-banner">Data mismatch: the scenario cost index (${fmtNum(scenarioCI)}) differs from the SimBrief OFP cost index (${fmtNum(ofpCI)}). Use the SimBrief OFP value in the simulator.</div>` : ''}
-      <div class="af-kv-grid">
-        <div class="af-kv-item"><div class="k">ROUTE</div><div class="v">${routeHtml}</div></div>
-        <div class="af-kv-item"><div class="k">SIMBRIEF REFERENCE</div><div class="v">${state.simbrief_static_id ? `<span class="mono">${escAttr(state.simbrief_static_id)}</span>` : 'N/A'}</div></div>
-        ${ciItems}
-        <div class="af-kv-item"><div class="k">PLANNED BLOCK FUEL</div><div class="v">${ofp && ofp.block_fuel !== '' ? fmtNum(ofp.block_fuel) + ' <span class="unit">' + unit + '</span>' : 'N/A'}</div></div>
-        <div class="af-kv-item"><div class="k">ZERO FUEL WEIGHT (ZFW)</div><div class="v">${ofp && ofp.est_zfw !== '' ? fmtNum(ofp.est_zfw) + ' <span class="unit">' + unit + '</span>' : 'N/A'}</div></div>
-        <div class="af-kv-item"><div class="k">TAKE-OFF WEIGHT (TOW)</div><div class="v">${ofp && ofp.est_tow !== '' ? fmtNum(ofp.est_tow) + ' <span class="unit">' + unit + '</span>' : 'N/A'}</div></div>
-        <div class="af-kv-item"><div class="k">FLIGHT TIME (EET)</div><div class="v">${leg.eet_minutes != null ? fmtMinutes(leg.eet_minutes) : 'N/A'}</div></div>
-        <div class="af-kv-item"><div class="k">CRUISE LEVEL</div><div class="v">${ofp && ofp.initial_altitude_ft !== '' && ofp.initial_altitude_ft != null ? 'FL' + Math.round(Number(ofp.initial_altitude_ft) / 100) : 'N/A'}</div></div>
-      </div>
-    </div>`;
-}
-
-function afLoadSection(leg) {
-  const pct = leg.load_factor != null ? Math.round(leg.load_factor * 100) : null;
-  return `
-    <div class="af-section">
-      <div class="af-section-title">LOAD</div>
-      <div class="af-kv-grid">
-        <div class="af-kv-item"><div class="k">EXPECTED PASSENGERS</div><div class="v">${fmtNum(leg.pax_count)} / 189</div></div>
-        <div class="af-kv-item"><div class="k">LOAD FACTOR</div><div class="v">${pct != null ? pct + '%' : 'N/A'}</div></div>
-        <div class="af-kv-item"><div class="k">EXPECTED CARGO/BAGS</div><div class="v">${leg.cargo_weight_kg != null ? fmtNum(leg.cargo_weight_kg) + ' <span class="unit">KG</span>' : 'N/A'}</div></div>
-      </div>
-      <div class="af-load-bar-track"><div class="af-load-bar-fill" style="width:${pct || 0}%;"></div></div>
-    </div>`;
-}
-
-function afWeatherCard(label, icao, wx) {
-  wx = wx || {};
-  return `
-    <div class="af-weather-card">
-      <div class="af-weather-card-title">${label} — ${icao}</div>
-      ${wx.metar ? `<details><summary>METAR</summary><div class="af-weather-raw mono">${wx.metar}</div></details>` : '<p class="placeholder-text">No weather data received</p>'}
-      ${wx.taf ? `<details><summary>TAF</summary><div class="af-weather-raw mono">${wx.taf}</div></details>` : ''}
-    </div>`;
-}
-
-function afWeatherSection(leg) {
-  const wx = leg.weather || {};
-  return `
-    <div class="af-section">
-      <div class="af-section-title">WEATHER</div>
-      <div class="af-weather-grid">
-        ${afWeatherCard('DEPARTURE', leg.departure_info.icao, wx.departure)}
-        ${afWeatherCard('ARRIVAL', leg.arrival_info.icao, wx.arrival)}
-      </div>
-    </div>`;
-}
-
-function afDetailedDataSection(leg, state) {
-  const ofp = state.ofp;
-  const unit = (ofp && ofp.weight_unit) || 'KG';
-  const ofpRows = ofp ? `
-      <tr><td class="k">SIMBRIEF CALLSIGN</td><td class="v">${ofp.callsign || 'N/A'}</td></tr>
-      <tr><td class="k">AIRCRAFT</td><td class="v">${ofp.icao_type || 'N/A'}${ofp.registration ? ' — ' + ofp.registration : ''}</td></tr>
-      <tr><td class="k">EFOB</td><td class="v">${ofp.efob !== '' ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
-      <tr><td class="k">EPAX (OFP)</td><td class="v">${ofp.epax !== '' ? fmtNum(ofp.epax) : 'N/A'}</td></tr>
-      <tr><td class="k">SIMBRIEF STATIC ID</td><td class="v mono">${ofp.static_id || 'N/A'}</td></tr>`
-    : `<tr><td class="k">SIMBRIEF OFP</td><td class="v">Not yet received.</td></tr>`;
-  return `
-    <div class="af-section">
-      <div class="af-section-title">FULL DISPATCH DATA</div>
-      <details class="af-collapsible">
-        <summary>RAW OFP &amp; SCENARIO DATA</summary>
-        <div class="af-collapsible-body">
-          <table class="kv" style="margin:0;">${ofpRows}</table>
-        </div>
-      </details>
-    </div>`;
-}
-
-function afActionsSection(flight, leg, i, state, loadsheetForm, pirepForm) {
-  const checklist = [];
-  checklist.push(`<li><span class="ok">✓</span> ${leg.flight_number} — ${leg.departure_info.icao} → ${leg.arrival_info.icao}</li>`);
-  checklist.push(`<li><span class="ok">✓</span> Expected off-block ${leg.eobt || 'N/A'} · in-block ${leg.eibt || 'N/A'}</li>`);
-  const noteCount = (leg.delay ? 1 : 0) + (leg.mel ? 1 : 0) + (flight.lmc_event ? 1 : 0) + (flight.dangerous_goods ? 1 : 0);
-  checklist.push(`<li><span class="${noteCount ? 'warn' : 'ok'}">${noteCount ? '!' : '✓'}</span> ${noteCount} operational note${noteCount === 1 ? '' : 's'}${noteCount ? ' requiring attention' : ''}</li>`);
-  const ofpStatusText = state.ofp ? 'received' : (state.simbrief === 'sent' ? 'pending' : 'not generated');
-  checklist.push(`<li><span class="${state.ofp ? 'ok' : 'warn'}">${state.ofp ? '✓' : '…'}</span> OFP ${ofpStatusText}</li>`);
-  if (state.ofp_mismatch) checklist.push(`<li><span class="warn">!</span> Unresolved data mismatch — see Dispatch summary</li>`);
-
-  let primaryHtml = '';
-  if (state.simbrief === 'not_sent') {
-    primaryHtml = `<button class="action af-primary" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
-  } else if (state.simbrief === 'sent') {
-    primaryHtml = `<button class="action af-primary" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button> <button class="action small" onclick="prepareLeg(${i})">RE-SEND</button>`;
-  } else if (state.loadsheet_signed && !state.pirep) {
-    primaryHtml = `<button class="action af-primary" onclick="showPirep(${i})">FILE PIREP</button>`;
-  }
-
-  const secondaryHtml = [];
-  if (state.ofp && state.ofp.route) secondaryHtml.push(`<button class="action small" data-route="${escAttr(state.ofp.route)}" onclick="copyRoute(this)">COPY ROUTE</button>`);
-
-  const errorBanner = state.ofp_error ? `<div class="af-error-banner">${escAttr(state.ofp_error)}</div>` : '';
-  const mismatchBanner = state.ofp_mismatch
-    ? `<div class="af-mismatch-banner">The most recent SimBrief OFP for this username doesn't match the dispatch just sent for this leg. Generate the OFP on SimBrief, then fetch again.</div>` : '';
-
-  return `
-    <div class="af-actions-bar">
-      ${errorBanner}${mismatchBanner}
-      <ul class="af-checklist">${checklist.join('')}</ul>
-      <div class="af-actions-row">
-        ${primaryHtml}
-        ${secondaryHtml.join(' ')}
-        <button class="action af-tertiary-danger" onclick="openSkipDialog(${i})">SKIP LEG</button>
-      </div>
-      ${loadsheetForm}
-      ${pirepForm}
-    </div>`;
-}
-
-function afLegDetailSections(leg, flight, state) {
-  return `
-    ${afScheduleSection(leg)}
-    ${afOperationalNotesSection(leg, flight, true)}
-    ${afDispatchSummarySection(leg, state)}
-    ${afLoadSection(leg)}
-    ${afWeatherSection(leg)}
-    ${afDetailedDataSection(leg, state)}`;
-}
-
-function afCompactLegCard(flight, leg, i, state, statusChipHtml) {
-  const callsign = flight.callsigns ? flight.callsigns[i] : '';
-  return `
-    <div class="af-card">
-      <div class="af-compact">
-        <div>
-          <div class="af-compact-id">LEG ${i + 1} — ${leg.flight_number}${callsign ? ' · ' + callsign : ''}</div>
-          <div class="af-compact-sub mono">${leg.departure_info.icao} → ${leg.arrival_info.icao}</div>
-        </div>
-        <div>${statusChipHtml}</div>
-        <details>
-          <summary>Full leg details</summary>
-          <div>${afLegDetailSections(leg, flight, state)}</div>
-        </details>
-      </div>
-    </div>`;
+function legLmcDgBlock(flight) {
+  const lmc = flight.lmc_event
+    ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}`
+    : `<span class="status-chip status-ok">NO LMC</span>`;
+  const dg = flight.dangerous_goods
+    ? `<span class="status-chip ${flight.dangerous_goods.informational_only ? 'status-ok' : 'status-warn'}">DG</span> ${flight.dangerous_goods.label}`
+    : `<span class="status-chip status-ok">NO DG</span>`;
+  return `<p class="placeholder-text" style="margin-top:8px; margin-bottom:0;">${lmc}<br>${dg}</p>`;
 }
 
 function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
 
 function renderRecap(flight) {
-  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, ofp_error:null, ofp_mismatch:false, loadsheet_signed:false, loadsheet:null, pirep:null}));
-  flight.leg_state.forEach(s => {
-    if (s.ofp_error === undefined) s.ofp_error = null;
-    if (s.ofp_mismatch === undefined) s.ofp_mismatch = false;
-  });
-
-  const resolved = (s) => s.status === 'done' || s.status === 'skipped';
-  const completedBefore = (index) => flight.leg_status.slice(0, index).every(resolved);
-
-  const legCards = flight.legs.map((leg, i) => {
+  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, loadsheet:null, pirep:null}));
+  const completedBefore = (index) => flight.leg_status.slice(0, index).every(s => s.status === 'done');
+  const legRows = flight.legs.map((leg, i) => {
     const state = flight.leg_state[i];
-    const status = flight.leg_status[i].status;
-    const done = status === 'done';
-    const skipped = status === 'skipped';
-    const current = !done && !skipped && completedBefore(i);
-
-    if (!current) {
-      let chip = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
-      if (done) chip = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
-      else if (skipped) chip = '<span class="status-chip status-warn">SKIPPED</span>';
-      return afCompactLegCard(flight, leg, i, state, chip);
-    }
-
+    const done = flight.leg_status[i].status === 'done';
+    const current = !done && completedBefore(i);
     const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
-    const loadsheetForm = state.simbrief === 'available' && !state.loadsheet_signed ? `
+    let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
+    if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
+    else if (current && state.simbrief === 'not_sent') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && state.simbrief === 'sent') action = `<span class="status-chip status-warn">SENT TO SIMBRIEF — AWAITING OFP</span> <button class="action small" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button> <button class="action small" onclick="prepareLeg(${i})">RE-SEND</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">OFP RECEIVED</span> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+    else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+
+    const ofp = state.ofp || {};
+    const loadsheetForm = current && state.simbrief === 'available' && !state.loadsheet_signed ? `
       <div class="loadsheet-form" id="loadsheet-${i}">
-        <div class="af-section-title" style="margin-bottom:8px;">SIGN LOADSHEET</div>
         <table class="kv" style="margin-bottom:0;">
-          <tr><td class="k">EZFW (OFP)</td><td class="v">${state.ofp.est_zfw ? fmtNum(state.ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">ETOW (OFP)</td><td class="v">${state.ofp.est_tow ? fmtNum(state.ofp.est_tow) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EFOB (OFP)</td><td class="v">${state.ofp.efob ? fmtNum(state.ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">ETOW (OFP)</td><td class="v">${ofp.est_tow ? fmtNum(ofp.est_tow) + ' ' + unit : 'N/A'}</td></tr>
+          <tr><td class="k">EFOB (OFP)</td><td class="v">${ofp.efob ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
         </table>
+        ${legLmcDgBlock(flight)}
         <div class="fields-row">
           <label>ZFW (${unit})<input id="ls-zfw-${i}" type="number" min="0" required></label>
           <label>FOB (${unit})<input id="ls-fob-${i}" type="number" min="0" required></label>
@@ -1477,9 +1057,8 @@ function renderRecap(flight) {
         </div>
       </div>` : '';
 
-    const pirepForm = state.loadsheet_signed && !state.pirep ? `
+    const pirepForm = current && state.loadsheet_signed && !state.pirep ? `
       <div class="pirep-form" id="pirep-${i}">
-        <div class="af-section-title" style="margin-bottom:8px; width:100%;">FILE PIREP</div>
         ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)')}
         ${timeFieldHtml(`atot-${i}`, 'ATOT (ZULU, TAKEOFF)')}
         ${timeFieldHtml(`aldt-${i}`, 'ALDT (ZULU, LANDING)')}
@@ -1489,79 +1068,30 @@ function renderRecap(flight) {
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
       </div>` : '';
 
-    return `
-      <div class="af-card af-current">
-        ${afHeaderSection(flight, leg, i, state, done, skipped, current)}
-        ${afLegDetailSections(leg, flight, state)}
-        ${state.loadsheet ? `<div class="af-section placeholder-text">LOADSHEET ON FILE: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
-        ${state.pirep ? `<div class="af-section placeholder-text">PIREP FILED: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
-        ${afActionsSection(flight, leg, i, state, loadsheetForm, pirepForm)}
-      </div>`;
+    const mapId = `map-recap-${i}`;
+    return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}" style="display:block;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+        <div>
+          <strong>LEG ${i + 1} — ${leg.flight_number} — ${flight.callsigns ? flight.callsigns[i] : ''}</strong><br>
+          <span class="placeholder-text">${leg.departure_info.icao} → ${leg.arrival_info.icao}</span>
+        </div>
+        <div>${action}</div>
+      </div>
+      ${routeMapDiv(leg, mapId)}
+      ${legScheduleTable(leg)}
+      ${legLoadTable(leg)}
+      ${legWeatherBlock(leg)}
+      ${legOfpTable(state.ofp)}
+      ${legDelayMelBlock(leg)}
+      ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
+      ${loadsheetForm}
+      ${state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
+      ${pirepForm}
+    </div>`;
   }).join('');
-
-  const allResolved = flight.leg_status.every(resolved);
-  const anySkipped = flight.leg_status.some(s => s.status === 'skipped');
-  const wrapUp = allResolved ? `
-    <div class="af-card"><div class="af-section" style="text-align:center;">
-      <p class="placeholder-text">${anySkipped ? 'All legs resolved (some skipped).' : 'All legs completed through PIREP.'} Use NEW FLIGHT to begin another dispatch.</p>
-      <button class="action" onclick="startNewFlight()">NEW FLIGHT</button>
-    </div></div>` : '';
-
-  document.getElementById('mainContent').innerHTML = `${simbriefNoticeHtml()}
-    <div style="font-size:12px; font-weight:700; letter-spacing:0.04em; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">ACTIVE FLIGHT</div>
-    ${legCards}${wrapUp}`;
+  const allDone = flight.leg_status.every(s => s.status === 'done');
+  document.getElementById('mainContent').innerHTML = `${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
-}
-
-async function copyRoute(btn) {
-  const route = btn.dataset.route;
-  if (!route) return;
-  try {
-    await navigator.clipboard.writeText(route);
-    const original = btn.textContent;
-    btn.textContent = 'ROUTE COPIED';
-    setTimeout(() => { btn.textContent = original; }, 1500);
-  } catch (err) {
-    alert('Could not copy the route automatically. Select and copy it manually.');
-  }
-}
-
-let skipDialogIndex = null;
-let skipDialogTriggerEl = null;
-
-function openSkipDialog(index) {
-  const flight = loadActiveFlight(); if (!flight) return;
-  const leg = flight.legs[index];
-  skipDialogIndex = index;
-  skipDialogTriggerEl = document.activeElement;
-  document.getElementById('skipDialogBody').textContent =
-    `Skip ${leg.flight_number} (${leg.departure_info.icao} → ${leg.arrival_info.icao}), Leg ${index + 1} of ${flight.legs.length}? This marks the leg as skipped and lets the itinerary continue to the next leg. It will not be flown or logged as a PIREP. This cannot be undone from this screen.`;
-  document.getElementById('skipOverlay').classList.add('open');
-  document.getElementById('skipCancelBtn').focus();
-  document.addEventListener('keydown', skipDialogKeydown);
-}
-function closeSkipDialog() {
-  document.getElementById('skipOverlay').classList.remove('open');
-  document.removeEventListener('keydown', skipDialogKeydown);
-  skipDialogIndex = null;
-  if (skipDialogTriggerEl && document.body.contains(skipDialogTriggerEl)) skipDialogTriggerEl.focus();
-  skipDialogTriggerEl = null;
-}
-function skipDialogKeydown(e) {
-  if (e.key === 'Escape') { closeSkipDialog(); return; }
-  if (e.key === 'Tab') {
-    const focusables = document.querySelectorAll('#skipOverlay button');
-    if (!focusables.length) return;
-    const first = focusables[0], last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  }
-}
-function confirmSkipLeg() {
-  const flight = loadActiveFlight(); if (!flight || skipDialogIndex == null) return;
-  flight.leg_status[skipDialogIndex].status = 'skipped';
-  closeSkipDialog();
-  saveAndRender(flight);
 }
 
 async function prepareLeg(index) {
@@ -1587,8 +1117,6 @@ async function prepareLeg(index) {
     flight.leg_state[index].simbrief = 'sent';
     flight.leg_state[index].simbrief_static_id = staticId;
     flight.leg_state[index].ofp = null;
-    flight.leg_state[index].ofp_error = null;
-    flight.leg_state[index].ofp_mismatch = false;
     saveAndRender(flight);
   } catch (err) {
     alert('Could not build the SimBrief dispatch link. Check the connection and retry.');
@@ -1605,19 +1133,14 @@ async function fetchOfp(index) {
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
     if (state.simbrief_static_id && data.static_id && data.static_id !== state.simbrief_static_id) {
-      state.ofp_mismatch = true;
-      state.ofp_error = null;
-      saveAndRender(flight);
+      alert('The most recent SimBrief OFP for this username doesn\'t match the dispatch just sent for this leg. Generate the OFP on SimBrief (in the tab that just opened), then fetch again.');
       return;
     }
     state.ofp = data;
     state.simbrief = 'available';
-    state.ofp_error = null;
-    state.ofp_mismatch = false;
     saveAndRender(flight);
   } catch (err) {
-    state.ofp_error = 'Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.';
-    saveAndRender(flight);
+    alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.');
   }
 }
 function submitLoadsheet(index) {
@@ -1695,6 +1218,11 @@ async function submitPirep(index) {
     // PIREP log is a convenience list, not required for the app to work.
   }
 }
+function skipFlight() {
+  if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data.')) return;
+  clearActiveFlight(); renderSearchUI();
+}
+
 function goHome() {
   renderSearchUI();
 }
