@@ -290,6 +290,28 @@ def _validate_onboarding_form(form):
     return username, None
 
 
+def _handle_photo_upload(photo_file):
+    """Validates and uploads an optional profile-photo file. Returns
+    (photo_url, error) - photo_url is None if no file was given or the
+    upload is skipped (e.g. Storage not configured), in which case the
+    caller should leave the existing photo_url untouched."""
+    if not photo_file or not photo_file.filename:
+        return None, None
+    content_type = photo_file.mimetype
+    if content_type not in _ALLOWED_PHOTO_TYPES:
+        return None, "Photo must be a JPEG, PNG, or WebP image."
+    data = photo_file.read()
+    if len(data) > _MAX_PHOTO_BYTES:
+        return None, "Photo must be 2MB or smaller."
+    if not auth.admin_available():
+        return None, None
+    try:
+        ext = _ALLOWED_PHOTO_TYPES[content_type]
+        return auth.upload_avatar(f"{current_user_id()}.{ext}", data, content_type), None
+    except auth.AuthError as exc:
+        return None, exc.message
+
+
 @app.route("/onboarding", methods=["GET", "POST"])
 def onboarding():
     if not db.db_available():
@@ -299,21 +321,8 @@ def onboarding():
     if request.method == "POST":
         username, error = _validate_onboarding_form(request.form)
         photo_url = None
-        photo_file = request.files.get("photo")
-        if not error and photo_file and photo_file.filename:
-            content_type = photo_file.mimetype
-            if content_type not in _ALLOWED_PHOTO_TYPES:
-                error = "Photo must be a JPEG, PNG, or WebP image."
-            else:
-                data = photo_file.read()
-                if len(data) > _MAX_PHOTO_BYTES:
-                    error = "Photo must be 2MB or smaller."
-                elif auth.admin_available():
-                    try:
-                        ext = _ALLOWED_PHOTO_TYPES[content_type]
-                        photo_url = auth.upload_avatar(f"{current_user_id()}.{ext}", data, content_type)
-                    except auth.AuthError as exc:
-                        error = exc.message
+        if not error:
+            photo_url, error = _handle_photo_upload(request.files.get("photo"))
 
         if not error:
             existing = get_settings_safe()
@@ -916,6 +925,57 @@ def save_settings_route():
         incoming_profile[field] = existing_profile.get(field, db.DEFAULT_SETTINGS["profile"][field])
     payload["profile"] = incoming_profile
     return jsonify(db.save_settings(payload, current_user_id()))
+
+
+@app.route("/account/photo", methods=["POST"])
+def account_photo_route():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    if not auth.admin_available():
+        return jsonify({"error": "Photo storage is not configured (SUPABASE_SERVICE_ROLE_KEY unset)."}), 502
+    photo_url, error = _handle_photo_upload(request.files.get("photo"))
+    if error:
+        return jsonify({"error": error}), 400
+    if not photo_url:
+        return jsonify({"error": "No photo provided."}), 400
+    existing = get_settings_safe()
+    profile = dict(existing["profile"])
+    profile["photo_url"] = photo_url
+    saved = db.save_settings({"profile": profile, "generation": existing["generation"]}, current_user_id())
+    return jsonify(saved)
+
+
+@app.route("/account/delete", methods=["POST"])
+def account_delete_route():
+    """Requires the account's current password as a second factor,
+    verified via a real sign-in call - not just "are you logged in",
+    since the pilot could be leaving a session open on a shared
+    machine. Deletes the Supabase Auth user (which also revokes every
+    session) and this app's own rows for them (PIREPs, settings)."""
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Not signed in."}), 401
+    if not auth.admin_available():
+        return jsonify({"error": "Account deletion is not configured (SUPABASE_SERVICE_ROLE_KEY unset)."}), 502
+    password = request.form.get("password") or ""
+    if not password:
+        return jsonify({"error": "Enter your password to confirm."}), 400
+    try:
+        auth.sign_in(user["email"], password)
+    except auth.AuthError:
+        return jsonify({"error": "Incorrect password."}), 400
+    try:
+        auth.admin_delete_user(user["id"])
+    except auth.AuthError as exc:
+        return jsonify({"error": exc.message}), 502
+    if db.db_available():
+        try:
+            db.delete_user_data(user["id"])
+        except Exception:
+            pass  # the auth account is already gone; don't block on cleanup
+    session.clear()
+    return jsonify({"ok": True})
 
 
 @app.route("/stats")

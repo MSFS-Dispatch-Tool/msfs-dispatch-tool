@@ -106,7 +106,41 @@
     border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
   }
   .field input:focus, .field select:focus { outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+  .field input:disabled, .field select:disabled {
+    background: var(--face-dark); color: var(--text-muted); cursor: not-allowed;
+  }
   .field-error { color: var(--red); font-size: 11.5px; margin-top: 3px; display: none; }
+  .field-note { color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+
+  /* Toggle switch - used for the three master delay/LMC/MEL switches.
+     Real checkbox underneath (kept for accessibility/forms), visually
+     hidden and replaced by the pill. */
+  .switch-row { display: flex; align-items: center; gap: 8px; }
+  .switch-toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .switch-toggle input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch-toggle .track {
+    position: absolute; inset: 0; background: var(--shadow-md); border-radius: 20px; transition: background 0.15s ease;
+    pointer-events: none; /* let clicks fall through to the real checkbox on top */
+  }
+  .switch-toggle .track::before {
+    content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px;
+    background: #fff; border-radius: 50%; transition: transform 0.15s ease; box-shadow: 0 1px 2px rgba(16,24,40,0.2);
+  }
+  .switch-toggle input:checked + .track { background: var(--titlebar); }
+  .switch-toggle input:checked + .track::before { transform: translateX(16px); }
+  .switch-toggle input:focus-visible + .track { outline: 2px solid var(--titlebar); outline-offset: 2px; }
+
+  /* Sortable table column headers */
+  th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+  th.sortable .sort-arrow { display: inline-block; margin-left: 3px; font-size: 9px; color: var(--shadow-dk); }
+  th.sortable.sort-active .sort-arrow { color: var(--titlebar); }
+  th.sortable:hover { color: var(--titlebar); }
+
+  .filter-icon { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; color: var(--text-muted); }
+
+  .danger-zone { border: 1px solid #FDA29B; border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 14px; background: #FFFBFA; }
+  .danger-zone h4 { margin: 0 0 4px; font-size: 13px; color: var(--red); }
+  .danger-zone p { margin: 0 0 10px; font-size: 12.5px; color: var(--text-muted); }
 
   .notice-banner {
     background: var(--red-bg); color: var(--red); border: 1px solid #FDA29B; border-radius: var(--radius-sm);
@@ -165,9 +199,14 @@
   table.itin-list td.select-cell { width: 70px; }
   table.itin-list td.detail-cell { background: #FAFAFB; padding: 0; }
 
-  .type-badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
-  .type-RT { background: var(--green-bg); color: var(--green); }
-  .type-1W { background: var(--accent-bg); color: var(--blue-hi); }
+  /* Trip-type badges (ML/1L) are always blue; domestic/international
+     badges are always green/orange - two distinct color families so
+     the two badges stacked in .type-cell never read as the same color. */
+  .type-badge {
+    display: inline-block; min-width: 34px; text-align: center;
+    font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  }
+  .type-RT, .type-1W { background: var(--accent-bg); color: var(--blue-hi); }
   .type-DOM { background: var(--green-bg); color: var(--green); }
   .type-INT { background: var(--orange-bg); color: var(--orange); }
   .type-cell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
@@ -337,8 +376,10 @@
         <dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP.</dd>
         <dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP.</dd>
         <dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count.</dd>
+        <dt>AOBT</dt><dd>Actual Off-Block Time (block off), entered when filing the PIREP.</dd>
+        <dt>ATOT</dt><dd>Actual Take-Off Time, entered when filing the PIREP.</dd>
         <dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP.</dd>
-        <dt>ABIT</dt><dd>Actual In-Block Time, entered when filing the PIREP.</dd>
+        <dt>ABIT</dt><dd>Actual In-Block Time (block in), entered when filing the PIREP.</dd>
         <dt>AFAD</dt><dd>Actual Fuel At Destination, entered when filing the PIREP &mdash; not to be confused with EFOB, which is the block fuel planned before departure.</dd>
         <dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared.</dd>
         <dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg.</dd>
@@ -485,13 +526,13 @@ async function renderSearchUI() {
       <div class="panel-body">
         <div class="params-grid">
           <div class="field">
-            <label for="origin">PREFERRED BASE <span class="hint">(ICAO/IATA, optional)</span></label>
+            <label for="origin">DEPARTURE AIRPORT <span class="hint">(ICAO/IATA)</span></label>
             <input type="text" id="origin" autocomplete="off" placeholder="e.g. BGY or LIME">
             <div class="custom-dropdown" id="originDropdown"></div>
             <div class="field-error" id="originError">UNKNOWN AIRPORT CODE</div>
           </div>
           <div class="field">
-            <label for="destination">PREFERRED DESTINATION <span class="hint">(ICAO/IATA, optional)</span></label>
+            <label for="destination">DESTINATION AIRPORT <span class="hint">(ICAO/IATA)</span></label>
             <input type="text" id="destination" autocomplete="off" placeholder="e.g. STN or EGSS">
             <div class="custom-dropdown" id="destinationDropdown"></div>
             <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
@@ -504,8 +545,19 @@ async function renderSearchUI() {
               <option value="round_trip">MULTI-LEG ONLY</option>
             </select>
           </div>
+          <div class="field">
+            <label for="aircraftFilter">AIRCRAFT</label>
+            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any">
+            <p class="field-note">Feature coming soon</p>
+          </div>
+          <div class="field">
+            <label for="airlineFilter">AIRLINE</label>
+            <input type="text" id="airlineFilter" autocomplete="off" disabled placeholder="Any">
+            <p class="field-note">Feature coming soon</p>
+          </div>
         </div>
-        <button class="action" id="searchBtn" onclick="searchFlights()">SEARCH</button>
+        <p class="field-note" id="searchRequirementNote">Enter a departure and/or destination airport to search.</p>
+        <button class="action" id="searchBtn" onclick="searchFlights()" disabled>SEARCH</button>
       </div>
     </div>
     <div id="listPanel"></div>
@@ -514,6 +566,8 @@ async function renderSearchUI() {
   attachAirportDropdown('destination', 'destinationDropdown');
   document.getElementById('origin').addEventListener('blur', () => setTimeout(() => validateAirport('origin'), 150));
   document.getElementById('destination').addEventListener('blur', () => setTimeout(() => validateAirport('destination'), 150));
+  document.getElementById('origin').addEventListener('input', updateSearchButtonState);
+  document.getElementById('destination').addEventListener('input', updateSearchButtonState);
 
   // Prefill from the pilot's preferred base (set during onboarding /
   // account settings) so a returning pilot doesn't retype it every visit.
@@ -522,6 +576,13 @@ async function renderSearchUI() {
     const base = settings.profile && settings.profile.preferred_base;
     if (base) document.getElementById('origin').value = base;
   } catch (err) { /* non-critical - search still works without a prefill */ }
+  updateSearchButtonState();
+}
+
+function updateSearchButtonState() {
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  document.getElementById('searchBtn').disabled = !origin && !destination;
 }
 
 let currentItineraries = [];
@@ -532,12 +593,13 @@ let expandedPirepId = null;
 let currentSettings = null;
 
 async function searchFlights() {
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  if (!origin && !destination) return;
+
   const originValid = await validateAirport('origin');
   const destValid = await validateAirport('destination');
   if (!originValid || !destValid) return;
-
-  const origin = document.getElementById('origin').value.trim();
-  const destination = document.getElementById('destination').value.trim();
   const tripType = document.getElementById('tripType').value;
 
   const btn = document.getElementById('searchBtn');
@@ -570,9 +632,24 @@ async function searchFlights() {
 
 function itinKey(itin) { return itin.flight_numbers.join(','); }
 
+let sortState = { key: 'flight', dir: 'asc' };
+
+// Every sortable column's header label and comparator live together,
+// so adding/removing a sortable column never means touching two
+// separate places (the <thead> markup and the comparator table) that
+// could drift out of sync.
+const SORT_COLUMNS = {
+  flight:    { label: 'FLIGHT(S)',      cmp: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}) },
+  departure: { label: 'DEPARTURE',      cmp: (a, b) => a.departure_icao.localeCompare(b.departure_icao) },
+  arrival:   { label: 'ARRIVAL',        cmp: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao) },
+  dep_time:  { label: 'ETD (Z)',        cmp: (a, b) => (a.first_departure_zulu || '').localeCompare(b.first_departure_zulu || '') },
+  arr_time:  { label: 'ETA (Z)',        cmp: (a, b) => (a.last_arrival_zulu || '').localeCompare(b.last_arrival_zulu || '') },
+  legs:      { label: 'LEGS',           cmp: (a, b) => a.legs - b.legs },
+  distance:  { label: 'DISTANCE (NM)',  cmp: (a, b) => (a.total_distance_nm ?? -1) - (b.total_distance_nm ?? -1) },
+  ebt:       { label: 'EBT',            cmp: (a, b) => (a.ebt_minutes ?? -1) - (b.ebt_minutes ?? -1) },
+};
+
 function applySortAndFilter(list) {
-  const sortBy = document.getElementById('sortBy') ? document.getElementById('sortBy').value : 'flight';
-  const sortDir = document.getElementById('sortDir') ? document.getElementById('sortDir').dataset.dir : 'asc';
   const showFilter = document.getElementById('showFilter') ? document.getElementById('showFilter').value : 'all';
   const typeFilter = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
 
@@ -582,20 +659,36 @@ function applySortAndFilter(list) {
   if (typeFilter !== 'all') filtered = filtered.filter(i => i.trip_type === typeFilter);
 
   const sorted = [...filtered];
-  const cmp = {
-    flight: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}),
-    legs: (a, b) => a.legs - b.legs,
-    departure: (a, b) => a.departure_icao.localeCompare(b.departure_icao),
-    arrival: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao),
-    dep_time: (a, b) => (a.first_departure_zulu || '').localeCompare(b.first_departure_zulu || ''),
-    arr_time: (a, b) => (a.last_arrival_zulu || '').localeCompare(b.last_arrival_zulu || ''),
-    distance: (a, b) => (a.total_distance_nm ?? -1) - (b.total_distance_nm ?? -1),
-    ebt: (a, b) => (a.ebt_minutes ?? -1) - (b.ebt_minutes ?? -1),
-  }[sortBy];
-  sorted.sort(cmp);
-  if (sortDir === 'desc') sorted.reverse();
+  sorted.sort(SORT_COLUMNS[sortState.key].cmp);
+  if (sortState.dir === 'desc') sorted.reverse();
   return sorted;
 }
+
+function setSort(key) {
+  if (sortState.key === key) {
+    sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortState.key = key;
+    sortState.dir = 'asc';
+  }
+  renderTable();
+}
+
+// Strips the trailing "Z" (and only it) off a formatted Zulu time like
+// "14:30Z" or "14:30Z (+1d)", since the table now says "(Z)" once in
+// the column header instead of repeating it in every cell.
+function stripZulu(s) {
+  return s ? s.replace(/Z\b/, '') : s;
+}
+
+function sortHeaderHtml(key) {
+  const col = SORT_COLUMNS[key];
+  const active = sortState.key === key;
+  const arrow = active ? (sortState.dir === 'asc' ? '&uarr;' : '&darr;') : '&uarr;';
+  return `<th class="sortable${active ? ' sort-active' : ''}" onclick="setSort('${key}')">${col.label}<span class="sort-arrow">${arrow}</span></th>`;
+}
+
+const FILTER_ICON_SVG = `<svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`;
 
 function renderListPanel() {
   document.getElementById('listPanel').innerHTML = `
@@ -604,43 +697,24 @@ function renderListPanel() {
       <div class="panel-body">
         <div class="toolbar">
           <div class="field">
-            <label for="sortBy">SORT BY</label>
-            <select id="sortBy" onchange="renderTable()">
-              <option value="flight">FLIGHT NUMBER</option>
-              <option value="legs">NUMBER OF LEGS</option>
-              <option value="departure">DEPARTURE (A-Z)</option>
-              <option value="arrival">ARRIVAL (A-Z)</option>
-              <option value="dep_time">DEPARTURE TIME</option>
-              <option value="arr_time">ARRIVAL TIME</option>
-              <option value="distance">TOTAL DISTANCE</option>
-              <option value="ebt">EBT</option>
+            <label for="typeFilter">${FILTER_ICON_SVG}SECTOR LEGS</label>
+            <select id="typeFilter" onchange="renderTable()">
+              <option value="all">ALL</option>
+              <option value="RT">MULTI-LEG ONLY</option>
+              <option value="1W">ONE-LEG ONLY</option>
             </select>
           </div>
-          <div class="field" style="max-width:90px;">
-            <label>DIRECTION</label>
-            <button class="action small" id="sortDir" data-dir="asc" onclick="toggleSortDir()" style="width:100%;">ASC &uarr;</button>
-          </div>
           <div class="field">
-            <label for="showFilter">SHOW</label>
+            <label for="showFilter">${FILTER_ICON_SVG}FLIGHT COUNTRY</label>
             <select id="showFilter" onchange="renderTable()">
               <option value="all">ALL</option>
               <option value="domestic">DOMESTIC ONLY</option>
               <option value="international">INTERNATIONAL ONLY</option>
             </select>
           </div>
-          <div class="field">
-            <label for="typeFilter">TYPE</label>
-            <select id="typeFilter" onchange="renderTable()">
-              <option value="all">ALL TYPES</option>
-              <option value="RT">MULTI LEG</option>
-              <option value="1W">ONE LEG</option>
-            </select>
-          </div>
         </div>
         <table class="itin-list" id="itinTable">
-          <thead>
-            <tr><th>TYPE</th><th>FLIGHT(S)</th><th>DEPARTURE</th><th>VIA</th><th>ARRIVAL</th><th>ETD</th><th>ETA</th><th>LEGS</th><th>TURNAROUND</th><th>DISTANCE (NM)</th><th>EBT</th><th></th></tr>
-          </thead>
+          <thead id="itinTableHead"></thead>
           <tbody id="itinTableBody"></tbody>
         </table>
       </div>
@@ -648,15 +722,23 @@ function renderListPanel() {
   renderTable();
 }
 
-function toggleSortDir() {
-  const btn = document.getElementById('sortDir');
-  const newDir = btn.dataset.dir === 'asc' ? 'desc' : 'asc';
-  btn.dataset.dir = newDir;
-  btn.innerHTML = newDir === 'asc' ? 'ASC &uarr;' : 'DESC &darr;';
-  renderTable();
-}
-
 function renderTable() {
+  document.getElementById('itinTableHead').innerHTML = `
+    <tr>
+      <th>TYPE</th>
+      ${sortHeaderHtml('flight')}
+      ${sortHeaderHtml('departure')}
+      <th>VIA</th>
+      ${sortHeaderHtml('arrival')}
+      ${sortHeaderHtml('dep_time')}
+      ${sortHeaderHtml('arr_time')}
+      ${sortHeaderHtml('legs')}
+      <th>TURNAROUND</th>
+      ${sortHeaderHtml('distance')}
+      ${sortHeaderHtml('ebt')}
+      <th></th>
+    </tr>`;
+
   const sorted = applySortAndFilter(currentItineraries);
   const tbody = document.getElementById('itinTableBody');
 
@@ -674,11 +756,11 @@ function renderTable() {
       <tr class="itin-row ${isExpanded ? 'expanded' : ''}" onclick="toggleItinerary('${key}')">
         <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
-        <td data-label="DEPARTURE">${itin.departure_icao} (${itin.departure_country})</td>
+        <td data-label="DEPARTURE">${itin.departure_icao}</td>
         <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
-        <td data-label="ARRIVAL">${itin.arrival_icao} (${itin.arrival_country})</td>
-        <td data-label="ETD">${itin.first_departure_zulu || 'UNKNOWN'}</td>
-        <td data-label="ETA">${itin.last_arrival_zulu || 'UNKNOWN'}</td>
+        <td data-label="ARRIVAL">${itin.arrival_icao}</td>
+        <td data-label="ETD (Z)">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
+        <td data-label="ETA (Z)">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
         <td data-label="LEGS">${itin.legs}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
         <td data-label="DISTANCE (NM)">${fmtNum(itin.total_distance_nm)}</td>
@@ -908,8 +990,10 @@ function renderRecap(flight) {
 
     const pirepForm = current && state.loadsheet_signed && !state.pirep ? `
       <div class="pirep-form" id="pirep-${i}">
-        <label>ALDT (ZULU)<input id="aldt-${i}" type="time" required></label>
-        <label>ABIT (ZULU)<input id="abit-${i}" type="time" required></label>
+        ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)')}
+        ${timeFieldHtml(`atot-${i}`, 'ATOT (ZULU, TAKEOFF)')}
+        ${timeFieldHtml(`aldt-${i}`, 'ALDT (ZULU, LANDING)')}
+        ${timeFieldHtml(`abit-${i}`, 'ABIT (ZULU, BLOCK IN)')}
         <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
         <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log.</label>
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
@@ -932,7 +1016,7 @@ function renderRecap(flight) {
       ${legDelayMelBlock(leg)}
       ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
       ${loadsheetForm}
-      ${state.pirep ? `<div class="placeholder-text">PIREP: ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
+      ${state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
       ${pirepForm}
     </div>`;
   }).join('');
@@ -1005,22 +1089,42 @@ function submitLoadsheet(index) {
   flight.leg_state[index].loadsheet_signed = true;
   saveAndRender(flight);
 }
+// A plain <input type="time"> renders AM/PM in some browser locales,
+// which doesn't match how a Zulu time is ever written in dispatch.
+// Two side-by-side number inputs (HH/MM) sidestep locale formatting
+// entirely - what's typed is exactly what's stored.
+function timeFieldHtml(id, label) {
+  return `<label>${label}<span style="display:flex; align-items:center; gap:3px;">
+    <input id="${id}-hh" type="number" min="0" max="23" placeholder="HH" style="width:46px;" required>:<input id="${id}-mm" type="number" min="0" max="59" placeholder="MM" style="width:46px;" required>
+  </span></label>`;
+}
+function readTimeField(id) {
+  const hh = document.getElementById(id + '-hh').value;
+  const mm = document.getElementById(id + '-mm').value;
+  if (hh === '' || mm === '') return null;
+  const h = Number(hh), m = Number(mm);
+  if (!Number.isInteger(h) || h < 0 || h > 23 || !Number.isInteger(m) || m < 0 || m > 59) return null;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
 function showPirep(index) {
   const el = document.getElementById('pirep-' + index); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 async function submitPirep(index) {
-  const aldt = document.getElementById('aldt-' + index).value;
-  const abit = document.getElementById('abit-' + index).value;
+  const aobt = readTimeField('aobt-' + index);
+  const atot = readTimeField('atot-' + index);
+  const aldt = readTimeField('aldt-' + index);
+  const abit = readTimeField('abit-' + index);
   const afad = Number(document.getElementById('afad-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
-  if (!aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
-    alert('Enter ALDT, ABIT and AFAD, then confirm no new MELs or non-normal occurrences.');
+  if (!aobt || !atot || !aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
+    alert('Enter AOBT, ATOT, ALDT, ABIT (as HH and MM, 24-hour) and AFAD, then confirm no new MELs or non-normal occurrences.');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
   const state = flight.leg_state[index];
-  const pirep = {aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  const pirep = {aobt, atot, aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
   state.pirep = pirep;
   flight.leg_status[index].status = 'done';
   saveAndRender(flight);
@@ -1071,6 +1175,25 @@ function calcAge(birthDateStr) {
   return age;
 }
 
+// Storage stays ISO (YYYY-MM-DD, sorts naturally, unambiguous) - only
+// the display format is DD/MM/YYYY, per request. These two functions
+// are the only place that conversion happens.
+function isoToDisplayDate(iso) {
+  if (!iso) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+}
+function displayDateToIso(display) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((display || '').trim());
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  if (d.getFullYear() !== Number(yyyy) || d.getMonth() !== Number(mm) - 1 || d.getDate() !== Number(dd)) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+const SIMULATORS = ['MSFS2024', 'MSFS', 'XPlane 12', 'XPlane 11', 'P3D', 'Others'];
+
 function avatarHtml(profile, size) {
   size = size || 64;
   if (profile.photo_url) {
@@ -1096,10 +1219,7 @@ async function renderUserPage() {
   const p = settings.profile;
   const age = calcAge(p.birth_date);
   const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ');
-  const metaParts = [];
-  if (age != null) metaParts.push(`AGE ${age}`);
-  if (p.nationality) metaParts.push(escAttr(p.nationality));
-  if (p.preferred_base) metaParts.push(`BASE ${escAttr(p.preferred_base)}`);
+  const dobLine = p.birth_date ? `${isoToDisplayDate(p.birth_date)}${age != null ? ` (${age}yrs)` : ''}` : '';
 
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
@@ -1108,11 +1228,13 @@ async function renderUserPage() {
         <button class="action small" onclick="renderAccountSettings()">ACCOUNT SETTINGS</button>
       </div>
       <div class="panel-body" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-        ${avatarHtml(p, 64)}
+        ${avatarHtml(p, 96)}
         <div>
           <div style="font-size:16px; font-weight:700;">${p.username ? escAttr(p.username) : 'NO USERNAME SET'}</div>
           ${fullName ? `<div class="placeholder-text">${escAttr(fullName)}</div>` : ''}
-          ${metaParts.length ? `<div class="placeholder-text">${metaParts.join(' &middot; ')}</div>` : ''}
+          ${dobLine ? `<div class="placeholder-text">${dobLine}</div>` : ''}
+          ${p.nationality ? `<div class="placeholder-text">${escAttr(p.nationality)}</div>` : ''}
+          ${p.preferred_base ? `<div class="placeholder-text">BASE ${escAttr(p.preferred_base)}</div>` : ''}
         </div>
       </div>
     </div>
@@ -1124,7 +1246,6 @@ async function renderUserPage() {
           <tr><td class="k">TOTAL FLIGHTS (PIREPS FILED)</td><td class="v">${fmtNum(stats.total_flights)}</td></tr>
           <tr><td class="k">TOTAL FLIGHT TIME</td><td class="v">${stats.total_flight_minutes != null ? fmtMinutes(stats.total_flight_minutes) : 'N/A'}</td></tr>
         </table>
-        <p class="placeholder-text" style="margin-top:8px;">Flight time is the sum of each leg's EET (expected airborne time) - the app never captures an actual takeoff time, only ALDT/ABIT, so this isn't a measured actual.</p>
         <div id="monthlyChart" style="margin-top:14px;"></div>
       </div>
     </div>
@@ -1150,7 +1271,7 @@ async function renderUserPage() {
 function renderMonthlyChart(monthly) {
   const el = document.getElementById('monthlyChart');
   if (!el) return;
-  if (!monthly.length) { el.innerHTML = '<p class="placeholder-text">No flights logged yet.</p>'; return; }
+  if (!monthly.length) { el.innerHTML = '<div class="empty-state">No flights logged yet</div>'; return; }
   const recent = monthly.slice(-12);
   const max = Math.max(...recent.map(m => m.flights), 1);
   const bars = recent.map(m => {
@@ -1209,6 +1330,7 @@ async function renderAccountSettings() {
   const p = settings.profile;
   const simbriefUsername = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
   const countryOptions = COUNTRIES.map(c => `<option value="${escAttr(c)}" ${p.nationality === c ? 'selected' : ''}>${c}</option>`).join('');
+  const simulatorOptions = SIMULATORS.map(s => `<option value="${escAttr(s)}" ${p.simulator === s ? 'selected' : ''}>${s}</option>`).join('');
 
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
@@ -1217,27 +1339,51 @@ async function renderAccountSettings() {
         <button class="action small" onclick="renderUserPage()">BACK TO PROFILE</button>
       </div>
       <div class="panel-body">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
+          <div id="acctPhotoPreview">${avatarHtml(p, 72)}</div>
+          <div>
+            <button class="action small" type="button" onclick="document.getElementById('acctPhotoInput').click()">CHANGE PHOTO</button>
+            <input type="file" id="acctPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadAccountPhoto()">
+            <div class="field-note" id="acctPhotoStatus">JPEG, PNG or WebP, up to 2MB</div>
+          </div>
+        </div>
         <div class="params-grid">
           <div class="field"><label for="acctEmail">EMAIL</label><input type="text" id="acctEmail" value="${escAttr(CURRENT_USER_EMAIL)}" disabled></div>
           <div class="field"><label for="acctUsername">USERNAME</label><input type="text" id="acctUsername" value="${escAttr(p.username)}" disabled></div>
           <div class="field"><label for="profileFirstName">FIRST NAME</label><input type="text" id="profileFirstName" autocomplete="off" value="${escAttr(p.first_name)}"></div>
           <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
-          <div class="field"><label for="profileBirthDate">BIRTH DATE <span class="hint">(optional)</span></label><input type="date" id="profileBirthDate" value="${escAttr(p.birth_date)}"></div>
+          <div class="field">
+            <label for="profileBirthDate">BIRTH DATE <span class="hint">(DD/MM/YYYY, optional)</span></label>
+            <input type="text" id="profileBirthDate" autocomplete="off" placeholder="DD/MM/YYYY" maxlength="10" value="${escAttr(isoToDisplayDate(p.birth_date))}">
+            <div class="field-error" id="profileBirthDateError">ENTER A VALID DATE AS DD/MM/YYYY</div>
+          </div>
           <div class="field">
             <label for="profileNationality">NATIONALITY <span class="hint">(optional)</span></label>
             <select id="profileNationality"><option value="">&mdash;</option>${countryOptions}</select>
           </div>
-          <div class="field"><label for="profilePreferredBase">PREFERRED BASE <span class="hint">(optional, ICAO/IATA)</span></label><input type="text" id="profilePreferredBase" autocomplete="off" maxlength="4" style="text-transform:uppercase;" value="${escAttr(p.preferred_base)}"></div>
+          <div class="field">
+            <label for="profilePreferredBase">PREFERRED BASE <span class="hint">(optional, ICAO/IATA)</span></label>
+            <input type="text" id="profilePreferredBase" autocomplete="off" maxlength="4" style="text-transform:uppercase;" value="${escAttr(p.preferred_base)}">
+            <div class="custom-dropdown" id="profilePreferredBaseDropdown"></div>
+          </div>
+          <div class="field">
+            <label for="profileSimulator">SIMULATOR <span class="hint">(optional)</span></label>
+            <select id="profileSimulator"><option value="">&mdash;</option>${simulatorOptions}</select>
+          </div>
           <div class="field">
             <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
             <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(simbriefUsername)}" placeholder="e.g. jdoe123">
             <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
           </div>
         </div>
-        <p class="placeholder-text">Email, username and password can't be changed here yet.</p>
+        <p class="placeholder-text">Email and username can't be changed here yet.</p>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="savePilotProfile()">SAVE</button>
           <span class="placeholder-text" id="profileSaveStatus"></span>
+        </div>
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--shadow-md); display:flex; align-items:center; gap:10px;">
+          <button class="action small" type="button" onclick="sendPasswordReset()">CHANGE PASSWORD</button>
+          <span class="placeholder-text" id="passwordResetStatus"></span>
         </div>
       </div>
     </div>
@@ -1253,7 +1399,110 @@ async function renderAccountSettings() {
           <span class="placeholder-text" id="generationSaveStatus"></span>
         </div>
       </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">DANGER ZONE</div>
+      <div class="panel-body">
+        <div class="danger-zone" id="deleteAccountStep1">
+          <h4>Delete account</h4>
+          <p>This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone.</p>
+          <div class="field" style="max-width:260px;">
+            <label for="deleteConfirmText">Type DELETE to confirm</label>
+            <input type="text" id="deleteConfirmText" autocomplete="off">
+          </div>
+          <button class="action small danger" type="button" onclick="proceedToDeleteStep2()">CONTINUE</button>
+        </div>
+        <div class="danger-zone" id="deleteAccountStep2" style="display:none;">
+          <h4>Confirm with your password</h4>
+          <p>Enter your password to permanently delete your account.</p>
+          <div class="field" style="max-width:260px;">
+            <label for="deletePassword">Password</label>
+            <input type="password" id="deletePassword" autocomplete="off">
+          </div>
+          <div class="notice-banner" id="deleteError" style="display:none;"></div>
+          <button class="action small danger" type="button" onclick="confirmDeleteAccount()">PERMANENTLY DELETE ACCOUNT</button>
+          <button class="action small" type="button" onclick="cancelDeleteAccount()">CANCEL</button>
+        </div>
+      </div>
     </div>`;
+
+  attachAirportDropdown('profilePreferredBase', 'profilePreferredBaseDropdown');
+}
+
+function proceedToDeleteStep2() {
+  if (document.getElementById('deleteConfirmText').value.trim() !== 'DELETE') {
+    alert('Type DELETE exactly (all capitals) to confirm.');
+    return;
+  }
+  document.getElementById('deleteAccountStep1').style.display = 'none';
+  document.getElementById('deleteAccountStep2').style.display = 'block';
+}
+
+function cancelDeleteAccount() {
+  document.getElementById('deleteConfirmText').value = '';
+  document.getElementById('deletePassword').value = '';
+  document.getElementById('deleteError').style.display = 'none';
+  document.getElementById('deleteAccountStep1').style.display = 'block';
+  document.getElementById('deleteAccountStep2').style.display = 'none';
+}
+
+async function confirmDeleteAccount() {
+  const password = document.getElementById('deletePassword').value;
+  const errEl = document.getElementById('deleteError');
+  errEl.style.display = 'none';
+  if (!password) { errEl.textContent = 'Enter your password.'; errEl.style.display = 'block'; return; }
+  if (!confirm('This is final and cannot be undone. Permanently delete your account?')) return;
+  try {
+    const resp = await fetch('/account/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'password=' + encodeURIComponent(password),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Could not delete account.');
+    localStorage.clear();
+    window.location.href = '/';
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function uploadAccountPhoto() {
+  const input = document.getElementById('acctPhotoInput');
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('acctPhotoStatus');
+  status.textContent = 'UPLOADING...';
+  const formData = new FormData();
+  formData.append('photo', file);
+  try {
+    const resp = await fetch('/account/photo', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Upload failed.');
+    currentSettings = data;
+    document.getElementById('acctPhotoPreview').innerHTML = avatarHtml(data.profile, 72);
+    status.textContent = 'Photo updated.';
+  } catch (err) {
+    status.textContent = err.message;
+  } finally {
+    input.value = '';
+  }
+}
+
+async function sendPasswordReset() {
+  const status = document.getElementById('passwordResetStatus');
+  status.textContent = 'SENDING...';
+  try {
+    const resp = await fetch('/auth/reset', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'email=' + encodeURIComponent(CURRENT_USER_EMAIL),
+    });
+    if (!resp.ok) throw new Error('Could not send reset email.');
+    status.textContent = `Check ${CURRENT_USER_EMAIL} for a reset link.`;
+  } catch (err) {
+    status.textContent = err.message;
+  }
 }
 
 function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn) {
@@ -1267,7 +1516,13 @@ function renderComplicationCategory(key, title, explanation, items, categorySett
   return `
     <div class="leg-block" style="margin-bottom:12px;">
       <div class="leg-block-header">
-        <label class="checkbox-row"><input type="checkbox" id="gen-${key}-master" onchange="onCategoryMasterToggle('${key}')" ${masterOn ? 'checked' : ''}> ${title}</label>
+        <div class="switch-row">
+          <span class="switch-toggle">
+            <input type="checkbox" id="gen-${key}-master" onchange="onCategoryMasterToggle('${key}')" ${masterOn ? 'checked' : ''}>
+            <span class="track"></span>
+          </span>
+          <span>${title}</span>
+        </div>
       </div>
       <div class="leg-block-body">
         <p class="placeholder-text">${explanation}</p>
@@ -1317,15 +1572,24 @@ async function savePilotProfile() {
   const username = usernameInput.value.trim();
   const usernameValid = username === '' || /^[A-Za-z0-9_-]{3,30}$/.test(username);
   usernameError.classList.toggle('show', !usernameValid);
-  if (!usernameValid) return;
+
+  const birthDateInput = document.getElementById('profileBirthDate');
+  const birthDateError = document.getElementById('profileBirthDateError');
+  const birthDateRaw = birthDateInput.value.trim();
+  const birthDateIso = birthDateRaw ? displayDateToIso(birthDateRaw) : '';
+  const birthDateValid = birthDateRaw === '' || birthDateIso !== null;
+  birthDateError.classList.toggle('show', !birthDateValid);
+
+  if (!usernameValid || !birthDateValid) return;
 
   const profile = {
     ...currentSettings.profile,
     first_name: document.getElementById('profileFirstName').value.trim(),
     last_name: document.getElementById('profileLastName').value.trim(),
-    birth_date: document.getElementById('profileBirthDate').value,
+    birth_date: birthDateIso || '',
     nationality: document.getElementById('profileNationality').value,
     preferred_base: document.getElementById('profilePreferredBase').value.trim().toUpperCase(),
+    simulator: document.getElementById('profileSimulator').value,
   };
   const payload = { profile, generation: currentSettings.generation };
   try {
@@ -1392,7 +1656,7 @@ function buildPirepDetailHtml(r) {
     ${legOfpTable(r.ofp)}
     ${legDelayMelBlock(leg)}
     ${r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
-    ${r.pirep ? `<div class="placeholder-text">PIREP: ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}</div>` : ''}`;
+    ${r.pirep ? `<div class="placeholder-text">PIREP: AOBT ${r.pirep.aobt || 'N/A'}Z &middot; ATOT ${r.pirep.atot || 'N/A'}Z &middot; ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}</div>` : ''}`;
 }
 
 function togglePirepRecord(id) {
