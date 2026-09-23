@@ -153,6 +153,22 @@ def get_user(access_token):
     return resp.json()
 
 
+def update_password(access_token, new_password):
+    """Sets a new password for the account the access_token belongs to -
+    used by the password-recovery flow (app.py's /auth/reset-password),
+    where that token comes from the emailed recovery link rather than a
+    normal sign-in."""
+    resp = requests.put(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={**_anon_headers(), "Authorization": f"Bearer {access_token}"},
+        json={"password": new_password},
+        timeout=AUTH_TIMEOUT,
+    )
+    if resp.status_code >= 400:
+        _raise_for_gotrue_error(resp)
+    return resp.json()
+
+
 def request_password_reset(email, redirect_to=None):
     params = {"redirect_to": redirect_to} if redirect_to else {}
     resp = requests.post(

@@ -107,6 +107,12 @@
   }
   .field input:focus, .field select:focus { outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
   .field-error { color: var(--red); font-size: 11.5px; margin-top: 3px; display: none; }
+
+  .notice-banner {
+    background: var(--red-bg); color: var(--red); border: 1px solid #FDA29B; border-radius: var(--radius-sm);
+    padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
+  }
+  .notice-banner a { color: var(--red); font-weight: 600; text-decoration: underline; }
   .field-error.show { display: block; }
 
   .checkbox-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -348,6 +354,11 @@ const CURRENT_USER_EMAIL = {{ current_user_email|tojson }};
 const COUNTRIES = {{ countries|tojson }};
 const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
+function simbriefNoticeHtml() {
+  if (localStorage.getItem(SIMBRIEF_USERNAME_KEY)) return '';
+  return `<div class="notice-banner">SimBrief connection missing. <a href="#" onclick="renderAccountSettings(); return false;">Add your SimBrief username</a> to send loadsheets and flight plans.</div>`;
+}
+
 function updateClock() {
   const now = new Date();
   const hh = String(now.getUTCHours()).padStart(2, '0');
@@ -468,6 +479,7 @@ async function validateAirport(fieldId) {
 
 async function renderSearchUI() {
   document.getElementById('mainContent').innerHTML = `
+    ${simbriefNoticeHtml()}
     <div class="panel">
       <div class="panel-header">SEARCH PARAMETERS</div>
       <div class="panel-body">
@@ -925,7 +937,7 @@ function renderRecap(flight) {
     </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  document.getElementById('mainContent').innerHTML = `${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 

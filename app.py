@@ -77,6 +77,8 @@ def require_login():
         if not refreshed:
             session.clear()
             return redirect(url_for("login", next=request.path))
+    if session.get("must_reset_password") and request.endpoint not in ("reset_password", "logout"):
+        return redirect(url_for("reset_password"))
 
 
 def _now_ts():
@@ -112,6 +114,22 @@ def _auth_redirect_to():
 
 
 _PASSWORD_MIN_LENGTH = 8
+
+
+def _signup_result_indicates_existing_user(result):
+    """Supabase's signup endpoint returns HTTP 200 for an email that's
+    already registered and confirmed too - it doesn't error, to avoid
+    leaking which emails have accounts (enumeration protection). The
+    documented tell is an empty "identities" list on the returned user
+    (a genuinely new signup always has exactly one identity, the
+    email/password one just created)."""
+    if not isinstance(result, dict):
+        return False
+    user = result.get("user", result)
+    if not isinstance(user, dict) or not user.get("id"):
+        return False
+    identities = user.get("identities")
+    return identities is not None and len(identities) == 0
 
 
 def _validate_password(password, confirm):
@@ -164,8 +182,11 @@ def signup():
             error = _validate_password(password, confirm)
         if not error:
             try:
-                auth.sign_up(email, password, redirect_to=_auth_redirect_to())
-                notice = f"Account created. Check {email} for a verification link before signing in."
+                result = auth.sign_up(email, password, redirect_to=_auth_redirect_to())
+                if _signup_result_indicates_existing_user(result):
+                    error = "That email is already registered. Try signing in, or use \"Forgot password?\" if you don't remember your password."
+                else:
+                    notice = f"Account created. Check {email} for a verification link before signing in."
             except auth.AuthError as exc:
                 error = exc.message
     return render_template("login.html", mode="signup", error=error, notice=notice,
@@ -200,6 +221,25 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/auth/reset-password", methods=["GET", "POST"])
+def reset_password():
+    if not session.get("must_reset_password"):
+        return redirect(url_for("dispatch_app"))
+    error = None
+    if request.method == "POST":
+        password = request.form.get("password") or ""
+        confirm = request.form.get("password_confirm") or ""
+        error = _validate_password(password, confirm)
+        if not error:
+            try:
+                auth.update_password(session["access_token"], password)
+                session.pop("must_reset_password", None)
+                return redirect(_post_login_redirect(current_user()["id"]))
+            except auth.AuthError as exc:
+                error = exc.message
+    return render_template("auth_reset_password.html", error=error)
+
+
 @app.route("/auth/callback")
 def auth_callback():
     """Supabase's emailed verification/reset link redirects here with the
@@ -226,6 +266,13 @@ def auth_session():
     session["expires_at"] = _now_ts() + int(payload.get("expires_in", 3600)) - 30
     session["user"] = {"id": user["id"], "email": user["email"]}
     session.permanent = True
+    if payload.get("type") == "recovery":
+        # A password-reset link, not a normal login - the pilot must set
+        # a new password before they can do anything else with this
+        # session (enforced in require_login), rather than landing in
+        # the app still on the password they just asked to replace.
+        session["must_reset_password"] = True
+        return jsonify({"ok": True, "redirect": url_for("reset_password")})
     return jsonify({"ok": True, "redirect": _post_login_redirect(user["id"])})
 
 

@@ -29,6 +29,7 @@
       const access_token = params.get('access_token');
       const refresh_token = params.get('refresh_token');
       const expires_in = params.get('expires_in');
+      const type = params.get('type');
       const errorDescription = params.get('error_description');
       const msg = document.getElementById('msg');
 
@@ -44,7 +45,7 @@
         const resp = await fetch('/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token, refresh_token, expires_in: Number(expires_in) || 3600 }),
+          body: JSON.stringify({ access_token, refresh_token, expires_in: Number(expires_in) || 3600, type }),
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Could not establish session.');
