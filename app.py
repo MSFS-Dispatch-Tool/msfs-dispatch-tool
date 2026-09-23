@@ -436,36 +436,93 @@ def load_json(filename):
         return json.load(f)
 
 
-routes = load_json("routes_enriched.json")
-mels = load_json("mel_list.json")
+def load_carrier(code):
+    """Loads one carrier's config + route network from data/carriers/<code>/,
+    plus the MEL list for each aircraft type in its fleet (shared under
+    data/aircraft/<type>/ since a MEL set belongs to the airframe/addon,
+    not the airline painted on it - two carriers flying the same type
+    reuse the same MEL data).
+
+    This is the seam a second carrier (e.g. EasyJet) hangs off: add a
+    data/carriers/<code>/ folder with its own carrier.json + routes.json,
+    and (if it's a new aircraft type) a data/aircraft/<type>/ folder, then
+    add its code to ACTIVE_CARRIER_CODES below. Nothing else in this file
+    assumes there's only ever one carrier - it just isn't wired up to
+    offer a choice of carrier yet, since only Ryanair is live for now.
+    """
+    base = os.path.join("carriers", code)
+    config = load_json(os.path.join(base, "carrier.json"))
+    carrier_routes = load_json(os.path.join(base, "routes.json"))
+    fleet_by_type = {ac["type"]: ac for ac in config["fleet"]}
+
+    carrier_mels = []
+    seen_mel_ids = set()
+    for aircraft_type in fleet_by_type:
+        mel_path = os.path.join("aircraft", aircraft_type, "mel_list.json")
+        if not os.path.exists(os.path.join(DATA_DIR, mel_path)):
+            continue
+        for m in load_json(mel_path):
+            if m["id"] not in seen_mel_ids:
+                seen_mel_ids.add(m["id"])
+                carrier_mels.append(m)
+
+    return {
+        "icao": config["icao"], "iata": config["iata"], "name": config["name"],
+        "callsign_prefix": config["callsign_prefix"],
+        "fleet_by_type": fleet_by_type,
+        "routes": carrier_routes,
+        "routes_by_flight_number": {r["flight_number"]: r for r in carrier_routes},
+        "rt_pairing": find_round_trip_pairs(carrier_routes),
+        "mels": carrier_mels,
+    }
+
+
+# Only Ryanair is live for now - see load_carrier's docstring for how a
+# second carrier plugs in. Everything below derives from ACTIVE_CARRIER
+# rather than a hardcoded single dataset, so switching/adding a carrier
+# is a data change here, not a rewrite of /search, /select, /confirm etc.
+ACTIVE_CARRIER_CODES = ("RYR",)
+CARRIERS = {code: load_carrier(code) for code in ACTIVE_CARRIER_CODES}
+ACTIVE_CARRIER = CARRIERS["RYR"]
+
+routes = ACTIVE_CARRIER["routes"]
+mels = ACTIVE_CARRIER["mels"]
+routes_by_flight_number = ACTIVE_CARRIER["routes_by_flight_number"]
+rt_pairing = ACTIVE_CARRIER["rt_pairing"]
+
 delay_codes = load_json("delay_codes.json")
 lmc_events = load_json("lmc_events.json")
 dangerous_goods = load_json("dangerous_goods.json")
 airports = load_json("airports.json")
 countries = load_json("countries.json")
 # Worldwide airport reference (OurAirports, public domain), separate from
-# the Ryanair route-network `airports` above - used only for the preferred
-# base picker and destinations map, never for route search, since a
-# pilot's home base can be any real airport, not just one Ryanair serves.
+# the route-network `airports` above - used only for the preferred base
+# picker and destinations map, never for route search, since a pilot's
+# home base can be any real airport, not just one a loaded carrier serves.
 airports_world = load_json("airports_world.json")
 
-routes_by_flight_number = {r["flight_number"]: r for r in routes}
 country_by_icao = {a["icao"]: a["country"] for a in airports}
 tz_by_icao = {a["icao"]: a["tz"] for a in airports}
 airports_by_icao = {a["icao"]: a for a in airports}
 airports_world_by_icao = {a["icao"]: a for a in airports_world}
-
-rt_pairing = find_round_trip_pairs(routes)
 
 WEATHER_USER_AGENT = "VirtualDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
 # SimBrief dispatch-redirect / OFP fetch-back integration. Both are
 # SimBrief's public, no-API-key mechanisms - not the gated "API v1" popup
 # flow (that needs an emailed-and-approved key and is out of scope here).
-SIMBRIEF_AIRLINE_ICAO = "RYR"  # Ryanair - hardcoded, this tool is RYR-only
-SIMBRIEF_AIRCRAFT_TYPE = {"738": "B738"}
-SIMBRIEF_AIRCRAFT_REG = "EI-DPN"  # pilot's own airframe - preselected so SimBrief
-                                   # doesn't reset other fields after a manual pick
+SIMBRIEF_AIRLINE_ICAO = ACTIVE_CARRIER["icao"]
+SIMBRIEF_AIRCRAFT_TYPE = {t: ac["simbrief_type"] for t, ac in ACTIVE_CARRIER["fleet_by_type"].items()}
+
+
+def seat_capacity_for(route_leg):
+    """Seat count for the aircraft type a route leg is flown on, from the
+    active carrier's fleet config - falls back to the first (only, today)
+    fleet entry if the route's aircraft_type is missing/unrecognized."""
+    fleet = ACTIVE_CARRIER["fleet_by_type"]
+    default_seats = next(iter(fleet.values()))["seats"] if fleet else 189
+    entry = fleet.get(route_leg.get("aircraft_type"))
+    return entry["seats"] if entry else default_seats
 
 
 def get_settings_safe():
@@ -737,15 +794,18 @@ def select():
 
     # A MEL is an aircraft equipment status, not a per-sector event - it
     # stays deferred on the airframe until rectified, so it's rolled ONCE
-    # for the whole itinerary (this app models a single fixed airframe,
-    # EI-DPN) and applied to every leg of the same rotation, rather than
-    # independently re-rolled per leg.
+    # for the whole itinerary (this app models a single airframe per
+    # rotation) and applied to every leg, rather than independently
+    # re-rolled per leg.
     itinerary_mel = roll_mel(mels, settings["generation"]["mel"])
 
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
-        conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
+        conditions = generate_leg_conditions(
+            duration_minutes=route_leg["duration_minutes"],
+            seat_capacity=seat_capacity_for(route_leg),
+        )
         conditions["delay"] = roll_delay(delay_codes, settings["generation"]["delay"])
         conditions["mel"] = itinerary_mel
         conditions["flight_number"] = route_leg["flight_number"]
@@ -837,7 +897,7 @@ def confirm():
     if not itinerary:
         return jsonify({"error": "No flights specified."}), 400
 
-    callsigns = [generate_callsign() for _ in flight_numbers]
+    callsigns = [generate_callsign(ACTIVE_CARRIER["callsign_prefix"]) for _ in flight_numbers]
     settings = get_settings_safe()
     dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"])
 
@@ -1031,16 +1091,23 @@ def simbrief_redirect_url():
     the pilot a pre-filled form on simbrief.com; they still press Generate
     there themselves. No API key involved.
 
-    Aircraft type/reg are preselected to the pilot's own airframe
-    (EI-DPN) - leaving them unset made SimBrief reset other fields once
-    the pilot picked an aircraft manually. acdata (individual payload/
-    performance overrides) and cargo are still left out: cargo's expected
-    units aren't confirmed from public docs, and acdata is airframe
-    minutiae that belongs to the SimBrief-side fleet entry for EI-DPN,
-    not this app. deph/depm/taxiout/taxiin ARE passed - taxi time feeds
-    directly into SimBrief's fuel planning, so leaving it out was
-    producing a fuel figure the taxi time on our own SOBT/STOT/SLDT/SIBT
-    table didn't match.
+    Aircraft type is preselected to the carrier's fleet type for this
+    route (still just one - the 737-800 - until a second carrier/fleet
+    is live). Registration is deliberately left unset: SimBrief fills it
+    from whichever airframe profile the pilot has set as default, and
+    the actual registration used is read back from the OFP once fetched
+    (see /simbrief/ofp's `registration` field) rather than preselected
+    here - this app doesn't have access to a pilot's saved SimBrief
+    airframes (that needs SimBrief's gated, approval-only API), and even
+    if it did, nothing in a saved airframe profile says which airline it
+    belongs to. acdata (individual payload/performance overrides) and
+    cargo are still left out: cargo's expected units aren't confirmed
+    from public docs, and acdata is airframe minutiae that belongs to
+    the pilot's own SimBrief fleet entry, not this app.
+    deph/depm/taxiout/taxiin ARE passed - taxi time feeds directly into
+    SimBrief's fuel planning, so leaving it out was producing a fuel
+    figure the taxi time on our own SOBT/STOT/SLDT/SIBT table didn't
+    match.
     """
     flights_raw = request.args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
@@ -1061,7 +1128,10 @@ def simbrief_redirect_url():
         # cost_index/pax_count/taxi_out_minutes). An already-confirmed
         # active leg's frontend call always supplies all three, so this
         # never re-rolls numbers the pilot has already seen and confirmed.
-        conditions = generate_leg_conditions(duration_minutes=route_leg["duration_minutes"])
+        conditions = generate_leg_conditions(
+            duration_minutes=route_leg["duration_minutes"],
+            seat_capacity=seat_capacity_for(route_leg),
+        )
         if civalue is None:
             civalue = conditions["cost_index"]
         if pax is None:
@@ -1069,6 +1139,7 @@ def simbrief_redirect_url():
         if taxi_out is None:
             taxi_out = conditions["taxi_out_minutes"]
 
+    default_type = next(iter(SIMBRIEF_AIRCRAFT_TYPE.values()), "B738")
     params = {
         "orig": route_leg["departure_icao"],
         "dest": route_leg["arrival_icao"],
@@ -1079,8 +1150,7 @@ def simbrief_redirect_url():
         "pax": pax,
         "taxiout": taxi_out,
         "taxiin": TAXI_IN_MINUTES,
-        "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type", "738"), "B738"),
-        "reg": SIMBRIEF_AIRCRAFT_REG,
+        "type": SIMBRIEF_AIRCRAFT_TYPE.get(route_leg.get("aircraft_type"), default_type),
     }
 
     # SimBrief gets the EXPECTED (delay-adjusted) off-block time, not the

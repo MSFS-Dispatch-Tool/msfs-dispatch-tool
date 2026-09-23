@@ -192,8 +192,13 @@ def _bag_check_rate(duration_minutes):
     return min(0.60, 0.25 + (duration_minutes / 300) * 0.30)
 
 
-def generate_leg_conditions(duration_minutes=0):
+def generate_leg_conditions(duration_minutes=0, seat_capacity=189):
     """Pax/cargo/cost index for one leg.
+
+    seat_capacity comes from the operating carrier's fleet entry for
+    this route's aircraft type (see app.py's seat_capacity_for) - it
+    defaults to 189 (the 737-800's seating) since that's the only type
+    flown today, not because this function assumes it.
 
     Cargo here means checked/hold baggage only (this tool doesn't model
     belly freight), sized off pax_count and sector length with some
@@ -202,7 +207,7 @@ def generate_leg_conditions(duration_minutes=0):
         load_factor = 1.0
     else:
         load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
-    pax_count = round(189 * load_factor)
+    pax_count = round(seat_capacity * load_factor)
 
     bag_rate = _bag_check_rate(duration_minutes)
     expected_cargo_kg = pax_count * bag_rate * AVG_CHECKED_BAG_KG
@@ -214,6 +219,7 @@ def generate_leg_conditions(duration_minutes=0):
 
     return {
         "pax_count": pax_count,
+        "seat_capacity": seat_capacity,
         "load_factor": load_factor,
         "cargo_weight_kg": cargo_weight_kg,
         "cost_index": pick_cost_index(),
@@ -251,11 +257,14 @@ def roll_mel(mels, mel_settings=None):
     return resolve_component(weighted_pick(pool)) if random.random() < MEL_PROBABILITY else None
 
 
-def generate_callsign():
-    """Generate RYR followed by one or two digits and one or two letters."""
+def generate_callsign(prefix="RYR"):
+    """Generate <prefix> followed by one or two digits and one or two
+    letters (e.g. RYR7K, EZY42XY) - the carrier's own callsign_prefix
+    (see app.py's carrier.json) drives this, so a second carrier gets
+    its own callsigns for free."""
     digits = "".join(random.choices(string.digits, k=random.randint(1, 2)))
     letters = "".join(random.choices(string.ascii_uppercase, k=random.randint(1, 2)))
-    return f"RYR{digits}{letters}"
+    return f"{prefix}{digits}{letters}"
 
 
 def generate_loadsheet_extras(dangerous_goods, lmc_events, lmc_settings=None):

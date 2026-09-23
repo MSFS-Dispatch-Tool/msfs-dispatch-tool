@@ -1,0 +1,9 @@
+{
+  "icao": "RYR",
+  "iata": "FR",
+  "name": "Ryanair",
+  "callsign_prefix": "RYR",
+  "fleet": [
+    {"type": "738", "simbrief_type": "B738", "seats": 189}
+  ]
+}
