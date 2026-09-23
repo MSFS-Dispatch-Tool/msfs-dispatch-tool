@@ -29,7 +29,11 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 # before these toggles existed, so a missing/broken settings store never
 # silently changes what gets generated.
 DEFAULT_SETTINGS = {
-    "profile": {"first_name": "", "last_name": "", "birth_date": "", "nationality": ""},
+    "profile": {
+        "username": "", "photo_url": "",
+        "first_name": "", "last_name": "", "birth_date": "", "nationality": "",
+        "preferred_base": "", "onboarding_complete": False,
+    },
     "generation": {
         "delay": {"enabled": True, "disabled_codes": []},
         "lmc": {"enabled": True, "disabled_ids": []},
@@ -205,16 +209,43 @@ def get_stats(user_id):
     latter summed from each leg's own eet_minutes (the scheduled/
     expected airborne time) - the app never captures an actual takeoff
     time, only ALDT/ABIT, so this is the honest figure to total rather
-    than something presented as a measured actual."""
+    than something presented as a measured actual.
+
+    Also returns per-airport visit counts (departure_icao/arrival_icao
+    are flat columns, not in the detail JSONB, since every PIREP has
+    them) and a flights-per-month series - both feed the user page's
+    destinations map and flights chart. Airport metadata (name/lat/lon)
+    isn't looked up here - app.py owns that reference data - so this
+    just returns ICAO codes and counts."""
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT detail FROM pireps WHERE user_id = %s", (user_id,))
+            cur.execute(
+                "SELECT detail, departure_icao, arrival_icao, flight_date FROM pireps WHERE user_id = %s",
+                (user_id,),
+            )
             rows = cur.fetchall()
     total_flights = len(rows)
     total_minutes = 0
-    for (detail,) in rows:
+    airport_counts = {}
+    month_counts = {}
+    for detail, departure_icao, arrival_icao, flight_date in rows:
         leg = (detail or {}).get("leg") or {}
         eet = leg.get("eet_minutes")
         if isinstance(eet, (int, float)):
             total_minutes += eet
-    return {"total_flights": total_flights, "total_flight_minutes": total_minutes}
+        for icao in (departure_icao, arrival_icao):
+            if icao:
+                airport_counts[icao] = airport_counts.get(icao, 0) + 1
+        if flight_date:
+            month_key = flight_date.strftime("%Y-%m")
+            month_counts[month_key] = month_counts.get(month_key, 0) + 1
+
+    airports = [{"icao": icao, "count": count} for icao, count in sorted(airport_counts.items())]
+    monthly = [{"month": month, "flights": count} for month, count in sorted(month_counts.items())]
+
+    return {
+        "total_flights": total_flights,
+        "total_flight_minutes": total_minutes,
+        "airports": airports,
+        "monthly": monthly,
+    }

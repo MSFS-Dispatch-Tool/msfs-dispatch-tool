@@ -111,6 +111,45 @@ def _auth_redirect_to():
     return request.url_root.rstrip("/") + url_for("auth_callback")
 
 
+_PASSWORD_MIN_LENGTH = 8
+
+
+def _validate_password(password, confirm):
+    if password != confirm:
+        return "Passwords do not match."
+    if len(password) < _PASSWORD_MIN_LENGTH:
+        return f"Password must be at least {_PASSWORD_MIN_LENGTH} characters."
+    if not re.search(r"[A-Za-z]", password):
+        return "Password must include at least one letter."
+    if not re.search(r"[0-9]", password):
+        return "Password must include at least one number."
+    if not re.search(r"[^A-Za-z0-9]", password):
+        return "Password must include at least one symbol."
+    return None
+
+
+def _verify_turnstile_from_form():
+    if not auth.turnstile_available():
+        return True
+    token = request.form.get("cf-turnstile-response", "")
+    return auth.verify_turnstile(token, remote_ip=request.remote_addr)
+
+
+def _needs_onboarding(user_id):
+    if not db.db_available():
+        return False
+    try:
+        return not db.get_settings(user_id)["profile"].get("onboarding_complete")
+    except Exception:
+        return False
+
+
+def _post_login_redirect(user_id, next_url=None):
+    if _needs_onboarding(user_id):
+        return url_for("onboarding")
+    return next_url or url_for("dispatch_app")
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     error = None
@@ -118,12 +157,19 @@ def signup():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
-        try:
-            auth.sign_up(email, password, redirect_to=_auth_redirect_to())
-            notice = f"Account created. Check {email} for a verification link before signing in."
-        except auth.AuthError as exc:
-            error = exc.message
-    return render_template("login.html", mode="signup", error=error, notice=notice)
+        confirm = request.form.get("password_confirm") or ""
+        if not _verify_turnstile_from_form():
+            error = "Captcha verification failed. Please try again."
+        else:
+            error = _validate_password(password, confirm)
+        if not error:
+            try:
+                auth.sign_up(email, password, redirect_to=_auth_redirect_to())
+                notice = f"Account created. Check {email} for a verification link before signing in."
+            except auth.AuthError as exc:
+                error = exc.message
+    return render_template("login.html", mode="signup", error=error, notice=notice,
+                            turnstile_site_key=auth.TURNSTILE_SITE_KEY)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -133,13 +179,19 @@ def login():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
-        try:
-            token_response = auth.sign_in(email, password)
-            _store_session(token_response)
-            return redirect(request.args.get("next") or url_for("dispatch_app"))
-        except auth.AuthError as exc:
-            error = exc.message
-    return render_template("login.html", mode="login", error=error, notice=notice)
+        remember = request.form.get("remember") == "on"
+        if not _verify_turnstile_from_form():
+            error = "Captcha verification failed. Please try again."
+        else:
+            try:
+                token_response = auth.sign_in(email, password)
+                _store_session(token_response)
+                session.permanent = remember
+                return redirect(_post_login_redirect(token_response["user"]["id"], request.args.get("next")))
+            except auth.AuthError as exc:
+                error = exc.message
+    return render_template("login.html", mode="login", error=error, notice=notice,
+                            turnstile_site_key=auth.TURNSTILE_SITE_KEY)
 
 
 @app.route("/logout")
@@ -174,7 +226,66 @@ def auth_session():
     session["expires_at"] = _now_ts() + int(payload.get("expires_in", 3600)) - 30
     session["user"] = {"id": user["id"], "email": user["email"]}
     session.permanent = True
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "redirect": _post_login_redirect(user["id"])})
+
+
+_USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,20}$")
+_ALLOWED_PHOTO_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+_MAX_PHOTO_BYTES = 2 * 1024 * 1024
+
+
+def _validate_onboarding_form(form):
+    username = (form.get("username") or "").strip()
+    if not username:
+        return None, "Username is required."
+    if not _USERNAME_RE.match(username):
+        return None, "Username must be 3-20 characters: letters, numbers, or underscore only."
+    return username, None
+
+
+@app.route("/onboarding", methods=["GET", "POST"])
+def onboarding():
+    if not db.db_available():
+        return redirect(url_for("dispatch_app"))
+
+    error = None
+    if request.method == "POST":
+        username, error = _validate_onboarding_form(request.form)
+        photo_url = None
+        photo_file = request.files.get("photo")
+        if not error and photo_file and photo_file.filename:
+            content_type = photo_file.mimetype
+            if content_type not in _ALLOWED_PHOTO_TYPES:
+                error = "Photo must be a JPEG, PNG, or WebP image."
+            else:
+                data = photo_file.read()
+                if len(data) > _MAX_PHOTO_BYTES:
+                    error = "Photo must be 2MB or smaller."
+                elif auth.admin_available():
+                    try:
+                        ext = _ALLOWED_PHOTO_TYPES[content_type]
+                        photo_url = auth.upload_avatar(f"{current_user_id()}.{ext}", data, content_type)
+                    except auth.AuthError as exc:
+                        error = exc.message
+
+        if not error:
+            existing = get_settings_safe()
+            profile = dict(existing["profile"])
+            profile.update({
+                "username": username,
+                "first_name": (request.form.get("first_name") or "").strip(),
+                "last_name": (request.form.get("last_name") or "").strip(),
+                "birth_date": request.form.get("birth_date") or "",
+                "nationality": request.form.get("nationality") or "",
+                "preferred_base": (request.form.get("preferred_base") or "").strip().upper(),
+                "onboarding_complete": True,
+            })
+            if photo_url:
+                profile["photo_url"] = photo_url
+            db.save_settings({"profile": profile, "generation": existing["generation"]}, current_user_id())
+            return redirect(url_for("dispatch_app"))
+
+    return render_template("onboarding.html", error=error, countries=countries)
 
 
 @app.route("/auth/resend", methods=["POST"])
@@ -269,6 +380,7 @@ delay_codes = load_json("delay_codes.json")
 lmc_events = load_json("lmc_events.json")
 dangerous_goods = load_json("dangerous_goods.json")
 airports = load_json("airports.json")
+countries = load_json("countries.json")
 
 routes_by_flight_number = {r["flight_number"]: r for r in routes}
 country_by_icao = {a["icao"]: a["country"] for a in airports}
@@ -382,7 +494,9 @@ def dispatch_app():
         "routes": len(routes), "mels": len(mels), "delay_codes": len(delay_codes),
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
-    return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin())
+    user = current_user()
+    return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin(),
+                            current_user_email=(user["email"] if user else ""), countries=countries)
 
 
 @app.route("/blog")
@@ -669,6 +783,12 @@ if db.db_available():
     except Exception as exc:
         print(f"[pireps] DATABASE_URL is set but init failed: {exc}")
 
+if auth.admin_available():
+    try:
+        auth.ensure_avatar_bucket()
+    except Exception as exc:
+        print(f"[storage] Could not ensure avatar bucket exists: {exc}")
+
 
 def _require_db():
     if not db.db_available():
@@ -725,23 +845,41 @@ def get_settings_route():
     return jsonify(get_settings_safe())
 
 
+_IDENTITY_PROFILE_FIELDS = ("username", "photo_url", "onboarding_complete")
+
+
 @app.route("/settings", methods=["POST"])
 def save_settings_route():
     unavailable = _require_db()
     if unavailable:
         return unavailable
     payload = request.get_json(silent=True) or {}
+    # Username/photo/onboarding-state are managed by /onboarding (and,
+    # eventually, real account-settings editing for username/photo) -
+    # never by this general settings save, even if a client sends them.
+    existing_profile = get_settings_safe()["profile"]
+    incoming_profile = dict(payload.get("profile") or {})
+    for field in _IDENTITY_PROFILE_FIELDS:
+        incoming_profile[field] = existing_profile.get(field, db.DEFAULT_SETTINGS["profile"][field])
+    payload["profile"] = incoming_profile
     return jsonify(db.save_settings(payload, current_user_id()))
 
 
 @app.route("/stats")
 def stats_route():
+    empty = {"total_flights": 0, "total_flight_minutes": 0, "airports": [], "monthly": []}
     if not db.db_available():
-        return jsonify({"total_flights": 0, "total_flight_minutes": 0})
+        return jsonify(empty)
     try:
-        return jsonify(db.get_stats(current_user_id()))
+        result = db.get_stats(current_user_id())
     except Exception:
-        return jsonify({"total_flights": 0, "total_flight_minutes": 0})
+        return jsonify(empty)
+    for entry in result["airports"]:
+        info = airports_by_icao.get(entry["icao"], {})
+        entry["name"] = info.get("name")
+        entry["lat"] = info.get("lat")
+        entry["lon"] = info.get("lon")
+    return jsonify(result)
 
 
 @app.route("/simbrief/redirect-url")
