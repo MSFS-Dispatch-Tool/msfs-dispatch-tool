@@ -32,7 +32,7 @@ DEFAULT_SETTINGS = {
     "profile": {
         "username": "", "photo_url": "",
         "first_name": "", "last_name": "", "birth_date": "", "nationality": "",
-        "preferred_base": "", "onboarding_complete": False,
+        "preferred_base": "", "simulator": "", "onboarding_complete": False,
     },
     "generation": {
         "delay": {"enabled": True, "disabled_codes": []},
@@ -171,6 +171,17 @@ def delete_pirep(pirep_id, user_id):
             deleted = cur.rowcount
         conn.commit()
     return deleted > 0
+
+
+def delete_user_data(user_id):
+    """Removes every row this app itself stores for an account (PIREPs,
+    settings) - called when an account is deleted, so closing the
+    Supabase Auth user doesn't leave orphaned rows behind here."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM pireps WHERE user_id = %s", (user_id,))
+            cur.execute("DELETE FROM app_settings WHERE id = %s", (user_id,))
+        conn.commit()
 
 
 def get_settings(user_id):
