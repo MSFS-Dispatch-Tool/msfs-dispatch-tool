@@ -1,0 +1,50 @@
+name: easyJet FR24 collection
+
+"on":
+  workflow_dispatch: {}
+  schedule:
+    # Every 30 minutes. Note: GitHub only fires `schedule` triggers for the
+    # workflow file as it exists on the default branch (main) — this needs
+    # to be merged there for the automated schedule to actually run.
+    - cron: "*/30 * * * *"
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (script)
+        uses: actions/checkout@v4
+        with:
+          path: code
+
+      - name: Checkout data branch
+        uses: actions/checkout@v4
+        with:
+          ref: easyjet-data
+          path: data
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install FlightRadarAPI
+
+      - name: Run one collection poll
+        working-directory: data/easyjet_collection
+        run: python3 ../../code/scripts/easyjet_fr24_collect.py
+
+      - name: Commit and push if changed
+        working-directory: data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add easyjet_collection/
+          if git diff --cached --quiet; then
+            echo "No new data this run."
+          else
+            git commit -m "easyJet FR24 collection: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git push origin HEAD:easyjet-data
+          fi
