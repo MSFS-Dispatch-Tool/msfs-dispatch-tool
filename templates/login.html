@@ -92,10 +92,7 @@
   .switch a:hover { text-decoration: underline; }
 
   .forgot { margin-top: var(--sp-3); font-size: 12.5px; text-align: right; }
-  .forgot button {
-    all: unset; cursor: pointer; color: var(--titlebar); font-size: 12.5px;
-    text-decoration: underline; font-family: inherit;
-  }
+  .forgot a { color: var(--titlebar); text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -142,11 +139,7 @@
         <button type="submit">{{ "Create account" if mode == "signup" else "Sign in" }}</button>
       </form>
       {% if mode != "signup" %}
-      <form method="POST" action="{{ url_for('request_password_reset_route') }}" class="forgot"
-            onsubmit="this.email.value = document.getElementById('email').value; return true;">
-        <input type="hidden" name="email">
-        <button type="submit">Forgot password?</button>
-      </form>
+      <div class="forgot"><a href="{{ url_for('request_password_reset_route') }}">Forgot password?</a></div>
       {% else %}
       <form method="POST" action="{{ url_for('resend_verification_route') }}" class="forgot"
             onsubmit="this.email.value = document.getElementById('email').value; return true;">

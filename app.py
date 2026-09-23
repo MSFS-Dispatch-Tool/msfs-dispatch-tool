@@ -346,15 +346,21 @@ def resend_verification_route():
     return render_template("login.html", mode="login", notice=notice)
 
 
-@app.route("/auth/reset", methods=["POST"])
+@app.route("/auth/reset", methods=["GET", "POST"])
 def request_password_reset_route():
-    email = (request.form.get("email") or "").strip()
-    try:
-        auth.request_password_reset(email, redirect_to=_auth_redirect_to())
-    except auth.AuthError:
-        pass  # never reveal whether an email is registered
-    return render_template("login.html", mode="login",
-                            notice=f"If {email} has an account, a password reset link was sent.")
+    notice = None
+    error = None
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip()
+        if not email:
+            error = "Enter your email address."
+        else:
+            try:
+                auth.request_password_reset(email, redirect_to=_auth_redirect_to())
+            except auth.AuthError:
+                pass  # never reveal whether an email is registered
+            notice = f"If {email} has an account, a password reset link was sent."
+    return render_template("auth_forgot_password.html", notice=notice, error=error)
 
 
 # ---------------------------------------------------------------------
