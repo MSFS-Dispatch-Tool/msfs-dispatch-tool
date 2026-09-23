@@ -1,5 +1,5 @@
 """
-SimDispatch - Flask app.
+VirtualDispatch - Flask app.
 """
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
@@ -266,7 +266,7 @@ airports_by_icao = {a["icao"]: a for a in airports}
 
 rt_pairing = find_round_trip_pairs(routes)
 
-WEATHER_USER_AGENT = "SimDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
+WEATHER_USER_AGENT = "VirtualDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
 # SimBrief dispatch-redirect / OFP fetch-back integration. Both are
 # SimBrief's public, no-API-key mechanisms - not the gated "API v1" popup

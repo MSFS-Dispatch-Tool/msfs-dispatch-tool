@@ -1,5 +1,5 @@
 """
-Postgres access for SimDispatch - currently just the PIREP log.
+Postgres access for VirtualDispatch - currently just the PIREP log.
 
 Connects to whatever DATABASE_URL points at (this app expects a Supabase
 Postgres project, but any Postgres works). If DATABASE_URL isn't set,
