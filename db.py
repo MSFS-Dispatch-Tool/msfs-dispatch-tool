@@ -66,6 +66,12 @@ def init_db():
             """)
             cur.execute("ALTER TABLE pireps ADD COLUMN IF NOT EXISTS flight_date DATE")
             cur.execute("ALTER TABLE pireps ADD COLUMN IF NOT EXISTS detail JSONB")
+            # user_id is the Supabase Auth user's UUID (text, not a FK -
+            # the auth users table lives in Supabase's own "auth" schema,
+            # not one this app manages). Nullable so PIREPs filed before
+            # accounts existed don't become orphaned/unreadable.
+            cur.execute("ALTER TABLE pireps ADD COLUMN IF NOT EXISTS user_id TEXT")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_pireps_user_id ON pireps (user_id)")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS app_settings (
                     id TEXT PRIMARY KEY,
@@ -98,15 +104,15 @@ def _row_to_record(row):
     return record
 
 
-def list_pireps():
+def list_pireps(user_id):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT * FROM pireps ORDER BY submitted_at DESC")
+            cur.execute("SELECT * FROM pireps WHERE user_id = %s ORDER BY submitted_at DESC", (user_id,))
             rows = cur.fetchall()
     return [_row_to_record(r) for r in rows]
 
 
-def create_pirep(payload):
+def create_pirep(payload, user_id):
     """payload is the raw JSON body from POST /pireps - flight_number/
     callsign/departure_icao/arrival_icao plus leg/ofp/loadsheet/pirep
     (the full leg record as held client-side at PIREP time)."""
@@ -127,6 +133,7 @@ def create_pirep(payload):
         "arrival_icao": payload.get("arrival_icao", ""),
         "flight_date": date.today(),
         "submitted_at": submitted_at,
+        "user_id": user_id,
         "detail": Json({
             "leg": payload.get("leg"),
             "ofp": payload.get("ofp"),
@@ -138,9 +145,9 @@ def create_pirep(payload):
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO pireps (id, flight_number, callsign, departure_icao, arrival_icao,
-                                     flight_date, submitted_at, detail)
+                                     flight_date, submitted_at, user_id, detail)
                 VALUES (%(id)s, %(flight_number)s, %(callsign)s, %(departure_icao)s, %(arrival_icao)s,
-                        %(flight_date)s, %(submitted_at)s, %(detail)s)
+                        %(flight_date)s, %(submitted_at)s, %(user_id)s, %(detail)s)
             """, row)
         conn.commit()
 
@@ -151,22 +158,25 @@ def create_pirep(payload):
     return _row_to_record(saved)
 
 
-def delete_pirep(pirep_id):
+def delete_pirep(pirep_id, user_id):
+    """Scoped to user_id so one account can never delete another's PIREP
+    even if it guesses/enumerates an id."""
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM pireps WHERE id = %s", (pirep_id,))
+            cur.execute("DELETE FROM pireps WHERE id = %s AND user_id = %s", (pirep_id, user_id))
             deleted = cur.rowcount
         conn.commit()
     return deleted > 0
 
 
-def get_settings():
+def get_settings(user_id):
     """Merged with DEFAULT_SETTINGS so an older/partial saved row (e.g.
     missing a category added later) never crashes a caller that expects
-    every key to be present."""
+    every key to be present. Settings are keyed by the account's own
+    user_id - each pilot gets their own profile/generation toggles."""
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT data FROM app_settings WHERE id = 'default'")
+            cur.execute("SELECT data FROM app_settings WHERE id = %s", (user_id,))
             row = cur.fetchone()
     saved = row[0] if row else {}
 
@@ -179,26 +189,26 @@ def get_settings():
     return merged
 
 
-def save_settings(data):
+def save_settings(data, user_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO app_settings (id, data) VALUES ('default', %s)
+                INSERT INTO app_settings (id, data) VALUES (%s, %s)
                 ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
-            """, (Json(data),))
+            """, (user_id, Json(data)))
         conn.commit()
-    return get_settings()
+    return get_settings(user_id)
 
 
-def get_stats():
-    """Total filed PIREPs and total flight minutes, the latter summed
-    from each leg's own eet_minutes (the scheduled/expected airborne
-    time) - the app never captures an actual takeoff time, only ALDT/
-    ABIT, so this is the honest figure to total rather than something
-    presented as a measured actual."""
+def get_stats(user_id):
+    """Total filed PIREPs and total flight minutes for one account, the
+    latter summed from each leg's own eet_minutes (the scheduled/
+    expected airborne time) - the app never captures an actual takeoff
+    time, only ALDT/ABIT, so this is the honest figure to total rather
+    than something presented as a measured actual."""
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT detail FROM pireps")
+            cur.execute("SELECT detail FROM pireps WHERE user_id = %s", (user_id,))
             rows = cur.fetchall()
     total_flights = len(rows)
     total_minutes = 0

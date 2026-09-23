@@ -8,9 +8,10 @@ import os
 import re
 import secrets
 import requests
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlencode
 import db
+import auth
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries,
     generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras
@@ -29,41 +30,217 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 app.permanent_session_lifetime = timedelta(days=30)
 
-# Single shared-password gate for the whole app - not per-user accounts.
-# Unset APP_PASSWORD means the gate is off entirely (today's default, so
-# an existing deployment doesn't get locked out by this code landing
-# before the env var is configured).
-APP_PASSWORD = os.environ.get("APP_PASSWORD")
+# Per-user accounts via Supabase Auth (see auth.py) instead of the old
+# single shared-password gate. If Supabase isn't configured (auth env
+# vars unset), the gate is off entirely - matches the old APP_PASSWORD-
+# unset behavior, so a fresh checkout without secrets configured still
+# runs locally.
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session",
+                    "resend_verification_route", "request_password_reset_route", "static"}
+
+
+def current_user():
+    return session.get("user")
+
+
+def current_user_id():
+    """The PIREP/settings scoping key. Falls back to a fixed sentinel
+    when Supabase Auth isn't configured (local dev without those env
+    vars set) so the app still works pre-account-system, single-user,
+    same as it did before this migration."""
+    user = current_user()
+    return user["id"] if user else "local"
 
 
 @app.before_request
 def require_login():
-    if not APP_PASSWORD:
+    if not auth.auth_available():
         return
-    if request.endpoint in ("login", "static"):
+    if request.endpoint in PUBLIC_ENDPOINTS:
         return
-    if not session.get("authenticated"):
+    user = current_user()
+    if not user:
         return redirect(url_for("login", next=request.path))
+    if session.get("expires_at", 0) <= _now_ts():
+        refreshed = _try_refresh()
+        if not refreshed:
+            session.clear()
+            return redirect(url_for("login", next=request.path))
+
+
+def _now_ts():
+    return int(datetime.now(timezone.utc).timestamp())
+
+
+def _store_session(token_response):
+    session.clear()
+    session["access_token"] = token_response["access_token"]
+    session["refresh_token"] = token_response["refresh_token"]
+    session["expires_at"] = _now_ts() + int(token_response.get("expires_in", 3600)) - 30
+    session["user"] = {
+        "id": token_response["user"]["id"],
+        "email": token_response["user"]["email"],
+    }
+    session.permanent = True
+
+
+def _try_refresh():
+    refresh_token = session.get("refresh_token")
+    if not refresh_token:
+        return False
+    try:
+        token_response = auth.refresh_session(refresh_token)
+        _store_session(token_response)
+        return True
+    except auth.AuthError:
+        return False
+
+
+def _auth_redirect_to():
+    return request.url_root.rstrip("/") + url_for("auth_callback")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    error = None
+    notice = None
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
+        try:
+            auth.sign_up(email, password, redirect_to=_auth_redirect_to())
+            notice = f"Account created. Check {email} for a verification link before signing in."
+        except auth.AuthError as exc:
+            error = exc.message
+    return render_template("login.html", mode="signup", error=error, notice=notice)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
+    notice = request.args.get("notice")
     if request.method == "POST":
-        entered = request.form.get("password", "")
-        if APP_PASSWORD and secrets.compare_digest(entered, APP_PASSWORD):
-            session.clear()
-            session["authenticated"] = True
-            session.permanent = True
+        email = (request.form.get("email") or "").strip()
+        password = request.form.get("password") or ""
+        try:
+            token_response = auth.sign_in(email, password)
+            _store_session(token_response)
             return redirect(request.args.get("next") or url_for("index"))
-        error = "Incorrect password."
-    return render_template("login.html", error=error)
+        except auth.AuthError as exc:
+            error = exc.message
+    return render_template("login.html", mode="login", error=error, notice=notice)
 
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/auth/callback")
+def auth_callback():
+    """Supabase's emailed verification/reset link redirects here with the
+    session tokens in the URL FRAGMENT (#access_token=...), which never
+    reaches the server - so this just serves a page whose JS reads the
+    fragment and hands the tokens to /auth/session to establish the
+    Flask session."""
+    return render_template("auth_callback.html")
+
+
+@app.route("/auth/session", methods=["POST"])
+def auth_session():
+    payload = request.get_json(silent=True) or {}
+    access_token = payload.get("access_token")
+    refresh_token = payload.get("refresh_token")
+    if not access_token or not refresh_token:
+        return jsonify({"error": "Missing tokens."}), 400
+    user = auth.get_user(access_token)
+    if not user:
+        return jsonify({"error": "Invalid or expired link."}), 400
+    session.clear()
+    session["access_token"] = access_token
+    session["refresh_token"] = refresh_token
+    session["expires_at"] = _now_ts() + int(payload.get("expires_in", 3600)) - 30
+    session["user"] = {"id": user["id"], "email": user["email"]}
+    session.permanent = True
+    return jsonify({"ok": True})
+
+
+@app.route("/auth/resend", methods=["POST"])
+def resend_verification_route():
+    email = (request.form.get("email") or "").strip()
+    try:
+        auth.resend_verification(email, redirect_to=_auth_redirect_to())
+        notice = f"Verification email re-sent to {email}."
+    except auth.AuthError as exc:
+        return render_template("login.html", mode="signup", error=exc.message)
+    return render_template("login.html", mode="login", notice=notice)
+
+
+@app.route("/auth/reset", methods=["POST"])
+def request_password_reset_route():
+    email = (request.form.get("email") or "").strip()
+    try:
+        auth.request_password_reset(email, redirect_to=_auth_redirect_to())
+    except auth.AuthError:
+        pass  # never reveal whether an email is registered
+    return render_template("login.html", mode="login",
+                            notice=f"If {email} has an account, a password reset link was sent.")
+
+
+# ---------------------------------------------------------------------
+# Admin: read-only user list plus ban/unban/delete, via Supabase's
+# service-role Admin API (auth.py). Gated on ADMIN_EMAILS, not on any
+# role stored in this app's own DB, since account identity itself lives
+# in Supabase Auth.
+# ---------------------------------------------------------------------
+
+def _is_admin():
+    user = current_user()
+    return bool(user) and user["email"].strip().lower() in auth.ADMIN_EMAILS
+
+
+@app.route("/admin/users")
+def admin_users_page():
+    if not auth.auth_available() or not _is_admin():
+        return redirect(url_for("index"))
+    return render_template("admin_users.html")
+
+
+@app.route("/admin/api/users", methods=["GET"])
+def admin_list_users_route():
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    if not auth.admin_available():
+        return jsonify({"error": "SUPABASE_SERVICE_ROLE_KEY is not configured."}), 502
+    users = auth.admin_list_users()
+    return jsonify([{
+        "id": u["id"],
+        "email": u.get("email"),
+        "created_at": u.get("created_at"),
+        "last_sign_in_at": u.get("last_sign_in_at"),
+        "email_confirmed_at": u.get("email_confirmed_at"),
+        "banned_until": u.get("banned_until"),
+    } for u in users])
+
+
+@app.route("/admin/api/users/<user_id>/ban", methods=["POST"])
+def admin_ban_user_route(user_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    payload = request.get_json(silent=True) or {}
+    auth.admin_set_banned(user_id, bool(payload.get("banned")))
+    return jsonify({"ok": True})
+
+
+@app.route("/admin/api/users/<user_id>", methods=["DELETE"])
+def admin_delete_user_route(user_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    if current_user() and current_user()["id"] == user_id:
+        return jsonify({"error": "Can't delete your own account from here."}), 400
+    auth.admin_delete_user(user_id)
+    return jsonify({"ok": True})
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -109,7 +286,7 @@ def get_settings_safe():
     if not db.db_available():
         return db.DEFAULT_SETTINGS
     try:
-        return db.get_settings()
+        return db.get_settings(current_user_id())
     except Exception:
         return db.DEFAULT_SETTINGS
 
@@ -189,7 +366,7 @@ def index():
         "routes": len(routes), "mels": len(mels), "delay_codes": len(delay_codes),
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
-    return render_template("index.html", counts=counts, auth_enabled=bool(APP_PASSWORD))
+    return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin())
 
 
 @app.route("/airports/search")
@@ -460,7 +637,7 @@ def list_pireps():
     unavailable = _require_db()
     if unavailable:
         return unavailable
-    return jsonify(db.list_pireps())
+    return jsonify(db.list_pireps(current_user_id()))
 
 
 @app.route("/pireps", methods=["POST"])
@@ -469,7 +646,7 @@ def create_pirep():
     if unavailable:
         return unavailable
     payload = request.get_json(silent=True) or {}
-    record = db.create_pirep(payload)
+    record = db.create_pirep(payload, current_user_id())
     return jsonify(record), 201
 
 
@@ -478,7 +655,7 @@ def delete_pirep(pirep_id):
     unavailable = _require_db()
     if unavailable:
         return unavailable
-    if not db.delete_pirep(pirep_id):
+    if not db.delete_pirep(pirep_id, current_user_id()):
         return jsonify({"error": "PIREP not found."}), 404
     return jsonify({"deleted": pirep_id})
 
@@ -510,7 +687,7 @@ def save_settings_route():
     if unavailable:
         return unavailable
     payload = request.get_json(silent=True) or {}
-    return jsonify(db.save_settings(payload))
+    return jsonify(db.save_settings(payload, current_user_id()))
 
 
 @app.route("/stats")
@@ -518,7 +695,7 @@ def stats_route():
     if not db.db_available():
         return jsonify({"total_flights": 0, "total_flight_minutes": 0})
     try:
-        return jsonify(db.get_stats())
+        return jsonify(db.get_stats(current_user_id()))
     except Exception:
         return jsonify({"total_flights": 0, "total_flight_minutes": 0})
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimDispatch</title>
+<style>
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #D4D0C8; color: #000; font-family: 'Courier New', Consolas, monospace; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <div id="msg">Verifying&hellip;</div>
+  <script>
+    (async () => {
+      // Supabase's confirmation/reset link redirects here with the
+      // session tokens in the URL FRAGMENT (never sent to the server),
+      // so this reads them client-side and hands them to the server to
+      // establish the actual Flask session.
+      const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      const expires_in = params.get('expires_in');
+      const errorDescription = params.get('error_description');
+      const msg = document.getElementById('msg');
+
+      if (errorDescription) {
+        msg.textContent = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
+        return;
+      }
+      if (!access_token || !refresh_token) {
+        msg.textContent = 'Missing or expired link. Please sign in again.';
+        return;
+      }
+      try {
+        const resp = await fetch('/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token, refresh_token, expires_in: Number(expires_in) || 3600 }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Could not establish session.');
+        window.location.replace('/');
+      } catch (err) {
+        msg.textContent = err.message;
+      }
+    })();
+  </script>
+</body>
+</html>

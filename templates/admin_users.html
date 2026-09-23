@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimDispatch &mdash; Admin</title>
+<style>
+  :root {
+    --face: #ECE9D8; --face-dark: #D4D0C8; --titlebar: #6B7A99; --titlebar-2: #93A3B8;
+    --white: #FFFFFF; --shadow-dk: #716F64; --text: #000000; --red: #7A2626; --green: #2C6B2C;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--face-dark); color: var(--text);
+         font-family: 'Courier New', Consolas, monospace; font-size: 13px; padding: 16px; }
+  .panel { max-width: 900px; margin: 0 auto; background: var(--face); border-style: solid; border-width: 2px;
+           border-top-color: var(--white); border-left-color: var(--white);
+           border-bottom-color: var(--shadow-dk); border-right-color: var(--shadow-dk); }
+  .panel-header { background: linear-gradient(90deg, var(--titlebar), var(--titlebar-2)); color: #fff;
+                  padding: 6px 10px; font-weight: 700; display: flex; justify-content: space-between; }
+  .panel-header a { color: #fff; }
+  .panel-body { padding: 14px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { border: 1px solid var(--shadow-dk); padding: 5px 7px; text-align: left; white-space: nowrap; }
+  th { background: var(--face-dark); }
+  .banned { color: var(--red); font-weight: 700; }
+  .ok { color: var(--green); }
+  button { font-family: inherit; font-size: 11px; padding: 3px 8px; cursor: pointer; margin-right: 4px; }
+  .empty-state, .error-state { padding: 10px; }
+  .error-state { color: var(--red); }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="panel-header">
+      <span>SimDispatch &mdash; USER MANAGEMENT</span>
+      <a href="/">&larr; back to app</a>
+    </div>
+    <div class="panel-body" id="body">Loading&hellip;</div>
+  </div>
+<script>
+async function load() {
+  const body = document.getElementById('body');
+  try {
+    const resp = await fetch('/admin/api/users');
+    const users = await resp.json();
+    if (!resp.ok) throw new Error(users.error || 'Failed to load users.');
+    if (!users.length) { body.innerHTML = '<div class="empty-state">No users yet.</div>'; return; }
+    const rows = users.map(u => {
+      const banned = !!u.banned_until && new Date(u.banned_until) > new Date();
+      return `<tr>
+        <td>${esc(u.email || '')}</td>
+        <td class="${u.email_confirmed_at ? 'ok' : ''}">${u.email_confirmed_at ? 'VERIFIED' : 'PENDING'}</td>
+        <td>${fmt(u.created_at)}</td>
+        <td>${fmt(u.last_sign_in_at)}</td>
+        <td class="${banned ? 'banned' : ''}">${banned ? 'BANNED' : 'ACTIVE'}</td>
+        <td>
+          <button onclick="ban('${u.id}', ${!banned})">${banned ? 'UNBAN' : 'BAN'}</button>
+          <button onclick="del('${u.id}', '${esc(u.email || '')}')">DELETE</button>
+        </td>
+      </tr>`;
+    }).join('');
+    body.innerHTML = `<table>
+      <thead><tr><th>EMAIL</th><th>STATUS</th><th>CREATED</th><th>LAST SIGN-IN</th><th>ACCESS</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } catch (err) {
+    body.innerHTML = `<div class="error-state">${esc(err.message)}</div>`;
+  }
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmt(s) { return s ? new Date(s).toLocaleString() : '—'; }
+async function ban(id, banned) {
+  await fetch(`/admin/api/users/${id}/ban`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ banned }),
+  });
+  load();
+}
+async function del(id, email) {
+  if (!confirm(`Permanently delete ${email}? This cannot be undone.`)) return;
+  await fetch(`/admin/api/users/${id}`, { method: 'DELETE' });
+  load();
+}
+load();
+</script>
+</body>
+</html>
