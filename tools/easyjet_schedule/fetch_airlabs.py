@@ -1,14 +1,24 @@
 """Build the easyJet schedule from the AirLabs Routes API.
 
-One AirLabs "route" row is one flight number with its local/UTC times,
-block time, operating weekdays and aircraft type - exactly the fields the
-app's routes.json needs. The script pulls every easyJet row (U2 / EC / DS),
-matches them against easyjet_routes.csv and writes:
+An AirLabs "route" row is one flight number on one weekday pattern with
+its local/UTC times and block time - U24636 ABZ-CDG can be four rows, one
+per departure time. The script collects every row for the routes in
+easyjet_routes.csv, folds each flight number's rows into one entry, and
+writes:
 
     easyjet_schedule.csv   one row per flight number on a known route
     easyjet_missing.csv    routes from the CSV with no AirLabs flight
     easyjet_extra.csv      AirLabs flights on routes not in the CSV
     routes.json            same schema as data/carriers/RYR/routes.json
+
+Free-plan limits (seen in --probe): 50 rows per call, and no query returns
+more than its first 300 rows. easyJet has ~14k rows, so the script queries
+per airport instead of per airline:
+  1. departures of each CSV airport (first page reports total_items);
+  2. for airports over the cap, arrivals into their destinations instead;
+  3. single-route queries for whatever is still not covered.
+Expect ~400-700 calls. Every page is cached in --cache-dir, so a stopped
+run resumes for free; --max-calls stops before the monthly quota is gone.
 
 Google Colab
 ------------
@@ -23,11 +33,9 @@ Google Colab
     # upload this file, easyjet_routes.csv and (optional, for distance)
     # data/airports_world.json from the repo
 
-    !python fetch_airlabs.py --probe          # 1 API call: shows fields + plan limits
+    !python fetch_airlabs.py --probe            # 1 call: fields + plan limits
+    !python fetch_airlabs.py --probe-aircraft   # 2 calls: do live endpoints carry aircraft type?
     !python fetch_airlabs.py --airports airports_world.json
-
-Every API page is cached in --cache-dir, so a rerun (e.g. after tweaking
-the matching) costs no calls. --max-calls guards the free 1,000/month quota.
 """
 
 import argparse
@@ -41,11 +49,14 @@ from collections import Counter, defaultdict
 
 import requests
 
-API_URL = "https://airlabs.co/api/v9/routes"
-# easyJet UK, easyJet Europe, easyJet Switzerland. Most flights are sold as
-# U2 whoever operates them; the other two are queried so nothing slips by.
-EZY_AIRLINES = ["U2", "EC", "DS"]
-PAGE_SIZE = 500
+API_BASE = "https://airlabs.co/api/v9/"
+PAGE_SIZE = 500   # requested; the free plan silently returns 50
+ROW_CAP = 300     # free plan: offsets past this come back empty
+
+# Operating carrier -> ICAO callsign prefix. easyJet sells nearly everything
+# as U2; AirLabs names the operator in cs_airline_iata (EC = easyJet Europe,
+# DS = easyJet Switzerland).
+OPERATOR_ICAO = {"U2": "EZY", "EC": "EJU", "DS": "EZS"}
 
 # AirLabs gives the ICAO type designator; the app keys fleets by the short
 # IATA-style code (Ryanair uses "738").
@@ -65,58 +76,156 @@ def get_key(cli_key):
              "Elsewhere: export AIRLABS_API_KEY=... or pass --key")
 
 
-class Budget:
-    def __init__(self, max_calls):
-        self.left = max_calls
+class OutOfCalls(Exception):
+    pass
 
-    def spend(self):
+
+class Api:
+    def __init__(self, key, cache_dir, max_calls):
+        self.key, self.cache_dir, self.left, self.used = key, cache_dir, max_calls, 0
+
+    def get(self, params, endpoint="routes"):
+        """One API page, cached on disk by endpoint + query parameters."""
+        prefix = "" if endpoint == "routes" else endpoint + "_"
+        name = prefix + "_".join(f"{k}-{v}" for k, v in sorted(params.items())) + ".json"
+        path = os.path.join(self.cache_dir, name)
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
         if self.left <= 0:
-            raise RuntimeError("--max-calls reached; rerun with a higher limit (cached pages are free)")
+            raise OutOfCalls()
         self.left -= 1
-
-
-def call(params, key, cache_dir, budget):
-    """One API page, cached on disk by its query parameters."""
-    name = "_".join(f"{k}-{v}" for k, v in sorted(params.items())) + ".json"
-    path = os.path.join(cache_dir, name)
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    budget.spend()
-    for attempt in range(4):
-        r = requests.get(API_URL, params={**params, "api_key": key}, timeout=60)
-        if r.status_code == 429:
+        self.used += 1
+        for attempt in range(4):
+            r = requests.get(API_BASE + endpoint, params={**params, "api_key": self.key}, timeout=60)
+            if r.status_code != 429:
+                break
             time.sleep(30 * (attempt + 1))
+        data = r.json()
+        if "error" in data:
+            raise RuntimeError(f"AirLabs error for {endpoint} {params}: {data['error']}")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        return data
+
+    def query(self, **filters):
+        """All rows for a routes query. Returns (rows, complete): complete is
+        False when the query holds more rows than the free plan will page
+        through - its first page is still returned so nothing fetched is
+        wasted, but the caller has to cover it with narrower queries."""
+        rows, offset = [], 0
+        while True:
+            data = self.get({**filters, "limit": PAGE_SIZE, "offset": offset})
+            page = data.get("response") or []
+            req = data.get("request") or {}
+            rows.extend(page)
+            if offset == 0 and (req.get("total_items") or 0) > ROW_CAP:
+                return rows, False
+            if not req.get("has_more"):
+                return rows, True
+            if not page:  # has_more but nothing served: hit the cap
+                return rows, False
+            offset += len(page)
+
+
+def collect(api, routes):
+    """Fetches rows until every CSV route is covered by a complete query
+    (or calls run out). Returns (rows, uncovered_routes)."""
+    pool = []
+    pairs = {(r["departure_iata"], r["arrival_iata"]) for r in routes}
+    covered = set()
+
+    def run(**filters):
+        rows, complete = api.query(airline_iata="U2", **filters)
+        pool.extend(rows)
+        return complete
+
+    # 1. Departures per airport.
+    deps = sorted({d for d, _ in pairs})
+    capped_deps = []
+    for i, dep in enumerate(deps, 1):
+        if run(dep_iata=dep):
+            covered.update(p for p in pairs if p[0] == dep)
+        else:
+            capped_deps.append(dep)
+        print(f"  [1/3 departures {i}/{len(deps)}] {dep}{' (over cap)' if dep in capped_deps else ''}"
+              f" - calls used {api.used}")
+    print(f"step 1 done: {len(covered)}/{len(pairs)} routes covered, "
+          f"{len(capped_deps)} airports over the cap: {', '.join(capped_deps)}")
+
+    # 2. Arrivals into the destinations of the over-cap airports, busiest
+    #    first - one arrivals query can cover several missing routes.
+    todo = defaultdict(set)
+    for p in pairs - covered:
+        todo[p[1]].add(p)
+    arrs = sorted(todo, key=lambda a: -len(todo[a]))
+    for i, arr in enumerate(arrs, 1):
+        still = todo[arr] - covered
+        if not still:
             continue
-        break
-    data = r.json()
-    if "error" in data:
-        raise RuntimeError(f"AirLabs error for {params}: {data['error']}")
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f)
-    return data
+        ok = run(arr_iata=arr)
+        if ok:
+            covered.update(still)
+        print(f"  [2/3 arrivals {i}/{len(arrs)}] {arr}{'' if ok else ' (over cap)'} - calls used {api.used}")
+
+    # 3. Single routes.
+    rest = sorted(pairs - covered)
+    for i, (dep, arr) in enumerate(rest, 1):
+        if run(dep_iata=dep, arr_iata=arr):
+            covered.add((dep, arr))
+        print(f"  [3/3 routes {i}/{len(rest)}] {dep}-{arr} - calls used {api.used}")
+    return pool, pairs - covered
 
 
-def fetch_airline(airline, key, cache_dir, budget):
-    """All rows for one airline. Pages until an empty page rather than a
-    short one, since the free plan may cap rows per call below PAGE_SIZE."""
-    rows, offset = [], 0
-    while True:
-        data = call({"airline_iata": airline, "limit": PAGE_SIZE, "offset": offset}, key, cache_dir, budget)
-        page = data.get("response") or []
-        print(f"  {airline} offset {offset}: {len(page)} rows")
-        if not page:
-            return rows
-        rows.extend(page)
-        offset += len(page)
+def canonical_flight(row):
+    """Marketing U2 number when there is one, plus the operating carrier."""
+    airline, cs = row.get("airline_iata"), row.get("cs_airline_iata")
+    if airline == "U2":
+        return row["flight_iata"], OPERATOR_ICAO.get(cs, "EZY")
+    if cs == "U2" and row.get("cs_flight_iata"):
+        return row["cs_flight_iata"], OPERATOR_ICAO.get(airline, row.get("airline_icao"))
+    return row["flight_iata"], OPERATOR_ICAO.get(airline, row.get("airline_icao"))
 
 
-def probe(key, cache_dir, budget):
-    data = call({"airline_iata": "U2", "limit": 5, "offset": 0}, key, cache_dir, budget)
-    print("request metadata (plan limits etc.):")
-    print(json.dumps(data.get("request", {}), indent=2)[:3000])
-    print("\nfirst rows:")
-    print(json.dumps(data.get("response", [])[:5], indent=2))
+def fold(rows):
+    """Collapses the per-weekday rows of each (flight number, route) into
+    one entry: days = union of all variants; times/aircraft from the variant
+    flown on most days (ties -> most recently updated)."""
+    groups = defaultdict(dict)
+    for row in rows:
+        if not row.get("flight_iata") or not row.get("dep_iata"):
+            continue
+        airline, cs = row.get("airline_iata"), row.get("cs_airline_iata")
+        if airline not in OPERATOR_ICAO and cs not in OPERATOR_ICAO:
+            continue  # another carrier's flight
+        fn, operator = canonical_flight(row)
+        key = (fn.upper(), row["dep_iata"], row["arr_iata"])
+        variant = (row.get("dep_time"), row.get("arr_time"), tuple(sorted(row.get("days") or [])))
+        groups[key][variant] = {**row, "_operator": operator}  # same variant via 2 queries
+
+    flights = []
+    for (fn, dep, arr), variants in groups.items():
+        vs = list(variants.values())
+        main = max(vs, key=lambda r: (len(r.get("days") or []), r.get("updated") or ""))
+        days = sorted({WEEKDAY[d] for r in vs for d in (r.get("days") or []) if d in WEEKDAY})
+        icao_type = next((r["aircraft_icao"].upper() for r in [main] + vs if r.get("aircraft_icao")), None)
+        flights.append({
+            "flight_number": fn,
+            "operator_icao": main["_operator"],
+            "departure_iata": dep,
+            "arrival_iata": arr,
+            "aircraft_icao": icao_type,
+            "aircraft_type": AIRCRAFT_TYPE.get(icao_type, icao_type),
+            "dep_local": main.get("dep_time"),
+            "arr_local": main.get("arr_time"),
+            "dep_utc": main.get("dep_time_utc"),
+            "arr_utc": main.get("arr_time_utc"),
+            "duration_minutes": main.get("duration"),
+            "days_operated": days or None,
+            "time_variants": len(vs),
+            "updated": max(r.get("updated") or "" for r in vs) or None,
+        })
+    return flights
 
 
 def distance_nm(a, b):
@@ -125,23 +234,30 @@ def distance_nm(a, b):
     return round(2 * 3440.065 * math.asin(math.sqrt(h)))
 
 
-def to_flight(row):
-    days = row.get("days") or []
-    icao_type = (row.get("aircraft_icao") or "").upper() or None
-    return {
-        "flight_number": row["flight_iata"].upper(),
-        "departure_iata": row["dep_iata"],
-        "arrival_iata": row["arr_iata"],
-        "aircraft_icao": icao_type,
-        "aircraft_type": AIRCRAFT_TYPE.get(icao_type, icao_type),
-        "dep_local": row.get("dep_time"),
-        "arr_local": row.get("arr_time"),
-        "dep_utc": row.get("dep_time_utc"),
-        "arr_utc": row.get("arr_time_utc"),
-        "duration_minutes": row.get("duration"),
-        "days_operated": sorted(WEEKDAY[d] for d in days if d in WEEKDAY) or None,
-        "updated": row.get("updated"),
-    }
+def probe(api):
+    data = api.get({"airline_iata": "U2", "limit": 5, "offset": 0})
+    print("request metadata (plan limits etc.):")
+    print(json.dumps(data.get("request", {}), indent=2)[:3000])
+    print("\nfirst rows:")
+    print(json.dumps(data.get("response", [])[:5], indent=2))
+
+
+def probe_aircraft(api):
+    """The routes table has no aircraft for easyJet. Checks whether the
+    live endpoints (airport board, airborne flights) carry a type."""
+    for endpoint, params in (("schedules", {"dep_iata": "LGW", "airline_iata": "U2", "limit": 10}),
+                             ("flights", {"airline_iata": "U2", "limit": 10})):
+        data = api.get(params, endpoint)
+        rows = data.get("response") or []
+        req = data.get("request") or {}
+        typed = sum(1 for r in rows if r.get("aircraft_icao"))
+        print(f"\n== {endpoint}: {len(rows)} rows, {typed} with aircraft_icao, "
+              f"total_items={req.get('total_items')}")
+        for r in rows[:10]:
+            print({k: r.get(k) for k in ("flight_iata", "dep_iata", "arr_iata", "dep_time",
+                                         "aircraft_icao", "reg_number", "status")})
+        if "error" in data:
+            print(data["error"])
 
 
 def main():
@@ -151,39 +267,32 @@ def main():
     ap.add_argument("--airports", help="data/airports_world.json from the repo (for distance_nm)")
     ap.add_argument("--cache-dir", default="airlabs_cache")
     ap.add_argument("--out-dir", default=".")
-    ap.add_argument("--max-calls", type=int, default=200)
+    ap.add_argument("--max-calls", type=int, default=900,
+                    help="stop after this many uncached calls (free plan: 1,000/month)")
     ap.add_argument("--probe", action="store_true", help="one call, print fields and plan limits")
+    ap.add_argument("--probe-aircraft", action="store_true", help="two calls to the live endpoints")
     args = ap.parse_args()
 
     os.makedirs(args.cache_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
-    key = get_key(args.key)
-    budget = Budget(args.max_calls)
+    api = Api(get_key(args.key), args.cache_dir, args.max_calls)
 
     if args.probe:
-        probe(key, args.cache_dir, budget)
-        return
-
-    raw = []
-    for airline in EZY_AIRLINES:
-        raw.extend(fetch_airline(airline, key, args.cache_dir, budget))
-    print(f"{len(raw)} raw rows, {args.max_calls - budget.left} API calls used this run")
-
-    # Codeshare rows describe another carrier's flight sold under an easyJet
-    # number (or vice versa) - keep only flights easyJet operates itself.
-    flights, seen = [], set()
-    for row in raw:
-        if row.get("cs_flight_iata") or not row.get("flight_iata") or not row.get("dep_iata"):
-            continue
-        f = to_flight(row)
-        k = (f["flight_number"], f["departure_iata"], f["arrival_iata"])
-        if k in seen:
-            continue
-        seen.add(k)
-        flights.append(f)
+        return probe(api)
+    if args.probe_aircraft:
+        return probe_aircraft(api)
 
     with open(args.routes, newline="", encoding="utf-8") as fh:
         routes = list(csv.DictReader(fh))
+
+    try:
+        rows, uncovered = collect(api, routes)
+    except OutOfCalls:
+        sys.exit(f"\nStopped at --max-calls={args.max_calls}. Everything fetched is cached: "
+                 "rerun (e.g. next month, or with a higher --max-calls) to continue.")
+    print(f"\n{len(rows)} raw rows, {api.used} API calls used this run")
+
+    flights = fold(rows)
     route_by_pair = {(r["departure_iata"], r["arrival_iata"]): r for r in routes}
     airports = {}
     if args.airports:
@@ -207,30 +316,32 @@ def main():
     unique = [max(v, key=lambda m: len(m["days_operated"] or [])) for v in by_fn.values()]
     unique.sort(key=lambda m: (m["departure_iata"], m["dep_local"] or ""))
 
-    covered = {(m["departure_iata"], m["arrival_iata"]) for m in unique}
-    missing = [r for r in routes if (r["departure_iata"], r["arrival_iata"]) not in covered]
+    with_flights = {(m["departure_iata"], m["arrival_iata"]) for m in matched}
+    missing = [{**r, "status": "not_fetched" if (r["departure_iata"], r["arrival_iata"]) in uncovered
+                else "no_flights"}
+               for r in routes if (r["departure_iata"], r["arrival_iata"]) not in with_flights]
 
-    fields = ["flight_number", "departure_city", "departure_iata", "departure_icao",
+    fields = ["flight_number", "operator_icao", "departure_city", "departure_iata", "departure_icao",
               "arrival_city", "arrival_iata", "arrival_icao", "aircraft_type", "aircraft_icao",
               "dep_local", "arr_local", "dep_utc", "arr_utc", "duration_minutes", "distance_nm",
-              "days_operated", "updated"]
+              "days_operated", "time_variants", "updated"]
 
-    def write_csv(name, rows, cols):
+    def write_csv(name, rows_out, cols):
         with open(os.path.join(args.out_dir, name), "w", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=cols, extrasaction="ignore")
             w.writeheader()
-            for r in rows:
+            for r in rows_out:
                 if isinstance(r.get("days_operated"), list):
                     r = {**r, "days_operated": "".join(map(str, r["days_operated"]))}
                 w.writerow(r)
 
     write_csv("easyjet_schedule.csv", unique, fields)
-    write_csv("easyjet_missing.csv", missing, list(routes[0].keys()))
-    write_csv("easyjet_extra.csv", extra, [c for c in fields if c in extra[0]] if extra else ["flight_number"])
+    write_csv("easyjet_missing.csv", missing, list(routes[0].keys()) + ["status"])
+    write_csv("easyjet_extra.csv", extra, list(extra[0].keys()) if extra else ["flight_number"])
 
     app_routes = [{
         "flight_number": m["flight_number"],
-        "callsign_prefix": None,
+        "callsign_prefix": m["operator_icao"],
         "departure_iata": m["departure_iata"],
         "departure_icao": m["departure_icao"],
         "arrival_iata": m["arrival_iata"],
@@ -247,16 +358,18 @@ def main():
 
     # Quality report - read this before trusting the data.
     n = len(unique) or 1
-    print(f"\n{len(unique)} flights on {len(covered)}/{len(routes)} routes from the CSV")
-    print(f"{len(missing)} CSV routes with no flight, {len(extra)} AirLabs flights on routes not in the CSV")
-    print(f"multi-sector duplicates dropped: {len(matched) - len(unique)}")
+    print(f"{len(unique)} flights on {len(with_flights)}/{len(routes)} CSV routes")
+    print(f"{len(missing)} CSV routes without flights ({len(uncovered)} not fully fetched), "
+          f"{len(extra)} AirLabs flights on routes not in the CSV, "
+          f"{len(matched) - len(unique)} multi-sector duplicates dropped")
+    print("operators:", dict(Counter(m["operator_icao"] for m in unique).most_common()))
     print("aircraft:", dict(Counter(m["aircraft_icao"] for m in unique).most_common()))
     for field in ("aircraft_icao", "dep_local", "arr_local", "duration_minutes", "days_operated"):
         empty = sum(1 for m in unique if not m[field])
         print(f"  {field:17s} missing on {empty} ({100 * empty / n:.0f}%)")
     updated = sorted(m["updated"] for m in unique if m["updated"])
     if updated:
-        print(f"row 'updated' dates: oldest {updated[0]}, median {updated[len(updated) // 2]}, newest {updated[-1]}")
+        print(f"'updated' dates: oldest {updated[0]}, median {updated[len(updated) // 2]}, newest {updated[-1]}")
 
 
 if __name__ == "__main__":
