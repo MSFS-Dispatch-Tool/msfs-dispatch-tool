@@ -1,0 +1,2565 @@
+departure_city,departure_iata,departure_icao,arrival_city,arrival_iata,arrival_icao
+Tirana,TIA,LATI,Geneva,GVA,LSGG
+Tirana,TIA,LATI,Lisbon,LIS,LPPT
+Innsbruck,INN,LOWI,Birmingham,BHX,EGBB
+Innsbruck,INN,LOWI,Bristol,BRS,EGGD
+Innsbruck,INN,LOWI,Edinburgh,EDI,EGPH
+Innsbruck,INN,LOWI,London Gatwick,LGW,EGKK
+Innsbruck,INN,LOWI,London Luton,LTN,EGGW
+Innsbruck,INN,LOWI,Manchester,MAN,EGCC
+Salzburg,SZG,LOWS,Bristol,BRS,EGGD
+Salzburg,SZG,LOWS,Liverpool,LPL,EGGP
+Salzburg,SZG,LOWS,London Gatwick,LGW,EGKK
+Salzburg,SZG,LOWS,London Luton,LTN,EGGW
+Salzburg,SZG,LOWS,London Southend,SEN,EGMC
+Vienna,VIE,LOWW,Basel,BSL,LFSB
+Vienna,VIE,LOWW,Bristol,BRS,EGGD
+Vienna,VIE,LOWW,London Gatwick,LGW,EGKK
+Vienna,VIE,LOWW,Manchester,MAN,EGCC
+Vienna,VIE,LOWW,Milan Linate,LIN,LIML
+Brussels Intl,BRU,EBBR,Bordeaux,BOD,LFBD
+Brussels Intl,BRU,EBBR,Geneva,GVA,LSGG
+Brussels Intl,BRU,EBBR,Milan Linate,LIN,LIML
+Brussels Intl,BRU,EBBR,Nantes,NTE,LFRS
+Brussels Intl,BRU,EBBR,Nice,NCE,LFMN
+Brussels Intl,BRU,EBBR,Rome Fiumicino,FCO,LIRF
+Burgas,BOJ,LBBG,Berlin Brandenburg,BER,EDDB
+Burgas,BOJ,LBBG,London Gatwick,LGW,EGKK
+Burgas,BOJ,LBBG,Manchester,MAN,EGCC
+Sofia,SOF,LBSF,London Gatwick,LGW,EGKK
+Sofia,SOF,LBSF,Manchester,MAN,EGCC
+Sofia,SOF,LBSF,Paris Orly,ORY,LFPO
+Boa Vista,BVC,GVBA,Lisbon,LIS,LPPT
+Boa Vista,BVC,GVBA,Porto,OPO,LPPR
+Praia,RAI,GVNP,Lisbon,LIS,LPPT
+Praia,RAI,GVNP,Porto,OPO,LPPR
+Sal - Cape Verde,SID,GVAC,Amsterdam,AMS,EHAM
+Sal - Cape Verde,SID,GVAC,Bristol,BRS,EGGD
+Sal - Cape Verde,SID,GVAC,Lisbon,LIS,LPPT
+Sal - Cape Verde,SID,GVAC,London Gatwick,LGW,EGKK
+Sal - Cape Verde,SID,GVAC,Manchester,MAN,EGCC
+Sal - Cape Verde,SID,GVAC,Milan Malpensa,MXP,LIMC
+Sal - Cape Verde,SID,GVAC,Porto,OPO,LPPR
+Sao Vicente,VXE,GVSV,Lisbon,LIS,LPPT
+Sao Vicente,VXE,GVSV,Porto,OPO,LPPR
+Dubrovnik,DBV,LDDU,Basel,BSL,LFSB
+Dubrovnik,DBV,LDDU,Bordeaux,BOD,LFBD
+Dubrovnik,DBV,LDDU,Bristol,BRS,EGGD
+Dubrovnik,DBV,LDDU,Edinburgh,EDI,EGPH
+Dubrovnik,DBV,LDDU,Geneva,GVA,LSGG
+Dubrovnik,DBV,LDDU,London Gatwick,LGW,EGKK
+Dubrovnik,DBV,LDDU,Lyon,LYS,LFLL
+Dubrovnik,DBV,LDDU,Manchester,MAN,EGCC
+Dubrovnik,DBV,LDDU,Nantes,NTE,LFRS
+Dubrovnik,DBV,LDDU,Naples,NAP,LIRN
+Dubrovnik,DBV,LDDU,Paris Orly,ORY,LFPO
+Pula,PUY,LDPL,Amsterdam,AMS,EHAM
+Pula,PUY,LDPL,Basel,BSL,LFSB
+Pula,PUY,LDPL,Berlin Brandenburg,BER,EDDB
+Pula,PUY,LDPL,Bristol,BRS,EGGD
+Pula,PUY,LDPL,Glasgow,GLA,EGPF
+Pula,PUY,LDPL,London Gatwick,LGW,EGKK
+Pula,PUY,LDPL,London Luton,LTN,EGGW
+Split,SPU,LDSP,Amsterdam,AMS,EHAM
+Split,SPU,LDSP,Basel,BSL,LFSB
+Split,SPU,LDSP,Berlin Brandenburg,BER,EDDB
+Split,SPU,LDSP,Bristol,BRS,EGGD
+Split,SPU,LDSP,Geneva,GVA,LSGG
+Split,SPU,LDSP,Glasgow,GLA,EGPF
+Split,SPU,LDSP,Liverpool,LPL,EGGP
+Split,SPU,LDSP,London Gatwick,LGW,EGKK
+Split,SPU,LDSP,London Luton,LTN,EGGW
+Split,SPU,LDSP,Lyon,LYS,LFLL
+Split,SPU,LDSP,Manchester,MAN,EGCC
+Split,SPU,LDSP,Milan Linate,LIN,LIML
+Split,SPU,LDSP,Naples,NAP,LIRN
+Split,SPU,LDSP,Paris Charles de Gaulle,CDG,LFPG
+Split,SPU,LDSP,Paris Orly,ORY,LFPO
+Split,SPU,LDSP,Porto,OPO,LPPR
+Zadar,ZAD,LDZD,Basel,BSL,LFSB
+Zadar,ZAD,LDZD,London Gatwick,LGW,EGKK
+Cyprus Larnaca,LCA,LCLK,Amsterdam,AMS,EHAM
+Cyprus Larnaca,LCA,LCLK,Basel,BSL,LFSB
+Cyprus Larnaca,LCA,LCLK,Belfast Intl,BFS,EGAA
+Cyprus Larnaca,LCA,LCLK,Berlin Brandenburg,BER,EDDB
+Cyprus Larnaca,LCA,LCLK,Birmingham,BHX,EGBB
+Cyprus Larnaca,LCA,LCLK,Bristol,BRS,EGGD
+Cyprus Larnaca,LCA,LCLK,Geneva,GVA,LSGG
+Cyprus Larnaca,LCA,LCLK,Glasgow,GLA,EGPF
+Cyprus Larnaca,LCA,LCLK,Liverpool,LPL,EGGP
+Cyprus Larnaca,LCA,LCLK,London Gatwick,LGW,EGKK
+Cyprus Larnaca,LCA,LCLK,London Luton,LTN,EGGW
+Cyprus Larnaca,LCA,LCLK,Manchester,MAN,EGCC
+Cyprus Larnaca,LCA,LCLK,Paris Charles de Gaulle,CDG,LFPG
+Cyprus Paphos,PFO,LCPH,Bristol,BRS,EGGD
+Cyprus Paphos,PFO,LCPH,Edinburgh,EDI,EGPH
+Cyprus Paphos,PFO,LCPH,Liverpool,LPL,EGGP
+Cyprus Paphos,PFO,LCPH,London Gatwick,LGW,EGKK
+Cyprus Paphos,PFO,LCPH,London Luton,LTN,EGGW
+Cyprus Paphos,PFO,LCPH,Manchester,MAN,EGCC
+Prague,PRG,LKPR,Alicante,ALC,LEAL
+Prague,PRG,LKPR,Amsterdam,AMS,EHAM
+Prague,PRG,LKPR,Basel,BSL,LFSB
+Prague,PRG,LKPR,Belfast Intl,BFS,EGAA
+Prague,PRG,LKPR,Birmingham,BHX,EGBB
+Prague,PRG,LKPR,Bordeaux,BOD,LFBD
+Prague,PRG,LKPR,Bristol,BRS,EGGD
+Prague,PRG,LKPR,Edinburgh,EDI,EGPH
+Prague,PRG,LKPR,Geneva,GVA,LSGG
+Prague,PRG,LKPR,Glasgow,GLA,EGPF
+Prague,PRG,LKPR,Hamburg,HAM,EDDH
+Prague,PRG,LKPR,Lille,LIL,LFQQ
+Prague,PRG,LKPR,Lisbon,LIS,LPPT
+Prague,PRG,LKPR,Liverpool,LPL,EGGP
+Prague,PRG,LKPR,London Gatwick,LGW,EGKK
+Prague,PRG,LKPR,London Luton,LTN,EGGW
+Prague,PRG,LKPR,Lyon,LYS,LFLL
+Prague,PRG,LKPR,Manchester,MAN,EGCC
+Prague,PRG,LKPR,Marrakech,RAK,GMMX
+Prague,PRG,LKPR,Milan Malpensa,MXP,LIMC
+Prague,PRG,LKPR,Nantes,NTE,LFRS
+Prague,PRG,LKPR,Naples,NAP,LIRN
+Prague,PRG,LKPR,Newcastle,NCL,EGNT
+Prague,PRG,LKPR,Nice,NCE,LFMN
+Prague,PRG,LKPR,Porto,OPO,LPPR
+Copenhagen,CPH,EKCH,Amsterdam,AMS,EHAM
+Copenhagen,CPH,EKCH,Basel,BSL,LFSB
+Copenhagen,CPH,EKCH,Berlin Brandenburg,BER,EDDB
+Copenhagen,CPH,EKCH,Birmingham,BHX,EGBB
+Copenhagen,CPH,EKCH,Bristol,BRS,EGGD
+Copenhagen,CPH,EKCH,Edinburgh,EDI,EGPH
+Copenhagen,CPH,EKCH,Geneva,GVA,LSGG
+Copenhagen,CPH,EKCH,London Gatwick,LGW,EGKK
+Copenhagen,CPH,EKCH,Manchester,MAN,EGCC
+Copenhagen,CPH,EKCH,Milan Linate,LIN,LIML
+Copenhagen,CPH,EKCH,Newcastle,NCL,EGNT
+Cairo Sphinx,SPX,HESX,Berlin Brandenburg,BER,EDDB
+Cairo Sphinx,SPX,HESX,Geneva,GVA,LSGG
+Cairo Sphinx,SPX,HESX,London Luton,LTN,EGGW
+Cairo Sphinx,SPX,HESX,Manchester,MAN,EGCC
+Cairo Sphinx,SPX,HESX,Milan Malpensa,MXP,LIMC
+Cairo Sphinx,SPX,HESX,Naples,NAP,LIRN
+Cairo Sphinx,SPX,HESX,Nice,NCE,LFMN
+Cairo Sphinx,SPX,HESX,Paris Charles de Gaulle,CDG,LFPG
+Hurghada,HRG,HEGN,Amsterdam,AMS,EHAM
+Hurghada,HRG,HEGN,Basel,BSL,LFSB
+Hurghada,HRG,HEGN,Belfast Intl,BFS,EGAA
+Hurghada,HRG,HEGN,Berlin Brandenburg,BER,EDDB
+Hurghada,HRG,HEGN,Birmingham,BHX,EGBB
+Hurghada,HRG,HEGN,Bordeaux,BOD,LFBD
+Hurghada,HRG,HEGN,Bristol,BRS,EGGD
+Hurghada,HRG,HEGN,Edinburgh,EDI,EGPH
+Hurghada,HRG,HEGN,Geneva,GVA,LSGG
+Hurghada,HRG,HEGN,Glasgow,GLA,EGPF
+Hurghada,HRG,HEGN,Liverpool,LPL,EGGP
+Hurghada,HRG,HEGN,London Gatwick,LGW,EGKK
+Hurghada,HRG,HEGN,London Luton,LTN,EGGW
+Hurghada,HRG,HEGN,Lyon,LYS,LFLL
+Hurghada,HRG,HEGN,Manchester,MAN,EGCC
+Hurghada,HRG,HEGN,Milan Malpensa,MXP,LIMC
+Hurghada,HRG,HEGN,Nantes,NTE,LFRS
+Hurghada,HRG,HEGN,Naples,NAP,LIRN
+Hurghada,HRG,HEGN,Newcastle,NCL,EGNT
+Hurghada,HRG,HEGN,Nice,NCE,LFMN
+Hurghada,HRG,HEGN,Paris Charles de Gaulle,CDG,LFPG
+Luxor,LXR,HELX,London Gatwick,LGW,EGKK
+Luxor,LXR,HELX,Lyon,LYS,LFLL
+Luxor,LXR,HELX,Milan Malpensa,MXP,LIMC
+Luxor,LXR,HELX,Nantes,NTE,LFRS
+Luxor,LXR,HELX,Paris Charles de Gaulle,CDG,LFPG
+Marsa Alam,RMF,HEMA,Berlin Brandenburg,BER,EDDB
+Marsa Alam,RMF,HEMA,Milan Malpensa,MXP,LIMC
+Marsa Alam,RMF,HEMA,Naples,NAP,LIRN
+Sharm El Sheikh,SSH,HESH,Amsterdam,AMS,EHAM
+Sharm El Sheikh,SSH,HESH,Belfast Intl,BFS,EGAA
+Sharm El Sheikh,SSH,HESH,Berlin Brandenburg,BER,EDDB
+Sharm El Sheikh,SSH,HESH,Birmingham,BHX,EGBB
+Sharm El Sheikh,SSH,HESH,Bristol,BRS,EGGD
+Sharm El Sheikh,SSH,HESH,Edinburgh,EDI,EGPH
+Sharm El Sheikh,SSH,HESH,Geneva,GVA,LSGG
+Sharm El Sheikh,SSH,HESH,Glasgow,GLA,EGPF
+Sharm El Sheikh,SSH,HESH,Liverpool,LPL,EGGP
+Sharm El Sheikh,SSH,HESH,London Gatwick,LGW,EGKK
+Sharm El Sheikh,SSH,HESH,London Luton,LTN,EGGW
+Sharm El Sheikh,SSH,HESH,London Southend,SEN,EGMC
+Sharm El Sheikh,SSH,HESH,Lyon,LYS,LFLL
+Sharm El Sheikh,SSH,HESH,Manchester,MAN,EGCC
+Sharm El Sheikh,SSH,HESH,Milan Malpensa,MXP,LIMC
+Sharm El Sheikh,SSH,HESH,Naples,NAP,LIRN
+Sharm El Sheikh,SSH,HESH,Newcastle,NCL,EGNT
+Sharm El Sheikh,SSH,HESH,Paris Charles de Gaulle,CDG,LFPG
+Kittila,KTT,EFKT,Liverpool,LPL,EGGP
+Kittila,KTT,EFKT,London Gatwick,LGW,EGKK
+Kittila,KTT,EFKT,London Luton,LTN,EGGW
+Kittila,KTT,EFKT,Manchester,MAN,EGCC
+Kittila,KTT,EFKT,Milan Malpensa,MXP,LIMC
+Rovaniemi,RVN,EFRO,Belfast Intl,BFS,EGAA
+Rovaniemi,RVN,EFRO,Berlin Brandenburg,BER,EDDB
+Rovaniemi,RVN,EFRO,Birmingham,BHX,EGBB
+Rovaniemi,RVN,EFRO,Bristol,BRS,EGGD
+Rovaniemi,RVN,EFRO,Edinburgh,EDI,EGPH
+Rovaniemi,RVN,EFRO,London Gatwick,LGW,EGKK
+Rovaniemi,RVN,EFRO,London Luton,LTN,EGGW
+Rovaniemi,RVN,EFRO,London Southend,SEN,EGMC
+Rovaniemi,RVN,EFRO,Lyon,LYS,LFLL
+Rovaniemi,RVN,EFRO,Manchester,MAN,EGCC
+Rovaniemi,RVN,EFRO,Milan Malpensa,MXP,LIMC
+Rovaniemi,RVN,EFRO,Newcastle,NCL,EGNT
+Rovaniemi,RVN,EFRO,Paris Charles de Gaulle,CDG,LFPG
+"Ajaccio, Corsica",AJA,LFKJ,Basel,BSL,LFSB
+"Ajaccio, Corsica",AJA,LFKJ,Geneva,GVA,LSGG
+"Ajaccio, Corsica",AJA,LFKJ,Lyon,LYS,LFLL
+"Ajaccio, Corsica",AJA,LFKJ,Nantes,NTE,LFRS
+"Ajaccio, Corsica",AJA,LFKJ,Paris Charles de Gaulle,CDG,LFPG
+"Bastia, Corsica",BIA,LFKB,Basel,BSL,LFSB
+"Bastia, Corsica",BIA,LFKB,Bordeaux,BOD,LFBD
+"Bastia, Corsica",BIA,LFKB,Geneva,GVA,LSGG
+"Bastia, Corsica",BIA,LFKB,London Gatwick,LGW,EGKK
+"Bastia, Corsica",BIA,LFKB,Lyon,LYS,LFLL
+Biarritz,BIQ,LFBZ,Basel,BSL,LFSB
+Biarritz,BIQ,LFBZ,London Gatwick,LGW,EGKK
+Biarritz,BIQ,LFBZ,Lyon,LYS,LFLL
+Biarritz,BIQ,LFBZ,Milan Malpensa,MXP,LIMC
+Biarritz,BIQ,LFBZ,Nice,NCE,LFMN
+Bordeaux,BOD,LFBD,Agadir,AGA,GMAD
+Bordeaux,BOD,LFBD,Athens,ATH,LGAV
+Bordeaux,BOD,LFBD,Basel,BSL,LFSB
+Bordeaux,BOD,LFBD,"Bastia, Corsica",BIA,LFKB
+Bordeaux,BOD,LFBD,Belfast Intl,BFS,EGAA
+Bordeaux,BOD,LFBD,Berlin Brandenburg,BER,EDDB
+Bordeaux,BOD,LFBD,Birmingham,BHX,EGBB
+Bordeaux,BOD,LFBD,Bristol,BRS,EGGD
+Bordeaux,BOD,LFBD,Brussels Intl,BRU,EBBR
+Bordeaux,BOD,LFBD,Budapest,BUD,LHBP
+Bordeaux,BOD,LFBD,Corfu,CFU,LGKR
+Bordeaux,BOD,LFBD,Crete Heraklion,HER,LGIR
+Bordeaux,BOD,LFBD,Dubrovnik,DBV,LDDU
+Bordeaux,BOD,LFBD,Edinburgh,EDI,EGPH
+Bordeaux,BOD,LFBD,Essaouira,ESU,GMMI
+Bordeaux,BOD,LFBD,Faro,FAO,LPFR
+Bordeaux,BOD,LFBD,Geneva,GVA,LSGG
+Bordeaux,BOD,LFBD,Glasgow,GLA,EGPF
+Bordeaux,BOD,LFBD,Gran Canaria,LPA,GCLP
+Bordeaux,BOD,LFBD,Hurghada,HRG,HEGN
+Bordeaux,BOD,LFBD,Ibiza,IBZ,LEIB
+Bordeaux,BOD,LFBD,Lanzarote,ACE,GCRR
+Bordeaux,BOD,LFBD,Lille,LIL,LFQQ
+Bordeaux,BOD,LFBD,Lisbon,LIS,LPPT
+Bordeaux,BOD,LFBD,London Gatwick,LGW,EGKK
+Bordeaux,BOD,LFBD,London Luton,LTN,EGGW
+Bordeaux,BOD,LFBD,Lyon,LYS,LFLL
+Bordeaux,BOD,LFBD,Madeira Funchal,FNC,LPMA
+Bordeaux,BOD,LFBD,Majorca Palma,PMI,LEPA
+Bordeaux,BOD,LFBD,Malaga,AGP,LEMG
+Bordeaux,BOD,LFBD,Manchester,MAN,EGCC
+Bordeaux,BOD,LFBD,Marrakech,RAK,GMMX
+Bordeaux,BOD,LFBD,Marseille Provence,MRS,LFML
+Bordeaux,BOD,LFBD,Menorca Mahon,MAH,LEMH
+Bordeaux,BOD,LFBD,Milan Malpensa,MXP,LIMC
+Bordeaux,BOD,LFBD,Naples,NAP,LIRN
+Bordeaux,BOD,LFBD,Nice,NCE,LFMN
+Bordeaux,BOD,LFBD,Porto,OPO,LPPR
+Bordeaux,BOD,LFBD,Prague,PRG,LKPR
+Bordeaux,BOD,LFBD,Rabat Sale Airport,RBA,GMME
+Bordeaux,BOD,LFBD,Rome Fiumicino,FCO,LIRF
+Bordeaux,BOD,LFBD,Sardinia Cagliari,CAG,LIEE
+Bordeaux,BOD,LFBD,Sardinia Olbia,OLB,LIEO
+Bordeaux,BOD,LFBD,Sicily Palermo,PMO,LICJ
+Bordeaux,BOD,LFBD,Tenerife South,TFS,GCTS
+Brest Brittany,BES,LFRB,London Gatwick,LGW,EGKK
+"Calvi, Corsica",CLY,LFKC,Basel,BSL,LFSB
+"Calvi, Corsica",CLY,LFKC,Geneva,GVA,LSGG
+"Calvi, Corsica",CLY,LFKC,Lyon,LYS,LFLL
+"Calvi, Corsica",CLY,LFKC,Paris Charles de Gaulle,CDG,LFPG
+"Figari, Corsica",FSC,LFKF,Basel,BSL,LFSB
+"Figari, Corsica",FSC,LFKF,Geneva,GVA,LSGG
+"Figari, Corsica",FSC,LFKF,London Gatwick,LGW,EGKK
+"Figari, Corsica",FSC,LFKF,Lyon,LYS,LFLL
+"Figari, Corsica",FSC,LFKF,Milan Linate,LIN,LIML
+"Figari, Corsica",FSC,LFKF,Paris Charles de Gaulle,CDG,LFPG
+Grenoble,GNB,LFLS,Birmingham,BHX,EGBB
+Grenoble,GNB,LFLS,Bristol,BRS,EGGD
+Grenoble,GNB,LFLS,Edinburgh,EDI,EGPH
+Grenoble,GNB,LFLS,London Gatwick,LGW,EGKK
+Grenoble,GNB,LFLS,London Luton,LTN,EGGW
+Grenoble,GNB,LFLS,Manchester,MAN,EGCC
+La Rochelle,LRH,LFBH,Bristol,BRS,EGGD
+La Rochelle,LRH,LFBH,Geneva,GVA,LSGG
+La Rochelle,LRH,LFBH,London Gatwick,LGW,EGKK
+La Rochelle,LRH,LFBH,Lyon,LYS,LFLL
+La Rochelle,LRH,LFBH,Manchester,MAN,EGCC
+Lille,LIL,LFQQ,Alicante,ALC,LEAL
+Lille,LIL,LFQQ,Basel,BSL,LFSB
+Lille,LIL,LFQQ,Bordeaux,BOD,LFBD
+Lille,LIL,LFQQ,Geneva,GVA,LSGG
+Lille,LIL,LFQQ,Majorca Palma,PMI,LEPA
+Lille,LIL,LFQQ,Marrakech,RAK,GMMX
+Lille,LIL,LFQQ,Nice,NCE,LFMN
+Lille,LIL,LFQQ,Prague,PRG,LKPR
+Lyon,LYS,LFLL,Agadir,AGA,GMAD
+Lyon,LYS,LFLL,"Ajaccio, Corsica",AJA,LFKJ
+Lyon,LYS,LFLL,Alicante,ALC,LEAL
+Lyon,LYS,LFLL,Athens,ATH,LGAV
+Lyon,LYS,LFLL,Bari,BRI,LIBD
+Lyon,LYS,LFLL,"Bastia, Corsica",BIA,LFKB
+Lyon,LYS,LFLL,Belfast Intl,BFS,EGAA
+Lyon,LYS,LFLL,Berlin Brandenburg,BER,EDDB
+Lyon,LYS,LFLL,Biarritz,BIQ,LFBZ
+Lyon,LYS,LFLL,Bordeaux,BOD,LFBD
+Lyon,LYS,LFLL,Brindisi,BDS,LIBR
+Lyon,LYS,LFLL,Bristol,BRS,EGGD
+Lyon,LYS,LFLL,Budapest,BUD,LHBP
+Lyon,LYS,LFLL,"Calvi, Corsica",CLY,LFKC
+Lyon,LYS,LFLL,Corfu,CFU,LGKR
+Lyon,LYS,LFLL,Crete Chania,CHQ,LGSA
+Lyon,LYS,LFLL,Crete Heraklion,HER,LGIR
+Lyon,LYS,LFLL,Dubrovnik,DBV,LDDU
+Lyon,LYS,LFLL,Edinburgh,EDI,EGPH
+Lyon,LYS,LFLL,Essaouira,ESU,GMMI
+Lyon,LYS,LFLL,Faro,FAO,LPFR
+Lyon,LYS,LFLL,"Figari, Corsica",FSC,LFKF
+Lyon,LYS,LFLL,Gran Canaria,LPA,GCLP
+Lyon,LYS,LFLL,Hurghada,HRG,HEGN
+Lyon,LYS,LFLL,Ibiza,IBZ,LEIB
+Lyon,LYS,LFLL,La Rochelle,LRH,LFBH
+Lyon,LYS,LFLL,Lanzarote,ACE,GCRR
+Lyon,LYS,LFLL,Lisbon,LIS,LPPT
+Lyon,LYS,LFLL,London Gatwick,LGW,EGKK
+Lyon,LYS,LFLL,London Luton,LTN,EGGW
+Lyon,LYS,LFLL,London Southend,SEN,EGMC
+Lyon,LYS,LFLL,Luxor,LXR,HELX
+Lyon,LYS,LFLL,Madeira Funchal,FNC,LPMA
+Lyon,LYS,LFLL,Madrid,MAD,LEMD
+Lyon,LYS,LFLL,Majorca Palma,PMI,LEPA
+Lyon,LYS,LFLL,Malaga,AGP,LEMG
+Lyon,LYS,LFLL,Manchester,MAN,EGCC
+Lyon,LYS,LFLL,Marrakech,RAK,GMMX
+Lyon,LYS,LFLL,Menorca Mahon,MAH,LEMH
+Lyon,LYS,LFLL,Nantes,NTE,LFRS
+Lyon,LYS,LFLL,Naples,NAP,LIRN
+Lyon,LYS,LFLL,Nice,NCE,LFMN
+Lyon,LYS,LFLL,Porto,OPO,LPPR
+Lyon,LYS,LFLL,Prague,PRG,LKPR
+Lyon,LYS,LFLL,Pristina,PRN,BKPR
+Lyon,LYS,LFLL,Rabat Sale Airport,RBA,GMME
+Lyon,LYS,LFLL,Reykjavik Keflavik,KEF,BIKF
+Lyon,LYS,LFLL,Rome Fiumicino,FCO,LIRF
+Lyon,LYS,LFLL,Rovaniemi,RVN,EFRO
+Lyon,LYS,LFLL,Sardinia Cagliari,CAG,LIEE
+Lyon,LYS,LFLL,Sardinia Olbia,OLB,LIEO
+Lyon,LYS,LFLL,Seville,SVQ,LEZL
+Lyon,LYS,LFLL,Sharm El Sheikh,SSH,HESH
+Lyon,LYS,LFLL,Sicily Catania,CTA,LICC
+Lyon,LYS,LFLL,Sicily Palermo,PMO,LICJ
+Lyon,LYS,LFLL,Split,SPU,LDSP
+Lyon,LYS,LFLL,Tangier,TNG,GMTT
+Lyon,LYS,LFLL,Tenerife South,TFS,GCTS
+Lyon,LYS,LFLL,Toulouse,TLS,LFBO
+Lyon,LYS,LFLL,Venice Marco Polo,VCE,LIPZ
+Marseille Provence,MRS,LFML,Bordeaux,BOD,LFBD
+Marseille Provence,MRS,LFML,Bristol,BRS,EGGD
+Marseille Provence,MRS,LFML,London Gatwick,LGW,EGKK
+Montpellier,MPL,LFMT,Basel,BSL,LFSB
+Montpellier,MPL,LFMT,London Gatwick,LGW,EGKK
+Montpellier,MPL,LFMT,Majorca Palma,PMI,LEPA
+Montpellier,MPL,LFMT,Manchester,MAN,EGCC
+Nantes,NTE,LFRS,"Ajaccio, Corsica",AJA,LFKJ
+Nantes,NTE,LFRS,Alicante,ALC,LEAL
+Nantes,NTE,LFRS,Basel,BSL,LFSB
+Nantes,NTE,LFRS,Brussels Intl,BRU,EBBR
+Nantes,NTE,LFRS,Budapest,BUD,LHBP
+Nantes,NTE,LFRS,Corfu,CFU,LGKR
+Nantes,NTE,LFRS,Crete Chania,CHQ,LGSA
+Nantes,NTE,LFRS,Crete Heraklion,HER,LGIR
+Nantes,NTE,LFRS,Dubrovnik,DBV,LDDU
+Nantes,NTE,LFRS,Essaouira,ESU,GMMI
+Nantes,NTE,LFRS,Faro,FAO,LPFR
+Nantes,NTE,LFRS,Geneva,GVA,LSGG
+Nantes,NTE,LFRS,Gran Canaria,LPA,GCLP
+Nantes,NTE,LFRS,Hurghada,HRG,HEGN
+Nantes,NTE,LFRS,Ibiza,IBZ,LEIB
+Nantes,NTE,LFRS,Lanzarote,ACE,GCRR
+Nantes,NTE,LFRS,Lisbon,LIS,LPPT
+Nantes,NTE,LFRS,London Gatwick,LGW,EGKK
+Nantes,NTE,LFRS,Luxor,LXR,HELX
+Nantes,NTE,LFRS,Lyon,LYS,LFLL
+Nantes,NTE,LFRS,Madeira Funchal,FNC,LPMA
+Nantes,NTE,LFRS,Madrid,MAD,LEMD
+Nantes,NTE,LFRS,Majorca Palma,PMI,LEPA
+Nantes,NTE,LFRS,Malaga,AGP,LEMG
+Nantes,NTE,LFRS,Marrakech,RAK,GMMX
+Nantes,NTE,LFRS,Menorca Mahon,MAH,LEMH
+Nantes,NTE,LFRS,Milan Malpensa,MXP,LIMC
+Nantes,NTE,LFRS,Naples,NAP,LIRN
+Nantes,NTE,LFRS,Nice,NCE,LFMN
+Nantes,NTE,LFRS,Porto,OPO,LPPR
+Nantes,NTE,LFRS,Prague,PRG,LKPR
+Nantes,NTE,LFRS,Rabat Sale Airport,RBA,GMME
+Nantes,NTE,LFRS,Rhodes,RHO,LGRP
+Nantes,NTE,LFRS,Rome Fiumicino,FCO,LIRF
+Nantes,NTE,LFRS,Sardinia Olbia,OLB,LIEO
+Nantes,NTE,LFRS,Sicily Catania,CTA,LICC
+Nantes,NTE,LFRS,Tenerife South,TFS,GCTS
+Nantes,NTE,LFRS,Toulouse,TLS,LFBO
+Nice,NCE,LFMN,Agadir,AGA,GMAD
+Nice,NCE,LFMN,Amsterdam,AMS,EHAM
+Nice,NCE,LFMN,Athens,ATH,LGAV
+Nice,NCE,LFMN,Bari,BRI,LIBD
+Nice,NCE,LFMN,Basel,BSL,LFSB
+Nice,NCE,LFMN,Belfast Intl,BFS,EGAA
+Nice,NCE,LFMN,Berlin Brandenburg,BER,EDDB
+Nice,NCE,LFMN,Biarritz,BIQ,LFBZ
+Nice,NCE,LFMN,Birmingham,BHX,EGBB
+Nice,NCE,LFMN,Bordeaux,BOD,LFBD
+Nice,NCE,LFMN,Bristol,BRS,EGGD
+Nice,NCE,LFMN,Brussels Intl,BRU,EBBR
+Nice,NCE,LFMN,Cairo Sphinx,SPX,HESX
+Nice,NCE,LFMN,Crete Chania,CHQ,LGSA
+Nice,NCE,LFMN,Edinburgh,EDI,EGPH
+Nice,NCE,LFMN,Geneva,GVA,LSGG
+Nice,NCE,LFMN,Hurghada,HRG,HEGN
+Nice,NCE,LFMN,Ibiza,IBZ,LEIB
+Nice,NCE,LFMN,Lille,LIL,LFQQ
+Nice,NCE,LFMN,Lisbon,LIS,LPPT
+Nice,NCE,LFMN,Liverpool,LPL,EGGP
+Nice,NCE,LFMN,London Gatwick,LGW,EGKK
+Nice,NCE,LFMN,London Luton,LTN,EGGW
+Nice,NCE,LFMN,Lyon,LYS,LFLL
+Nice,NCE,LFMN,Madeira Funchal,FNC,LPMA
+Nice,NCE,LFMN,Madrid,MAD,LEMD
+Nice,NCE,LFMN,Majorca Palma,PMI,LEPA
+Nice,NCE,LFMN,Malaga,AGP,LEMG
+Nice,NCE,LFMN,Malta,MLA,LMML
+Nice,NCE,LFMN,Manchester,MAN,EGCC
+Nice,NCE,LFMN,Marrakech,RAK,GMMX
+Nice,NCE,LFMN,Mykonos,JMK,LGMK
+Nice,NCE,LFMN,Nantes,NTE,LFRS
+Nice,NCE,LFMN,Naples,NAP,LIRN
+Nice,NCE,LFMN,Newcastle,NCL,EGNT
+Nice,NCE,LFMN,Paris Charles de Gaulle,CDG,LFPG
+Nice,NCE,LFMN,Paris Orly,ORY,LFPO
+Nice,NCE,LFMN,Porto,OPO,LPPR
+Nice,NCE,LFMN,Prague,PRG,LKPR
+Nice,NCE,LFMN,Rabat Sale Airport,RBA,GMME
+Nice,NCE,LFMN,Rennes,RNS,LFRN
+Nice,NCE,LFMN,Rome Fiumicino,FCO,LIRF
+Nice,NCE,LFMN,Santorini,JTR,LGSR
+Nice,NCE,LFMN,Sardinia Cagliari,CAG,LIEE
+Nice,NCE,LFMN,Sardinia Olbia,OLB,LIEO
+Nice,NCE,LFMN,Sicily Palermo,PMO,LICJ
+Nice,NCE,LFMN,Strasbourg,SXB,LFST
+Nice,NCE,LFMN,Tenerife South,TFS,GCTS
+Nice,NCE,LFMN,Toulouse,TLS,LFBO
+Nice,NCE,LFMN,Venice Marco Polo,VCE,LIPZ
+Paris Charles de Gaulle,CDG,LFPG,Aberdeen,ABZ,EGPD
+Paris Charles de Gaulle,CDG,LFPG,Agadir,AGA,GMAD
+Paris Charles de Gaulle,CDG,LFPG,"Ajaccio, Corsica",AJA,LFKJ
+Paris Charles de Gaulle,CDG,LFPG,Belfast Intl,BFS,EGAA
+Paris Charles de Gaulle,CDG,LFPG,Belgrade,BEG,LYBE
+Paris Charles de Gaulle,CDG,LFPG,Berlin Brandenburg,BER,EDDB
+Paris Charles de Gaulle,CDG,LFPG,Birmingham,BHX,EGBB
+Paris Charles de Gaulle,CDG,LFPG,Bristol,BRS,EGGD
+Paris Charles de Gaulle,CDG,LFPG,Budapest,BUD,LHBP
+Paris Charles de Gaulle,CDG,LFPG,Cairo Sphinx,SPX,HESX
+Paris Charles de Gaulle,CDG,LFPG,"Calvi, Corsica",CLY,LFKC
+Paris Charles de Gaulle,CDG,LFPG,Corfu,CFU,LGKR
+Paris Charles de Gaulle,CDG,LFPG,Crete Heraklion,HER,LGIR
+Paris Charles de Gaulle,CDG,LFPG,Cyprus Larnaca,LCA,LCLK
+Paris Charles de Gaulle,CDG,LFPG,Edinburgh,EDI,EGPH
+Paris Charles de Gaulle,CDG,LFPG,"Figari, Corsica",FSC,LFKF
+Paris Charles de Gaulle,CDG,LFPG,Fuerteventura,FUE,GCFV
+Paris Charles de Gaulle,CDG,LFPG,Glasgow,GLA,EGPF
+Paris Charles de Gaulle,CDG,LFPG,Gran Canaria,LPA,GCLP
+Paris Charles de Gaulle,CDG,LFPG,Hurghada,HRG,HEGN
+Paris Charles de Gaulle,CDG,LFPG,Krakow,KRK,EPKK
+Paris Charles de Gaulle,CDG,LFPG,Lanzarote,ACE,GCRR
+Paris Charles de Gaulle,CDG,LFPG,Leeds Bradford,LBA,EGNM
+Paris Charles de Gaulle,CDG,LFPG,Liverpool,LPL,EGGP
+Paris Charles de Gaulle,CDG,LFPG,London Gatwick,LGW,EGKK
+Paris Charles de Gaulle,CDG,LFPG,London Luton,LTN,EGGW
+Paris Charles de Gaulle,CDG,LFPG,London Southend,SEN,EGMC
+Paris Charles de Gaulle,CDG,LFPG,London Stansted,STN,EGSS
+Paris Charles de Gaulle,CDG,LFPG,Luxor,LXR,HELX
+Paris Charles de Gaulle,CDG,LFPG,Madeira Funchal,FNC,LPMA
+Paris Charles de Gaulle,CDG,LFPG,Majorca Palma,PMI,LEPA
+Paris Charles de Gaulle,CDG,LFPG,Manchester,MAN,EGCC
+Paris Charles de Gaulle,CDG,LFPG,Marrakech,RAK,GMMX
+Paris Charles de Gaulle,CDG,LFPG,Milan Linate,LIN,LIML
+Paris Charles de Gaulle,CDG,LFPG,Milan Malpensa,MXP,LIMC
+Paris Charles de Gaulle,CDG,LFPG,Newcastle,NCL,EGNT
+Paris Charles de Gaulle,CDG,LFPG,Nice,NCE,LFMN
+Paris Charles de Gaulle,CDG,LFPG,Reykjavik Keflavik,KEF,BIKF
+Paris Charles de Gaulle,CDG,LFPG,Rovaniemi,RVN,EFRO
+Paris Charles de Gaulle,CDG,LFPG,Sharm El Sheikh,SSH,HESH
+Paris Charles de Gaulle,CDG,LFPG,Southampton,SOU,EGHI
+Paris Charles de Gaulle,CDG,LFPG,Split,SPU,LDSP
+Paris Charles de Gaulle,CDG,LFPG,Tenerife South,TFS,GCTS
+Paris Charles de Gaulle,CDG,LFPG,Tromsø,TOS,ENTC
+Paris Charles de Gaulle,CDG,LFPG,Venice Marco Polo,VCE,LIPZ
+Paris Orly,ORY,LFPO,Athens,ATH,LGAV
+Paris Orly,ORY,LFPO,Bari,BRI,LIBD
+Paris Orly,ORY,LFPO,Dubrovnik,DBV,LDDU
+Paris Orly,ORY,LFPO,Faro,FAO,LPFR
+Paris Orly,ORY,LFPO,Geneva,GVA,LSGG
+Paris Orly,ORY,LFPO,Lamezia,SUF,LICA
+Paris Orly,ORY,LFPO,Milan Linate,LIN,LIML
+Paris Orly,ORY,LFPO,Milan Malpensa,MXP,LIMC
+Paris Orly,ORY,LFPO,Naples,NAP,LIRN
+Paris Orly,ORY,LFPO,Nice,NCE,LFMN
+Paris Orly,ORY,LFPO,Pisa (Tuscany),PSA,LIRP
+Paris Orly,ORY,LFPO,Porto,OPO,LPPR
+Paris Orly,ORY,LFPO,Rhodes,RHO,LGRP
+Paris Orly,ORY,LFPO,Rome Fiumicino,FCO,LIRF
+Paris Orly,ORY,LFPO,Sardinia Cagliari,CAG,LIEE
+Paris Orly,ORY,LFPO,Sardinia Olbia,OLB,LIEO
+Paris Orly,ORY,LFPO,Sicily Catania,CTA,LICC
+Paris Orly,ORY,LFPO,Sicily Palermo,PMO,LICJ
+Paris Orly,ORY,LFPO,Skopje,SKP,LWSK
+Paris Orly,ORY,LFPO,Sofia,SOF,LBSF
+Paris Orly,ORY,LFPO,Southampton,SOU,EGHI
+Paris Orly,ORY,LFPO,Split,SPU,LDSP
+Paris Orly,ORY,LFPO,Toulouse,TLS,LFBO
+Paris Orly,ORY,LFPO,Venice Marco Polo,VCE,LIPZ
+Rennes,RNS,LFRN,Geneva,GVA,LSGG
+Rennes,RNS,LFRN,London Gatwick,LGW,EGKK
+Rennes,RNS,LFRN,Manchester,MAN,EGCC
+Rennes,RNS,LFRN,Nice,NCE,LFMN
+Strasbourg,SXB,LFST,Barcelona,BCN,LEBL
+Strasbourg,SXB,LFST,London Gatwick,LGW,EGKK
+Strasbourg,SXB,LFST,London Luton,LTN,EGGW
+Strasbourg,SXB,LFST,Majorca Palma,PMI,LEPA
+Strasbourg,SXB,LFST,Manchester,MAN,EGCC
+Strasbourg,SXB,LFST,Marrakech,RAK,GMMX
+Strasbourg,SXB,LFST,Milan Malpensa,MXP,LIMC
+Strasbourg,SXB,LFST,Naples,NAP,LIRN
+Strasbourg,SXB,LFST,Nice,NCE,LFMN
+Strasbourg,SXB,LFST,Rome Fiumicino,FCO,LIRF
+Toulouse,TLS,LFBO,Basel,BSL,LFSB
+Toulouse,TLS,LFBO,Bristol,BRS,EGGD
+Toulouse,TLS,LFBO,Geneva,GVA,LSGG
+Toulouse,TLS,LFBO,London Gatwick,LGW,EGKK
+Toulouse,TLS,LFBO,Lyon,LYS,LFLL
+Toulouse,TLS,LFBO,Majorca Palma,PMI,LEPA
+Toulouse,TLS,LFBO,Marrakech,RAK,GMMX
+Toulouse,TLS,LFBO,Milan Malpensa,MXP,LIMC
+Toulouse,TLS,LFBO,Nantes,NTE,LFRS
+Toulouse,TLS,LFBO,Nice,NCE,LFMN
+Toulouse,TLS,LFBO,Paris Orly,ORY,LFPO
+Tbilisi,TBS,UGTB,Geneva,GVA,LSGG
+Tbilisi,TBS,UGTB,London Luton,LTN,EGGW
+Tbilisi,TBS,UGTB,Milan Malpensa,MXP,LIMC
+Berlin Brandenburg,BER,EDDB,Agadir,AGA,GMAD
+Berlin Brandenburg,BER,EDDB,Antalya,AYT,LTAI
+Berlin Brandenburg,BER,EDDB,Barcelona,BCN,LEBL
+Berlin Brandenburg,BER,EDDB,Basel,BSL,LFSB
+Berlin Brandenburg,BER,EDDB,Birmingham,BHX,EGBB
+Berlin Brandenburg,BER,EDDB,Bordeaux,BOD,LFBD
+Berlin Brandenburg,BER,EDDB,Bristol,BRS,EGGD
+Berlin Brandenburg,BER,EDDB,Burgas,BOJ,LBBG
+Berlin Brandenburg,BER,EDDB,Cairo Sphinx,SPX,HESX
+Berlin Brandenburg,BER,EDDB,Copenhagen,CPH,EKCH
+Berlin Brandenburg,BER,EDDB,Corfu,CFU,LGKR
+Berlin Brandenburg,BER,EDDB,Crete Chania,CHQ,LGSA
+Berlin Brandenburg,BER,EDDB,Crete Heraklion,HER,LGIR
+Berlin Brandenburg,BER,EDDB,Cyprus Larnaca,LCA,LCLK
+Berlin Brandenburg,BER,EDDB,Edinburgh,EDI,EGPH
+Berlin Brandenburg,BER,EDDB,Fuerteventura,FUE,GCFV
+Berlin Brandenburg,BER,EDDB,Geneva,GVA,LSGG
+Berlin Brandenburg,BER,EDDB,Glasgow,GLA,EGPF
+Berlin Brandenburg,BER,EDDB,Gran Canaria,LPA,GCLP
+Berlin Brandenburg,BER,EDDB,Hurghada,HRG,HEGN
+Berlin Brandenburg,BER,EDDB,Lanzarote,ACE,GCRR
+Berlin Brandenburg,BER,EDDB,Liverpool,LPL,EGGP
+Berlin Brandenburg,BER,EDDB,London Gatwick,LGW,EGKK
+Berlin Brandenburg,BER,EDDB,London Luton,LTN,EGGW
+Berlin Brandenburg,BER,EDDB,London Southend,SEN,EGMC
+Berlin Brandenburg,BER,EDDB,Lyon,LYS,LFLL
+Berlin Brandenburg,BER,EDDB,Madeira Funchal,FNC,LPMA
+Berlin Brandenburg,BER,EDDB,Majorca Palma,PMI,LEPA
+Berlin Brandenburg,BER,EDDB,Malaga,AGP,LEMG
+Berlin Brandenburg,BER,EDDB,Manchester,MAN,EGCC
+Berlin Brandenburg,BER,EDDB,Marsa Alam,RMF,HEMA
+Berlin Brandenburg,BER,EDDB,Milan Linate,LIN,LIML
+Berlin Brandenburg,BER,EDDB,Milan Malpensa,MXP,LIMC
+Berlin Brandenburg,BER,EDDB,Naples,NAP,LIRN
+Berlin Brandenburg,BER,EDDB,Newcastle,NCL,EGNT
+Berlin Brandenburg,BER,EDDB,Nice,NCE,LFMN
+Berlin Brandenburg,BER,EDDB,Paris Charles de Gaulle,CDG,LFPG
+Berlin Brandenburg,BER,EDDB,Pisa (Tuscany),PSA,LIRP
+Berlin Brandenburg,BER,EDDB,Porto,OPO,LPPR
+Berlin Brandenburg,BER,EDDB,Preveza,PVK,LGPZ
+Berlin Brandenburg,BER,EDDB,Pristina,PRN,BKPR
+Berlin Brandenburg,BER,EDDB,Pula,PUY,LDPL
+Berlin Brandenburg,BER,EDDB,Rhodes,RHO,LGRP
+Berlin Brandenburg,BER,EDDB,Rome Fiumicino,FCO,LIRF
+Berlin Brandenburg,BER,EDDB,Rovaniemi,RVN,EFRO
+Berlin Brandenburg,BER,EDDB,Santa Cruz de la Palma,SPC,GCLA
+Berlin Brandenburg,BER,EDDB,Sardinia Olbia,OLB,LIEO
+Berlin Brandenburg,BER,EDDB,Seville,SVQ,LEZL
+Berlin Brandenburg,BER,EDDB,Sharm El Sheikh,SSH,HESH
+Berlin Brandenburg,BER,EDDB,Sicily Catania,CTA,LICC
+Berlin Brandenburg,BER,EDDB,Split,SPU,LDSP
+Berlin Brandenburg,BER,EDDB,Tenerife South,TFS,GCTS
+Berlin Brandenburg,BER,EDDB,Thessaloniki,SKG,LGTS
+Berlin Brandenburg,BER,EDDB,Tivat,TIV,LYTV
+Berlin Brandenburg,BER,EDDB,Tromsø,TOS,ENTC
+Berlin Brandenburg,BER,EDDB,Valencia,VLC,LEVC
+Berlin Brandenburg,BER,EDDB,Venice Marco Polo,VCE,LIPZ
+Berlin Brandenburg,BER,EDDB,Zurich,ZRH,LSZH
+Dusseldorf,DUS,EDDL,London Gatwick,LGW,EGKK
+Dusseldorf,DUS,EDDL,Milan Malpensa,MXP,LIMC
+Frankfurt International,FRA,EDDF,Milan Linate,LIN,LIML
+Frankfurt International,FRA,EDDF,Rome Fiumicino,FCO,LIRF
+Friedrichshafen,FDH,EDNY,London Gatwick,LGW,EGKK
+Hamburg,HAM,EDDH,Basel,BSL,LFSB
+Hamburg,HAM,EDDH,Geneva,GVA,LSGG
+Hamburg,HAM,EDDH,London Gatwick,LGW,EGKK
+Hamburg,HAM,EDDH,Manchester,MAN,EGCC
+Hamburg,HAM,EDDH,Marrakech,RAK,GMMX
+Hamburg,HAM,EDDH,Milan Malpensa,MXP,LIMC
+Hamburg,HAM,EDDH,Prague,PRG,LKPR
+Hamburg,HAM,EDDH,Rome Fiumicino,FCO,LIRF
+Hamburg,HAM,EDDH,Seville,SVQ,LEZL
+Munich,MUC,EDDM,Bristol,BRS,EGGD
+Munich,MUC,EDDM,Edinburgh,EDI,EGPH
+Munich,MUC,EDDM,London Gatwick,LGW,EGKK
+Munich,MUC,EDDM,London Luton,LTN,EGGW
+Munich,MUC,EDDM,London Southend,SEN,EGMC
+Munich,MUC,EDDM,Manchester,MAN,EGCC
+Munich,MUC,EDDM,Milan Malpensa,MXP,LIMC
+Munich,MUC,EDDM,Naples,NAP,LIRN
+Munich,MUC,EDDM,Rome Fiumicino,FCO,LIRF
+Nuremberg,NUE,EDDN,London Gatwick,LGW,EGKK
+Nuremberg,NUE,EDDN,London Luton,LTN,EGGW
+Nuremberg,NUE,EDDN,Manchester,MAN,EGCC
+Nuremberg,NUE,EDDN,Milan Malpensa,MXP,LIMC
+Athens,ATH,LGAV,Alicante,ALC,LEAL
+Athens,ATH,LGAV,Basel,BSL,LFSB
+Athens,ATH,LGAV,Bordeaux,BOD,LFBD
+Athens,ATH,LGAV,Bristol,BRS,EGGD
+Athens,ATH,LGAV,Edinburgh,EDI,EGPH
+Athens,ATH,LGAV,Geneva,GVA,LSGG
+Athens,ATH,LGAV,London Gatwick,LGW,EGKK
+Athens,ATH,LGAV,Lyon,LYS,LFLL
+Athens,ATH,LGAV,Majorca Palma,PMI,LEPA
+Athens,ATH,LGAV,Malaga,AGP,LEMG
+Athens,ATH,LGAV,Manchester,MAN,EGCC
+Athens,ATH,LGAV,Milan Malpensa,MXP,LIMC
+Athens,ATH,LGAV,Naples,NAP,LIRN
+Athens,ATH,LGAV,Nice,NCE,LFMN
+Athens,ATH,LGAV,Paris Orly,ORY,LFPO
+Corfu,CFU,LGKR,Amsterdam,AMS,EHAM
+Corfu,CFU,LGKR,Basel,BSL,LFSB
+Corfu,CFU,LGKR,Belfast Intl,BFS,EGAA
+Corfu,CFU,LGKR,Berlin Brandenburg,BER,EDDB
+Corfu,CFU,LGKR,Birmingham,BHX,EGBB
+Corfu,CFU,LGKR,Bordeaux,BOD,LFBD
+Corfu,CFU,LGKR,Bristol,BRS,EGGD
+Corfu,CFU,LGKR,Edinburgh,EDI,EGPH
+Corfu,CFU,LGKR,Geneva,GVA,LSGG
+Corfu,CFU,LGKR,Liverpool,LPL,EGGP
+Corfu,CFU,LGKR,London Gatwick,LGW,EGKK
+Corfu,CFU,LGKR,London Luton,LTN,EGGW
+Corfu,CFU,LGKR,Lyon,LYS,LFLL
+Corfu,CFU,LGKR,Manchester,MAN,EGCC
+Corfu,CFU,LGKR,Milan Malpensa,MXP,LIMC
+Corfu,CFU,LGKR,Nantes,NTE,LFRS
+Corfu,CFU,LGKR,Naples,NAP,LIRN
+Corfu,CFU,LGKR,Newcastle,NCL,EGNT
+Corfu,CFU,LGKR,Paris Charles de Gaulle,CDG,LFPG
+Crete Chania,CHQ,LGSA,Amsterdam,AMS,EHAM
+Crete Chania,CHQ,LGSA,Basel,BSL,LFSB
+Crete Chania,CHQ,LGSA,Berlin Brandenburg,BER,EDDB
+Crete Chania,CHQ,LGSA,Bristol,BRS,EGGD
+Crete Chania,CHQ,LGSA,Geneva,GVA,LSGG
+Crete Chania,CHQ,LGSA,Glasgow,GLA,EGPF
+Crete Chania,CHQ,LGSA,London Gatwick,LGW,EGKK
+Crete Chania,CHQ,LGSA,London Luton,LTN,EGGW
+Crete Chania,CHQ,LGSA,Lyon,LYS,LFLL
+Crete Chania,CHQ,LGSA,Manchester,MAN,EGCC
+Crete Chania,CHQ,LGSA,Milan Malpensa,MXP,LIMC
+Crete Chania,CHQ,LGSA,Nantes,NTE,LFRS
+Crete Chania,CHQ,LGSA,Nice,NCE,LFMN
+Crete Heraklion,HER,LGIR,Basel,BSL,LFSB
+Crete Heraklion,HER,LGIR,Berlin Brandenburg,BER,EDDB
+Crete Heraklion,HER,LGIR,Birmingham,BHX,EGBB
+Crete Heraklion,HER,LGIR,Bordeaux,BOD,LFBD
+Crete Heraklion,HER,LGIR,Bristol,BRS,EGGD
+Crete Heraklion,HER,LGIR,Edinburgh,EDI,EGPH
+Crete Heraklion,HER,LGIR,Geneva,GVA,LSGG
+Crete Heraklion,HER,LGIR,Liverpool,LPL,EGGP
+Crete Heraklion,HER,LGIR,London Gatwick,LGW,EGKK
+Crete Heraklion,HER,LGIR,London Luton,LTN,EGGW
+Crete Heraklion,HER,LGIR,Lyon,LYS,LFLL
+Crete Heraklion,HER,LGIR,Manchester,MAN,EGCC
+Crete Heraklion,HER,LGIR,Milan Malpensa,MXP,LIMC
+Crete Heraklion,HER,LGIR,Nantes,NTE,LFRS
+Crete Heraklion,HER,LGIR,Naples,NAP,LIRN
+Crete Heraklion,HER,LGIR,Paris Charles de Gaulle,CDG,LFPG
+Kalamata,KLX,LGKL,London Gatwick,LGW,EGKK
+Kalamata,KLX,LGKL,Manchester,MAN,EGCC
+Kefalonia,EFL,LGKF,London Gatwick,LGW,EGKK
+Kefalonia,EFL,LGKF,Manchester,MAN,EGCC
+Kefalonia,EFL,LGKF,Milan Malpensa,MXP,LIMC
+Kefalonia,EFL,LGKF,Naples,NAP,LIRN
+Kos,KGS,LGKO,Basel,BSL,LFSB
+Kos,KGS,LGKO,Birmingham,BHX,EGBB
+Kos,KGS,LGKO,Bristol,BRS,EGGD
+Kos,KGS,LGKO,Glasgow,GLA,EGPF
+Kos,KGS,LGKO,Liverpool,LPL,EGGP
+Kos,KGS,LGKO,London Gatwick,LGW,EGKK
+Kos,KGS,LGKO,Manchester,MAN,EGCC
+Kos,KGS,LGKO,Milan Malpensa,MXP,LIMC
+Kos,KGS,LGKO,Naples,NAP,LIRN
+Mykonos,JMK,LGMK,Geneva,GVA,LSGG
+Mykonos,JMK,LGMK,London Gatwick,LGW,EGKK
+Mykonos,JMK,LGMK,Manchester,MAN,EGCC
+Mykonos,JMK,LGMK,Milan Malpensa,MXP,LIMC
+Mykonos,JMK,LGMK,Naples,NAP,LIRN
+Mykonos,JMK,LGMK,Nice,NCE,LFMN
+Preveza,PVK,LGPZ,Berlin Brandenburg,BER,EDDB
+Preveza,PVK,LGPZ,Bristol,BRS,EGGD
+Preveza,PVK,LGPZ,London Gatwick,LGW,EGKK
+Preveza,PVK,LGPZ,Manchester,MAN,EGCC
+Preveza,PVK,LGPZ,Milan Malpensa,MXP,LIMC
+Preveza,PVK,LGPZ,Naples,NAP,LIRN
+Rhodes,RHO,LGRP,Amsterdam,AMS,EHAM
+Rhodes,RHO,LGRP,Basel,BSL,LFSB
+Rhodes,RHO,LGRP,Belfast Intl,BFS,EGAA
+Rhodes,RHO,LGRP,Berlin Brandenburg,BER,EDDB
+Rhodes,RHO,LGRP,Birmingham,BHX,EGBB
+Rhodes,RHO,LGRP,Bristol,BRS,EGGD
+Rhodes,RHO,LGRP,Edinburgh,EDI,EGPH
+Rhodes,RHO,LGRP,Geneva,GVA,LSGG
+Rhodes,RHO,LGRP,London Gatwick,LGW,EGKK
+Rhodes,RHO,LGRP,London Luton,LTN,EGGW
+Rhodes,RHO,LGRP,Manchester,MAN,EGCC
+Rhodes,RHO,LGRP,Milan Malpensa,MXP,LIMC
+Rhodes,RHO,LGRP,Nantes,NTE,LFRS
+Rhodes,RHO,LGRP,Naples,NAP,LIRN
+Rhodes,RHO,LGRP,Newcastle,NCL,EGNT
+Rhodes,RHO,LGRP,Paris Orly,ORY,LFPO
+Santorini,JTR,LGSR,Bristol,BRS,EGGD
+Santorini,JTR,LGSR,Geneva,GVA,LSGG
+Santorini,JTR,LGSR,London Gatwick,LGW,EGKK
+Santorini,JTR,LGSR,Manchester,MAN,EGCC
+Santorini,JTR,LGSR,Milan Malpensa,MXP,LIMC
+Santorini,JTR,LGSR,Naples,NAP,LIRN
+Santorini,JTR,LGSR,Nice,NCE,LFMN
+Skiathos,JSI,LGSK,Basel,BSL,LFSB
+Skiathos,JSI,LGSK,Bristol,BRS,EGGD
+Skiathos,JSI,LGSK,London Gatwick,LGW,EGKK
+Skiathos,JSI,LGSK,Manchester,MAN,EGCC
+Skiathos,JSI,LGSK,Milan Malpensa,MXP,LIMC
+Skiathos,JSI,LGSK,Naples,NAP,LIRN
+Thessaloniki,SKG,LGTS,Amsterdam,AMS,EHAM
+Thessaloniki,SKG,LGTS,Basel,BSL,LFSB
+Thessaloniki,SKG,LGTS,Berlin Brandenburg,BER,EDDB
+Thessaloniki,SKG,LGTS,Bristol,BRS,EGGD
+Thessaloniki,SKG,LGTS,London Gatwick,LGW,EGKK
+Thessaloniki,SKG,LGTS,Manchester,MAN,EGCC
+Thessaloniki,SKG,LGTS,Milan Malpensa,MXP,LIMC
+Zante Zakynthos,ZTH,LGZA,Bristol,BRS,EGGD
+Zante Zakynthos,ZTH,LGZA,London Gatwick,LGW,EGKK
+Zante Zakynthos,ZTH,LGZA,London Luton,LTN,EGGW
+Zante Zakynthos,ZTH,LGZA,Manchester,MAN,EGCC
+Zante Zakynthos,ZTH,LGZA,Milan Malpensa,MXP,LIMC
+Zante Zakynthos,ZTH,LGZA,Naples,NAP,LIRN
+Budapest,BUD,LHBP,Basel,BSL,LFSB
+Budapest,BUD,LHBP,Belfast Intl,BFS,EGAA
+Budapest,BUD,LHBP,Bordeaux,BOD,LFBD
+Budapest,BUD,LHBP,Bristol,BRS,EGGD
+Budapest,BUD,LHBP,Geneva,GVA,LSGG
+Budapest,BUD,LHBP,Liverpool,LPL,EGGP
+Budapest,BUD,LHBP,London Gatwick,LGW,EGKK
+Budapest,BUD,LHBP,London Southend,SEN,EGMC
+Budapest,BUD,LHBP,Lyon,LYS,LFLL
+Budapest,BUD,LHBP,Nantes,NTE,LFRS
+Budapest,BUD,LHBP,Paris Charles de Gaulle,CDG,LFPG
+Akureyri,AEY,BIAR,London Gatwick,LGW,EGKK
+Akureyri,AEY,BIAR,Manchester,MAN,EGCC
+Reykjavik Keflavik,KEF,BIKF,Basel,BSL,LFSB
+Reykjavik Keflavik,KEF,BIKF,Birmingham,BHX,EGBB
+Reykjavik Keflavik,KEF,BIKF,Bristol,BRS,EGGD
+Reykjavik Keflavik,KEF,BIKF,Edinburgh,EDI,EGPH
+Reykjavik Keflavik,KEF,BIKF,Liverpool,LPL,EGGP
+Reykjavik Keflavik,KEF,BIKF,London Gatwick,LGW,EGKK
+Reykjavik Keflavik,KEF,BIKF,London Luton,LTN,EGGW
+Reykjavik Keflavik,KEF,BIKF,Lyon,LYS,LFLL
+Reykjavik Keflavik,KEF,BIKF,Manchester,MAN,EGCC
+Reykjavik Keflavik,KEF,BIKF,Milan Malpensa,MXP,LIMC
+Reykjavik Keflavik,KEF,BIKF,Newcastle,NCL,EGNT
+Reykjavik Keflavik,KEF,BIKF,Paris Charles de Gaulle,CDG,LFPG
+Bari,BRI,LIBD,Basel,BSL,LFSB
+Bari,BRI,LIBD,Bristol,BRS,EGGD
+Bari,BRI,LIBD,Geneva,GVA,LSGG
+Bari,BRI,LIBD,London Gatwick,LGW,EGKK
+Bari,BRI,LIBD,Lyon,LYS,LFLL
+Bari,BRI,LIBD,Manchester,MAN,EGCC
+Bari,BRI,LIBD,Milan Malpensa,MXP,LIMC
+Bari,BRI,LIBD,Nice,NCE,LFMN
+Bari,BRI,LIBD,Paris Orly,ORY,LFPO
+Brindisi,BDS,LIBR,Basel,BSL,LFSB
+Brindisi,BDS,LIBR,Geneva,GVA,LSGG
+Brindisi,BDS,LIBR,London Gatwick,LGW,EGKK
+Brindisi,BDS,LIBR,Lyon,LYS,LFLL
+Brindisi,BDS,LIBR,Milan Linate,LIN,LIML
+Brindisi,BDS,LIBR,Milan Malpensa,MXP,LIMC
+"Costiera Amalfitana Salerno, Naples",QSR,LIRI,Milan Malpensa,MXP,LIMC
+Lamezia,SUF,LICA,Basel,BSL,LFSB
+Lamezia,SUF,LICA,Geneva,GVA,LSGG
+Lamezia,SUF,LICA,Milan Malpensa,MXP,LIMC
+Lamezia,SUF,LICA,Paris Orly,ORY,LFPO
+Milan Linate,LIN,LIML,Amsterdam,AMS,EHAM
+Milan Linate,LIN,LIML,Barcelona,BCN,LEBL
+Milan Linate,LIN,LIML,Berlin Brandenburg,BER,EDDB
+Milan Linate,LIN,LIML,Birmingham,BHX,EGBB
+Milan Linate,LIN,LIML,Brindisi,BDS,LIBR
+Milan Linate,LIN,LIML,Brussels Intl,BRU,EBBR
+Milan Linate,LIN,LIML,Copenhagen,CPH,EKCH
+Milan Linate,LIN,LIML,Edinburgh,EDI,EGPH
+Milan Linate,LIN,LIML,"Figari, Corsica",FSC,LFKF
+Milan Linate,LIN,LIML,Frankfurt International,FRA,EDDF
+Milan Linate,LIN,LIML,Geneva,GVA,LSGG
+Milan Linate,LIN,LIML,Gran Canaria,LPA,GCLP
+Milan Linate,LIN,LIML,Ibiza,IBZ,LEIB
+Milan Linate,LIN,LIML,Lisbon,LIS,LPPT
+Milan Linate,LIN,LIML,London Gatwick,LGW,EGKK
+Milan Linate,LIN,LIML,Luxembourg,LUX,ELLX
+Milan Linate,LIN,LIML,Majorca Palma,PMI,LEPA
+Milan Linate,LIN,LIML,Manchester,MAN,EGCC
+Milan Linate,LIN,LIML,Paris Charles de Gaulle,CDG,LFPG
+Milan Linate,LIN,LIML,Paris Orly,ORY,LFPO
+Milan Linate,LIN,LIML,Porto,OPO,LPPR
+Milan Linate,LIN,LIML,Split,SPU,LDSP
+Milan Linate,LIN,LIML,Tenerife South,TFS,GCTS
+Milan Linate,LIN,LIML,Vienna,VIE,LOWW
+Milan Malpensa,MXP,LIMC,Amsterdam,AMS,EHAM
+Milan Malpensa,MXP,LIMC,Athens,ATH,LGAV
+Milan Malpensa,MXP,LIMC,Barcelona,BCN,LEBL
+Milan Malpensa,MXP,LIMC,Bari,BRI,LIBD
+Milan Malpensa,MXP,LIMC,Berlin Brandenburg,BER,EDDB
+Milan Malpensa,MXP,LIMC,Biarritz,BIQ,LFBZ
+Milan Malpensa,MXP,LIMC,Bilbao,BIO,LEBB
+Milan Malpensa,MXP,LIMC,Bordeaux,BOD,LFBD
+Milan Malpensa,MXP,LIMC,Brindisi,BDS,LIBR
+Milan Malpensa,MXP,LIMC,Bristol,BRS,EGGD
+Milan Malpensa,MXP,LIMC,Cairo Sphinx,SPX,HESX
+Milan Malpensa,MXP,LIMC,Corfu,CFU,LGKR
+Milan Malpensa,MXP,LIMC,"Costiera Amalfitana Salerno, Naples",QSR,LIRI
+Milan Malpensa,MXP,LIMC,Crete Chania,CHQ,LGSA
+Milan Malpensa,MXP,LIMC,Crete Heraklion,HER,LGIR
+Milan Malpensa,MXP,LIMC,Dusseldorf,DUS,EDDL
+Milan Malpensa,MXP,LIMC,Edinburgh,EDI,EGPH
+Milan Malpensa,MXP,LIMC,Evenes-Lofoten,EVE,ENEV
+Milan Malpensa,MXP,LIMC,Fuerteventura,FUE,GCFV
+Milan Malpensa,MXP,LIMC,Gran Canaria,LPA,GCLP
+Milan Malpensa,MXP,LIMC,Hamburg,HAM,EDDH
+Milan Malpensa,MXP,LIMC,Hurghada,HRG,HEGN
+Milan Malpensa,MXP,LIMC,Ibiza,IBZ,LEIB
+Milan Malpensa,MXP,LIMC,Kefalonia,EFL,LGKF
+Milan Malpensa,MXP,LIMC,Kittila,KTT,EFKT
+Milan Malpensa,MXP,LIMC,Kos,KGS,LGKO
+Milan Malpensa,MXP,LIMC,La Coruña,LCG,LECO
+Milan Malpensa,MXP,LIMC,Lamezia,SUF,LICA
+Milan Malpensa,MXP,LIMC,Lanzarote,ACE,GCRR
+Milan Malpensa,MXP,LIMC,Lisbon,LIS,LPPT
+Milan Malpensa,MXP,LIMC,Liverpool,LPL,EGGP
+Milan Malpensa,MXP,LIMC,London Gatwick,LGW,EGKK
+Milan Malpensa,MXP,LIMC,London Luton,LTN,EGGW
+Milan Malpensa,MXP,LIMC,Luxor,LXR,HELX
+Milan Malpensa,MXP,LIMC,Majorca Palma,PMI,LEPA
+Milan Malpensa,MXP,LIMC,Malaga,AGP,LEMG
+Milan Malpensa,MXP,LIMC,Malta,MLA,LMML
+Milan Malpensa,MXP,LIMC,Manchester,MAN,EGCC
+Milan Malpensa,MXP,LIMC,Marrakech,RAK,GMMX
+Milan Malpensa,MXP,LIMC,Marsa Alam,RMF,HEMA
+Milan Malpensa,MXP,LIMC,Menorca Mahon,MAH,LEMH
+Milan Malpensa,MXP,LIMC,Munich,MUC,EDDM
+Milan Malpensa,MXP,LIMC,Mykonos,JMK,LGMK
+Milan Malpensa,MXP,LIMC,Nantes,NTE,LFRS
+Milan Malpensa,MXP,LIMC,Naples,NAP,LIRN
+Milan Malpensa,MXP,LIMC,Nuremberg,NUE,EDDN
+Milan Malpensa,MXP,LIMC,Paris Charles de Gaulle,CDG,LFPG
+Milan Malpensa,MXP,LIMC,Paris Orly,ORY,LFPO
+Milan Malpensa,MXP,LIMC,Porto,OPO,LPPR
+Milan Malpensa,MXP,LIMC,Prague,PRG,LKPR
+Milan Malpensa,MXP,LIMC,Preveza,PVK,LGPZ
+Milan Malpensa,MXP,LIMC,Rabat Sale Airport,RBA,GMME
+Milan Malpensa,MXP,LIMC,Reykjavik Keflavik,KEF,BIKF
+Milan Malpensa,MXP,LIMC,Rhodes,RHO,LGRP
+Milan Malpensa,MXP,LIMC,Rovaniemi,RVN,EFRO
+Milan Malpensa,MXP,LIMC,Sal - Cape Verde,SID,GVAC
+Milan Malpensa,MXP,LIMC,Santorini,JTR,LGSR
+Milan Malpensa,MXP,LIMC,Sardinia Cagliari,CAG,LIEE
+Milan Malpensa,MXP,LIMC,Sardinia Olbia,OLB,LIEO
+Milan Malpensa,MXP,LIMC,Seville,SVQ,LEZL
+Milan Malpensa,MXP,LIMC,Sharm El Sheikh,SSH,HESH
+Milan Malpensa,MXP,LIMC,Sicily Catania,CTA,LICC
+Milan Malpensa,MXP,LIMC,Sicily Lampedusa,LMP,LICD
+Milan Malpensa,MXP,LIMC,Sicily Palermo,PMO,LICJ
+Milan Malpensa,MXP,LIMC,Skiathos,JSI,LGSK
+Milan Malpensa,MXP,LIMC,Strasbourg,SXB,LFST
+Milan Malpensa,MXP,LIMC,Tbilisi,TBS,UGTB
+Milan Malpensa,MXP,LIMC,Tenerife South,TFS,GCTS
+Milan Malpensa,MXP,LIMC,Thessaloniki,SKG,LGTS
+Milan Malpensa,MXP,LIMC,Toulouse,TLS,LFBO
+Milan Malpensa,MXP,LIMC,Tromsø,TOS,ENTC
+Milan Malpensa,MXP,LIMC,Zante Zakynthos,ZTH,LGZA
+Naples,NAP,LIRN,Alicante,ALC,LEAL
+Naples,NAP,LIRN,Amsterdam,AMS,EHAM
+Naples,NAP,LIRN,Athens,ATH,LGAV
+Naples,NAP,LIRN,Barcelona,BCN,LEBL
+Naples,NAP,LIRN,Basel,BSL,LFSB
+Naples,NAP,LIRN,Berlin Brandenburg,BER,EDDB
+Naples,NAP,LIRN,Bordeaux,BOD,LFBD
+Naples,NAP,LIRN,Bristol,BRS,EGGD
+Naples,NAP,LIRN,Cairo Sphinx,SPX,HESX
+Naples,NAP,LIRN,Corfu,CFU,LGKR
+Naples,NAP,LIRN,Crete Heraklion,HER,LGIR
+Naples,NAP,LIRN,Dubrovnik,DBV,LDDU
+Naples,NAP,LIRN,Edinburgh,EDI,EGPH
+Naples,NAP,LIRN,Fuerteventura,FUE,GCFV
+Naples,NAP,LIRN,Geneva,GVA,LSGG
+Naples,NAP,LIRN,Gran Canaria,LPA,GCLP
+Naples,NAP,LIRN,Hurghada,HRG,HEGN
+Naples,NAP,LIRN,Ibiza,IBZ,LEIB
+Naples,NAP,LIRN,Kefalonia,EFL,LGKF
+Naples,NAP,LIRN,Kos,KGS,LGKO
+Naples,NAP,LIRN,Liverpool,LPL,EGGP
+Naples,NAP,LIRN,London Gatwick,LGW,EGKK
+Naples,NAP,LIRN,London Luton,LTN,EGGW
+Naples,NAP,LIRN,Luxembourg,LUX,ELLX
+Naples,NAP,LIRN,Lyon,LYS,LFLL
+Naples,NAP,LIRN,Majorca Palma,PMI,LEPA
+Naples,NAP,LIRN,Malta,MLA,LMML
+Naples,NAP,LIRN,Manchester,MAN,EGCC
+Naples,NAP,LIRN,Marrakech,RAK,GMMX
+Naples,NAP,LIRN,Marsa Alam,RMF,HEMA
+Naples,NAP,LIRN,Menorca Mahon,MAH,LEMH
+Naples,NAP,LIRN,Milan Malpensa,MXP,LIMC
+Naples,NAP,LIRN,Munich,MUC,EDDM
+Naples,NAP,LIRN,Mykonos,JMK,LGMK
+Naples,NAP,LIRN,Nantes,NTE,LFRS
+Naples,NAP,LIRN,Nice,NCE,LFMN
+Naples,NAP,LIRN,Paris Orly,ORY,LFPO
+Naples,NAP,LIRN,Porto,OPO,LPPR
+Naples,NAP,LIRN,Prague,PRG,LKPR
+Naples,NAP,LIRN,Preveza,PVK,LGPZ
+Naples,NAP,LIRN,Rhodes,RHO,LGRP
+Naples,NAP,LIRN,Santorini,JTR,LGSR
+Naples,NAP,LIRN,Sardinia Cagliari,CAG,LIEE
+Naples,NAP,LIRN,Sardinia Olbia,OLB,LIEO
+Naples,NAP,LIRN,Sharm El Sheikh,SSH,HESH
+Naples,NAP,LIRN,Sicily Catania,CTA,LICC
+Naples,NAP,LIRN,Sicily Lampedusa,LMP,LICD
+Naples,NAP,LIRN,Sicily Palermo,PMO,LICJ
+Naples,NAP,LIRN,Skiathos,JSI,LGSK
+Naples,NAP,LIRN,Split,SPU,LDSP
+Naples,NAP,LIRN,Strasbourg,SXB,LFST
+Naples,NAP,LIRN,Zante Zakynthos,ZTH,LGZA
+Naples,NAP,LIRN,Zurich,ZRH,LSZH
+Pisa (Tuscany),PSA,LIRP,Berlin Brandenburg,BER,EDDB
+Pisa (Tuscany),PSA,LIRP,Bristol,BRS,EGGD
+Pisa (Tuscany),PSA,LIRP,Glasgow,GLA,EGPF
+Pisa (Tuscany),PSA,LIRP,London Gatwick,LGW,EGKK
+Pisa (Tuscany),PSA,LIRP,London Luton,LTN,EGGW
+Pisa (Tuscany),PSA,LIRP,London Southend,SEN,EGMC
+Pisa (Tuscany),PSA,LIRP,Manchester,MAN,EGCC
+Pisa (Tuscany),PSA,LIRP,Paris Orly,ORY,LFPO
+Rimini,RMI,LIPR,Basel,BSL,LFSB
+Rimini,RMI,LIPR,London Gatwick,LGW,EGKK
+Rome Fiumicino,FCO,LIRF,Basel,BSL,LFSB
+Rome Fiumicino,FCO,LIRF,Belfast Intl,BFS,EGAA
+Rome Fiumicino,FCO,LIRF,Berlin Brandenburg,BER,EDDB
+Rome Fiumicino,FCO,LIRF,Birmingham,BHX,EGBB
+Rome Fiumicino,FCO,LIRF,Bordeaux,BOD,LFBD
+Rome Fiumicino,FCO,LIRF,Bristol,BRS,EGGD
+Rome Fiumicino,FCO,LIRF,Brussels Intl,BRU,EBBR
+Rome Fiumicino,FCO,LIRF,Frankfurt International,FRA,EDDF
+Rome Fiumicino,FCO,LIRF,Geneva,GVA,LSGG
+Rome Fiumicino,FCO,LIRF,Glasgow,GLA,EGPF
+Rome Fiumicino,FCO,LIRF,Hamburg,HAM,EDDH
+Rome Fiumicino,FCO,LIRF,London Gatwick,LGW,EGKK
+Rome Fiumicino,FCO,LIRF,Lyon,LYS,LFLL
+Rome Fiumicino,FCO,LIRF,Manchester,MAN,EGCC
+Rome Fiumicino,FCO,LIRF,Munich,MUC,EDDM
+Rome Fiumicino,FCO,LIRF,Nantes,NTE,LFRS
+Rome Fiumicino,FCO,LIRF,Newcastle,NCL,EGNT
+Rome Fiumicino,FCO,LIRF,Nice,NCE,LFMN
+Rome Fiumicino,FCO,LIRF,Paris Orly,ORY,LFPO
+Rome Fiumicino,FCO,LIRF,Strasbourg,SXB,LFST
+Rome Fiumicino,FCO,LIRF,Zurich,ZRH,LSZH
+Sardinia Cagliari,CAG,LIEE,Basel,BSL,LFSB
+Sardinia Cagliari,CAG,LIEE,Bordeaux,BOD,LFBD
+Sardinia Cagliari,CAG,LIEE,Geneva,GVA,LSGG
+Sardinia Cagliari,CAG,LIEE,Lyon,LYS,LFLL
+Sardinia Cagliari,CAG,LIEE,Milan Malpensa,MXP,LIMC
+Sardinia Cagliari,CAG,LIEE,Naples,NAP,LIRN
+Sardinia Cagliari,CAG,LIEE,Nice,NCE,LFMN
+Sardinia Cagliari,CAG,LIEE,Paris Orly,ORY,LFPO
+Sardinia Olbia,OLB,LIEO,Amsterdam,AMS,EHAM
+Sardinia Olbia,OLB,LIEO,Basel,BSL,LFSB
+Sardinia Olbia,OLB,LIEO,Berlin Brandenburg,BER,EDDB
+Sardinia Olbia,OLB,LIEO,Bordeaux,BOD,LFBD
+Sardinia Olbia,OLB,LIEO,Bristol,BRS,EGGD
+Sardinia Olbia,OLB,LIEO,Edinburgh,EDI,EGPH
+Sardinia Olbia,OLB,LIEO,Geneva,GVA,LSGG
+Sardinia Olbia,OLB,LIEO,London Gatwick,LGW,EGKK
+Sardinia Olbia,OLB,LIEO,London Luton,LTN,EGGW
+Sardinia Olbia,OLB,LIEO,Lyon,LYS,LFLL
+Sardinia Olbia,OLB,LIEO,Milan Malpensa,MXP,LIMC
+Sardinia Olbia,OLB,LIEO,Nantes,NTE,LFRS
+Sardinia Olbia,OLB,LIEO,Naples,NAP,LIRN
+Sardinia Olbia,OLB,LIEO,Nice,NCE,LFMN
+Sardinia Olbia,OLB,LIEO,Paris Orly,ORY,LFPO
+Sardinia Olbia,OLB,LIEO,Zurich,ZRH,LSZH
+Sicily Catania,CTA,LICC,Basel,BSL,LFSB
+Sicily Catania,CTA,LICC,Berlin Brandenburg,BER,EDDB
+Sicily Catania,CTA,LICC,Bristol,BRS,EGGD
+Sicily Catania,CTA,LICC,Edinburgh,EDI,EGPH
+Sicily Catania,CTA,LICC,Geneva,GVA,LSGG
+Sicily Catania,CTA,LICC,London Gatwick,LGW,EGKK
+Sicily Catania,CTA,LICC,London Luton,LTN,EGGW
+Sicily Catania,CTA,LICC,Lyon,LYS,LFLL
+Sicily Catania,CTA,LICC,Manchester,MAN,EGCC
+Sicily Catania,CTA,LICC,Milan Malpensa,MXP,LIMC
+Sicily Catania,CTA,LICC,Nantes,NTE,LFRS
+Sicily Catania,CTA,LICC,Naples,NAP,LIRN
+Sicily Catania,CTA,LICC,Paris Orly,ORY,LFPO
+Sicily Lampedusa,LMP,LICD,Milan Malpensa,MXP,LIMC
+Sicily Lampedusa,LMP,LICD,Naples,NAP,LIRN
+Sicily Palermo,PMO,LICJ,Amsterdam,AMS,EHAM
+Sicily Palermo,PMO,LICJ,Basel,BSL,LFSB
+Sicily Palermo,PMO,LICJ,Bordeaux,BOD,LFBD
+Sicily Palermo,PMO,LICJ,Bristol,BRS,EGGD
+Sicily Palermo,PMO,LICJ,Geneva,GVA,LSGG
+Sicily Palermo,PMO,LICJ,Lisbon,LIS,LPPT
+Sicily Palermo,PMO,LICJ,London Gatwick,LGW,EGKK
+Sicily Palermo,PMO,LICJ,London Luton,LTN,EGGW
+Sicily Palermo,PMO,LICJ,Lyon,LYS,LFLL
+Sicily Palermo,PMO,LICJ,Majorca Palma,PMI,LEPA
+Sicily Palermo,PMO,LICJ,Milan Malpensa,MXP,LIMC
+Sicily Palermo,PMO,LICJ,Naples,NAP,LIRN
+Sicily Palermo,PMO,LICJ,Nice,NCE,LFMN
+Sicily Palermo,PMO,LICJ,Paris Orly,ORY,LFPO
+Sicily Palermo,PMO,LICJ,Porto,OPO,LPPR
+Turin,TRN,LIMF,Bristol,BRS,EGGD
+Turin,TRN,LIMF,London Gatwick,LGW,EGKK
+Turin,TRN,LIMF,London Luton,LTN,EGGW
+Turin,TRN,LIMF,Manchester,MAN,EGCC
+Venice Marco Polo,VCE,LIPZ,Amsterdam,AMS,EHAM
+Venice Marco Polo,VCE,LIPZ,Basel,BSL,LFSB
+Venice Marco Polo,VCE,LIPZ,Berlin Brandenburg,BER,EDDB
+Venice Marco Polo,VCE,LIPZ,Bristol,BRS,EGGD
+Venice Marco Polo,VCE,LIPZ,Edinburgh,EDI,EGPH
+Venice Marco Polo,VCE,LIPZ,Geneva,GVA,LSGG
+Venice Marco Polo,VCE,LIPZ,London Gatwick,LGW,EGKK
+Venice Marco Polo,VCE,LIPZ,Lyon,LYS,LFLL
+Venice Marco Polo,VCE,LIPZ,Manchester,MAN,EGCC
+Venice Marco Polo,VCE,LIPZ,Nice,NCE,LFMN
+Venice Marco Polo,VCE,LIPZ,Paris Charles de Gaulle,CDG,LFPG
+Venice Marco Polo,VCE,LIPZ,Paris Orly,ORY,LFPO
+Verona,VRN,LIPX,Bristol,BRS,EGGD
+Verona,VRN,LIPX,London Gatwick,LGW,EGKK
+Verona,VRN,LIPX,Manchester,MAN,EGCC
+Pristina,PRN,BKPR,Basel,BSL,LFSB
+Pristina,PRN,BKPR,Berlin Brandenburg,BER,EDDB
+Pristina,PRN,BKPR,Geneva,GVA,LSGG
+Pristina,PRN,BKPR,Lyon,LYS,LFLL
+Pristina,PRN,BKPR,Zurich,ZRH,LSZH
+Luxembourg,LUX,ELLX,Lisbon,LIS,LPPT
+Luxembourg,LUX,ELLX,Milan Linate,LIN,LIML
+Luxembourg,LUX,ELLX,Naples,NAP,LIRN
+Luxembourg,LUX,ELLX,Porto,OPO,LPPR
+Malta,MLA,LMML,Amsterdam,AMS,EHAM
+Malta,MLA,LMML,Basel,BSL,LFSB
+Malta,MLA,LMML,Birmingham,BHX,EGBB
+Malta,MLA,LMML,Bristol,BRS,EGGD
+Malta,MLA,LMML,Geneva,GVA,LSGG
+Malta,MLA,LMML,Glasgow,GLA,EGPF
+Malta,MLA,LMML,Liverpool,LPL,EGGP
+Malta,MLA,LMML,London Gatwick,LGW,EGKK
+Malta,MLA,LMML,London Southend,SEN,EGMC
+Malta,MLA,LMML,Manchester,MAN,EGCC
+Malta,MLA,LMML,Milan Malpensa,MXP,LIMC
+Malta,MLA,LMML,Naples,NAP,LIRN
+Malta,MLA,LMML,Newcastle,NCL,EGNT
+Malta,MLA,LMML,Nice,NCE,LFMN
+Tivat,TIV,LYTV,Berlin Brandenburg,BER,EDDB
+Tivat,TIV,LYTV,Bristol,BRS,EGGD
+Tivat,TIV,LYTV,Geneva,GVA,LSGG
+Tivat,TIV,LYTV,London Gatwick,LGW,EGKK
+Tivat,TIV,LYTV,London Luton,LTN,EGGW
+Tivat,TIV,LYTV,Manchester,MAN,EGCC
+Agadir,AGA,GMAD,Basel,BSL,LFSB
+Agadir,AGA,GMAD,Berlin Brandenburg,BER,EDDB
+Agadir,AGA,GMAD,Birmingham,BHX,EGBB
+Agadir,AGA,GMAD,Bordeaux,BOD,LFBD
+Agadir,AGA,GMAD,Bristol,BRS,EGGD
+Agadir,AGA,GMAD,Edinburgh,EDI,EGPH
+Agadir,AGA,GMAD,Geneva,GVA,LSGG
+Agadir,AGA,GMAD,Glasgow,GLA,EGPF
+Agadir,AGA,GMAD,London Gatwick,LGW,EGKK
+Agadir,AGA,GMAD,London Luton,LTN,EGGW
+Agadir,AGA,GMAD,Lyon,LYS,LFLL
+Agadir,AGA,GMAD,Manchester,MAN,EGCC
+Agadir,AGA,GMAD,Nice,NCE,LFMN
+Agadir,AGA,GMAD,Paris Charles de Gaulle,CDG,LFPG
+Essaouira,ESU,GMMI,Bordeaux,BOD,LFBD
+Essaouira,ESU,GMMI,Lyon,LYS,LFLL
+Essaouira,ESU,GMMI,Nantes,NTE,LFRS
+Marrakech,RAK,GMMX,Amsterdam,AMS,EHAM
+Marrakech,RAK,GMMX,Basel,BSL,LFSB
+Marrakech,RAK,GMMX,Belfast Intl,BFS,EGAA
+Marrakech,RAK,GMMX,Birmingham,BHX,EGBB
+Marrakech,RAK,GMMX,Bordeaux,BOD,LFBD
+Marrakech,RAK,GMMX,Bristol,BRS,EGGD
+Marrakech,RAK,GMMX,Edinburgh,EDI,EGPH
+Marrakech,RAK,GMMX,Geneva,GVA,LSGG
+Marrakech,RAK,GMMX,Glasgow,GLA,EGPF
+Marrakech,RAK,GMMX,Hamburg,HAM,EDDH
+Marrakech,RAK,GMMX,Lille,LIL,LFQQ
+Marrakech,RAK,GMMX,Lisbon,LIS,LPPT
+Marrakech,RAK,GMMX,Liverpool,LPL,EGGP
+Marrakech,RAK,GMMX,London Gatwick,LGW,EGKK
+Marrakech,RAK,GMMX,London Luton,LTN,EGGW
+Marrakech,RAK,GMMX,London Southend,SEN,EGMC
+Marrakech,RAK,GMMX,Lyon,LYS,LFLL
+Marrakech,RAK,GMMX,Malaga,AGP,LEMG
+Marrakech,RAK,GMMX,Manchester,MAN,EGCC
+Marrakech,RAK,GMMX,Milan Malpensa,MXP,LIMC
+Marrakech,RAK,GMMX,Nantes,NTE,LFRS
+Marrakech,RAK,GMMX,Naples,NAP,LIRN
+Marrakech,RAK,GMMX,Newcastle,NCL,EGNT
+Marrakech,RAK,GMMX,Nice,NCE,LFMN
+Marrakech,RAK,GMMX,Paris Charles de Gaulle,CDG,LFPG
+Marrakech,RAK,GMMX,Prague,PRG,LKPR
+Marrakech,RAK,GMMX,Strasbourg,SXB,LFST
+Marrakech,RAK,GMMX,Toulouse,TLS,LFBO
+Marrakech,RAK,GMMX,Zurich,ZRH,LSZH
+Rabat Sale Airport,RBA,GMME,Bordeaux,BOD,LFBD
+Rabat Sale Airport,RBA,GMME,Geneva,GVA,LSGG
+Rabat Sale Airport,RBA,GMME,London Luton,LTN,EGGW
+Rabat Sale Airport,RBA,GMME,Lyon,LYS,LFLL
+Rabat Sale Airport,RBA,GMME,Milan Malpensa,MXP,LIMC
+Rabat Sale Airport,RBA,GMME,Nantes,NTE,LFRS
+Rabat Sale Airport,RBA,GMME,Nice,NCE,LFMN
+Tangier,TNG,GMTT,Basel,BSL,LFSB
+Tangier,TNG,GMTT,Geneva,GVA,LSGG
+Tangier,TNG,GMTT,Lyon,LYS,LFLL
+Amsterdam,AMS,EHAM,Alicante,ALC,LEAL
+Amsterdam,AMS,EHAM,Belfast Intl,BFS,EGAA
+Amsterdam,AMS,EHAM,Birmingham,BHX,EGBB
+Amsterdam,AMS,EHAM,Bristol,BRS,EGGD
+Amsterdam,AMS,EHAM,Copenhagen,CPH,EKCH
+Amsterdam,AMS,EHAM,Corfu,CFU,LGKR
+Amsterdam,AMS,EHAM,Crete Chania,CHQ,LGSA
+Amsterdam,AMS,EHAM,Cyprus Larnaca,LCA,LCLK
+Amsterdam,AMS,EHAM,Edinburgh,EDI,EGPH
+Amsterdam,AMS,EHAM,Faro,FAO,LPFR
+Amsterdam,AMS,EHAM,Fuerteventura,FUE,GCFV
+Amsterdam,AMS,EHAM,Geneva,GVA,LSGG
+Amsterdam,AMS,EHAM,Glasgow,GLA,EGPF
+Amsterdam,AMS,EHAM,Hurghada,HRG,HEGN
+Amsterdam,AMS,EHAM,Ibiza,IBZ,LEIB
+Amsterdam,AMS,EHAM,Lanzarote,ACE,GCRR
+Amsterdam,AMS,EHAM,Liverpool,LPL,EGGP
+Amsterdam,AMS,EHAM,London Gatwick,LGW,EGKK
+Amsterdam,AMS,EHAM,London Luton,LTN,EGGW
+Amsterdam,AMS,EHAM,London Southend,SEN,EGMC
+Amsterdam,AMS,EHAM,London Stansted,STN,EGSS
+Amsterdam,AMS,EHAM,Madeira Funchal,FNC,LPMA
+Amsterdam,AMS,EHAM,Majorca Palma,PMI,LEPA
+Amsterdam,AMS,EHAM,Malaga,AGP,LEMG
+Amsterdam,AMS,EHAM,Malta,MLA,LMML
+Amsterdam,AMS,EHAM,Manchester,MAN,EGCC
+Amsterdam,AMS,EHAM,Marrakech,RAK,GMMX
+Amsterdam,AMS,EHAM,Milan Linate,LIN,LIML
+Amsterdam,AMS,EHAM,Milan Malpensa,MXP,LIMC
+Amsterdam,AMS,EHAM,Naples,NAP,LIRN
+Amsterdam,AMS,EHAM,Newcastle,NCL,EGNT
+Amsterdam,AMS,EHAM,Nice,NCE,LFMN
+Amsterdam,AMS,EHAM,Prague,PRG,LKPR
+Amsterdam,AMS,EHAM,Pula,PUY,LDPL
+Amsterdam,AMS,EHAM,Rhodes,RHO,LGRP
+Amsterdam,AMS,EHAM,Sal - Cape Verde,SID,GVAC
+Amsterdam,AMS,EHAM,Sardinia Olbia,OLB,LIEO
+Amsterdam,AMS,EHAM,Seville,SVQ,LEZL
+Amsterdam,AMS,EHAM,Sharm El Sheikh,SSH,HESH
+Amsterdam,AMS,EHAM,Sicily Palermo,PMO,LICJ
+Amsterdam,AMS,EHAM,Split,SPU,LDSP
+Amsterdam,AMS,EHAM,Tenerife South,TFS,GCTS
+Amsterdam,AMS,EHAM,Thessaloniki,SKG,LGTS
+Amsterdam,AMS,EHAM,Tromsø,TOS,ENTC
+Amsterdam,AMS,EHAM,Valencia,VLC,LEVC
+Amsterdam,AMS,EHAM,Venice Marco Polo,VCE,LIPZ
+Skopje,SKP,LWSK,Geneva,GVA,LSGG
+Skopje,SKP,LWSK,Paris Orly,ORY,LFPO
+Evenes-Lofoten,EVE,ENEV,Milan Malpensa,MXP,LIMC
+Oslo,OSL,ENGM,Manchester,MAN,EGCC
+Tromsø,TOS,ENTC,Amsterdam,AMS,EHAM
+Tromsø,TOS,ENTC,Berlin Brandenburg,BER,EDDB
+Tromsø,TOS,ENTC,Bristol,BRS,EGGD
+Tromsø,TOS,ENTC,Edinburgh,EDI,EGPH
+Tromsø,TOS,ENTC,London Gatwick,LGW,EGKK
+Tromsø,TOS,ENTC,Manchester,MAN,EGCC
+Tromsø,TOS,ENTC,Milan Malpensa,MXP,LIMC
+Tromsø,TOS,ENTC,Paris Charles de Gaulle,CDG,LFPG
+Krakow,KRK,EPKK,Basel,BSL,LFSB
+Krakow,KRK,EPKK,Belfast Intl,BFS,EGAA
+Krakow,KRK,EPKK,Birmingham,BHX,EGBB
+Krakow,KRK,EPKK,Bristol,BRS,EGGD
+Krakow,KRK,EPKK,Edinburgh,EDI,EGPH
+Krakow,KRK,EPKK,Geneva,GVA,LSGG
+Krakow,KRK,EPKK,Glasgow,GLA,EGPF
+Krakow,KRK,EPKK,Liverpool,LPL,EGGP
+Krakow,KRK,EPKK,London Gatwick,LGW,EGKK
+Krakow,KRK,EPKK,Manchester,MAN,EGCC
+Krakow,KRK,EPKK,Newcastle,NCL,EGNT
+Krakow,KRK,EPKK,Paris Charles de Gaulle,CDG,LFPG
+Faro,FAO,LPFR,Amsterdam,AMS,EHAM
+Faro,FAO,LPFR,Basel,BSL,LFSB
+Faro,FAO,LPFR,Belfast Intl,BFS,EGAA
+Faro,FAO,LPFR,Birmingham,BHX,EGBB
+Faro,FAO,LPFR,Bordeaux,BOD,LFBD
+Faro,FAO,LPFR,Bristol,BRS,EGGD
+Faro,FAO,LPFR,Geneva,GVA,LSGG
+Faro,FAO,LPFR,Glasgow,GLA,EGPF
+Faro,FAO,LPFR,Liverpool,LPL,EGGP
+Faro,FAO,LPFR,London Gatwick,LGW,EGKK
+Faro,FAO,LPFR,London Luton,LTN,EGGW
+Faro,FAO,LPFR,London Southend,SEN,EGMC
+Faro,FAO,LPFR,Lyon,LYS,LFLL
+Faro,FAO,LPFR,Manchester,MAN,EGCC
+Faro,FAO,LPFR,Nantes,NTE,LFRS
+Faro,FAO,LPFR,Newcastle,NCL,EGNT
+Faro,FAO,LPFR,Paris Orly,ORY,LFPO
+Faro,FAO,LPFR,Southampton,SOU,EGHI
+Lisbon,LIS,LPPT,Barcelona,BCN,LEBL
+Lisbon,LIS,LPPT,Basel,BSL,LFSB
+Lisbon,LIS,LPPT,Birmingham,BHX,EGBB
+Lisbon,LIS,LPPT,Boa Vista,BVC,GVBA
+Lisbon,LIS,LPPT,Bordeaux,BOD,LFBD
+Lisbon,LIS,LPPT,Bristol,BRS,EGGD
+Lisbon,LIS,LPPT,Edinburgh,EDI,EGPH
+Lisbon,LIS,LPPT,Geneva,GVA,LSGG
+Lisbon,LIS,LPPT,Glasgow,GLA,EGPF
+Lisbon,LIS,LPPT,Liverpool,LPL,EGGP
+Lisbon,LIS,LPPT,London Gatwick,LGW,EGKK
+Lisbon,LIS,LPPT,London Luton,LTN,EGGW
+Lisbon,LIS,LPPT,Luxembourg,LUX,ELLX
+Lisbon,LIS,LPPT,Lyon,LYS,LFLL
+Lisbon,LIS,LPPT,Madeira Funchal,FNC,LPMA
+Lisbon,LIS,LPPT,Madrid,MAD,LEMD
+Lisbon,LIS,LPPT,Majorca Palma,PMI,LEPA
+Lisbon,LIS,LPPT,Manchester,MAN,EGCC
+Lisbon,LIS,LPPT,Marrakech,RAK,GMMX
+Lisbon,LIS,LPPT,Menorca Mahon,MAH,LEMH
+Lisbon,LIS,LPPT,Milan Linate,LIN,LIML
+Lisbon,LIS,LPPT,Milan Malpensa,MXP,LIMC
+Lisbon,LIS,LPPT,Nantes,NTE,LFRS
+Lisbon,LIS,LPPT,Newcastle,NCL,EGNT
+Lisbon,LIS,LPPT,Nice,NCE,LFMN
+Lisbon,LIS,LPPT,Porto Santo,PXO,LPPS
+Lisbon,LIS,LPPT,Prague,PRG,LKPR
+Lisbon,LIS,LPPT,Praia,RAI,GVNP
+Lisbon,LIS,LPPT,Sal - Cape Verde,SID,GVAC
+Lisbon,LIS,LPPT,Sao Vicente,VXE,GVSV
+Lisbon,LIS,LPPT,Sicily Palermo,PMO,LICJ
+Lisbon,LIS,LPPT,Tirana,TIA,LATI
+Lisbon,LIS,LPPT,Zurich,ZRH,LSZH
+Madeira Funchal,FNC,LPMA,Amsterdam,AMS,EHAM
+Madeira Funchal,FNC,LPMA,Basel,BSL,LFSB
+Madeira Funchal,FNC,LPMA,Berlin Brandenburg,BER,EDDB
+Madeira Funchal,FNC,LPMA,Bordeaux,BOD,LFBD
+Madeira Funchal,FNC,LPMA,Bristol,BRS,EGGD
+Madeira Funchal,FNC,LPMA,Geneva,GVA,LSGG
+Madeira Funchal,FNC,LPMA,Lisbon,LIS,LPPT
+Madeira Funchal,FNC,LPMA,London Gatwick,LGW,EGKK
+Madeira Funchal,FNC,LPMA,London Luton,LTN,EGGW
+Madeira Funchal,FNC,LPMA,Lyon,LYS,LFLL
+Madeira Funchal,FNC,LPMA,Manchester,MAN,EGCC
+Madeira Funchal,FNC,LPMA,Nantes,NTE,LFRS
+Madeira Funchal,FNC,LPMA,Nice,NCE,LFMN
+Madeira Funchal,FNC,LPMA,Paris Charles de Gaulle,CDG,LFPG
+Madeira Funchal,FNC,LPMA,Porto,OPO,LPPR
+Porto,OPO,LPPR,Basel,BSL,LFSB
+Porto,OPO,LPPR,Berlin Brandenburg,BER,EDDB
+Porto,OPO,LPPR,Boa Vista,BVC,GVBA
+Porto,OPO,LPPR,Bordeaux,BOD,LFBD
+Porto,OPO,LPPR,Bristol,BRS,EGGD
+Porto,OPO,LPPR,Geneva,GVA,LSGG
+Porto,OPO,LPPR,Glasgow,GLA,EGPF
+Porto,OPO,LPPR,Ibiza,IBZ,LEIB
+Porto,OPO,LPPR,London Gatwick,LGW,EGKK
+Porto,OPO,LPPR,London Luton,LTN,EGGW
+Porto,OPO,LPPR,Luxembourg,LUX,ELLX
+Porto,OPO,LPPR,Lyon,LYS,LFLL
+Porto,OPO,LPPR,Madeira Funchal,FNC,LPMA
+Porto,OPO,LPPR,Majorca Palma,PMI,LEPA
+Porto,OPO,LPPR,Manchester,MAN,EGCC
+Porto,OPO,LPPR,Menorca Mahon,MAH,LEMH
+Porto,OPO,LPPR,Milan Linate,LIN,LIML
+Porto,OPO,LPPR,Milan Malpensa,MXP,LIMC
+Porto,OPO,LPPR,Nantes,NTE,LFRS
+Porto,OPO,LPPR,Naples,NAP,LIRN
+Porto,OPO,LPPR,Nice,NCE,LFMN
+Porto,OPO,LPPR,Paris Orly,ORY,LFPO
+Porto,OPO,LPPR,Porto Santo,PXO,LPPS
+Porto,OPO,LPPR,Prague,PRG,LKPR
+Porto,OPO,LPPR,Praia,RAI,GVNP
+Porto,OPO,LPPR,Sal - Cape Verde,SID,GVAC
+Porto,OPO,LPPR,Sao Vicente,VXE,GVSV
+Porto,OPO,LPPR,Sicily Palermo,PMO,LICJ
+Porto,OPO,LPPR,Split,SPU,LDSP
+Porto,OPO,LPPR,Zurich,ZRH,LSZH
+Porto Santo,PXO,LPPS,Lisbon,LIS,LPPT
+Porto Santo,PXO,LPPS,Porto,OPO,LPPR
+Belgrade,BEG,LYBE,Geneva,GVA,LSGG
+Belgrade,BEG,LYBE,Paris Charles de Gaulle,CDG,LFPG
+Ljubljana,LJU,LJLJ,Edinburgh,EDI,EGPH
+Ljubljana,LJU,LJLJ,London Gatwick,LGW,EGKK
+Ljubljana,LJU,LJLJ,London Luton,LTN,EGGW
+Ljubljana,LJU,LJLJ,Manchester,MAN,EGCC
+Alicante,ALC,LEAL,Amsterdam,AMS,EHAM
+Alicante,ALC,LEAL,Athens,ATH,LGAV
+Alicante,ALC,LEAL,Basel,BSL,LFSB
+Alicante,ALC,LEAL,Belfast Intl,BFS,EGAA
+Alicante,ALC,LEAL,Birmingham,BHX,EGBB
+Alicante,ALC,LEAL,Bristol,BRS,EGGD
+Alicante,ALC,LEAL,Edinburgh,EDI,EGPH
+Alicante,ALC,LEAL,Geneva,GVA,LSGG
+Alicante,ALC,LEAL,Glasgow,GLA,EGPF
+Alicante,ALC,LEAL,Lille,LIL,LFQQ
+Alicante,ALC,LEAL,Liverpool,LPL,EGGP
+Alicante,ALC,LEAL,London Gatwick,LGW,EGKK
+Alicante,ALC,LEAL,London Luton,LTN,EGGW
+Alicante,ALC,LEAL,London Southend,SEN,EGMC
+Alicante,ALC,LEAL,Lyon,LYS,LFLL
+Alicante,ALC,LEAL,Manchester,MAN,EGCC
+Alicante,ALC,LEAL,Nantes,NTE,LFRS
+Alicante,ALC,LEAL,Naples,NAP,LIRN
+Alicante,ALC,LEAL,Newcastle,NCL,EGNT
+Alicante,ALC,LEAL,Prague,PRG,LKPR
+Alicante,ALC,LEAL,Southampton,SOU,EGHI
+Almeria,LEI,LEAM,Bristol,BRS,EGGD
+Almeria,LEI,LEAM,Liverpool,LPL,EGGP
+Almeria,LEI,LEAM,London Gatwick,LGW,EGKK
+Almeria,LEI,LEAM,London Luton,LTN,EGGW
+Almeria,LEI,LEAM,London Southend,SEN,EGMC
+Barcelona,BCN,LEBL,Basel,BSL,LFSB
+Barcelona,BCN,LEBL,Belfast Intl,BFS,EGAA
+Barcelona,BCN,LEBL,Berlin Brandenburg,BER,EDDB
+Barcelona,BCN,LEBL,Birmingham,BHX,EGBB
+Barcelona,BCN,LEBL,Bristol,BRS,EGGD
+Barcelona,BCN,LEBL,Edinburgh,EDI,EGPH
+Barcelona,BCN,LEBL,Geneva,GVA,LSGG
+Barcelona,BCN,LEBL,Glasgow,GLA,EGPF
+Barcelona,BCN,LEBL,Leeds Bradford,LBA,EGNM
+Barcelona,BCN,LEBL,Lisbon,LIS,LPPT
+Barcelona,BCN,LEBL,Liverpool,LPL,EGGP
+Barcelona,BCN,LEBL,London Gatwick,LGW,EGKK
+Barcelona,BCN,LEBL,London Luton,LTN,EGGW
+Barcelona,BCN,LEBL,London Southend,SEN,EGMC
+Barcelona,BCN,LEBL,Manchester,MAN,EGCC
+Barcelona,BCN,LEBL,Milan Linate,LIN,LIML
+Barcelona,BCN,LEBL,Milan Malpensa,MXP,LIMC
+Barcelona,BCN,LEBL,Naples,NAP,LIRN
+Barcelona,BCN,LEBL,Newcastle,NCL,EGNT
+Barcelona,BCN,LEBL,Southampton,SOU,EGHI
+Barcelona,BCN,LEBL,Strasbourg,SXB,LFST
+Bilbao,BIO,LEBB,Basel,BSL,LFSB
+Bilbao,BIO,LEBB,Bristol,BRS,EGGD
+Bilbao,BIO,LEBB,Geneva,GVA,LSGG
+Bilbao,BIO,LEBB,Manchester,MAN,EGCC
+Bilbao,BIO,LEBB,Milan Malpensa,MXP,LIMC
+Fuerteventura,FUE,GCFV,Amsterdam,AMS,EHAM
+Fuerteventura,FUE,GCFV,Basel,BSL,LFSB
+Fuerteventura,FUE,GCFV,Belfast Intl,BFS,EGAA
+Fuerteventura,FUE,GCFV,Berlin Brandenburg,BER,EDDB
+Fuerteventura,FUE,GCFV,Birmingham,BHX,EGBB
+Fuerteventura,FUE,GCFV,Bristol,BRS,EGGD
+Fuerteventura,FUE,GCFV,Edinburgh,EDI,EGPH
+Fuerteventura,FUE,GCFV,Geneva,GVA,LSGG
+Fuerteventura,FUE,GCFV,Glasgow,GLA,EGPF
+Fuerteventura,FUE,GCFV,Liverpool,LPL,EGGP
+Fuerteventura,FUE,GCFV,London Gatwick,LGW,EGKK
+Fuerteventura,FUE,GCFV,London Luton,LTN,EGGW
+Fuerteventura,FUE,GCFV,Manchester,MAN,EGCC
+Fuerteventura,FUE,GCFV,Milan Malpensa,MXP,LIMC
+Fuerteventura,FUE,GCFV,Naples,NAP,LIRN
+Fuerteventura,FUE,GCFV,Newcastle,NCL,EGNT
+Fuerteventura,FUE,GCFV,Paris Charles de Gaulle,CDG,LFPG
+Gran Canaria,LPA,GCLP,Basel,BSL,LFSB
+Gran Canaria,LPA,GCLP,Belfast Intl,BFS,EGAA
+Gran Canaria,LPA,GCLP,Berlin Brandenburg,BER,EDDB
+Gran Canaria,LPA,GCLP,Birmingham,BHX,EGBB
+Gran Canaria,LPA,GCLP,Bordeaux,BOD,LFBD
+Gran Canaria,LPA,GCLP,Bristol,BRS,EGGD
+Gran Canaria,LPA,GCLP,Edinburgh,EDI,EGPH
+Gran Canaria,LPA,GCLP,Geneva,GVA,LSGG
+Gran Canaria,LPA,GCLP,Glasgow,GLA,EGPF
+Gran Canaria,LPA,GCLP,Liverpool,LPL,EGGP
+Gran Canaria,LPA,GCLP,London Gatwick,LGW,EGKK
+Gran Canaria,LPA,GCLP,London Luton,LTN,EGGW
+Gran Canaria,LPA,GCLP,London Southend,SEN,EGMC
+Gran Canaria,LPA,GCLP,Lyon,LYS,LFLL
+Gran Canaria,LPA,GCLP,Manchester,MAN,EGCC
+Gran Canaria,LPA,GCLP,Milan Linate,LIN,LIML
+Gran Canaria,LPA,GCLP,Milan Malpensa,MXP,LIMC
+Gran Canaria,LPA,GCLP,Nantes,NTE,LFRS
+Gran Canaria,LPA,GCLP,Naples,NAP,LIRN
+Gran Canaria,LPA,GCLP,Paris Charles de Gaulle,CDG,LFPG
+Ibiza,IBZ,LEIB,Amsterdam,AMS,EHAM
+Ibiza,IBZ,LEIB,Basel,BSL,LFSB
+Ibiza,IBZ,LEIB,Belfast Intl,BFS,EGAA
+Ibiza,IBZ,LEIB,Bordeaux,BOD,LFBD
+Ibiza,IBZ,LEIB,Bristol,BRS,EGGD
+Ibiza,IBZ,LEIB,Geneva,GVA,LSGG
+Ibiza,IBZ,LEIB,London Gatwick,LGW,EGKK
+Ibiza,IBZ,LEIB,London Luton,LTN,EGGW
+Ibiza,IBZ,LEIB,London Southend,SEN,EGMC
+Ibiza,IBZ,LEIB,Lyon,LYS,LFLL
+Ibiza,IBZ,LEIB,Manchester,MAN,EGCC
+Ibiza,IBZ,LEIB,Milan Linate,LIN,LIML
+Ibiza,IBZ,LEIB,Milan Malpensa,MXP,LIMC
+Ibiza,IBZ,LEIB,Nantes,NTE,LFRS
+Ibiza,IBZ,LEIB,Naples,NAP,LIRN
+Ibiza,IBZ,LEIB,Nice,NCE,LFMN
+Ibiza,IBZ,LEIB,Porto,OPO,LPPR
+La Coruña,LCG,LECO,Geneva,GVA,LSGG
+La Coruña,LCG,LECO,Milan Malpensa,MXP,LIMC
+Lanzarote,ACE,GCRR,Amsterdam,AMS,EHAM
+Lanzarote,ACE,GCRR,Basel,BSL,LFSB
+Lanzarote,ACE,GCRR,Belfast Intl,BFS,EGAA
+Lanzarote,ACE,GCRR,Berlin Brandenburg,BER,EDDB
+Lanzarote,ACE,GCRR,Birmingham,BHX,EGBB
+Lanzarote,ACE,GCRR,Bordeaux,BOD,LFBD
+Lanzarote,ACE,GCRR,Bristol,BRS,EGGD
+Lanzarote,ACE,GCRR,Edinburgh,EDI,EGPH
+Lanzarote,ACE,GCRR,Geneva,GVA,LSGG
+Lanzarote,ACE,GCRR,Glasgow,GLA,EGPF
+Lanzarote,ACE,GCRR,Liverpool,LPL,EGGP
+Lanzarote,ACE,GCRR,London Gatwick,LGW,EGKK
+Lanzarote,ACE,GCRR,London Luton,LTN,EGGW
+Lanzarote,ACE,GCRR,London Southend,SEN,EGMC
+Lanzarote,ACE,GCRR,Lyon,LYS,LFLL
+Lanzarote,ACE,GCRR,Manchester,MAN,EGCC
+Lanzarote,ACE,GCRR,Milan Malpensa,MXP,LIMC
+Lanzarote,ACE,GCRR,Nantes,NTE,LFRS
+Lanzarote,ACE,GCRR,Paris Charles de Gaulle,CDG,LFPG
+Madrid,MAD,LEMD,Basel,BSL,LFSB
+Madrid,MAD,LEMD,Bristol,BRS,EGGD
+Madrid,MAD,LEMD,Edinburgh,EDI,EGPH
+Madrid,MAD,LEMD,Geneva,GVA,LSGG
+Madrid,MAD,LEMD,Lisbon,LIS,LPPT
+Madrid,MAD,LEMD,London Gatwick,LGW,EGKK
+Madrid,MAD,LEMD,London Luton,LTN,EGGW
+Madrid,MAD,LEMD,Lyon,LYS,LFLL
+Madrid,MAD,LEMD,Manchester,MAN,EGCC
+Madrid,MAD,LEMD,Nantes,NTE,LFRS
+Madrid,MAD,LEMD,Nice,NCE,LFMN
+Majorca Palma,PMI,LEPA,Amsterdam,AMS,EHAM
+Majorca Palma,PMI,LEPA,Athens,ATH,LGAV
+Majorca Palma,PMI,LEPA,Basel,BSL,LFSB
+Majorca Palma,PMI,LEPA,Belfast City (George Best),BHD,EGAC
+Majorca Palma,PMI,LEPA,Belfast Intl,BFS,EGAA
+Majorca Palma,PMI,LEPA,Berlin Brandenburg,BER,EDDB
+Majorca Palma,PMI,LEPA,Birmingham,BHX,EGBB
+Majorca Palma,PMI,LEPA,Bordeaux,BOD,LFBD
+Majorca Palma,PMI,LEPA,Bristol,BRS,EGGD
+Majorca Palma,PMI,LEPA,Edinburgh,EDI,EGPH
+Majorca Palma,PMI,LEPA,Geneva,GVA,LSGG
+Majorca Palma,PMI,LEPA,Glasgow,GLA,EGPF
+Majorca Palma,PMI,LEPA,Leeds Bradford,LBA,EGNM
+Majorca Palma,PMI,LEPA,Lille,LIL,LFQQ
+Majorca Palma,PMI,LEPA,Lisbon,LIS,LPPT
+Majorca Palma,PMI,LEPA,Liverpool,LPL,EGGP
+Majorca Palma,PMI,LEPA,London Gatwick,LGW,EGKK
+Majorca Palma,PMI,LEPA,London Luton,LTN,EGGW
+Majorca Palma,PMI,LEPA,London Southend,SEN,EGMC
+Majorca Palma,PMI,LEPA,Lyon,LYS,LFLL
+Majorca Palma,PMI,LEPA,Manchester,MAN,EGCC
+Majorca Palma,PMI,LEPA,Milan Linate,LIN,LIML
+Majorca Palma,PMI,LEPA,Milan Malpensa,MXP,LIMC
+Majorca Palma,PMI,LEPA,Montpellier,MPL,LFMT
+Majorca Palma,PMI,LEPA,Nantes,NTE,LFRS
+Majorca Palma,PMI,LEPA,Naples,NAP,LIRN
+Majorca Palma,PMI,LEPA,Newcastle,NCL,EGNT
+Majorca Palma,PMI,LEPA,Nice,NCE,LFMN
+Majorca Palma,PMI,LEPA,Paris Charles de Gaulle,CDG,LFPG
+Majorca Palma,PMI,LEPA,Porto,OPO,LPPR
+Majorca Palma,PMI,LEPA,Sicily Palermo,PMO,LICJ
+Majorca Palma,PMI,LEPA,Southampton,SOU,EGHI
+Majorca Palma,PMI,LEPA,Strasbourg,SXB,LFST
+Majorca Palma,PMI,LEPA,Toulouse,TLS,LFBO
+Majorca Palma,PMI,LEPA,Zurich,ZRH,LSZH
+Malaga,AGP,LEMG,Amsterdam,AMS,EHAM
+Malaga,AGP,LEMG,Athens,ATH,LGAV
+Malaga,AGP,LEMG,Basel,BSL,LFSB
+Malaga,AGP,LEMG,Belfast Intl,BFS,EGAA
+Malaga,AGP,LEMG,Berlin Brandenburg,BER,EDDB
+Malaga,AGP,LEMG,Birmingham,BHX,EGBB
+Malaga,AGP,LEMG,Bordeaux,BOD,LFBD
+Malaga,AGP,LEMG,Bristol,BRS,EGGD
+Malaga,AGP,LEMG,Edinburgh,EDI,EGPH
+Malaga,AGP,LEMG,Geneva,GVA,LSGG
+Malaga,AGP,LEMG,Glasgow,GLA,EGPF
+Malaga,AGP,LEMG,Leeds Bradford,LBA,EGNM
+Malaga,AGP,LEMG,Liverpool,LPL,EGGP
+Malaga,AGP,LEMG,London Gatwick,LGW,EGKK
+Malaga,AGP,LEMG,London Luton,LTN,EGGW
+Malaga,AGP,LEMG,London Southend,SEN,EGMC
+Malaga,AGP,LEMG,Lyon,LYS,LFLL
+Malaga,AGP,LEMG,Manchester,MAN,EGCC
+Malaga,AGP,LEMG,Marrakech,RAK,GMMX
+Malaga,AGP,LEMG,Milan Malpensa,MXP,LIMC
+Malaga,AGP,LEMG,Nantes,NTE,LFRS
+Malaga,AGP,LEMG,Newcastle,NCL,EGNT
+Malaga,AGP,LEMG,Nice,NCE,LFMN
+Malaga,AGP,LEMG,Zurich,ZRH,LSZH
+Menorca Mahon,MAH,LEMH,Basel,BSL,LFSB
+Menorca Mahon,MAH,LEMH,Belfast Intl,BFS,EGAA
+Menorca Mahon,MAH,LEMH,Bordeaux,BOD,LFBD
+Menorca Mahon,MAH,LEMH,Bristol,BRS,EGGD
+Menorca Mahon,MAH,LEMH,Geneva,GVA,LSGG
+Menorca Mahon,MAH,LEMH,Lisbon,LIS,LPPT
+Menorca Mahon,MAH,LEMH,London Gatwick,LGW,EGKK
+Menorca Mahon,MAH,LEMH,London Luton,LTN,EGGW
+Menorca Mahon,MAH,LEMH,Lyon,LYS,LFLL
+Menorca Mahon,MAH,LEMH,Manchester,MAN,EGCC
+Menorca Mahon,MAH,LEMH,Milan Malpensa,MXP,LIMC
+Menorca Mahon,MAH,LEMH,Nantes,NTE,LFRS
+Menorca Mahon,MAH,LEMH,Naples,NAP,LIRN
+Menorca Mahon,MAH,LEMH,Porto,OPO,LPPR
+Murcia Intl,RMU,LEMI,Bristol,BRS,EGGD
+Murcia Intl,RMU,LEMI,London Gatwick,LGW,EGKK
+Murcia Intl,RMU,LEMI,London Luton,LTN,EGGW
+Murcia Intl,RMU,LEMI,Manchester,MAN,EGCC
+Reus,REU,LERS,Belfast Intl,BFS,EGAA
+Reus,REU,LERS,Bristol,BRS,EGGD
+Reus,REU,LERS,Glasgow,GLA,EGPF
+Reus,REU,LERS,London Gatwick,LGW,EGKK
+Reus,REU,LERS,London Luton,LTN,EGGW
+Reus,REU,LERS,Manchester,MAN,EGCC
+Reus,REU,LERS,Newcastle,NCL,EGNT
+Santa Cruz de la Palma,SPC,GCLA,Basel,BSL,LFSB
+Santa Cruz de la Palma,SPC,GCLA,Berlin Brandenburg,BER,EDDB
+Santiago de Compostela,SCQ,LEST,Basel,BSL,LFSB
+Santiago de Compostela,SCQ,LEST,Geneva,GVA,LSGG
+Seville,SVQ,LEZL,Amsterdam,AMS,EHAM
+Seville,SVQ,LEZL,Basel,BSL,LFSB
+Seville,SVQ,LEZL,Berlin Brandenburg,BER,EDDB
+Seville,SVQ,LEZL,Bristol,BRS,EGGD
+Seville,SVQ,LEZL,Geneva,GVA,LSGG
+Seville,SVQ,LEZL,Hamburg,HAM,EDDH
+Seville,SVQ,LEZL,Liverpool,LPL,EGGP
+Seville,SVQ,LEZL,London Gatwick,LGW,EGKK
+Seville,SVQ,LEZL,Lyon,LYS,LFLL
+Seville,SVQ,LEZL,Milan Malpensa,MXP,LIMC
+Tenerife South,TFS,GCTS,Amsterdam,AMS,EHAM
+Tenerife South,TFS,GCTS,Basel,BSL,LFSB
+Tenerife South,TFS,GCTS,Belfast Intl,BFS,EGAA
+Tenerife South,TFS,GCTS,Berlin Brandenburg,BER,EDDB
+Tenerife South,TFS,GCTS,Birmingham,BHX,EGBB
+Tenerife South,TFS,GCTS,Bordeaux,BOD,LFBD
+Tenerife South,TFS,GCTS,Bristol,BRS,EGGD
+Tenerife South,TFS,GCTS,Edinburgh,EDI,EGPH
+Tenerife South,TFS,GCTS,Geneva,GVA,LSGG
+Tenerife South,TFS,GCTS,Glasgow,GLA,EGPF
+Tenerife South,TFS,GCTS,Liverpool,LPL,EGGP
+Tenerife South,TFS,GCTS,London Gatwick,LGW,EGKK
+Tenerife South,TFS,GCTS,London Luton,LTN,EGGW
+Tenerife South,TFS,GCTS,London Southend,SEN,EGMC
+Tenerife South,TFS,GCTS,Lyon,LYS,LFLL
+Tenerife South,TFS,GCTS,Manchester,MAN,EGCC
+Tenerife South,TFS,GCTS,Milan Linate,LIN,LIML
+Tenerife South,TFS,GCTS,Milan Malpensa,MXP,LIMC
+Tenerife South,TFS,GCTS,Nantes,NTE,LFRS
+Tenerife South,TFS,GCTS,Newcastle,NCL,EGNT
+Tenerife South,TFS,GCTS,Nice,NCE,LFMN
+Tenerife South,TFS,GCTS,Paris Charles de Gaulle,CDG,LFPG
+Valencia,VLC,LEVC,Amsterdam,AMS,EHAM
+Valencia,VLC,LEVC,Basel,BSL,LFSB
+Valencia,VLC,LEVC,Berlin Brandenburg,BER,EDDB
+Valencia,VLC,LEVC,Geneva,GVA,LSGG
+Valencia,VLC,LEVC,London Gatwick,LGW,EGKK
+Scandinavian Mountains,SCR,ESKS,London Gatwick,LGW,EGKK
+Scandinavian Mountains,SCR,ESKS,Manchester,MAN,EGCC
+Basel,BSL,LFSB,Agadir,AGA,GMAD
+Basel,BSL,LFSB,"Ajaccio, Corsica",AJA,LFKJ
+Basel,BSL,LFSB,Alicante,ALC,LEAL
+Basel,BSL,LFSB,Antalya,AYT,LTAI
+Basel,BSL,LFSB,Athens,ATH,LGAV
+Basel,BSL,LFSB,Barcelona,BCN,LEBL
+Basel,BSL,LFSB,Bari,BRI,LIBD
+Basel,BSL,LFSB,"Bastia, Corsica",BIA,LFKB
+Basel,BSL,LFSB,Berlin Brandenburg,BER,EDDB
+Basel,BSL,LFSB,Biarritz,BIQ,LFBZ
+Basel,BSL,LFSB,Bilbao,BIO,LEBB
+Basel,BSL,LFSB,Bordeaux,BOD,LFBD
+Basel,BSL,LFSB,Brindisi,BDS,LIBR
+Basel,BSL,LFSB,Bristol,BRS,EGGD
+Basel,BSL,LFSB,Budapest,BUD,LHBP
+Basel,BSL,LFSB,"Calvi, Corsica",CLY,LFKC
+Basel,BSL,LFSB,Copenhagen,CPH,EKCH
+Basel,BSL,LFSB,Corfu,CFU,LGKR
+Basel,BSL,LFSB,Crete Chania,CHQ,LGSA
+Basel,BSL,LFSB,Crete Heraklion,HER,LGIR
+Basel,BSL,LFSB,Cyprus Larnaca,LCA,LCLK
+Basel,BSL,LFSB,Djerba–Zarzis,DJE,DTTJ
+Basel,BSL,LFSB,Dubrovnik,DBV,LDDU
+Basel,BSL,LFSB,Edinburgh,EDI,EGPH
+Basel,BSL,LFSB,Enfidha - Hammamet,NBE,DTNH
+Basel,BSL,LFSB,Faro,FAO,LPFR
+Basel,BSL,LFSB,"Figari, Corsica",FSC,LFKF
+Basel,BSL,LFSB,Fuerteventura,FUE,GCFV
+Basel,BSL,LFSB,Gran Canaria,LPA,GCLP
+Basel,BSL,LFSB,Hamburg,HAM,EDDH
+Basel,BSL,LFSB,Hurghada,HRG,HEGN
+Basel,BSL,LFSB,Ibiza,IBZ,LEIB
+Basel,BSL,LFSB,Kos,KGS,LGKO
+Basel,BSL,LFSB,Krakow,KRK,EPKK
+Basel,BSL,LFSB,Lamezia,SUF,LICA
+Basel,BSL,LFSB,Lanzarote,ACE,GCRR
+Basel,BSL,LFSB,Lille,LIL,LFQQ
+Basel,BSL,LFSB,Lisbon,LIS,LPPT
+Basel,BSL,LFSB,London Gatwick,LGW,EGKK
+Basel,BSL,LFSB,London Luton,LTN,EGGW
+Basel,BSL,LFSB,Madeira Funchal,FNC,LPMA
+Basel,BSL,LFSB,Madrid,MAD,LEMD
+Basel,BSL,LFSB,Majorca Palma,PMI,LEPA
+Basel,BSL,LFSB,Malaga,AGP,LEMG
+Basel,BSL,LFSB,Malta,MLA,LMML
+Basel,BSL,LFSB,Manchester,MAN,EGCC
+Basel,BSL,LFSB,Marrakech,RAK,GMMX
+Basel,BSL,LFSB,Menorca Mahon,MAH,LEMH
+Basel,BSL,LFSB,Montpellier,MPL,LFMT
+Basel,BSL,LFSB,Nantes,NTE,LFRS
+Basel,BSL,LFSB,Naples,NAP,LIRN
+Basel,BSL,LFSB,Nice,NCE,LFMN
+Basel,BSL,LFSB,Porto,OPO,LPPR
+Basel,BSL,LFSB,Prague,PRG,LKPR
+Basel,BSL,LFSB,Pristina,PRN,BKPR
+Basel,BSL,LFSB,Pula,PUY,LDPL
+Basel,BSL,LFSB,Reykjavik Keflavik,KEF,BIKF
+Basel,BSL,LFSB,Rhodes,RHO,LGRP
+Basel,BSL,LFSB,Rimini,RMI,LIPR
+Basel,BSL,LFSB,Rome Fiumicino,FCO,LIRF
+Basel,BSL,LFSB,Santa Cruz de la Palma,SPC,GCLA
+Basel,BSL,LFSB,Santiago de Compostela,SCQ,LEST
+Basel,BSL,LFSB,Sardinia Cagliari,CAG,LIEE
+Basel,BSL,LFSB,Sardinia Olbia,OLB,LIEO
+Basel,BSL,LFSB,Seville,SVQ,LEZL
+Basel,BSL,LFSB,Sicily Catania,CTA,LICC
+Basel,BSL,LFSB,Sicily Palermo,PMO,LICJ
+Basel,BSL,LFSB,Skiathos,JSI,LGSK
+Basel,BSL,LFSB,Split,SPU,LDSP
+Basel,BSL,LFSB,Tangier,TNG,GMTT
+Basel,BSL,LFSB,Tenerife South,TFS,GCTS
+Basel,BSL,LFSB,Thessaloniki,SKG,LGTS
+Basel,BSL,LFSB,Toulouse,TLS,LFBO
+Basel,BSL,LFSB,Valencia,VLC,LEVC
+Basel,BSL,LFSB,Venice Marco Polo,VCE,LIPZ
+Basel,BSL,LFSB,Vienna,VIE,LOWW
+Basel,BSL,LFSB,Zadar,ZAD,LDZD
+Geneva,GVA,LSGG,Aberdeen,ABZ,EGPD
+Geneva,GVA,LSGG,Agadir,AGA,GMAD
+Geneva,GVA,LSGG,"Ajaccio, Corsica",AJA,LFKJ
+Geneva,GVA,LSGG,Alicante,ALC,LEAL
+Geneva,GVA,LSGG,Amsterdam,AMS,EHAM
+Geneva,GVA,LSGG,Athens,ATH,LGAV
+Geneva,GVA,LSGG,Barcelona,BCN,LEBL
+Geneva,GVA,LSGG,Bari,BRI,LIBD
+Geneva,GVA,LSGG,"Bastia, Corsica",BIA,LFKB
+Geneva,GVA,LSGG,Belfast Intl,BFS,EGAA
+Geneva,GVA,LSGG,Belgrade,BEG,LYBE
+Geneva,GVA,LSGG,Berlin Brandenburg,BER,EDDB
+Geneva,GVA,LSGG,Bilbao,BIO,LEBB
+Geneva,GVA,LSGG,Birmingham,BHX,EGBB
+Geneva,GVA,LSGG,Bordeaux,BOD,LFBD
+Geneva,GVA,LSGG,Bournemouth,BOH,EGHH
+Geneva,GVA,LSGG,Brindisi,BDS,LIBR
+Geneva,GVA,LSGG,Bristol,BRS,EGGD
+Geneva,GVA,LSGG,Brussels Intl,BRU,EBBR
+Geneva,GVA,LSGG,Budapest,BUD,LHBP
+Geneva,GVA,LSGG,Cairo Sphinx,SPX,HESX
+Geneva,GVA,LSGG,"Calvi, Corsica",CLY,LFKC
+Geneva,GVA,LSGG,Copenhagen,CPH,EKCH
+Geneva,GVA,LSGG,Corfu,CFU,LGKR
+Geneva,GVA,LSGG,Crete Chania,CHQ,LGSA
+Geneva,GVA,LSGG,Crete Heraklion,HER,LGIR
+Geneva,GVA,LSGG,Cyprus Larnaca,LCA,LCLK
+Geneva,GVA,LSGG,Djerba–Zarzis,DJE,DTTJ
+Geneva,GVA,LSGG,Dubrovnik,DBV,LDDU
+Geneva,GVA,LSGG,Edinburgh,EDI,EGPH
+Geneva,GVA,LSGG,Enfidha - Hammamet,NBE,DTNH
+Geneva,GVA,LSGG,Faro,FAO,LPFR
+Geneva,GVA,LSGG,"Figari, Corsica",FSC,LFKF
+Geneva,GVA,LSGG,Fuerteventura,FUE,GCFV
+Geneva,GVA,LSGG,Glasgow,GLA,EGPF
+Geneva,GVA,LSGG,Gran Canaria,LPA,GCLP
+Geneva,GVA,LSGG,Hamburg,HAM,EDDH
+Geneva,GVA,LSGG,Hurghada,HRG,HEGN
+Geneva,GVA,LSGG,Ibiza,IBZ,LEIB
+Geneva,GVA,LSGG,Isle of Man,IOM,EGNS
+Geneva,GVA,LSGG,Krakow,KRK,EPKK
+Geneva,GVA,LSGG,La Coruña,LCG,LECO
+Geneva,GVA,LSGG,La Rochelle,LRH,LFBH
+Geneva,GVA,LSGG,Lamezia,SUF,LICA
+Geneva,GVA,LSGG,Lanzarote,ACE,GCRR
+Geneva,GVA,LSGG,Lille,LIL,LFQQ
+Geneva,GVA,LSGG,Lisbon,LIS,LPPT
+Geneva,GVA,LSGG,Liverpool,LPL,EGGP
+Geneva,GVA,LSGG,London Gatwick,LGW,EGKK
+Geneva,GVA,LSGG,London Luton,LTN,EGGW
+Geneva,GVA,LSGG,London Southend,SEN,EGMC
+Geneva,GVA,LSGG,London Stansted,STN,EGSS
+Geneva,GVA,LSGG,Madeira Funchal,FNC,LPMA
+Geneva,GVA,LSGG,Madrid,MAD,LEMD
+Geneva,GVA,LSGG,Majorca Palma,PMI,LEPA
+Geneva,GVA,LSGG,Malaga,AGP,LEMG
+Geneva,GVA,LSGG,Malta,MLA,LMML
+Geneva,GVA,LSGG,Manchester,MAN,EGCC
+Geneva,GVA,LSGG,Marrakech,RAK,GMMX
+Geneva,GVA,LSGG,Menorca Mahon,MAH,LEMH
+Geneva,GVA,LSGG,Milan Linate,LIN,LIML
+Geneva,GVA,LSGG,Mykonos,JMK,LGMK
+Geneva,GVA,LSGG,Nantes,NTE,LFRS
+Geneva,GVA,LSGG,Naples,NAP,LIRN
+Geneva,GVA,LSGG,Newcastle,NCL,EGNT
+Geneva,GVA,LSGG,Newquay,NQY,EGHQ
+Geneva,GVA,LSGG,Nice,NCE,LFMN
+Geneva,GVA,LSGG,Paris Orly,ORY,LFPO
+Geneva,GVA,LSGG,Porto,OPO,LPPR
+Geneva,GVA,LSGG,Prague,PRG,LKPR
+Geneva,GVA,LSGG,Pristina,PRN,BKPR
+Geneva,GVA,LSGG,Rabat Sale Airport,RBA,GMME
+Geneva,GVA,LSGG,Rennes,RNS,LFRN
+Geneva,GVA,LSGG,Rhodes,RHO,LGRP
+Geneva,GVA,LSGG,Rome Fiumicino,FCO,LIRF
+Geneva,GVA,LSGG,Santiago de Compostela,SCQ,LEST
+Geneva,GVA,LSGG,Santorini,JTR,LGSR
+Geneva,GVA,LSGG,Sardinia Cagliari,CAG,LIEE
+Geneva,GVA,LSGG,Sardinia Olbia,OLB,LIEO
+Geneva,GVA,LSGG,Seville,SVQ,LEZL
+Geneva,GVA,LSGG,Sharm El Sheikh,SSH,HESH
+Geneva,GVA,LSGG,Sicily Catania,CTA,LICC
+Geneva,GVA,LSGG,Sicily Palermo,PMO,LICJ
+Geneva,GVA,LSGG,Skopje,SKP,LWSK
+Geneva,GVA,LSGG,Southampton,SOU,EGHI
+Geneva,GVA,LSGG,Split,SPU,LDSP
+Geneva,GVA,LSGG,Tangier,TNG,GMTT
+Geneva,GVA,LSGG,Tbilisi,TBS,UGTB
+Geneva,GVA,LSGG,Tenerife South,TFS,GCTS
+Geneva,GVA,LSGG,Tirana,TIA,LATI
+Geneva,GVA,LSGG,Tivat,TIV,LYTV
+Geneva,GVA,LSGG,Toulouse,TLS,LFBO
+Geneva,GVA,LSGG,Valencia,VLC,LEVC
+Geneva,GVA,LSGG,Venice Marco Polo,VCE,LIPZ
+Zurich,ZRH,LSZH,Berlin Brandenburg,BER,EDDB
+Zurich,ZRH,LSZH,Bristol,BRS,EGGD
+Zurich,ZRH,LSZH,Edinburgh,EDI,EGPH
+Zurich,ZRH,LSZH,Lisbon,LIS,LPPT
+Zurich,ZRH,LSZH,London Gatwick,LGW,EGKK
+Zurich,ZRH,LSZH,London Luton,LTN,EGGW
+Zurich,ZRH,LSZH,London Stansted,STN,EGSS
+Zurich,ZRH,LSZH,Majorca Palma,PMI,LEPA
+Zurich,ZRH,LSZH,Malaga,AGP,LEMG
+Zurich,ZRH,LSZH,Manchester,MAN,EGCC
+Zurich,ZRH,LSZH,Marrakech,RAK,GMMX
+Zurich,ZRH,LSZH,Naples,NAP,LIRN
+Zurich,ZRH,LSZH,Porto,OPO,LPPR
+Zurich,ZRH,LSZH,Pristina,PRN,BKPR
+Zurich,ZRH,LSZH,Rome Fiumicino,FCO,LIRF
+Zurich,ZRH,LSZH,Sardinia Olbia,OLB,LIEO
+Djerba–Zarzis,DJE,DTTJ,Basel,BSL,LFSB
+Djerba–Zarzis,DJE,DTTJ,Geneva,GVA,LSGG
+Djerba–Zarzis,DJE,DTTJ,London Luton,LTN,EGGW
+Djerba–Zarzis,DJE,DTTJ,Manchester,MAN,EGCC
+Enfidha - Hammamet,NBE,DTNH,Basel,BSL,LFSB
+Enfidha - Hammamet,NBE,DTNH,Belfast Intl,BFS,EGAA
+Enfidha - Hammamet,NBE,DTNH,Birmingham,BHX,EGBB
+Enfidha - Hammamet,NBE,DTNH,Bristol,BRS,EGGD
+Enfidha - Hammamet,NBE,DTNH,Edinburgh,EDI,EGPH
+Enfidha - Hammamet,NBE,DTNH,Geneva,GVA,LSGG
+Enfidha - Hammamet,NBE,DTNH,Glasgow,GLA,EGPF
+Enfidha - Hammamet,NBE,DTNH,Liverpool,LPL,EGGP
+Enfidha - Hammamet,NBE,DTNH,London Gatwick,LGW,EGKK
+Enfidha - Hammamet,NBE,DTNH,London Luton,LTN,EGGW
+Enfidha - Hammamet,NBE,DTNH,London Southend,SEN,EGMC
+Enfidha - Hammamet,NBE,DTNH,Manchester,MAN,EGCC
+Enfidha - Hammamet,NBE,DTNH,Newcastle,NCL,EGNT
+Antalya,AYT,LTAI,Basel,BSL,LFSB
+Antalya,AYT,LTAI,Belfast Intl,BFS,EGAA
+Antalya,AYT,LTAI,Berlin Brandenburg,BER,EDDB
+Antalya,AYT,LTAI,Birmingham,BHX,EGBB
+Antalya,AYT,LTAI,Bristol,BRS,EGGD
+Antalya,AYT,LTAI,Edinburgh,EDI,EGPH
+Antalya,AYT,LTAI,Glasgow,GLA,EGPF
+Antalya,AYT,LTAI,Liverpool,LPL,EGGP
+Antalya,AYT,LTAI,London Gatwick,LGW,EGKK
+Antalya,AYT,LTAI,London Luton,LTN,EGGW
+Antalya,AYT,LTAI,London Southend,SEN,EGMC
+Antalya,AYT,LTAI,Manchester,MAN,EGCC
+Antalya,AYT,LTAI,Newcastle,NCL,EGNT
+Bodrum,BJV,LTFE,Bristol,BRS,EGGD
+Bodrum,BJV,LTFE,Liverpool,LPL,EGGP
+Bodrum,BJV,LTFE,London Gatwick,LGW,EGKK
+Bodrum,BJV,LTFE,London Luton,LTN,EGGW
+Bodrum,BJV,LTFE,Manchester,MAN,EGCC
+Dalaman,DLM,LTBS,Belfast Intl,BFS,EGAA
+Dalaman,DLM,LTBS,Birmingham,BHX,EGBB
+Dalaman,DLM,LTBS,Bristol,BRS,EGGD
+Dalaman,DLM,LTBS,Edinburgh,EDI,EGPH
+Dalaman,DLM,LTBS,Glasgow,GLA,EGPF
+Dalaman,DLM,LTBS,Liverpool,LPL,EGGP
+Dalaman,DLM,LTBS,London Gatwick,LGW,EGKK
+Dalaman,DLM,LTBS,London Luton,LTN,EGGW
+Dalaman,DLM,LTBS,London Southend,SEN,EGMC
+Dalaman,DLM,LTBS,Manchester,MAN,EGCC
+Dalaman,DLM,LTBS,Newcastle,NCL,EGNT
+Izmir,ADB,LTBJ,London Gatwick,LGW,EGKK
+Izmir,ADB,LTBJ,London Luton,LTN,EGGW
+Aberdeen,ABZ,EGPD,Geneva,GVA,LSGG
+Aberdeen,ABZ,EGPD,London Gatwick,LGW,EGKK
+Aberdeen,ABZ,EGPD,London Luton,LTN,EGGW
+Aberdeen,ABZ,EGPD,Paris Charles de Gaulle,CDG,LFPG
+Belfast City (George Best),BHD,EGAC,Bristol,BRS,EGGD
+Belfast City (George Best),BHD,EGAC,Edinburgh,EDI,EGPH
+Belfast City (George Best),BHD,EGAC,Glasgow,GLA,EGPF
+Belfast City (George Best),BHD,EGAC,Liverpool,LPL,EGGP
+Belfast City (George Best),BHD,EGAC,London Gatwick,LGW,EGKK
+Belfast City (George Best),BHD,EGAC,London Luton,LTN,EGGW
+Belfast City (George Best),BHD,EGAC,London Southend,SEN,EGMC
+Belfast City (George Best),BHD,EGAC,Majorca Palma,PMI,LEPA
+Belfast City (George Best),BHD,EGAC,Manchester,MAN,EGCC
+Belfast Intl,BFS,EGAA,Alicante,ALC,LEAL
+Belfast Intl,BFS,EGAA,Amsterdam,AMS,EHAM
+Belfast Intl,BFS,EGAA,Antalya,AYT,LTAI
+Belfast Intl,BFS,EGAA,Barcelona,BCN,LEBL
+Belfast Intl,BFS,EGAA,Birmingham,BHX,EGBB
+Belfast Intl,BFS,EGAA,Bordeaux,BOD,LFBD
+Belfast Intl,BFS,EGAA,Bristol,BRS,EGGD
+Belfast Intl,BFS,EGAA,Budapest,BUD,LHBP
+Belfast Intl,BFS,EGAA,Corfu,CFU,LGKR
+Belfast Intl,BFS,EGAA,Cyprus Larnaca,LCA,LCLK
+Belfast Intl,BFS,EGAA,Dalaman,DLM,LTBS
+Belfast Intl,BFS,EGAA,Edinburgh,EDI,EGPH
+Belfast Intl,BFS,EGAA,Enfidha - Hammamet,NBE,DTNH
+Belfast Intl,BFS,EGAA,Faro,FAO,LPFR
+Belfast Intl,BFS,EGAA,Fuerteventura,FUE,GCFV
+Belfast Intl,BFS,EGAA,Geneva,GVA,LSGG
+Belfast Intl,BFS,EGAA,Glasgow,GLA,EGPF
+Belfast Intl,BFS,EGAA,Gran Canaria,LPA,GCLP
+Belfast Intl,BFS,EGAA,Hurghada,HRG,HEGN
+Belfast Intl,BFS,EGAA,Ibiza,IBZ,LEIB
+Belfast Intl,BFS,EGAA,Jersey,JER,EGJJ
+Belfast Intl,BFS,EGAA,Krakow,KRK,EPKK
+Belfast Intl,BFS,EGAA,Lanzarote,ACE,GCRR
+Belfast Intl,BFS,EGAA,Leeds Bradford,LBA,EGNM
+Belfast Intl,BFS,EGAA,Liverpool,LPL,EGGP
+Belfast Intl,BFS,EGAA,London Gatwick,LGW,EGKK
+Belfast Intl,BFS,EGAA,London Luton,LTN,EGGW
+Belfast Intl,BFS,EGAA,London Stansted,STN,EGSS
+Belfast Intl,BFS,EGAA,Lyon,LYS,LFLL
+Belfast Intl,BFS,EGAA,Majorca Palma,PMI,LEPA
+Belfast Intl,BFS,EGAA,Malaga,AGP,LEMG
+Belfast Intl,BFS,EGAA,Manchester,MAN,EGCC
+Belfast Intl,BFS,EGAA,Marrakech,RAK,GMMX
+Belfast Intl,BFS,EGAA,Menorca Mahon,MAH,LEMH
+Belfast Intl,BFS,EGAA,Newcastle,NCL,EGNT
+Belfast Intl,BFS,EGAA,Nice,NCE,LFMN
+Belfast Intl,BFS,EGAA,Paris Charles de Gaulle,CDG,LFPG
+Belfast Intl,BFS,EGAA,Prague,PRG,LKPR
+Belfast Intl,BFS,EGAA,Reus,REU,LERS
+Belfast Intl,BFS,EGAA,Rhodes,RHO,LGRP
+Belfast Intl,BFS,EGAA,Rome Fiumicino,FCO,LIRF
+Belfast Intl,BFS,EGAA,Rovaniemi,RVN,EFRO
+Belfast Intl,BFS,EGAA,Sharm El Sheikh,SSH,HESH
+Belfast Intl,BFS,EGAA,Southampton,SOU,EGHI
+Belfast Intl,BFS,EGAA,Tenerife South,TFS,GCTS
+Birmingham,BHX,EGBB,Agadir,AGA,GMAD
+Birmingham,BHX,EGBB,Alicante,ALC,LEAL
+Birmingham,BHX,EGBB,Amsterdam,AMS,EHAM
+Birmingham,BHX,EGBB,Antalya,AYT,LTAI
+Birmingham,BHX,EGBB,Barcelona,BCN,LEBL
+Birmingham,BHX,EGBB,Belfast Intl,BFS,EGAA
+Birmingham,BHX,EGBB,Berlin Brandenburg,BER,EDDB
+Birmingham,BHX,EGBB,Bordeaux,BOD,LFBD
+Birmingham,BHX,EGBB,Copenhagen,CPH,EKCH
+Birmingham,BHX,EGBB,Corfu,CFU,LGKR
+Birmingham,BHX,EGBB,Crete Heraklion,HER,LGIR
+Birmingham,BHX,EGBB,Cyprus Larnaca,LCA,LCLK
+Birmingham,BHX,EGBB,Dalaman,DLM,LTBS
+Birmingham,BHX,EGBB,Derry - Londonderry,LDY,EGAE
+Birmingham,BHX,EGBB,Edinburgh,EDI,EGPH
+Birmingham,BHX,EGBB,Enfidha - Hammamet,NBE,DTNH
+Birmingham,BHX,EGBB,Faro,FAO,LPFR
+Birmingham,BHX,EGBB,Fuerteventura,FUE,GCFV
+Birmingham,BHX,EGBB,Geneva,GVA,LSGG
+Birmingham,BHX,EGBB,Gibraltar,GIB,LXGB
+Birmingham,BHX,EGBB,Glasgow,GLA,EGPF
+Birmingham,BHX,EGBB,Gran Canaria,LPA,GCLP
+Birmingham,BHX,EGBB,Grenoble,GNB,LFLS
+Birmingham,BHX,EGBB,Hurghada,HRG,HEGN
+Birmingham,BHX,EGBB,Innsbruck,INN,LOWI
+Birmingham,BHX,EGBB,Inverness,INV,EGPE
+Birmingham,BHX,EGBB,Jersey,JER,EGJJ
+Birmingham,BHX,EGBB,Kos,KGS,LGKO
+Birmingham,BHX,EGBB,Krakow,KRK,EPKK
+Birmingham,BHX,EGBB,Lanzarote,ACE,GCRR
+Birmingham,BHX,EGBB,Lisbon,LIS,LPPT
+Birmingham,BHX,EGBB,Majorca Palma,PMI,LEPA
+Birmingham,BHX,EGBB,Malaga,AGP,LEMG
+Birmingham,BHX,EGBB,Malta,MLA,LMML
+Birmingham,BHX,EGBB,Marrakech,RAK,GMMX
+Birmingham,BHX,EGBB,Milan Linate,LIN,LIML
+Birmingham,BHX,EGBB,Nice,NCE,LFMN
+Birmingham,BHX,EGBB,Paris Charles de Gaulle,CDG,LFPG
+Birmingham,BHX,EGBB,Prague,PRG,LKPR
+Birmingham,BHX,EGBB,Reykjavik Keflavik,KEF,BIKF
+Birmingham,BHX,EGBB,Rhodes,RHO,LGRP
+Birmingham,BHX,EGBB,Rome Fiumicino,FCO,LIRF
+Birmingham,BHX,EGBB,Rovaniemi,RVN,EFRO
+Birmingham,BHX,EGBB,Sharm El Sheikh,SSH,HESH
+Birmingham,BHX,EGBB,Tenerife South,TFS,GCTS
+Bournemouth,BOH,EGHH,Geneva,GVA,LSGG
+Bristol,BRS,EGGD,Agadir,AGA,GMAD
+Bristol,BRS,EGGD,Alicante,ALC,LEAL
+Bristol,BRS,EGGD,Almeria,LEI,LEAM
+Bristol,BRS,EGGD,Amsterdam,AMS,EHAM
+Bristol,BRS,EGGD,Antalya,AYT,LTAI
+Bristol,BRS,EGGD,Athens,ATH,LGAV
+Bristol,BRS,EGGD,Barcelona,BCN,LEBL
+Bristol,BRS,EGGD,Bari,BRI,LIBD
+Bristol,BRS,EGGD,Basel,BSL,LFSB
+Bristol,BRS,EGGD,Belfast City (George Best),BHD,EGAC
+Bristol,BRS,EGGD,Belfast Intl,BFS,EGAA
+Bristol,BRS,EGGD,Berlin Brandenburg,BER,EDDB
+Bristol,BRS,EGGD,Bilbao,BIO,LEBB
+Bristol,BRS,EGGD,Bodrum,BJV,LTFE
+Bristol,BRS,EGGD,Bordeaux,BOD,LFBD
+Bristol,BRS,EGGD,Budapest,BUD,LHBP
+Bristol,BRS,EGGD,Copenhagen,CPH,EKCH
+Bristol,BRS,EGGD,Corfu,CFU,LGKR
+Bristol,BRS,EGGD,Crete Chania,CHQ,LGSA
+Bristol,BRS,EGGD,Crete Heraklion,HER,LGIR
+Bristol,BRS,EGGD,Cyprus Larnaca,LCA,LCLK
+Bristol,BRS,EGGD,Cyprus Paphos,PFO,LCPH
+Bristol,BRS,EGGD,Dalaman,DLM,LTBS
+Bristol,BRS,EGGD,Dubrovnik,DBV,LDDU
+Bristol,BRS,EGGD,Edinburgh,EDI,EGPH
+Bristol,BRS,EGGD,Enfidha - Hammamet,NBE,DTNH
+Bristol,BRS,EGGD,Faro,FAO,LPFR
+Bristol,BRS,EGGD,Fuerteventura,FUE,GCFV
+Bristol,BRS,EGGD,Geneva,GVA,LSGG
+Bristol,BRS,EGGD,Gibraltar,GIB,LXGB
+Bristol,BRS,EGGD,Glasgow,GLA,EGPF
+Bristol,BRS,EGGD,Gran Canaria,LPA,GCLP
+Bristol,BRS,EGGD,Grenoble,GNB,LFLS
+Bristol,BRS,EGGD,Hurghada,HRG,HEGN
+Bristol,BRS,EGGD,Ibiza,IBZ,LEIB
+Bristol,BRS,EGGD,Innsbruck,INN,LOWI
+Bristol,BRS,EGGD,Inverness,INV,EGPE
+Bristol,BRS,EGGD,Isle of Man,IOM,EGNS
+Bristol,BRS,EGGD,Kos,KGS,LGKO
+Bristol,BRS,EGGD,Krakow,KRK,EPKK
+Bristol,BRS,EGGD,La Rochelle,LRH,LFBH
+Bristol,BRS,EGGD,Lanzarote,ACE,GCRR
+Bristol,BRS,EGGD,Lisbon,LIS,LPPT
+Bristol,BRS,EGGD,Lyon,LYS,LFLL
+Bristol,BRS,EGGD,Madeira Funchal,FNC,LPMA
+Bristol,BRS,EGGD,Madrid,MAD,LEMD
+Bristol,BRS,EGGD,Majorca Palma,PMI,LEPA
+Bristol,BRS,EGGD,Malaga,AGP,LEMG
+Bristol,BRS,EGGD,Malta,MLA,LMML
+Bristol,BRS,EGGD,Marrakech,RAK,GMMX
+Bristol,BRS,EGGD,Marseille Provence,MRS,LFML
+Bristol,BRS,EGGD,Menorca Mahon,MAH,LEMH
+Bristol,BRS,EGGD,Milan Malpensa,MXP,LIMC
+Bristol,BRS,EGGD,Munich,MUC,EDDM
+Bristol,BRS,EGGD,Murcia Intl,RMU,LEMI
+Bristol,BRS,EGGD,Naples,NAP,LIRN
+Bristol,BRS,EGGD,Newcastle,NCL,EGNT
+Bristol,BRS,EGGD,Nice,NCE,LFMN
+Bristol,BRS,EGGD,Paris Charles de Gaulle,CDG,LFPG
+Bristol,BRS,EGGD,Pisa (Tuscany),PSA,LIRP
+Bristol,BRS,EGGD,Porto,OPO,LPPR
+Bristol,BRS,EGGD,Prague,PRG,LKPR
+Bristol,BRS,EGGD,Preveza,PVK,LGPZ
+Bristol,BRS,EGGD,Pula,PUY,LDPL
+Bristol,BRS,EGGD,Reus,REU,LERS
+Bristol,BRS,EGGD,Reykjavik Keflavik,KEF,BIKF
+Bristol,BRS,EGGD,Rhodes,RHO,LGRP
+Bristol,BRS,EGGD,Rome Fiumicino,FCO,LIRF
+Bristol,BRS,EGGD,Rovaniemi,RVN,EFRO
+Bristol,BRS,EGGD,Sal - Cape Verde,SID,GVAC
+Bristol,BRS,EGGD,Salzburg,SZG,LOWS
+Bristol,BRS,EGGD,Santorini,JTR,LGSR
+Bristol,BRS,EGGD,Sardinia Olbia,OLB,LIEO
+Bristol,BRS,EGGD,Seville,SVQ,LEZL
+Bristol,BRS,EGGD,Sharm El Sheikh,SSH,HESH
+Bristol,BRS,EGGD,Sicily Catania,CTA,LICC
+Bristol,BRS,EGGD,Sicily Palermo,PMO,LICJ
+Bristol,BRS,EGGD,Skiathos,JSI,LGSK
+Bristol,BRS,EGGD,Split,SPU,LDSP
+Bristol,BRS,EGGD,Tenerife South,TFS,GCTS
+Bristol,BRS,EGGD,Thessaloniki,SKG,LGTS
+Bristol,BRS,EGGD,Tivat,TIV,LYTV
+Bristol,BRS,EGGD,Toulouse,TLS,LFBO
+Bristol,BRS,EGGD,Tromsø,TOS,ENTC
+Bristol,BRS,EGGD,Turin,TRN,LIMF
+Bristol,BRS,EGGD,Venice Marco Polo,VCE,LIPZ
+Bristol,BRS,EGGD,Verona,VRN,LIPX
+Bristol,BRS,EGGD,Vienna,VIE,LOWW
+Bristol,BRS,EGGD,Zante Zakynthos,ZTH,LGZA
+Bristol,BRS,EGGD,Zurich,ZRH,LSZH
+Derry - Londonderry,LDY,EGAE,Birmingham,BHX,EGBB
+Derry - Londonderry,LDY,EGAE,Edinburgh,EDI,EGPH
+Derry - Londonderry,LDY,EGAE,Liverpool,LPL,EGGP
+Edinburgh,EDI,EGPH,Agadir,AGA,GMAD
+Edinburgh,EDI,EGPH,Alicante,ALC,LEAL
+Edinburgh,EDI,EGPH,Amsterdam,AMS,EHAM
+Edinburgh,EDI,EGPH,Antalya,AYT,LTAI
+Edinburgh,EDI,EGPH,Athens,ATH,LGAV
+Edinburgh,EDI,EGPH,Barcelona,BCN,LEBL
+Edinburgh,EDI,EGPH,Basel,BSL,LFSB
+Edinburgh,EDI,EGPH,Belfast City (George Best),BHD,EGAC
+Edinburgh,EDI,EGPH,Belfast Intl,BFS,EGAA
+Edinburgh,EDI,EGPH,Berlin Brandenburg,BER,EDDB
+Edinburgh,EDI,EGPH,Birmingham,BHX,EGBB
+Edinburgh,EDI,EGPH,Bordeaux,BOD,LFBD
+Edinburgh,EDI,EGPH,Bristol,BRS,EGGD
+Edinburgh,EDI,EGPH,Copenhagen,CPH,EKCH
+Edinburgh,EDI,EGPH,Corfu,CFU,LGKR
+Edinburgh,EDI,EGPH,Crete Heraklion,HER,LGIR
+Edinburgh,EDI,EGPH,Cyprus Paphos,PFO,LCPH
+Edinburgh,EDI,EGPH,Dalaman,DLM,LTBS
+Edinburgh,EDI,EGPH,Derry - Londonderry,LDY,EGAE
+Edinburgh,EDI,EGPH,Dubrovnik,DBV,LDDU
+Edinburgh,EDI,EGPH,Enfidha - Hammamet,NBE,DTNH
+Edinburgh,EDI,EGPH,Fuerteventura,FUE,GCFV
+Edinburgh,EDI,EGPH,Geneva,GVA,LSGG
+Edinburgh,EDI,EGPH,Gran Canaria,LPA,GCLP
+Edinburgh,EDI,EGPH,Grenoble,GNB,LFLS
+Edinburgh,EDI,EGPH,Hurghada,HRG,HEGN
+Edinburgh,EDI,EGPH,Innsbruck,INN,LOWI
+Edinburgh,EDI,EGPH,Jersey,JER,EGJJ
+Edinburgh,EDI,EGPH,Krakow,KRK,EPKK
+Edinburgh,EDI,EGPH,Lanzarote,ACE,GCRR
+Edinburgh,EDI,EGPH,Lisbon,LIS,LPPT
+Edinburgh,EDI,EGPH,Ljubljana,LJU,LJLJ
+Edinburgh,EDI,EGPH,London Gatwick,LGW,EGKK
+Edinburgh,EDI,EGPH,London Luton,LTN,EGGW
+Edinburgh,EDI,EGPH,London Southend,SEN,EGMC
+Edinburgh,EDI,EGPH,London Stansted,STN,EGSS
+Edinburgh,EDI,EGPH,Lyon,LYS,LFLL
+Edinburgh,EDI,EGPH,Madrid,MAD,LEMD
+Edinburgh,EDI,EGPH,Majorca Palma,PMI,LEPA
+Edinburgh,EDI,EGPH,Malaga,AGP,LEMG
+Edinburgh,EDI,EGPH,Marrakech,RAK,GMMX
+Edinburgh,EDI,EGPH,Milan Linate,LIN,LIML
+Edinburgh,EDI,EGPH,Milan Malpensa,MXP,LIMC
+Edinburgh,EDI,EGPH,Munich,MUC,EDDM
+Edinburgh,EDI,EGPH,Naples,NAP,LIRN
+Edinburgh,EDI,EGPH,Nice,NCE,LFMN
+Edinburgh,EDI,EGPH,Paris Charles de Gaulle,CDG,LFPG
+Edinburgh,EDI,EGPH,Prague,PRG,LKPR
+Edinburgh,EDI,EGPH,Reykjavik Keflavik,KEF,BIKF
+Edinburgh,EDI,EGPH,Rhodes,RHO,LGRP
+Edinburgh,EDI,EGPH,Rovaniemi,RVN,EFRO
+Edinburgh,EDI,EGPH,Sardinia Olbia,OLB,LIEO
+Edinburgh,EDI,EGPH,Sharm El Sheikh,SSH,HESH
+Edinburgh,EDI,EGPH,Sicily Catania,CTA,LICC
+Edinburgh,EDI,EGPH,Tenerife South,TFS,GCTS
+Edinburgh,EDI,EGPH,Tromsø,TOS,ENTC
+Edinburgh,EDI,EGPH,Venice Marco Polo,VCE,LIPZ
+Edinburgh,EDI,EGPH,Zurich,ZRH,LSZH
+Gibraltar,GIB,LXGB,Birmingham,BHX,EGBB
+Gibraltar,GIB,LXGB,Bristol,BRS,EGGD
+Gibraltar,GIB,LXGB,London Gatwick,LGW,EGKK
+Gibraltar,GIB,LXGB,Manchester,MAN,EGCC
+Glasgow,GLA,EGPF,Agadir,AGA,GMAD
+Glasgow,GLA,EGPF,Alicante,ALC,LEAL
+Glasgow,GLA,EGPF,Amsterdam,AMS,EHAM
+Glasgow,GLA,EGPF,Antalya,AYT,LTAI
+Glasgow,GLA,EGPF,Barcelona,BCN,LEBL
+Glasgow,GLA,EGPF,Belfast City (George Best),BHD,EGAC
+Glasgow,GLA,EGPF,Belfast Intl,BFS,EGAA
+Glasgow,GLA,EGPF,Berlin Brandenburg,BER,EDDB
+Glasgow,GLA,EGPF,Birmingham,BHX,EGBB
+Glasgow,GLA,EGPF,Bordeaux,BOD,LFBD
+Glasgow,GLA,EGPF,Bristol,BRS,EGGD
+Glasgow,GLA,EGPF,Crete Chania,CHQ,LGSA
+Glasgow,GLA,EGPF,Cyprus Larnaca,LCA,LCLK
+Glasgow,GLA,EGPF,Dalaman,DLM,LTBS
+Glasgow,GLA,EGPF,Enfidha - Hammamet,NBE,DTNH
+Glasgow,GLA,EGPF,Faro,FAO,LPFR
+Glasgow,GLA,EGPF,Fuerteventura,FUE,GCFV
+Glasgow,GLA,EGPF,Geneva,GVA,LSGG
+Glasgow,GLA,EGPF,Gran Canaria,LPA,GCLP
+Glasgow,GLA,EGPF,Hurghada,HRG,HEGN
+Glasgow,GLA,EGPF,Jersey,JER,EGJJ
+Glasgow,GLA,EGPF,Kos,KGS,LGKO
+Glasgow,GLA,EGPF,Krakow,KRK,EPKK
+Glasgow,GLA,EGPF,Lanzarote,ACE,GCRR
+Glasgow,GLA,EGPF,Lisbon,LIS,LPPT
+Glasgow,GLA,EGPF,London Gatwick,LGW,EGKK
+Glasgow,GLA,EGPF,London Luton,LTN,EGGW
+Glasgow,GLA,EGPF,London Stansted,STN,EGSS
+Glasgow,GLA,EGPF,Majorca Palma,PMI,LEPA
+Glasgow,GLA,EGPF,Malaga,AGP,LEMG
+Glasgow,GLA,EGPF,Malta,MLA,LMML
+Glasgow,GLA,EGPF,Marrakech,RAK,GMMX
+Glasgow,GLA,EGPF,Paris Charles de Gaulle,CDG,LFPG
+Glasgow,GLA,EGPF,Pisa (Tuscany),PSA,LIRP
+Glasgow,GLA,EGPF,Porto,OPO,LPPR
+Glasgow,GLA,EGPF,Prague,PRG,LKPR
+Glasgow,GLA,EGPF,Pula,PUY,LDPL
+Glasgow,GLA,EGPF,Reus,REU,LERS
+Glasgow,GLA,EGPF,Rome Fiumicino,FCO,LIRF
+Glasgow,GLA,EGPF,Sharm El Sheikh,SSH,HESH
+Glasgow,GLA,EGPF,Southampton,SOU,EGHI
+Glasgow,GLA,EGPF,Split,SPU,LDSP
+Glasgow,GLA,EGPF,Tenerife South,TFS,GCTS
+Inverness,INV,EGPE,Birmingham,BHX,EGBB
+Inverness,INV,EGPE,Bristol,BRS,EGGD
+Inverness,INV,EGPE,London Gatwick,LGW,EGKK
+Inverness,INV,EGPE,London Luton,LTN,EGGW
+Isle of Man,IOM,EGNS,Bristol,BRS,EGGD
+Isle of Man,IOM,EGNS,Geneva,GVA,LSGG
+Isle of Man,IOM,EGNS,Liverpool,LPL,EGGP
+Isle of Man,IOM,EGNS,London Gatwick,LGW,EGKK
+Isle of Man,IOM,EGNS,London Luton,LTN,EGGW
+Isle of Man,IOM,EGNS,Manchester,MAN,EGCC
+Jersey,JER,EGJJ,Belfast Intl,BFS,EGAA
+Jersey,JER,EGJJ,Birmingham,BHX,EGBB
+Jersey,JER,EGJJ,Edinburgh,EDI,EGPH
+Jersey,JER,EGJJ,Glasgow,GLA,EGPF
+Jersey,JER,EGJJ,Liverpool,LPL,EGGP
+Jersey,JER,EGJJ,London Gatwick,LGW,EGKK
+Jersey,JER,EGJJ,London Luton,LTN,EGGW
+Jersey,JER,EGJJ,London Southend,SEN,EGMC
+Jersey,JER,EGJJ,Manchester,MAN,EGCC
+Leeds Bradford,LBA,EGNM,Barcelona,BCN,LEBL
+Leeds Bradford,LBA,EGNM,Belfast Intl,BFS,EGAA
+Leeds Bradford,LBA,EGNM,Majorca Palma,PMI,LEPA
+Leeds Bradford,LBA,EGNM,Malaga,AGP,LEMG
+Leeds Bradford,LBA,EGNM,Paris Charles de Gaulle,CDG,LFPG
+Liverpool,LPL,EGGP,Alicante,ALC,LEAL
+Liverpool,LPL,EGGP,Almeria,LEI,LEAM
+Liverpool,LPL,EGGP,Amsterdam,AMS,EHAM
+Liverpool,LPL,EGGP,Antalya,AYT,LTAI
+Liverpool,LPL,EGGP,Barcelona,BCN,LEBL
+Liverpool,LPL,EGGP,Belfast City (George Best),BHD,EGAC
+Liverpool,LPL,EGGP,Belfast Intl,BFS,EGAA
+Liverpool,LPL,EGGP,Berlin Brandenburg,BER,EDDB
+Liverpool,LPL,EGGP,Bodrum,BJV,LTFE
+Liverpool,LPL,EGGP,Budapest,BUD,LHBP
+Liverpool,LPL,EGGP,Corfu,CFU,LGKR
+Liverpool,LPL,EGGP,Crete Heraklion,HER,LGIR
+Liverpool,LPL,EGGP,Cyprus Larnaca,LCA,LCLK
+Liverpool,LPL,EGGP,Cyprus Paphos,PFO,LCPH
+Liverpool,LPL,EGGP,Dalaman,DLM,LTBS
+Liverpool,LPL,EGGP,Derry - Londonderry,LDY,EGAE
+Liverpool,LPL,EGGP,Enfidha - Hammamet,NBE,DTNH
+Liverpool,LPL,EGGP,Faro,FAO,LPFR
+Liverpool,LPL,EGGP,Fuerteventura,FUE,GCFV
+Liverpool,LPL,EGGP,Geneva,GVA,LSGG
+Liverpool,LPL,EGGP,Gran Canaria,LPA,GCLP
+Liverpool,LPL,EGGP,Hurghada,HRG,HEGN
+Liverpool,LPL,EGGP,Isle of Man,IOM,EGNS
+Liverpool,LPL,EGGP,Jersey,JER,EGJJ
+Liverpool,LPL,EGGP,Kittila,KTT,EFKT
+Liverpool,LPL,EGGP,Kos,KGS,LGKO
+Liverpool,LPL,EGGP,Krakow,KRK,EPKK
+Liverpool,LPL,EGGP,Lanzarote,ACE,GCRR
+Liverpool,LPL,EGGP,Lisbon,LIS,LPPT
+Liverpool,LPL,EGGP,Majorca Palma,PMI,LEPA
+Liverpool,LPL,EGGP,Malaga,AGP,LEMG
+Liverpool,LPL,EGGP,Malta,MLA,LMML
+Liverpool,LPL,EGGP,Marrakech,RAK,GMMX
+Liverpool,LPL,EGGP,Milan Malpensa,MXP,LIMC
+Liverpool,LPL,EGGP,Naples,NAP,LIRN
+Liverpool,LPL,EGGP,Nice,NCE,LFMN
+Liverpool,LPL,EGGP,Paris Charles de Gaulle,CDG,LFPG
+Liverpool,LPL,EGGP,Prague,PRG,LKPR
+Liverpool,LPL,EGGP,Reykjavik Keflavik,KEF,BIKF
+Liverpool,LPL,EGGP,Salzburg,SZG,LOWS
+Liverpool,LPL,EGGP,Seville,SVQ,LEZL
+Liverpool,LPL,EGGP,Sharm El Sheikh,SSH,HESH
+Liverpool,LPL,EGGP,Split,SPU,LDSP
+Liverpool,LPL,EGGP,Tenerife South,TFS,GCTS
+London Gatwick,LGW,EGKK,Aberdeen,ABZ,EGPD
+London Gatwick,LGW,EGKK,Agadir,AGA,GMAD
+London Gatwick,LGW,EGKK,Akureyri,AEY,BIAR
+London Gatwick,LGW,EGKK,Alicante,ALC,LEAL
+London Gatwick,LGW,EGKK,Almeria,LEI,LEAM
+London Gatwick,LGW,EGKK,Amsterdam,AMS,EHAM
+London Gatwick,LGW,EGKK,Antalya,AYT,LTAI
+London Gatwick,LGW,EGKK,Athens,ATH,LGAV
+London Gatwick,LGW,EGKK,Barcelona,BCN,LEBL
+London Gatwick,LGW,EGKK,Bari,BRI,LIBD
+London Gatwick,LGW,EGKK,Basel,BSL,LFSB
+London Gatwick,LGW,EGKK,"Bastia, Corsica",BIA,LFKB
+London Gatwick,LGW,EGKK,Belfast City (George Best),BHD,EGAC
+London Gatwick,LGW,EGKK,Belfast Intl,BFS,EGAA
+London Gatwick,LGW,EGKK,Berlin Brandenburg,BER,EDDB
+London Gatwick,LGW,EGKK,Biarritz,BIQ,LFBZ
+London Gatwick,LGW,EGKK,Bodrum,BJV,LTFE
+London Gatwick,LGW,EGKK,Bordeaux,BOD,LFBD
+London Gatwick,LGW,EGKK,Brest Brittany,BES,LFRB
+London Gatwick,LGW,EGKK,Brindisi,BDS,LIBR
+London Gatwick,LGW,EGKK,Budapest,BUD,LHBP
+London Gatwick,LGW,EGKK,Burgas,BOJ,LBBG
+London Gatwick,LGW,EGKK,Copenhagen,CPH,EKCH
+London Gatwick,LGW,EGKK,Corfu,CFU,LGKR
+London Gatwick,LGW,EGKK,Crete Chania,CHQ,LGSA
+London Gatwick,LGW,EGKK,Crete Heraklion,HER,LGIR
+London Gatwick,LGW,EGKK,Cyprus Larnaca,LCA,LCLK
+London Gatwick,LGW,EGKK,Cyprus Paphos,PFO,LCPH
+London Gatwick,LGW,EGKK,Dalaman,DLM,LTBS
+London Gatwick,LGW,EGKK,Dubrovnik,DBV,LDDU
+London Gatwick,LGW,EGKK,Dusseldorf,DUS,EDDL
+London Gatwick,LGW,EGKK,Edinburgh,EDI,EGPH
+London Gatwick,LGW,EGKK,Enfidha - Hammamet,NBE,DTNH
+London Gatwick,LGW,EGKK,Faro,FAO,LPFR
+London Gatwick,LGW,EGKK,"Figari, Corsica",FSC,LFKF
+London Gatwick,LGW,EGKK,Friedrichshafen,FDH,EDNY
+London Gatwick,LGW,EGKK,Fuerteventura,FUE,GCFV
+London Gatwick,LGW,EGKK,Geneva,GVA,LSGG
+London Gatwick,LGW,EGKK,Gibraltar,GIB,LXGB
+London Gatwick,LGW,EGKK,Glasgow,GLA,EGPF
+London Gatwick,LGW,EGKK,Gran Canaria,LPA,GCLP
+London Gatwick,LGW,EGKK,Grenoble,GNB,LFLS
+London Gatwick,LGW,EGKK,Hamburg,HAM,EDDH
+London Gatwick,LGW,EGKK,Hurghada,HRG,HEGN
+London Gatwick,LGW,EGKK,Ibiza,IBZ,LEIB
+London Gatwick,LGW,EGKK,Innsbruck,INN,LOWI
+London Gatwick,LGW,EGKK,Inverness,INV,EGPE
+London Gatwick,LGW,EGKK,Isle of Man,IOM,EGNS
+London Gatwick,LGW,EGKK,Izmir,ADB,LTBJ
+London Gatwick,LGW,EGKK,Jersey,JER,EGJJ
+London Gatwick,LGW,EGKK,Kalamata,KLX,LGKL
+London Gatwick,LGW,EGKK,Kefalonia,EFL,LGKF
+London Gatwick,LGW,EGKK,Kittila,KTT,EFKT
+London Gatwick,LGW,EGKK,Kos,KGS,LGKO
+London Gatwick,LGW,EGKK,Krakow,KRK,EPKK
+London Gatwick,LGW,EGKK,La Rochelle,LRH,LFBH
+London Gatwick,LGW,EGKK,Lanzarote,ACE,GCRR
+London Gatwick,LGW,EGKK,Lisbon,LIS,LPPT
+London Gatwick,LGW,EGKK,Ljubljana,LJU,LJLJ
+London Gatwick,LGW,EGKK,Luxor,LXR,HELX
+London Gatwick,LGW,EGKK,Lyon,LYS,LFLL
+London Gatwick,LGW,EGKK,Madeira Funchal,FNC,LPMA
+London Gatwick,LGW,EGKK,Madrid,MAD,LEMD
+London Gatwick,LGW,EGKK,Majorca Palma,PMI,LEPA
+London Gatwick,LGW,EGKK,Malaga,AGP,LEMG
+London Gatwick,LGW,EGKK,Malta,MLA,LMML
+London Gatwick,LGW,EGKK,Marrakech,RAK,GMMX
+London Gatwick,LGW,EGKK,Marseille Provence,MRS,LFML
+London Gatwick,LGW,EGKK,Menorca Mahon,MAH,LEMH
+London Gatwick,LGW,EGKK,Milan Linate,LIN,LIML
+London Gatwick,LGW,EGKK,Milan Malpensa,MXP,LIMC
+London Gatwick,LGW,EGKK,Montpellier,MPL,LFMT
+London Gatwick,LGW,EGKK,Munich,MUC,EDDM
+London Gatwick,LGW,EGKK,Murcia Intl,RMU,LEMI
+London Gatwick,LGW,EGKK,Mykonos,JMK,LGMK
+London Gatwick,LGW,EGKK,Nantes,NTE,LFRS
+London Gatwick,LGW,EGKK,Naples,NAP,LIRN
+London Gatwick,LGW,EGKK,Newquay,NQY,EGHQ
+London Gatwick,LGW,EGKK,Nice,NCE,LFMN
+London Gatwick,LGW,EGKK,Nuremberg,NUE,EDDN
+London Gatwick,LGW,EGKK,Paris Charles de Gaulle,CDG,LFPG
+London Gatwick,LGW,EGKK,Pisa (Tuscany),PSA,LIRP
+London Gatwick,LGW,EGKK,Porto,OPO,LPPR
+London Gatwick,LGW,EGKK,Prague,PRG,LKPR
+London Gatwick,LGW,EGKK,Preveza,PVK,LGPZ
+London Gatwick,LGW,EGKK,Pula,PUY,LDPL
+London Gatwick,LGW,EGKK,Rennes,RNS,LFRN
+London Gatwick,LGW,EGKK,Reus,REU,LERS
+London Gatwick,LGW,EGKK,Reykjavik Keflavik,KEF,BIKF
+London Gatwick,LGW,EGKK,Rhodes,RHO,LGRP
+London Gatwick,LGW,EGKK,Rimini,RMI,LIPR
+London Gatwick,LGW,EGKK,Rome Fiumicino,FCO,LIRF
+London Gatwick,LGW,EGKK,Rovaniemi,RVN,EFRO
+London Gatwick,LGW,EGKK,Sal - Cape Verde,SID,GVAC
+London Gatwick,LGW,EGKK,Salzburg,SZG,LOWS
+London Gatwick,LGW,EGKK,Santorini,JTR,LGSR
+London Gatwick,LGW,EGKK,Sardinia Olbia,OLB,LIEO
+London Gatwick,LGW,EGKK,Scandinavian Mountains,SCR,ESKS
+London Gatwick,LGW,EGKK,Seville,SVQ,LEZL
+London Gatwick,LGW,EGKK,Sharm El Sheikh,SSH,HESH
+London Gatwick,LGW,EGKK,Sicily Catania,CTA,LICC
+London Gatwick,LGW,EGKK,Sicily Palermo,PMO,LICJ
+London Gatwick,LGW,EGKK,Skiathos,JSI,LGSK
+London Gatwick,LGW,EGKK,Sofia,SOF,LBSF
+London Gatwick,LGW,EGKK,Split,SPU,LDSP
+London Gatwick,LGW,EGKK,Strasbourg,SXB,LFST
+London Gatwick,LGW,EGKK,Tenerife South,TFS,GCTS
+London Gatwick,LGW,EGKK,Thessaloniki,SKG,LGTS
+London Gatwick,LGW,EGKK,Tivat,TIV,LYTV
+London Gatwick,LGW,EGKK,Toulouse,TLS,LFBO
+London Gatwick,LGW,EGKK,Tromsø,TOS,ENTC
+London Gatwick,LGW,EGKK,Turin,TRN,LIMF
+London Gatwick,LGW,EGKK,Valencia,VLC,LEVC
+London Gatwick,LGW,EGKK,Venice Marco Polo,VCE,LIPZ
+London Gatwick,LGW,EGKK,Verona,VRN,LIPX
+London Gatwick,LGW,EGKK,Vienna,VIE,LOWW
+London Gatwick,LGW,EGKK,Zadar,ZAD,LDZD
+London Gatwick,LGW,EGKK,Zante Zakynthos,ZTH,LGZA
+London Gatwick,LGW,EGKK,Zurich,ZRH,LSZH
+London Luton,LTN,EGGW,Aberdeen,ABZ,EGPD
+London Luton,LTN,EGGW,Agadir,AGA,GMAD
+London Luton,LTN,EGGW,Alicante,ALC,LEAL
+London Luton,LTN,EGGW,Almeria,LEI,LEAM
+London Luton,LTN,EGGW,Amsterdam,AMS,EHAM
+London Luton,LTN,EGGW,Antalya,AYT,LTAI
+London Luton,LTN,EGGW,Barcelona,BCN,LEBL
+London Luton,LTN,EGGW,Basel,BSL,LFSB
+London Luton,LTN,EGGW,Belfast City (George Best),BHD,EGAC
+London Luton,LTN,EGGW,Belfast Intl,BFS,EGAA
+London Luton,LTN,EGGW,Berlin Brandenburg,BER,EDDB
+London Luton,LTN,EGGW,Bodrum,BJV,LTFE
+London Luton,LTN,EGGW,Bordeaux,BOD,LFBD
+London Luton,LTN,EGGW,Cairo Sphinx,SPX,HESX
+London Luton,LTN,EGGW,Corfu,CFU,LGKR
+London Luton,LTN,EGGW,Crete Chania,CHQ,LGSA
+London Luton,LTN,EGGW,Crete Heraklion,HER,LGIR
+London Luton,LTN,EGGW,Cyprus Larnaca,LCA,LCLK
+London Luton,LTN,EGGW,Cyprus Paphos,PFO,LCPH
+London Luton,LTN,EGGW,Dalaman,DLM,LTBS
+London Luton,LTN,EGGW,Djerba–Zarzis,DJE,DTTJ
+London Luton,LTN,EGGW,Edinburgh,EDI,EGPH
+London Luton,LTN,EGGW,Enfidha - Hammamet,NBE,DTNH
+London Luton,LTN,EGGW,Faro,FAO,LPFR
+London Luton,LTN,EGGW,Fuerteventura,FUE,GCFV
+London Luton,LTN,EGGW,Geneva,GVA,LSGG
+London Luton,LTN,EGGW,Glasgow,GLA,EGPF
+London Luton,LTN,EGGW,Gran Canaria,LPA,GCLP
+London Luton,LTN,EGGW,Grenoble,GNB,LFLS
+London Luton,LTN,EGGW,Hurghada,HRG,HEGN
+London Luton,LTN,EGGW,Ibiza,IBZ,LEIB
+London Luton,LTN,EGGW,Innsbruck,INN,LOWI
+London Luton,LTN,EGGW,Inverness,INV,EGPE
+London Luton,LTN,EGGW,Isle of Man,IOM,EGNS
+London Luton,LTN,EGGW,Izmir,ADB,LTBJ
+London Luton,LTN,EGGW,Jersey,JER,EGJJ
+London Luton,LTN,EGGW,Kittila,KTT,EFKT
+London Luton,LTN,EGGW,Lanzarote,ACE,GCRR
+London Luton,LTN,EGGW,Lisbon,LIS,LPPT
+London Luton,LTN,EGGW,Ljubljana,LJU,LJLJ
+London Luton,LTN,EGGW,Lyon,LYS,LFLL
+London Luton,LTN,EGGW,Madeira Funchal,FNC,LPMA
+London Luton,LTN,EGGW,Madrid,MAD,LEMD
+London Luton,LTN,EGGW,Majorca Palma,PMI,LEPA
+London Luton,LTN,EGGW,Malaga,AGP,LEMG
+London Luton,LTN,EGGW,Marrakech,RAK,GMMX
+London Luton,LTN,EGGW,Menorca Mahon,MAH,LEMH
+London Luton,LTN,EGGW,Milan Malpensa,MXP,LIMC
+London Luton,LTN,EGGW,Munich,MUC,EDDM
+London Luton,LTN,EGGW,Murcia Intl,RMU,LEMI
+London Luton,LTN,EGGW,Naples,NAP,LIRN
+London Luton,LTN,EGGW,Nice,NCE,LFMN
+London Luton,LTN,EGGW,Nuremberg,NUE,EDDN
+London Luton,LTN,EGGW,Paris Charles de Gaulle,CDG,LFPG
+London Luton,LTN,EGGW,Pisa (Tuscany),PSA,LIRP
+London Luton,LTN,EGGW,Porto,OPO,LPPR
+London Luton,LTN,EGGW,Prague,PRG,LKPR
+London Luton,LTN,EGGW,Pula,PUY,LDPL
+London Luton,LTN,EGGW,Rabat Sale Airport,RBA,GMME
+London Luton,LTN,EGGW,Reus,REU,LERS
+London Luton,LTN,EGGW,Reykjavik Keflavik,KEF,BIKF
+London Luton,LTN,EGGW,Rhodes,RHO,LGRP
+London Luton,LTN,EGGW,Rovaniemi,RVN,EFRO
+London Luton,LTN,EGGW,Salzburg,SZG,LOWS
+London Luton,LTN,EGGW,Sardinia Olbia,OLB,LIEO
+London Luton,LTN,EGGW,Sharm El Sheikh,SSH,HESH
+London Luton,LTN,EGGW,Sicily Catania,CTA,LICC
+London Luton,LTN,EGGW,Sicily Palermo,PMO,LICJ
+London Luton,LTN,EGGW,Split,SPU,LDSP
+London Luton,LTN,EGGW,Strasbourg,SXB,LFST
+London Luton,LTN,EGGW,Tbilisi,TBS,UGTB
+London Luton,LTN,EGGW,Tenerife South,TFS,GCTS
+London Luton,LTN,EGGW,Tivat,TIV,LYTV
+London Luton,LTN,EGGW,Turin,TRN,LIMF
+London Luton,LTN,EGGW,Zante Zakynthos,ZTH,LGZA
+London Luton,LTN,EGGW,Zurich,ZRH,LSZH
+London Southend,SEN,EGMC,Alicante,ALC,LEAL
+London Southend,SEN,EGMC,Almeria,LEI,LEAM
+London Southend,SEN,EGMC,Amsterdam,AMS,EHAM
+London Southend,SEN,EGMC,Antalya,AYT,LTAI
+London Southend,SEN,EGMC,Barcelona,BCN,LEBL
+London Southend,SEN,EGMC,Belfast City (George Best),BHD,EGAC
+London Southend,SEN,EGMC,Berlin Brandenburg,BER,EDDB
+London Southend,SEN,EGMC,Budapest,BUD,LHBP
+London Southend,SEN,EGMC,Dalaman,DLM,LTBS
+London Southend,SEN,EGMC,Edinburgh,EDI,EGPH
+London Southend,SEN,EGMC,Enfidha - Hammamet,NBE,DTNH
+London Southend,SEN,EGMC,Faro,FAO,LPFR
+London Southend,SEN,EGMC,Geneva,GVA,LSGG
+London Southend,SEN,EGMC,Gran Canaria,LPA,GCLP
+London Southend,SEN,EGMC,Ibiza,IBZ,LEIB
+London Southend,SEN,EGMC,Jersey,JER,EGJJ
+London Southend,SEN,EGMC,Lanzarote,ACE,GCRR
+London Southend,SEN,EGMC,Lyon,LYS,LFLL
+London Southend,SEN,EGMC,Majorca Palma,PMI,LEPA
+London Southend,SEN,EGMC,Malaga,AGP,LEMG
+London Southend,SEN,EGMC,Malta,MLA,LMML
+London Southend,SEN,EGMC,Marrakech,RAK,GMMX
+London Southend,SEN,EGMC,Munich,MUC,EDDM
+London Southend,SEN,EGMC,Paris Charles de Gaulle,CDG,LFPG
+London Southend,SEN,EGMC,Pisa (Tuscany),PSA,LIRP
+London Southend,SEN,EGMC,Rovaniemi,RVN,EFRO
+London Southend,SEN,EGMC,Salzburg,SZG,LOWS
+London Southend,SEN,EGMC,Sharm El Sheikh,SSH,HESH
+London Southend,SEN,EGMC,Tenerife South,TFS,GCTS
+London Stansted,STN,EGSS,Amsterdam,AMS,EHAM
+London Stansted,STN,EGSS,Belfast Intl,BFS,EGAA
+London Stansted,STN,EGSS,Edinburgh,EDI,EGPH
+London Stansted,STN,EGSS,Geneva,GVA,LSGG
+London Stansted,STN,EGSS,Glasgow,GLA,EGPF
+London Stansted,STN,EGSS,Paris Charles de Gaulle,CDG,LFPG
+London Stansted,STN,EGSS,Zurich,ZRH,LSZH
+Manchester,MAN,EGCC,Agadir,AGA,GMAD
+Manchester,MAN,EGCC,Akureyri,AEY,BIAR
+Manchester,MAN,EGCC,Alicante,ALC,LEAL
+Manchester,MAN,EGCC,Amsterdam,AMS,EHAM
+Manchester,MAN,EGCC,Antalya,AYT,LTAI
+Manchester,MAN,EGCC,Athens,ATH,LGAV
+Manchester,MAN,EGCC,Barcelona,BCN,LEBL
+Manchester,MAN,EGCC,Bari,BRI,LIBD
+Manchester,MAN,EGCC,Basel,BSL,LFSB
+Manchester,MAN,EGCC,Belfast City (George Best),BHD,EGAC
+Manchester,MAN,EGCC,Belfast Intl,BFS,EGAA
+Manchester,MAN,EGCC,Berlin Brandenburg,BER,EDDB
+Manchester,MAN,EGCC,Bilbao,BIO,LEBB
+Manchester,MAN,EGCC,Bodrum,BJV,LTFE
+Manchester,MAN,EGCC,Bordeaux,BOD,LFBD
+Manchester,MAN,EGCC,Burgas,BOJ,LBBG
+Manchester,MAN,EGCC,Cairo Sphinx,SPX,HESX
+Manchester,MAN,EGCC,Copenhagen,CPH,EKCH
+Manchester,MAN,EGCC,Corfu,CFU,LGKR
+Manchester,MAN,EGCC,Crete Chania,CHQ,LGSA
+Manchester,MAN,EGCC,Crete Heraklion,HER,LGIR
+Manchester,MAN,EGCC,Cyprus Larnaca,LCA,LCLK
+Manchester,MAN,EGCC,Cyprus Paphos,PFO,LCPH
+Manchester,MAN,EGCC,Dalaman,DLM,LTBS
+Manchester,MAN,EGCC,Djerba–Zarzis,DJE,DTTJ
+Manchester,MAN,EGCC,Dubrovnik,DBV,LDDU
+Manchester,MAN,EGCC,Enfidha - Hammamet,NBE,DTNH
+Manchester,MAN,EGCC,Faro,FAO,LPFR
+Manchester,MAN,EGCC,Fuerteventura,FUE,GCFV
+Manchester,MAN,EGCC,Geneva,GVA,LSGG
+Manchester,MAN,EGCC,Gibraltar,GIB,LXGB
+Manchester,MAN,EGCC,Gran Canaria,LPA,GCLP
+Manchester,MAN,EGCC,Grenoble,GNB,LFLS
+Manchester,MAN,EGCC,Hamburg,HAM,EDDH
+Manchester,MAN,EGCC,Hurghada,HRG,HEGN
+Manchester,MAN,EGCC,Ibiza,IBZ,LEIB
+Manchester,MAN,EGCC,Innsbruck,INN,LOWI
+Manchester,MAN,EGCC,Isle of Man,IOM,EGNS
+Manchester,MAN,EGCC,Jersey,JER,EGJJ
+Manchester,MAN,EGCC,Kalamata,KLX,LGKL
+Manchester,MAN,EGCC,Kefalonia,EFL,LGKF
+Manchester,MAN,EGCC,Kittila,KTT,EFKT
+Manchester,MAN,EGCC,Kos,KGS,LGKO
+Manchester,MAN,EGCC,Krakow,KRK,EPKK
+Manchester,MAN,EGCC,La Rochelle,LRH,LFBH
+Manchester,MAN,EGCC,Lanzarote,ACE,GCRR
+Manchester,MAN,EGCC,Lisbon,LIS,LPPT
+Manchester,MAN,EGCC,Ljubljana,LJU,LJLJ
+Manchester,MAN,EGCC,Lyon,LYS,LFLL
+Manchester,MAN,EGCC,Madeira Funchal,FNC,LPMA
+Manchester,MAN,EGCC,Madrid,MAD,LEMD
+Manchester,MAN,EGCC,Majorca Palma,PMI,LEPA
+Manchester,MAN,EGCC,Malaga,AGP,LEMG
+Manchester,MAN,EGCC,Malta,MLA,LMML
+Manchester,MAN,EGCC,Marrakech,RAK,GMMX
+Manchester,MAN,EGCC,Menorca Mahon,MAH,LEMH
+Manchester,MAN,EGCC,Milan Linate,LIN,LIML
+Manchester,MAN,EGCC,Milan Malpensa,MXP,LIMC
+Manchester,MAN,EGCC,Montpellier,MPL,LFMT
+Manchester,MAN,EGCC,Munich,MUC,EDDM
+Manchester,MAN,EGCC,Murcia Intl,RMU,LEMI
+Manchester,MAN,EGCC,Mykonos,JMK,LGMK
+Manchester,MAN,EGCC,Naples,NAP,LIRN
+Manchester,MAN,EGCC,Newquay,NQY,EGHQ
+Manchester,MAN,EGCC,Nice,NCE,LFMN
+Manchester,MAN,EGCC,Nuremberg,NUE,EDDN
+Manchester,MAN,EGCC,Oslo,OSL,ENGM
+Manchester,MAN,EGCC,Paris Charles de Gaulle,CDG,LFPG
+Manchester,MAN,EGCC,Pisa (Tuscany),PSA,LIRP
+Manchester,MAN,EGCC,Porto,OPO,LPPR
+Manchester,MAN,EGCC,Prague,PRG,LKPR
+Manchester,MAN,EGCC,Preveza,PVK,LGPZ
+Manchester,MAN,EGCC,Rennes,RNS,LFRN
+Manchester,MAN,EGCC,Reus,REU,LERS
+Manchester,MAN,EGCC,Reykjavik Keflavik,KEF,BIKF
+Manchester,MAN,EGCC,Rhodes,RHO,LGRP
+Manchester,MAN,EGCC,Rome Fiumicino,FCO,LIRF
+Manchester,MAN,EGCC,Rovaniemi,RVN,EFRO
+Manchester,MAN,EGCC,Sal - Cape Verde,SID,GVAC
+Manchester,MAN,EGCC,Santorini,JTR,LGSR
+Manchester,MAN,EGCC,Scandinavian Mountains,SCR,ESKS
+Manchester,MAN,EGCC,Sharm El Sheikh,SSH,HESH
+Manchester,MAN,EGCC,Sicily Catania,CTA,LICC
+Manchester,MAN,EGCC,Skiathos,JSI,LGSK
+Manchester,MAN,EGCC,Sofia,SOF,LBSF
+Manchester,MAN,EGCC,Split,SPU,LDSP
+Manchester,MAN,EGCC,Strasbourg,SXB,LFST
+Manchester,MAN,EGCC,Tenerife South,TFS,GCTS
+Manchester,MAN,EGCC,Thessaloniki,SKG,LGTS
+Manchester,MAN,EGCC,Tivat,TIV,LYTV
+Manchester,MAN,EGCC,Tromsø,TOS,ENTC
+Manchester,MAN,EGCC,Turin,TRN,LIMF
+Manchester,MAN,EGCC,Venice Marco Polo,VCE,LIPZ
+Manchester,MAN,EGCC,Verona,VRN,LIPX
+Manchester,MAN,EGCC,Vienna,VIE,LOWW
+Manchester,MAN,EGCC,Zante Zakynthos,ZTH,LGZA
+Manchester,MAN,EGCC,Zurich,ZRH,LSZH
+Newcastle,NCL,EGNT,Alicante,ALC,LEAL
+Newcastle,NCL,EGNT,Amsterdam,AMS,EHAM
+Newcastle,NCL,EGNT,Antalya,AYT,LTAI
+Newcastle,NCL,EGNT,Barcelona,BCN,LEBL
+Newcastle,NCL,EGNT,Belfast Intl,BFS,EGAA
+Newcastle,NCL,EGNT,Berlin Brandenburg,BER,EDDB
+Newcastle,NCL,EGNT,Bristol,BRS,EGGD
+Newcastle,NCL,EGNT,Copenhagen,CPH,EKCH
+Newcastle,NCL,EGNT,Corfu,CFU,LGKR
+Newcastle,NCL,EGNT,Dalaman,DLM,LTBS
+Newcastle,NCL,EGNT,Enfidha - Hammamet,NBE,DTNH
+Newcastle,NCL,EGNT,Faro,FAO,LPFR
+Newcastle,NCL,EGNT,Fuerteventura,FUE,GCFV
+Newcastle,NCL,EGNT,Geneva,GVA,LSGG
+Newcastle,NCL,EGNT,Hurghada,HRG,HEGN
+Newcastle,NCL,EGNT,Krakow,KRK,EPKK
+Newcastle,NCL,EGNT,Lisbon,LIS,LPPT
+Newcastle,NCL,EGNT,Majorca Palma,PMI,LEPA
+Newcastle,NCL,EGNT,Malaga,AGP,LEMG
+Newcastle,NCL,EGNT,Malta,MLA,LMML
+Newcastle,NCL,EGNT,Marrakech,RAK,GMMX
+Newcastle,NCL,EGNT,Nice,NCE,LFMN
+Newcastle,NCL,EGNT,Paris Charles de Gaulle,CDG,LFPG
+Newcastle,NCL,EGNT,Prague,PRG,LKPR
+Newcastle,NCL,EGNT,Reus,REU,LERS
+Newcastle,NCL,EGNT,Reykjavik Keflavik,KEF,BIKF
+Newcastle,NCL,EGNT,Rhodes,RHO,LGRP
+Newcastle,NCL,EGNT,Rome Fiumicino,FCO,LIRF
+Newcastle,NCL,EGNT,Rovaniemi,RVN,EFRO
+Newcastle,NCL,EGNT,Sharm El Sheikh,SSH,HESH
+Newcastle,NCL,EGNT,Tenerife South,TFS,GCTS
+Newquay,NQY,EGHQ,Geneva,GVA,LSGG
+Newquay,NQY,EGHQ,London Gatwick,LGW,EGKK
+Newquay,NQY,EGHQ,Manchester,MAN,EGCC
+Southampton,SOU,EGHI,Alicante,ALC,LEAL
+Southampton,SOU,EGHI,Barcelona,BCN,LEBL
+Southampton,SOU,EGHI,Belfast Intl,BFS,EGAA
+Southampton,SOU,EGHI,Faro,FAO,LPFR
+Southampton,SOU,EGHI,Geneva,GVA,LSGG
+Southampton,SOU,EGHI,Glasgow,GLA,EGPF
+Southampton,SOU,EGHI,Majorca Palma,PMI,LEPA
+Southampton,SOU,EGHI,Paris Charles de Gaulle,CDG,LFPG
+Southampton,SOU,EGHI,Paris Orly,ORY,LFPO

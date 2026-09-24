@@ -24,8 +24,15 @@ DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
 # Round-trip pairing (computed once at startup from the dataset)
 # ---------------------------------------------------------------------
 
+def flight_number_digits(flight_number):
+    """The numeric part of a flight number as a string ("FR2016" -> "2016").
+    Skips the 2-character airline designator first, since it can contain
+    a digit itself - easyJet's is U2, so "U28391" is flight 8391."""
+    return "".join(ch for ch in flight_number[2:] if ch.isdigit())
+
+
 def _numeric_part(flight_number):
-    return int("".join(ch for ch in flight_number if ch.isdigit()))
+    return int(flight_number_digits(flight_number))
 
 
 def find_round_trip_pairs(routes):

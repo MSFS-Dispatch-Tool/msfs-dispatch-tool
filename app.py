@@ -14,7 +14,7 @@ import db
 import auth
 import blog
 from generator import (
-    resolve_airport, find_round_trip_pairs, find_itineraries,
+    resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras
 )
 from timeutils import (
@@ -1144,7 +1144,7 @@ def simbrief_redirect_url():
         "orig": route_leg["departure_icao"],
         "dest": route_leg["arrival_icao"],
         "airline": SIMBRIEF_AIRLINE_ICAO,
-        "fltnum": "".join(ch for ch in fn if ch.isdigit()),
+        "fltnum": flight_number_digits(fn),
         "date": simbrief_date_str(),
         "civalue": civalue,
         "pax": pax,

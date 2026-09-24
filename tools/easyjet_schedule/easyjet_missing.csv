@@ -1,0 +1,317 @@
+departure_city,departure_iata,departure_icao,arrival_city,arrival_iata,arrival_icao,status
+Innsbruck,INN,LOWI,Birmingham,BHX,EGBB,no_flights
+Innsbruck,INN,LOWI,Bristol,BRS,EGGD,no_flights
+Innsbruck,INN,LOWI,Edinburgh,EDI,EGPH,no_flights
+Innsbruck,INN,LOWI,London Luton,LTN,EGGW,no_flights
+Innsbruck,INN,LOWI,Manchester,MAN,EGCC,no_flights
+Salzburg,SZG,LOWS,Bristol,BRS,EGGD,no_flights
+Salzburg,SZG,LOWS,Liverpool,LPL,EGGP,no_flights
+Salzburg,SZG,LOWS,London Gatwick,LGW,EGKK,no_flights
+Salzburg,SZG,LOWS,London Luton,LTN,EGGW,no_flights
+Salzburg,SZG,LOWS,London Southend,SEN,EGMC,no_flights
+Vienna,VIE,LOWW,Basel,BSL,LFSB,no_flights
+Vienna,VIE,LOWW,Bristol,BRS,EGGD,no_flights
+Vienna,VIE,LOWW,London Gatwick,LGW,EGKK,no_flights
+Vienna,VIE,LOWW,Manchester,MAN,EGCC,no_flights
+Brussels Intl,BRU,EBBR,Nantes,NTE,LFRS,no_flights
+Sofia,SOF,LBSF,London Gatwick,LGW,EGKK,no_flights
+Sofia,SOF,LBSF,Manchester,MAN,EGCC,no_flights
+Sal - Cape Verde,SID,GVAC,Amsterdam,AMS,EHAM,no_flights
+Cyprus Larnaca,LCA,LCLK,Paris Charles de Gaulle,CDG,LFPG,no_flights
+Cyprus Paphos,PFO,LCPH,Liverpool,LPL,EGGP,no_flights
+Prague,PRG,LKPR,Hamburg,HAM,EDDH,no_flights
+Prague,PRG,LKPR,Lille,LIL,LFQQ,no_flights
+Prague,PRG,LKPR,Marrakech,RAK,GMMX,no_flights
+Copenhagen,CPH,EKCH,Birmingham,BHX,EGBB,no_flights
+Copenhagen,CPH,EKCH,Newcastle,NCL,EGNT,no_flights
+Cairo Sphinx,SPX,HESX,Berlin Brandenburg,BER,EDDB,no_flights
+Cairo Sphinx,SPX,HESX,Geneva,GVA,LSGG,no_flights
+Cairo Sphinx,SPX,HESX,Manchester,MAN,EGCC,no_flights
+Cairo Sphinx,SPX,HESX,Naples,NAP,LIRN,no_flights
+Cairo Sphinx,SPX,HESX,Nice,NCE,LFMN,no_flights
+Hurghada,HRG,HEGN,Edinburgh,EDI,EGPH,no_flights
+Hurghada,HRG,HEGN,Newcastle,NCL,EGNT,no_flights
+Luxor,LXR,HELX,London Gatwick,LGW,EGKK,no_flights
+Luxor,LXR,HELX,Lyon,LYS,LFLL,no_flights
+Luxor,LXR,HELX,Nantes,NTE,LFRS,no_flights
+Marsa Alam,RMF,HEMA,Berlin Brandenburg,BER,EDDB,no_flights
+Sharm El Sheikh,SSH,HESH,Amsterdam,AMS,EHAM,no_flights
+Sharm El Sheikh,SSH,HESH,Belfast Intl,BFS,EGAA,no_flights
+Sharm El Sheikh,SSH,HESH,Edinburgh,EDI,EGPH,no_flights
+Sharm El Sheikh,SSH,HESH,London Southend,SEN,EGMC,no_flights
+Kittila,KTT,EFKT,Liverpool,LPL,EGGP,no_flights
+Kittila,KTT,EFKT,London Gatwick,LGW,EGKK,no_flights
+Kittila,KTT,EFKT,London Luton,LTN,EGGW,no_flights
+Kittila,KTT,EFKT,Manchester,MAN,EGCC,no_flights
+Kittila,KTT,EFKT,Milan Malpensa,MXP,LIMC,no_flights
+Rovaniemi,RVN,EFRO,Belfast Intl,BFS,EGAA,no_flights
+Rovaniemi,RVN,EFRO,Berlin Brandenburg,BER,EDDB,no_flights
+Rovaniemi,RVN,EFRO,Birmingham,BHX,EGBB,no_flights
+Rovaniemi,RVN,EFRO,Bristol,BRS,EGGD,no_flights
+Rovaniemi,RVN,EFRO,Edinburgh,EDI,EGPH,no_flights
+Rovaniemi,RVN,EFRO,London Gatwick,LGW,EGKK,no_flights
+Rovaniemi,RVN,EFRO,London Luton,LTN,EGGW,no_flights
+Rovaniemi,RVN,EFRO,London Southend,SEN,EGMC,no_flights
+Rovaniemi,RVN,EFRO,Lyon,LYS,LFLL,no_flights
+Rovaniemi,RVN,EFRO,Manchester,MAN,EGCC,no_flights
+Rovaniemi,RVN,EFRO,Milan Malpensa,MXP,LIMC,no_flights
+Rovaniemi,RVN,EFRO,Newcastle,NCL,EGNT,no_flights
+Rovaniemi,RVN,EFRO,Paris Charles de Gaulle,CDG,LFPG,no_flights
+Bordeaux,BOD,LFBD,Agadir,AGA,GMAD,no_flights
+Bordeaux,BOD,LFBD,Gran Canaria,LPA,GCLP,no_flights
+Bordeaux,BOD,LFBD,Malaga,AGP,LEMG,no_flights
+Bordeaux,BOD,LFBD,Naples,NAP,LIRN,no_flights
+Grenoble,GNB,LFLS,Birmingham,BHX,EGBB,no_flights
+Grenoble,GNB,LFLS,Bristol,BRS,EGGD,no_flights
+Grenoble,GNB,LFLS,Edinburgh,EDI,EGPH,no_flights
+Grenoble,GNB,LFLS,London Gatwick,LGW,EGKK,no_flights
+Grenoble,GNB,LFLS,London Luton,LTN,EGGW,no_flights
+Grenoble,GNB,LFLS,Manchester,MAN,EGCC,no_flights
+Lille,LIL,LFQQ,Prague,PRG,LKPR,no_flights
+Lyon,LYS,LFLL,Belfast Intl,BFS,EGAA,no_flights
+Lyon,LYS,LFLL,Bristol,BRS,EGGD,no_flights
+Lyon,LYS,LFLL,London Southend,SEN,EGMC,no_flights
+Lyon,LYS,LFLL,Luxor,LXR,HELX,no_flights
+Lyon,LYS,LFLL,Nice,NCE,LFMN,no_flights
+Lyon,LYS,LFLL,Rovaniemi,RVN,EFRO,no_flights
+Nantes,NTE,LFRS,Brussels Intl,BRU,EBBR,no_flights
+Nantes,NTE,LFRS,Essaouira,ESU,GMMI,no_flights
+Nantes,NTE,LFRS,Luxor,LXR,HELX,no_flights
+Nantes,NTE,LFRS,Madrid,MAD,LEMD,no_flights
+Nice,NCE,LFMN,Cairo Sphinx,SPX,HESX,no_flights
+Nice,NCE,LFMN,Lyon,LYS,LFLL,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Belgrade,BEG,LYBE,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Cyprus Larnaca,LCA,LCLK,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Fuerteventura,FUE,GCFV,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Rovaniemi,RVN,EFRO,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Southampton,SOU,EGHI,no_flights
+Paris Charles de Gaulle,CDG,LFPG,Tromsø,TOS,ENTC,no_flights
+Strasbourg,SXB,LFST,London Luton,LTN,EGGW,no_flights
+Strasbourg,SXB,LFST,Manchester,MAN,EGCC,no_flights
+Strasbourg,SXB,LFST,Rome Fiumicino,FCO,LIRF,no_flights
+Berlin Brandenburg,BER,EDDB,Cairo Sphinx,SPX,HESX,no_flights
+Berlin Brandenburg,BER,EDDB,Lanzarote,ACE,GCRR,no_flights
+Berlin Brandenburg,BER,EDDB,Liverpool,LPL,EGGP,no_flights
+Berlin Brandenburg,BER,EDDB,Marsa Alam,RMF,HEMA,no_flights
+Berlin Brandenburg,BER,EDDB,Newcastle,NCL,EGNT,no_flights
+Berlin Brandenburg,BER,EDDB,Rovaniemi,RVN,EFRO,no_flights
+Berlin Brandenburg,BER,EDDB,Santa Cruz de la Palma,SPC,GCLA,no_flights
+Berlin Brandenburg,BER,EDDB,Tromsø,TOS,ENTC,no_flights
+Friedrichshafen,FDH,EDNY,London Gatwick,LGW,EGKK,no_flights
+Hamburg,HAM,EDDH,Prague,PRG,LKPR,no_flights
+Hamburg,HAM,EDDH,Seville,SVQ,LEZL,no_flights
+Nuremberg,NUE,EDDN,London Gatwick,LGW,EGKK,no_flights
+Nuremberg,NUE,EDDN,London Luton,LTN,EGGW,no_flights
+Nuremberg,NUE,EDDN,Manchester,MAN,EGCC,no_flights
+Nuremberg,NUE,EDDN,Milan Malpensa,MXP,LIMC,no_flights
+Budapest,BUD,LHBP,Belfast Intl,BFS,EGAA,no_flights
+Budapest,BUD,LHBP,Bristol,BRS,EGGD,no_flights
+Budapest,BUD,LHBP,Liverpool,LPL,EGGP,no_flights
+Budapest,BUD,LHBP,London Southend,SEN,EGMC,no_flights
+Akureyri,AEY,BIAR,London Gatwick,LGW,EGKK,no_flights
+Akureyri,AEY,BIAR,Manchester,MAN,EGCC,no_flights
+Reykjavik Keflavik,KEF,BIKF,Birmingham,BHX,EGBB,no_flights
+Reykjavik Keflavik,KEF,BIKF,Bristol,BRS,EGGD,no_flights
+Reykjavik Keflavik,KEF,BIKF,Liverpool,LPL,EGGP,no_flights
+Reykjavik Keflavik,KEF,BIKF,London Gatwick,LGW,EGKK,no_flights
+Reykjavik Keflavik,KEF,BIKF,Newcastle,NCL,EGNT,no_flights
+"Costiera Amalfitana Salerno, Naples",QSR,LIRI,Milan Malpensa,MXP,LIMC,no_flights
+Milan Linate,LIN,LIML,Geneva,GVA,LSGG,no_flights
+Milan Linate,LIN,LIML,Gran Canaria,LPA,GCLP,no_flights
+Milan Malpensa,MXP,LIMC,"Costiera Amalfitana Salerno, Naples",QSR,LIRI,no_flights
+Milan Malpensa,MXP,LIMC,Kittila,KTT,EFKT,no_flights
+Milan Malpensa,MXP,LIMC,Liverpool,LPL,EGGP,no_flights
+Milan Malpensa,MXP,LIMC,Malta,MLA,LMML,no_flights
+Milan Malpensa,MXP,LIMC,Nuremberg,NUE,EDDN,no_flights
+Milan Malpensa,MXP,LIMC,Rovaniemi,RVN,EFRO,no_flights
+Milan Malpensa,MXP,LIMC,Tromsø,TOS,ENTC,no_flights
+Naples,NAP,LIRN,Bordeaux,BOD,LFBD,no_flights
+Naples,NAP,LIRN,Cairo Sphinx,SPX,HESX,no_flights
+Naples,NAP,LIRN,Gran Canaria,LPA,GCLP,no_flights
+Naples,NAP,LIRN,Luxembourg,LUX,ELLX,no_flights
+Rome Fiumicino,FCO,LIRF,Belfast Intl,BFS,EGAA,no_flights
+Rome Fiumicino,FCO,LIRF,Strasbourg,SXB,LFST,no_flights
+Turin,TRN,LIMF,Bristol,BRS,EGGD,no_flights
+Turin,TRN,LIMF,London Gatwick,LGW,EGKK,no_flights
+Turin,TRN,LIMF,London Luton,LTN,EGGW,no_flights
+Turin,TRN,LIMF,Manchester,MAN,EGCC,no_flights
+Luxembourg,LUX,ELLX,Naples,NAP,LIRN,no_flights
+Malta,MLA,LMML,Milan Malpensa,MXP,LIMC,no_flights
+Agadir,AGA,GMAD,Birmingham,BHX,EGBB,no_flights
+Agadir,AGA,GMAD,Bordeaux,BOD,LFBD,no_flights
+Agadir,AGA,GMAD,Glasgow,GLA,EGPF,no_flights
+Essaouira,ESU,GMMI,Nantes,NTE,LFRS,no_flights
+Marrakech,RAK,GMMX,Belfast Intl,BFS,EGAA,no_flights
+Marrakech,RAK,GMMX,Glasgow,GLA,EGPF,no_flights
+Marrakech,RAK,GMMX,Newcastle,NCL,EGNT,no_flights
+Marrakech,RAK,GMMX,Prague,PRG,LKPR,no_flights
+Marrakech,RAK,GMMX,Zurich,ZRH,LSZH,no_flights
+Rabat Sale Airport,RBA,GMME,London Luton,LTN,EGGW,no_flights
+Amsterdam,AMS,EHAM,Lanzarote,ACE,GCRR,no_flights
+Amsterdam,AMS,EHAM,Sal - Cape Verde,SID,GVAC,no_flights
+Amsterdam,AMS,EHAM,Sharm El Sheikh,SSH,HESH,no_flights
+Amsterdam,AMS,EHAM,Tromsø,TOS,ENTC,no_flights
+Tromsø,TOS,ENTC,Amsterdam,AMS,EHAM,no_flights
+Tromsø,TOS,ENTC,Berlin Brandenburg,BER,EDDB,no_flights
+Tromsø,TOS,ENTC,Bristol,BRS,EGGD,no_flights
+Tromsø,TOS,ENTC,Edinburgh,EDI,EGPH,no_flights
+Tromsø,TOS,ENTC,London Gatwick,LGW,EGKK,no_flights
+Tromsø,TOS,ENTC,Manchester,MAN,EGCC,no_flights
+Tromsø,TOS,ENTC,Milan Malpensa,MXP,LIMC,no_flights
+Tromsø,TOS,ENTC,Paris Charles de Gaulle,CDG,LFPG,no_flights
+Krakow,KRK,EPKK,Birmingham,BHX,EGBB,no_flights
+Krakow,KRK,EPKK,Glasgow,GLA,EGPF,no_flights
+Krakow,KRK,EPKK,Newcastle,NCL,EGNT,no_flights
+Belgrade,BEG,LYBE,Paris Charles de Gaulle,CDG,LFPG,no_flights
+Ljubljana,LJU,LJLJ,London Luton,LTN,EGGW,no_flights
+Barcelona,BCN,LEBL,Newcastle,NCL,EGNT,no_flights
+Fuerteventura,FUE,GCFV,Edinburgh,EDI,EGPH,no_flights
+Fuerteventura,FUE,GCFV,Geneva,GVA,LSGG,no_flights
+Fuerteventura,FUE,GCFV,Glasgow,GLA,EGPF,no_flights
+Fuerteventura,FUE,GCFV,Newcastle,NCL,EGNT,no_flights
+Fuerteventura,FUE,GCFV,Paris Charles de Gaulle,CDG,LFPG,no_flights
+Gran Canaria,LPA,GCLP,Bordeaux,BOD,LFBD,no_flights
+Gran Canaria,LPA,GCLP,Edinburgh,EDI,EGPH,no_flights
+Gran Canaria,LPA,GCLP,Glasgow,GLA,EGPF,no_flights
+Gran Canaria,LPA,GCLP,Milan Linate,LIN,LIML,no_flights
+Gran Canaria,LPA,GCLP,Naples,NAP,LIRN,no_flights
+Lanzarote,ACE,GCRR,Amsterdam,AMS,EHAM,no_flights
+Lanzarote,ACE,GCRR,Berlin Brandenburg,BER,EDDB,no_flights
+Lanzarote,ACE,GCRR,London Southend,SEN,EGMC,no_flights
+Madrid,MAD,LEMD,Nantes,NTE,LFRS,no_flights
+Malaga,AGP,LEMG,Bordeaux,BOD,LFBD,no_flights
+Santa Cruz de la Palma,SPC,GCLA,Basel,BSL,LFSB,no_flights
+Santa Cruz de la Palma,SPC,GCLA,Berlin Brandenburg,BER,EDDB,no_flights
+Seville,SVQ,LEZL,Hamburg,HAM,EDDH,no_flights
+Scandinavian Mountains,SCR,ESKS,London Gatwick,LGW,EGKK,no_flights
+Scandinavian Mountains,SCR,ESKS,Manchester,MAN,EGCC,no_flights
+Basel,BSL,LFSB,Santa Cruz de la Palma,SPC,GCLA,no_flights
+Basel,BSL,LFSB,Vienna,VIE,LOWW,no_flights
+Geneva,GVA,LSGG,Aberdeen,ABZ,EGPD,no_flights
+Geneva,GVA,LSGG,Belfast Intl,BFS,EGAA,no_flights
+Geneva,GVA,LSGG,Bournemouth,BOH,EGHH,no_flights
+Geneva,GVA,LSGG,Cairo Sphinx,SPX,HESX,no_flights
+Geneva,GVA,LSGG,Fuerteventura,FUE,GCFV,no_flights
+Geneva,GVA,LSGG,Glasgow,GLA,EGPF,no_flights
+Geneva,GVA,LSGG,Isle of Man,IOM,EGNS,no_flights
+Geneva,GVA,LSGG,Liverpool,LPL,EGGP,no_flights
+Geneva,GVA,LSGG,London Stansted,STN,EGSS,no_flights
+Geneva,GVA,LSGG,Milan Linate,LIN,LIML,no_flights
+Geneva,GVA,LSGG,Newcastle,NCL,EGNT,no_flights
+Geneva,GVA,LSGG,Newquay,NQY,EGHQ,no_flights
+Geneva,GVA,LSGG,Southampton,SOU,EGHI,no_flights
+Zurich,ZRH,LSZH,London Stansted,STN,EGSS,no_flights
+Zurich,ZRH,LSZH,Marrakech,RAK,GMMX,no_flights
+Aberdeen,ABZ,EGPD,Geneva,GVA,LSGG,no_flights
+Belfast City (George Best),BHD,EGAC,London Southend,SEN,EGMC,no_flights
+Belfast Intl,BFS,EGAA,Budapest,BUD,LHBP,no_flights
+Belfast Intl,BFS,EGAA,Geneva,GVA,LSGG,no_flights
+Belfast Intl,BFS,EGAA,Lyon,LYS,LFLL,no_flights
+Belfast Intl,BFS,EGAA,Marrakech,RAK,GMMX,no_flights
+Belfast Intl,BFS,EGAA,Rome Fiumicino,FCO,LIRF,no_flights
+Belfast Intl,BFS,EGAA,Rovaniemi,RVN,EFRO,no_flights
+Belfast Intl,BFS,EGAA,Sharm El Sheikh,SSH,HESH,no_flights
+Birmingham,BHX,EGBB,Agadir,AGA,GMAD,no_flights
+Birmingham,BHX,EGBB,Copenhagen,CPH,EKCH,no_flights
+Birmingham,BHX,EGBB,Grenoble,GNB,LFLS,no_flights
+Birmingham,BHX,EGBB,Innsbruck,INN,LOWI,no_flights
+Birmingham,BHX,EGBB,Krakow,KRK,EPKK,no_flights
+Birmingham,BHX,EGBB,Reykjavik Keflavik,KEF,BIKF,no_flights
+Birmingham,BHX,EGBB,Rovaniemi,RVN,EFRO,no_flights
+Bournemouth,BOH,EGHH,Geneva,GVA,LSGG,no_flights
+Bristol,BRS,EGGD,Budapest,BUD,LHBP,no_flights
+Bristol,BRS,EGGD,Grenoble,GNB,LFLS,no_flights
+Bristol,BRS,EGGD,Innsbruck,INN,LOWI,no_flights
+Bristol,BRS,EGGD,Lyon,LYS,LFLL,no_flights
+Bristol,BRS,EGGD,Reykjavik Keflavik,KEF,BIKF,no_flights
+Bristol,BRS,EGGD,Rovaniemi,RVN,EFRO,no_flights
+Bristol,BRS,EGGD,Salzburg,SZG,LOWS,no_flights
+Bristol,BRS,EGGD,Tromsø,TOS,ENTC,no_flights
+Bristol,BRS,EGGD,Turin,TRN,LIMF,no_flights
+Bristol,BRS,EGGD,Vienna,VIE,LOWW,no_flights
+Edinburgh,EDI,EGPH,Fuerteventura,FUE,GCFV,no_flights
+Edinburgh,EDI,EGPH,Gran Canaria,LPA,GCLP,no_flights
+Edinburgh,EDI,EGPH,Grenoble,GNB,LFLS,no_flights
+Edinburgh,EDI,EGPH,Hurghada,HRG,HEGN,no_flights
+Edinburgh,EDI,EGPH,Innsbruck,INN,LOWI,no_flights
+Edinburgh,EDI,EGPH,London Southend,SEN,EGMC,no_flights
+Edinburgh,EDI,EGPH,Rovaniemi,RVN,EFRO,no_flights
+Edinburgh,EDI,EGPH,Sharm El Sheikh,SSH,HESH,no_flights
+Edinburgh,EDI,EGPH,Tromsø,TOS,ENTC,no_flights
+Glasgow,GLA,EGPF,Agadir,AGA,GMAD,no_flights
+Glasgow,GLA,EGPF,Fuerteventura,FUE,GCFV,no_flights
+Glasgow,GLA,EGPF,Geneva,GVA,LSGG,no_flights
+Glasgow,GLA,EGPF,Gran Canaria,LPA,GCLP,no_flights
+Glasgow,GLA,EGPF,Krakow,KRK,EPKK,no_flights
+Glasgow,GLA,EGPF,Marrakech,RAK,GMMX,no_flights
+Isle of Man,IOM,EGNS,Geneva,GVA,LSGG,no_flights
+Isle of Man,IOM,EGNS,London Luton,LTN,EGGW,no_flights
+Liverpool,LPL,EGGP,Berlin Brandenburg,BER,EDDB,no_flights
+Liverpool,LPL,EGGP,Budapest,BUD,LHBP,no_flights
+Liverpool,LPL,EGGP,Cyprus Paphos,PFO,LCPH,no_flights
+Liverpool,LPL,EGGP,Geneva,GVA,LSGG,no_flights
+Liverpool,LPL,EGGP,Kittila,KTT,EFKT,no_flights
+Liverpool,LPL,EGGP,Milan Malpensa,MXP,LIMC,no_flights
+Liverpool,LPL,EGGP,Reykjavik Keflavik,KEF,BIKF,no_flights
+Liverpool,LPL,EGGP,Salzburg,SZG,LOWS,no_flights
+London Gatwick,LGW,EGKK,Akureyri,AEY,BIAR,no_flights
+London Gatwick,LGW,EGKK,Friedrichshafen,FDH,EDNY,no_flights
+London Gatwick,LGW,EGKK,Grenoble,GNB,LFLS,no_flights
+London Gatwick,LGW,EGKK,Kittila,KTT,EFKT,no_flights
+London Gatwick,LGW,EGKK,Luxor,LXR,HELX,no_flights
+London Gatwick,LGW,EGKK,Nuremberg,NUE,EDDN,no_flights
+London Gatwick,LGW,EGKK,Reykjavik Keflavik,KEF,BIKF,no_flights
+London Gatwick,LGW,EGKK,Rovaniemi,RVN,EFRO,no_flights
+London Gatwick,LGW,EGKK,Salzburg,SZG,LOWS,no_flights
+London Gatwick,LGW,EGKK,Scandinavian Mountains,SCR,ESKS,no_flights
+London Gatwick,LGW,EGKK,Sofia,SOF,LBSF,no_flights
+London Gatwick,LGW,EGKK,Tromsø,TOS,ENTC,no_flights
+London Gatwick,LGW,EGKK,Turin,TRN,LIMF,no_flights
+London Gatwick,LGW,EGKK,Vienna,VIE,LOWW,no_flights
+London Luton,LTN,EGGW,Grenoble,GNB,LFLS,no_flights
+London Luton,LTN,EGGW,Innsbruck,INN,LOWI,no_flights
+London Luton,LTN,EGGW,Isle of Man,IOM,EGNS,no_flights
+London Luton,LTN,EGGW,Kittila,KTT,EFKT,no_flights
+London Luton,LTN,EGGW,Ljubljana,LJU,LJLJ,no_flights
+London Luton,LTN,EGGW,Nuremberg,NUE,EDDN,no_flights
+London Luton,LTN,EGGW,Rabat Sale Airport,RBA,GMME,no_flights
+London Luton,LTN,EGGW,Rovaniemi,RVN,EFRO,no_flights
+London Luton,LTN,EGGW,Salzburg,SZG,LOWS,no_flights
+London Luton,LTN,EGGW,Strasbourg,SXB,LFST,no_flights
+London Luton,LTN,EGGW,Turin,TRN,LIMF,no_flights
+London Southend,SEN,EGMC,Belfast City (George Best),BHD,EGAC,no_flights
+London Southend,SEN,EGMC,Budapest,BUD,LHBP,no_flights
+London Southend,SEN,EGMC,Edinburgh,EDI,EGPH,no_flights
+London Southend,SEN,EGMC,Lanzarote,ACE,GCRR,no_flights
+London Southend,SEN,EGMC,Lyon,LYS,LFLL,no_flights
+London Southend,SEN,EGMC,Rovaniemi,RVN,EFRO,no_flights
+London Southend,SEN,EGMC,Salzburg,SZG,LOWS,no_flights
+London Southend,SEN,EGMC,Sharm El Sheikh,SSH,HESH,no_flights
+London Stansted,STN,EGSS,Geneva,GVA,LSGG,no_flights
+London Stansted,STN,EGSS,Zurich,ZRH,LSZH,no_flights
+Manchester,MAN,EGCC,Akureyri,AEY,BIAR,no_flights
+Manchester,MAN,EGCC,Cairo Sphinx,SPX,HESX,no_flights
+Manchester,MAN,EGCC,Grenoble,GNB,LFLS,no_flights
+Manchester,MAN,EGCC,Innsbruck,INN,LOWI,no_flights
+Manchester,MAN,EGCC,Kittila,KTT,EFKT,no_flights
+Manchester,MAN,EGCC,Nuremberg,NUE,EDDN,no_flights
+Manchester,MAN,EGCC,Rovaniemi,RVN,EFRO,no_flights
+Manchester,MAN,EGCC,Scandinavian Mountains,SCR,ESKS,no_flights
+Manchester,MAN,EGCC,Sofia,SOF,LBSF,no_flights
+Manchester,MAN,EGCC,Strasbourg,SXB,LFST,no_flights
+Manchester,MAN,EGCC,Tromsø,TOS,ENTC,no_flights
+Manchester,MAN,EGCC,Turin,TRN,LIMF,no_flights
+Manchester,MAN,EGCC,Vienna,VIE,LOWW,no_flights
+Newcastle,NCL,EGNT,Barcelona,BCN,LEBL,no_flights
+Newcastle,NCL,EGNT,Berlin Brandenburg,BER,EDDB,no_flights
+Newcastle,NCL,EGNT,Copenhagen,CPH,EKCH,no_flights
+Newcastle,NCL,EGNT,Fuerteventura,FUE,GCFV,no_flights
+Newcastle,NCL,EGNT,Geneva,GVA,LSGG,no_flights
+Newcastle,NCL,EGNT,Hurghada,HRG,HEGN,no_flights
+Newcastle,NCL,EGNT,Krakow,KRK,EPKK,no_flights
+Newcastle,NCL,EGNT,Marrakech,RAK,GMMX,no_flights
+Newcastle,NCL,EGNT,Reykjavik Keflavik,KEF,BIKF,no_flights
+Newcastle,NCL,EGNT,Rovaniemi,RVN,EFRO,no_flights
+Newquay,NQY,EGHQ,Geneva,GVA,LSGG,no_flights
+Southampton,SOU,EGHI,Geneva,GVA,LSGG,no_flights
+Southampton,SOU,EGHI,Paris Charles de Gaulle,CDG,LFPG,no_flights
