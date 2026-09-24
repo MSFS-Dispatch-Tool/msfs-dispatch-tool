@@ -136,10 +136,19 @@ class Api:
 
 def collect(api, routes):
     """Fetches rows until every CSV route is covered by a complete query
-    (or calls run out). Returns (rows, uncovered_routes)."""
+    or --max-calls runs out. Returns (rows, uncovered_routes, stopped);
+    rows fetched before a stop are kept so the outputs still get written."""
     pool = []
     pairs = {(r["departure_iata"], r["arrival_iata"]) for r in routes}
     covered = set()
+    try:
+        _collect_steps(api, pairs, pool, covered)
+        return pool, pairs - covered, False
+    except OutOfCalls:
+        return pool, pairs - covered, True
+
+
+def _collect_steps(api, pairs, pool, covered):
 
     def run(**filters):
         rows, complete = api.query(airline_iata="U2", **filters)
@@ -174,13 +183,14 @@ def collect(api, routes):
             covered.update(still)
         print(f"  [2/3 arrivals {i}/{len(arrs)}] {arr}{'' if ok else ' (over cap)'} - calls used {api.used}")
 
-    # 3. Single routes.
-    rest = sorted(pairs - covered)
+    # 3. Single routes - routes with no rows at all yet first, so a run
+    #    that stops at --max-calls has spent its calls where they add most.
+    seen = {(r.get("dep_iata"), r.get("arr_iata")) for r in pool}
+    rest = sorted(pairs - covered, key=lambda p: (p in seen, p))
     for i, (dep, arr) in enumerate(rest, 1):
         if run(dep_iata=dep, arr_iata=arr):
             covered.add((dep, arr))
         print(f"  [3/3 routes {i}/{len(rest)}] {dep}-{arr} - calls used {api.used}")
-    return pool, pairs - covered
 
 
 def canonical_flight(row):
@@ -296,12 +306,16 @@ def main():
     with open(args.routes, newline="", encoding="utf-8") as fh:
         routes = list(csv.DictReader(fh))
 
-    try:
-        rows, uncovered = collect(api, routes)
-    except OutOfCalls:
-        sys.exit(f"\nStopped at --max-calls={args.max_calls}. Everything fetched is cached: "
-                 "rerun (e.g. next month, or with a higher --max-calls) to continue.")
+    # Never leave last run's files behind to be mistaken for this run's.
+    for name in ("easyjet_schedule.csv", "easyjet_missing.csv", "easyjet_extra.csv", "routes.json"):
+        if os.path.exists(os.path.join(args.out_dir, name)):
+            os.remove(os.path.join(args.out_dir, name))
+
+    rows, uncovered, stopped = collect(api, routes)
     print(f"\n{len(rows)} raw rows, {api.used} API calls used this run")
+    if stopped:
+        print(f"STOPPED at --max-calls={args.max_calls}: {len(uncovered)} routes not fully fetched. "
+              "Writing what we have; everything is cached, so rerun later (quota resets monthly) to finish.")
 
     flights = fold(rows)
     route_by_pair = {(r["departure_iata"], r["arrival_iata"]): r for r in routes}
