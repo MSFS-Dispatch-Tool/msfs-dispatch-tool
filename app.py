@@ -881,16 +881,22 @@ def select():
             seat_capacity=fleet_entry["seats"],
         )
         conditions["aircraft_type"] = fleet_entry["type"]
-        conditions["delay"] = roll_delay(delay_codes, settings["generation"]["delay"])
         conditions["mel"] = itinerary_mel
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["carrier"] = route_leg["carrier"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
         conditions["arrival_info"] = airport_info(route_leg["arrival_icao"])
-        conditions["weather"] = {
-            "departure": weather.get(route_leg["departure_icao"], {"metar": None, "taf": None}),
-            "arrival": weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None}),
-        }
+        dep_weather = weather.get(route_leg["departure_icao"], {"metar": None, "taf": None})
+        arr_weather = weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None})
+        conditions["weather"] = {"departure": dep_weather, "arrival": arr_weather}
+        # Weather-flagged delay codes (departure/destination weather,
+        # de-icing) only enter the pool when the leg's own METAR actually
+        # supports them - see generator.roll_delay - so a summer 20C
+        # departure never rolls "de-icing of aircraft".
+        conditions["delay"] = roll_delay(
+            delay_codes, settings["generation"]["delay"],
+            dep_metar=dep_weather.get("metar"), arr_metar=arr_weather.get("metar"),
+        )
         taxi_out = conditions["taxi_out_minutes"]
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, today, taxi_out)
         sobt_dt, sibt_dt = schedule["_sobt_dt"], schedule["_sibt_dt"]
