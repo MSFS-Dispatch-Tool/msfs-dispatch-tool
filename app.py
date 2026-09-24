@@ -171,7 +171,6 @@ def _post_login_redirect(user_id, next_url=None):
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     error = None
-    notice = None
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
@@ -186,10 +185,15 @@ def signup():
                 if _signup_result_indicates_existing_user(result):
                     error = "That email is already registered. Try signing in, or use \"Forgot password?\" if you don't remember your password."
                 else:
-                    notice = f"Account created. Check {email} for a verification link before signing in."
+                    # A dedicated "check your email" screen, not the signup
+                    # form again with a banner on top - there's nothing left
+                    # to fill in, and the Resend button only makes sense
+                    # once there's actually a pending verification email.
+                    return render_template("login.html", mode="signup", just_signed_up=True, signup_email=email,
+                                            turnstile_site_key=auth.TURNSTILE_SITE_KEY)
             except auth.AuthError as exc:
                 error = exc.message
-    return render_template("login.html", mode="signup", error=error, notice=notice,
+    return render_template("login.html", mode="signup", error=error,
                             turnstile_site_key=auth.TURNSTILE_SITE_KEY)
 
 
@@ -351,7 +355,7 @@ def resend_verification_route():
         auth.resend_verification(email, redirect_to=_auth_redirect_to())
         notice = f"Verification email re-sent to {email}."
     except auth.AuthError as exc:
-        return render_template("login.html", mode="signup", error=exc.message)
+        return render_template("login.html", mode="signup", just_signed_up=True, signup_email=email, error=exc.message)
     return render_template("login.html", mode="login", notice=notice)
 
 
@@ -635,9 +639,9 @@ def index():
 @app.route("/app")
 def dispatch_app():
     counts = {
-        "routes": len(routes),
-        "mels": sum(len(CARRIERS[code]["mels"]) for code in ACTIVE_CARRIER_CODES),
-        "delay_codes": len(delay_codes),
+        "routes": f"{len(routes):,}",
+        "mels": f"{sum(len(CARRIERS[code]['mels']) for code in ACTIVE_CARRIER_CODES):,}",
+        "delay_codes": f"{len(delay_codes):,}",
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
     user = current_user()

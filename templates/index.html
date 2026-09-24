@@ -189,7 +189,12 @@
   .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 12px; }
   .toolbar .field { min-width: 160px; }
 
-  table.itin-list { width: 100%; border-collapse: collapse; }
+  /* A fixed 100%-width table forces its columns to compress as more get
+     added (e.g. the AIRLINE column) - letting the wrapper scroll instead
+     of the table shrinking keeps every column, and the SELECT button in
+     the last one, readable instead of squeezed against the edge. */
+  .itin-table-wrap { overflow-x: auto; }
+  table.itin-list { width: 100%; min-width: 1080px; border-collapse: collapse; }
   table.itin-list th {
     text-align: left; font-size: 11.5px; color: var(--text-muted); font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.03em;
@@ -200,7 +205,7 @@
   table.itin-list tr.itin-row.expanded { background: var(--accent-bg); }
   table.itin-list tr.itin-row.dimmed { opacity: 0.45; }
   table.itin-list tr.itin-row.dimmed:hover { opacity: 0.7; }
-  table.itin-list td.select-cell { width: 70px; }
+  table.itin-list td.select-cell { width: 90px; padding-right: 14px; }
   table.itin-list td.detail-cell { background: #FAFAFB; padding: 0; }
 
   /* Trip-type badges (ML/1L) are always blue; domestic/international
@@ -225,7 +230,7 @@
 
   @media (max-width: 720px) {
     table.itin-list thead { display: none; }
-    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; }
+    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; min-width: 0; }
     table.itin-list tr.itin-row {
       border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); margin-bottom: 8px; padding: 4px 0;
     }
@@ -736,6 +741,7 @@ let sortState = { key: 'flight', dir: 'asc' };
 // separate places (the <thead> markup and the comparator table) that
 // could drift out of sync.
 const SORT_COLUMNS = {
+  carrier:   { label: 'AIRLINE',        cmp: (a, b) => a.carrier.localeCompare(b.carrier) },
   flight:    { label: 'FLIGHT(S)',      cmp: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}) },
   departure: { label: 'DEPARTURE',      cmp: (a, b) => a.departure_icao.localeCompare(b.departure_icao) },
   arrival:   { label: 'ARRIVAL',        cmp: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao) },
@@ -810,10 +816,12 @@ function renderListPanel() {
             </select>
           </div>
         </div>
-        <table class="itin-list" id="itinTable">
-          <thead id="itinTableHead"></thead>
-          <tbody id="itinTableBody"></tbody>
-        </table>
+        <div class="itin-table-wrap">
+          <table class="itin-list" id="itinTable">
+            <thead id="itinTableHead"></thead>
+            <tbody id="itinTableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>`;
   renderTable();
@@ -822,6 +830,7 @@ function renderListPanel() {
 function renderTable() {
   document.getElementById('itinTableHead').innerHTML = `
     <tr>
+      ${sortHeaderHtml('carrier')}
       <th>TYPE</th>
       ${sortHeaderHtml('flight')}
       ${sortHeaderHtml('departure')}
@@ -840,7 +849,7 @@ function renderTable() {
   const tbody = document.getElementById('itinTableBody');
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
@@ -849,11 +858,11 @@ function renderTable() {
     const isExpanded = key === expandedKey;
     const rowState = isExpanded ? 'expanded' : (expandedKey ? 'dimmed' : '');
     const domTag = itin.domestic ? `<span class="type-badge type-DOM">DOM</span>` : `<span class="type-badge type-INT">INT</span>`;
-    const carrierTag = `<span class="carrier-badge">${itin.carrier}</span>`;
     const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
     const row = `
       <tr class="itin-row ${rowState}" onclick="toggleItinerary('${key}')">
-        <td data-label="TYPE"><div class="type-cell">${carrierTag}<span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
+        <td data-label="AIRLINE"><span class="carrier-badge">${itin.carrier}</span></td>
+        <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
         <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
@@ -867,7 +876,7 @@ function renderTable() {
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="12" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="13" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
@@ -1516,7 +1525,7 @@ function renderDeleteAccountPage() {
       <div class="panel-body">
         <div id="deleteAccountStep1">
           <p class="placeholder-text">This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone and this data cannot be recovered.</p>
-          <div class="field" style="max-width:260px;">
+          <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deleteConfirmText">Type DELETE to confirm</label>
             <input type="text" id="deleteConfirmText" autocomplete="off">
           </div>
@@ -1524,11 +1533,11 @@ function renderDeleteAccountPage() {
         </div>
         <div id="deleteAccountStep2" style="display:none;">
           <p class="placeholder-text">Enter your password to permanently delete your account.</p>
-          <div class="field" style="max-width:260px;">
+          <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deletePassword">Password</label>
             <input type="password" id="deletePassword" autocomplete="off">
           </div>
-          <div class="notice-banner" id="deleteError" style="display:none;"></div>
+          <div class="notice-banner" id="deleteError" style="display:none; margin-bottom:16px;"></div>
           <button class="action danger" type="button" onclick="confirmDeleteAccount()">PERMANENTLY DELETE ACCOUNT</button>
           <button class="action small" type="button" onclick="renderAccountSettings()">CANCEL</button>
         </div>
