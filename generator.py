@@ -9,6 +9,7 @@ repositioning legs.
 """
 
 import random
+import re
 import string
 import uuid
 from collections import defaultdict
@@ -298,8 +299,102 @@ def _filter_enabled(items, category_settings, field_name, settings_key):
     return [item for item in items if item[field_name] not in disabled]
 
 
-def roll_delay(delay_codes, delay_settings=None):
+# ---------------------------------------------------------------------
+# Weather-gated delay codes - a handful of the IATA delay codes only
+# make sense under specific weather (can't de-ice at 20C), so before
+# they can be rolled at all the leg's own METAR has to actually support
+# them. This is a best-effort METAR reader, not a full decoder: it only
+# pulls the few fields these three codes need, and leaves a field None
+# rather than guessing when it can't confidently find it.
+# ---------------------------------------------------------------------
+
+_METAR_WIND_RE = re.compile(r'\b(?:\d{3}|VRB)(\d{2,3})(?:G\d{2,3})?(KT|MPS)\b')
+_METAR_TEMP_RE = re.compile(r'\s(M?\d{2})/(M?\d{2})\s')
+_METAR_SM_VIS_RE = re.compile(r'\b(\d+)SM\b')
+_METAR_SIG_WX_RE = re.compile(
+    r'\b[-+]?(?:VC)?(?:MI|PR|BC|DR|BL|SH|TS|FZ)?'
+    r'(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)\b'
+)
+
+_DEICING_TEMP_THRESHOLD_C = 5
+_LOW_VIS_THRESHOLD_M = 5000
+_STRONG_WIND_THRESHOLD_KT = 25
+_EXTREME_COLD_THRESHOLD_C = -10
+# Weather-gated delay codes, and which station's METAR each one checks -
+# keyed by IATA delay code since there are only three of these and each
+# has genuinely different semantics, not worth a data-file schema for.
+WEATHER_GATED_CODES = {"71": "departure", "72": "arrival", "75": "departure"}
+
+
+def parse_metar(metar_text):
+    """Extracts temperature, visibility, wind speed, and significant
+    weather phenomena from a raw METAR string. Every field is None (or
+    an empty set) when not confidently found, including when metar_text
+    itself is empty/unavailable - callers treat "unknown" as "can't
+    confirm this weather code is warranted", not as "assume the worst"."""
+    result = {"temp_c": None, "visibility_m": None, "wind_kt": None, "phenomena": set(), "cavok": False}
+    if not metar_text:
+        return result
+    text = f' {metar_text.upper()} '
+
+    if re.search(r'\bCAVOK\b', text):
+        result["cavok"] = True
+        result["visibility_m"] = 10000
+
+    wind_match = _METAR_WIND_RE.search(text)
+    if wind_match:
+        speed, unit = wind_match.groups()
+        speed = int(speed)
+        result["wind_kt"] = round(speed * 1.94384) if unit == "MPS" else speed
+
+    if not result["cavok"]:
+        vis_match = re.search(r'\s(\d{4})\s', text)
+        sm_match = _METAR_SM_VIS_RE.search(text)
+        if vis_match:
+            result["visibility_m"] = int(vis_match.group(1))
+        elif sm_match:
+            result["visibility_m"] = round(int(sm_match.group(1)) * 1609.34)
+
+        for m in _METAR_SIG_WX_RE.finditer(text):
+            result["phenomena"].add(m.group(1))
+
+    temp_match = _METAR_TEMP_RE.search(text)
+    if temp_match:
+        raw_temp, _ = temp_match.groups()
+        result["temp_c"] = -int(raw_temp[1:]) if raw_temp.startswith('M') else int(raw_temp)
+
+    return result
+
+
+_SIGNIFICANT_WX_PHENOMENA = {
+    "RA", "DZ", "SN", "SG", "IC", "PL", "GR", "GS",
+    "BR", "FG", "FU", "VA", "SA", "HZ", "PY", "PO", "SQ", "FC", "SS", "DS",
+}
+
+
+def _weather_supports_delay(iata_code, dep_metar, arr_metar):
+    station_key = WEATHER_GATED_CODES.get(iata_code)
+    if station_key is None:
+        return True
+    station = parse_metar(dep_metar if station_key == "departure" else arr_metar)
+
+    if iata_code == "75":  # De-icing - cold-triggered, departure conditions
+        return station["temp_c"] is not None and station["temp_c"] <= _DEICING_TEMP_THRESHOLD_C
+
+    # 71/72 - weather at departure/destination station
+    if station["cavok"]:
+        return False
+    return (
+        (station["visibility_m"] is not None and station["visibility_m"] < _LOW_VIS_THRESHOLD_M)
+        or (station["wind_kt"] is not None and station["wind_kt"] >= _STRONG_WIND_THRESHOLD_KT)
+        or bool(station["phenomena"] & _SIGNIFICANT_WX_PHENOMENA)
+        or (station["temp_c"] is not None and station["temp_c"] <= _EXTREME_COLD_THRESHOLD_C)
+    )
+
+
+def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None):
     pool = _filter_enabled(delay_codes, delay_settings, "iata_code", "disabled_codes")
+    pool = [d for d in pool if _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
     if not pool:
         return None
     return weighted_pick(pool) if random.random() < DELAY_PROBABILITY else None
