@@ -43,6 +43,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -113,18 +114,23 @@ class Api:
         False when the query holds more rows than the free plan will page
         through - its first page is still returned so nothing fetched is
         wasted, but the caller has to cover it with narrower queries."""
+        # Don't trust has_more: AirLabs computes it from the *requested*
+        # limit (500) although the free plan serves 50 rows, so a query with
+        # 51-500 rows reports has_more=false after its first page. Page on
+        # total_items instead. (limit stays 500 so cached pages keep their
+        # file names.)
         rows, offset = [], 0
         while True:
             data = self.get({**filters, "limit": PAGE_SIZE, "offset": offset})
             page = data.get("response") or []
-            req = data.get("request") or {}
+            total = (data.get("request") or {}).get("total_items")
             rows.extend(page)
-            if offset == 0 and (req.get("total_items") or 0) > ROW_CAP:
+            if total is not None and total > ROW_CAP:
                 return rows, False
-            if not req.get("has_more"):
+            if not page:
+                return rows, (len(rows) >= total) if total is not None else offset < ROW_CAP
+            if total is not None and len(rows) >= total:
                 return rows, True
-            if not page:  # has_more but nothing served: hit the cap
-                return rows, False
             offset += len(page)
 
 
@@ -199,6 +205,8 @@ def fold(rows):
         if airline not in OPERATOR_ICAO and cs not in OPERATOR_ICAO:
             continue  # another carrier's flight
         fn, operator = canonical_flight(row)
+        if not re.fullmatch(r"[A-Z0-9]{2}\d{1,4}", fn.upper()):
+            continue  # e.g. U22029D - suffixed numbers are diversions/ad-hoc ops
         key = (fn.upper(), row["dep_iata"], row["arr_iata"])
         variant = (row.get("dep_time"), row.get("arr_time"), tuple(sorted(row.get("days") or [])))
         groups[key][variant] = {**row, "_operator": operator}  # same variant via 2 queries
