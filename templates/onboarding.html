@@ -54,6 +54,15 @@
   }
   .field .hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
 
+  .fleet-group { margin-top: var(--sp-3); }
+  .fleet-group:first-of-type { margin-top: 0; }
+  .fleet-group-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: var(--sp-1); }
+  .fleet-checkbox {
+    display: inline-flex; align-items: center; gap: var(--sp-1);
+    font-size: 13px; font-weight: 400; margin: 0 var(--sp-3) var(--sp-1) 0;
+  }
+  .field-hint-note { font-size: 12px; color: var(--text-muted); margin: var(--sp-2) 0 0; }
+
   input[type="text"], input[type="date"], select {
     width: 100%; height: var(--control-height); font-family: inherit; font-size: 14px;
     padding: 0 var(--sp-3);
@@ -165,6 +174,19 @@
         <div class="field">
           <label for="preferred_base">Preferred base <span class="hint">(optional, ICAO or IATA &mdash; e.g. EIDW or DUB)</span></label>
           <input type="text" id="preferred_base" name="preferred_base" autocomplete="off" maxlength="4" style="text-transform:uppercase;">
+        </div>
+
+        <div class="field">
+          <label>Which aircraft do you fly? <span class="hint">(optional)</span></label>
+          {% for carrier in fleet_by_carrier %}
+          <div class="fleet-group">
+            <div class="fleet-group-label">{{ carrier.name }}</div>
+            {% for type in carrier.fleet %}
+            <label class="fleet-checkbox"><input type="checkbox" name="aircraft_owned" value="{{ type }}"> {{ type }}</label>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <p class="field-hint-note">This affects which aircraft gets assigned to your flights. You can change it any time in account settings.</p>
         </div>
 
         <button type="submit">Continue</button>

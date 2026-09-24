@@ -207,21 +207,24 @@ def _bag_check_rate(duration_minutes):
     return min(0.60, 0.25 + (duration_minutes / 300) * 0.30)
 
 
-def generate_leg_conditions(duration_minutes=0, seat_capacity=189):
-    """Pax/cargo/cost index for one leg.
+def pax_and_cargo(seat_capacity, duration_minutes, load_factor=None):
+    """Pax count + cargo weight for a given aircraft's seat capacity.
 
-    seat_capacity comes from the operating carrier's fleet entry for
-    this route's aircraft type (see app.py's seat_capacity_for) - it
-    defaults to 189 (the 737-800's seating) since that's the only type
-    flown today, not because this function assumes it.
+    load_factor is normally rolled fresh here (None - the /select path),
+    but the aircraft-reassignment path (app.py's /select/reassign-aircraft)
+    passes the ALREADY-shown load factor back in, so changing which
+    aircraft is assigned re-derives pax/cargo for the new capacity
+    without also silently re-rolling how full the flight is - the pilot
+    already saw and reviewed that number.
 
     Cargo here means checked/hold baggage only (this tool doesn't model
     belly freight), sized off pax_count and sector length with some
     built-in randomness and an occasional high-cargo "surge" leg."""
-    if random.random() < FULL_FLIGHT_PROBABILITY:
-        load_factor = 1.0
-    else:
-        load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
+    if load_factor is None:
+        if random.random() < FULL_FLIGHT_PROBABILITY:
+            load_factor = 1.0
+        else:
+            load_factor = round(min(1.0, random.triangular(LOAD_FACTOR_LOW, LOAD_FACTOR_HIGH, LOAD_FACTOR_MODE)), 2)
     pax_count = round(seat_capacity * load_factor)
 
     bag_rate = _bag_check_rate(duration_minutes)
@@ -231,6 +234,43 @@ def generate_leg_conditions(duration_minutes=0, seat_capacity=189):
     ))
     if random.random() < CARGO_SURGE_PROBABILITY:
         cargo_weight_kg = round(cargo_weight_kg * random.uniform(*CARGO_SURGE_MULTIPLIER_RANGE))
+
+    return pax_count, load_factor, cargo_weight_kg
+
+
+def assign_aircraft_type(fleet_by_type, owned_types=None, explicit_type=None):
+    """Picks which aircraft type in a carrier's fleet operates a leg.
+
+    explicit_type wins outright when the route data itself specifies one
+    and it's a real fleet member (true for 100% of Ryanair's routes,
+    ~1% of easyJet's - AirLabs doesn't report aircraft type for most of
+    its schedule data).
+
+    Otherwise, picks randomly from whichever of the pilot's owned
+    aircraft (see db.DEFAULT_SETTINGS' profile.aircraft_owned) are in
+    this carrier's fleet, weighted by each type's real-world fleet
+    prevalence (carrier.json's fleet[].weight) - e.g. easyJet flying far
+    more A320s/A319s than A321neos should show up far more often than
+    not. Falls back to the carrier's WHOLE fleet, same weighting, when
+    the pilot hasn't told the app which aircraft they fly (or owns none
+    that carrier flies) - so assignment always produces something
+    plausible rather than erroring out."""
+    if explicit_type and explicit_type in fleet_by_type:
+        return explicit_type
+    owned_types = owned_types or ()
+    candidates = [t for t in fleet_by_type if t in owned_types] or list(fleet_by_type.keys())
+    weights = [fleet_by_type[t].get("weight", 1) for t in candidates]
+    return random.choices(candidates, weights=weights, k=1)[0]
+
+
+def generate_leg_conditions(duration_minutes=0, seat_capacity=189):
+    """Cost index (+ pax/cargo via pax_and_cargo) for one leg.
+
+    seat_capacity comes from the operating carrier's fleet entry for
+    this route's assigned aircraft type (see app.py's assign_aircraft_type
+    and seat_capacity_for) - it defaults to 189 (the 737-800's seating)
+    as a fallback only, not because this function assumes a single type."""
+    pax_count, load_factor, cargo_weight_kg = pax_and_cargo(seat_capacity, duration_minutes)
 
     return {
         "pax_count": pax_count,

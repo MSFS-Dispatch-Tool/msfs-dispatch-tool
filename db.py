@@ -33,6 +33,14 @@ DEFAULT_SETTINGS = {
         "username": "", "photo_url": "",
         "first_name": "", "last_name": "", "birth_date": "", "nationality": "",
         "preferred_base": "", "simulator": "", "onboarding_complete": False,
+        # Aircraft type codes (carrier fleet.type values, e.g. "738",
+        # "320") the pilot has told the app they actually fly/own in the
+        # simulator - drives which aircraft a flight can be assigned
+        # (see generator.assign_aircraft_type). Empty means "no
+        # preference stated", not "flies nothing" - assignment falls
+        # back to the operating carrier's whole fleet, weighted by
+        # real-world prevalence, rather than refusing to assign anything.
+        "aircraft_owned": [],
     },
     "generation": {
         "delay": {"enabled": True, "disabled_codes": []},

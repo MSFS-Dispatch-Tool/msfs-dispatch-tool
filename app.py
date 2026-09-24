@@ -15,7 +15,8 @@ import auth
 import blog
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
-    generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras
+    generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras,
+    assign_aircraft_type, pax_and_cargo
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
@@ -171,7 +172,6 @@ def _post_login_redirect(user_id, next_url=None):
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     error = None
-    notice = None
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
@@ -186,10 +186,15 @@ def signup():
                 if _signup_result_indicates_existing_user(result):
                     error = "That email is already registered. Try signing in, or use \"Forgot password?\" if you don't remember your password."
                 else:
-                    notice = f"Account created. Check {email} for a verification link before signing in."
+                    # A dedicated "check your email" screen, not the signup
+                    # form again with a banner on top - there's nothing left
+                    # to fill in, and the Resend button only makes sense
+                    # once there's actually a pending verification email.
+                    return render_template("login.html", mode="signup", just_signed_up=True, signup_email=email,
+                                            turnstile_site_key=auth.TURNSTILE_SITE_KEY)
             except auth.AuthError as exc:
                 error = exc.message
-    return render_template("login.html", mode="signup", error=error, notice=notice,
+    return render_template("login.html", mode="signup", error=error,
                             turnstile_site_key=auth.TURNSTILE_SITE_KEY)
 
 
@@ -327,6 +332,7 @@ def onboarding():
         if not error:
             existing = get_settings_safe()
             profile = dict(existing["profile"])
+            all_fleet_types = {t for code in ACTIVE_CARRIER_CODES for t in CARRIERS[code]["fleet_by_type"]}
             profile.update({
                 "username": username,
                 "first_name": (request.form.get("first_name") or "").strip(),
@@ -334,6 +340,7 @@ def onboarding():
                 "birth_date": request.form.get("birth_date") or "",
                 "nationality": request.form.get("nationality") or "",
                 "preferred_base": (request.form.get("preferred_base") or "").strip().upper(),
+                "aircraft_owned": [t for t in request.form.getlist("aircraft_owned") if t in all_fleet_types],
                 "onboarding_complete": True,
             })
             if photo_url:
@@ -341,7 +348,11 @@ def onboarding():
             db.save_settings({"profile": profile, "generation": existing["generation"]}, current_user_id())
             return redirect(url_for("dispatch_app"))
 
-    return render_template("onboarding.html", error=error, countries=countries)
+    fleet_by_carrier = [
+        {"name": CARRIERS[code]["name"], "fleet": sorted(CARRIERS[code]["fleet_by_type"].keys())}
+        for code in ACTIVE_CARRIER_CODES
+    ]
+    return render_template("onboarding.html", error=error, countries=countries, fleet_by_carrier=fleet_by_carrier)
 
 
 @app.route("/auth/resend", methods=["POST"])
@@ -351,7 +362,7 @@ def resend_verification_route():
         auth.resend_verification(email, redirect_to=_auth_redirect_to())
         notice = f"Verification email re-sent to {email}."
     except auth.AuthError as exc:
-        return render_template("login.html", mode="signup", error=exc.message)
+        return render_template("login.html", mode="signup", just_signed_up=True, signup_email=email, error=exc.message)
     return render_template("login.html", mode="login", notice=notice)
 
 
@@ -530,18 +541,26 @@ def carrier_for(route_leg):
     return CARRIERS[route_leg["carrier"]]
 
 
-def fleet_entry_for(route_leg):
-    """The operating carrier's fleet entry for a route's aircraft type -
-    falls back to that carrier's first fleet entry if the route's
-    aircraft_type is missing/unrecognized (e.g. easyJet's routes are
-    ~99% missing it - see gap #2 from the easyJet handoff)."""
+def fleet_entry_for(route_leg, owned_types=None):
+    """The fleet entry for the aircraft type assigned to a route leg -
+    the route's own aircraft_type when the data specifies one (true for
+    100% of Ryanair's routes, ~1% of easyJet's - AirLabs doesn't report
+    aircraft type for most of its schedule data), otherwise a weighted
+    random pick from the pilot's owned aircraft that carrier flies (or
+    its whole fleet, same weighting, if the pilot hasn't set any/none
+    apply) - see generator.assign_aircraft_type."""
     fleet = carrier_for(route_leg)["fleet_by_type"]
-    entry = fleet.get(route_leg.get("aircraft_type"))
-    return entry or next(iter(fleet.values()))
+    chosen = assign_aircraft_type(fleet, owned_types, route_leg.get("aircraft_type"))
+    return fleet[chosen]
 
 
-def seat_capacity_for(route_leg):
-    return fleet_entry_for(route_leg)["seats"]
+def owned_aircraft_for(settings, carrier_code):
+    """The pilot's aircraft_owned list, narrowed to types that carrier's
+    fleet actually flies - a saved 320 shouldn't influence a Ryanair
+    assignment just because it's in the pilot's list."""
+    owned = set(settings.get("profile", {}).get("aircraft_owned") or [])
+    fleet = CARRIERS[carrier_code]["fleet_by_type"]
+    return owned & set(fleet.keys())
 
 
 def get_settings_safe():
@@ -635,9 +654,9 @@ def index():
 @app.route("/app")
 def dispatch_app():
     counts = {
-        "routes": len(routes),
-        "mels": sum(len(CARRIERS[code]["mels"]) for code in ACTIVE_CARRIER_CODES),
-        "delay_codes": len(delay_codes),
+        "routes": f"{len(routes):,}",
+        "mels": f"{sum(len(CARRIERS[code]['mels']) for code in ACTIVE_CARRIER_CODES):,}",
+        "delay_codes": f"{len(delay_codes):,}",
         "lmc_events": len(lmc_events), "dangerous_goods": len(dangerous_goods),
     }
     user = current_user()
@@ -691,12 +710,17 @@ def airports_validate():
 
 @app.route("/carriers")
 def carriers_route():
-    """The active carriers, for the search page's AIRLINE filter - a
-    plain data list rather than a hardcoded frontend dropdown, so a new
-    carrier going live (adding its code to ACTIVE_CARRIER_CODES) shows
-    up here with no frontend change needed."""
+    """The active carriers (and each one's fleet), for the search page's
+    AIRLINE filter and the "which aircraft do you fly" pickers in
+    onboarding/account settings - a plain data list rather than a
+    hardcoded frontend dropdown, so a new carrier going live (adding its
+    code to ACTIVE_CARRIER_CODES) shows up here with no frontend change
+    needed."""
     return jsonify([
-        {"icao": CARRIERS[code]["icao"], "name": CARRIERS[code]["name"]}
+        {
+            "icao": CARRIERS[code]["icao"], "name": CARRIERS[code]["name"],
+            "fleet": [{"type": t, "seats": ac["seats"]} for t, ac in CARRIERS[code]["fleet_by_type"].items()],
+        }
         for code in ACTIVE_CARRIER_CODES
     ])
 
@@ -846,17 +870,21 @@ def select():
     # the first leg's fleet is the whole itinerary's fleet.
     itinerary_mels = carrier_for(itinerary[0])["mels"]
     itinerary_mel = roll_mel(itinerary_mels, settings["generation"]["mel"])
+    owned_types = owned_aircraft_for(settings, itinerary[0]["carrier"])
 
     legs_out = []
     leg_times = []
     for route_leg in itinerary:
+        fleet_entry = fleet_entry_for(route_leg, owned_types)
         conditions = generate_leg_conditions(
             duration_minutes=route_leg["duration_minutes"],
-            seat_capacity=seat_capacity_for(route_leg),
+            seat_capacity=fleet_entry["seats"],
         )
+        conditions["aircraft_type"] = fleet_entry["type"]
         conditions["delay"] = roll_delay(delay_codes, settings["generation"]["delay"])
         conditions["mel"] = itinerary_mel
         conditions["flight_number"] = route_leg["flight_number"]
+        conditions["carrier"] = route_leg["carrier"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
         conditions["arrival_info"] = airport_info(route_leg["arrival_icao"])
         conditions["weather"] = {
@@ -928,6 +956,40 @@ def select():
         legs_out[i]["turnaround_minutes"] = turnaround_minutes(leg_times[i - 1][1], leg_times[i][0])
 
     return jsonify({"itinerary": itinerary, "legs": legs_out})
+
+
+@app.route("/select/reassign-aircraft")
+def select_reassign_aircraft():
+    """Recomputes pax/cargo for one leg against a pilot-chosen aircraft
+    type, called when the pilot changes the auto-assigned aircraft in
+    the itinerary preview (before CONFIRM). load_factor is passed back
+    in from what /select already rolled and showed - changing the plane
+    re-derives pax/cargo for its capacity, it doesn't silently re-roll
+    how full the flight is, which the pilot already reviewed."""
+    fn = request.args.get("flight_number", default="", type=str)
+    aircraft_type = request.args.get("aircraft_type", default="", type=str)
+    load_factor = request.args.get("load_factor", type=float)
+
+    route_leg = routes_by_flight_number.get(fn)
+    if route_leg is None:
+        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+    if load_factor is None or not (0 < load_factor <= 1):
+        return jsonify({"error": "A valid load_factor is required."}), 400
+
+    fleet = carrier_for(route_leg)["fleet_by_type"]
+    if aircraft_type not in fleet:
+        return jsonify({"error": f"{aircraft_type} isn't in this flight's fleet."}), 400
+
+    pax_count, load_factor, cargo_weight_kg = pax_and_cargo(
+        fleet[aircraft_type]["seats"], route_leg["duration_minutes"], load_factor
+    )
+    return jsonify({
+        "aircraft_type": aircraft_type,
+        "seat_capacity": fleet[aircraft_type]["seats"],
+        "pax_count": pax_count,
+        "load_factor": load_factor,
+        "cargo_weight_kg": cargo_weight_kg,
+    })
 
 
 @app.route("/confirm")
@@ -1063,6 +1125,11 @@ def save_settings_route():
     incoming_profile = dict(payload.get("profile") or {})
     for field in _IDENTITY_PROFILE_FIELDS:
         incoming_profile[field] = existing_profile.get(field, db.DEFAULT_SETTINGS["profile"][field])
+    if "aircraft_owned" in incoming_profile:
+        all_fleet_types = {t for code in ACTIVE_CARRIER_CODES for t in CARRIERS[code]["fleet_by_type"]}
+        incoming_profile["aircraft_owned"] = [
+            t for t in (incoming_profile["aircraft_owned"] or []) if t in all_fleet_types
+        ]
     payload["profile"] = incoming_profile
     return jsonify(db.save_settings(payload, current_user_id()))
 
@@ -1186,15 +1253,25 @@ def simbrief_redirect_url():
     civalue = request.args.get("civalue", type=int)
     pax = request.args.get("pax", type=int)
     taxi_out = request.args.get("taxi_out_minutes", type=int)
-    if civalue is None or pax is None or taxi_out is None:
+    # The aircraft type the pilot is actually shown (assigned at /select,
+    # possibly changed via /select/reassign-aircraft) - passed through so
+    # this never independently re-rolls a DIFFERENT random type than the
+    # one already on screen. Only a preview call (before /select ran)
+    # goes without one.
+    aircraft_type = request.args.get("aircraft_type", default="", type=str).strip() or None
+    if civalue is None or pax is None or taxi_out is None or aircraft_type is None:
         # Only hit when the caller doesn't already have confirmed leg
         # values (e.g. a preview, before CONFIRM has committed a
         # cost_index/pax_count/taxi_out_minutes). An already-confirmed
-        # active leg's frontend call always supplies all three, so this
-        # never re-rolls numbers the pilot has already seen and confirmed.
+        # active leg's frontend call always supplies all of these, so
+        # this never re-rolls numbers the pilot has already seen and
+        # confirmed.
+        settings = get_settings_safe()
+        owned_types = owned_aircraft_for(settings, route_leg["carrier"])
+        fleet_entry = fleet_entry_for(route_leg, owned_types)
         conditions = generate_leg_conditions(
             duration_minutes=route_leg["duration_minutes"],
-            seat_capacity=seat_capacity_for(route_leg),
+            seat_capacity=fleet_entry["seats"],
         )
         if civalue is None:
             civalue = conditions["cost_index"]
@@ -1202,7 +1279,12 @@ def simbrief_redirect_url():
             pax = conditions["pax_count"]
         if taxi_out is None:
             taxi_out = conditions["taxi_out_minutes"]
+        if aircraft_type is None:
+            aircraft_type = fleet_entry["type"]
 
+    fleet = carrier_for(route_leg)["fleet_by_type"]
+    simbrief_type = fleet[aircraft_type]["simbrief_type"] if aircraft_type in fleet \
+        else next(iter(fleet.values()))["simbrief_type"]
     params = {
         "orig": route_leg["departure_icao"],
         "dest": route_leg["arrival_icao"],
@@ -1213,7 +1295,7 @@ def simbrief_redirect_url():
         "pax": pax,
         "taxiout": taxi_out,
         "taxiin": TAXI_IN_MINUTES,
-        "type": fleet_entry_for(route_leg)["simbrief_type"],
+        "type": simbrief_type,
     }
 
     # SimBrief gets the EXPECTED (delay-adjusted) off-block time, not the

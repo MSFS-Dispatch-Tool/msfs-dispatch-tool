@@ -117,6 +117,13 @@
   .field-error { color: var(--red); font-size: 11.5px; margin-top: 3px; display: none; }
   .field-note { color: var(--text-muted); font-size: 11px; margin-top: 3px; }
 
+  .aircraft-reassign-select {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 5px 8px;
+    background: var(--white); color: var(--text);
+    border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
+  }
+  .aircraft-reassign-select:disabled { background: var(--face-dark); color: var(--text-muted); }
+
   /* Toggle switch - used for the three master delay/LMC/MEL switches.
      Real checkbox underneath (kept for accessibility/forms), visually
      hidden and replaced by the pill. */
@@ -189,7 +196,12 @@
   .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 12px; }
   .toolbar .field { min-width: 160px; }
 
-  table.itin-list { width: 100%; border-collapse: collapse; }
+  /* A fixed 100%-width table forces its columns to compress as more get
+     added (e.g. the AIRLINE column) - letting the wrapper scroll instead
+     of the table shrinking keeps every column, and the SELECT button in
+     the last one, readable instead of squeezed against the edge. */
+  .itin-table-wrap { overflow-x: auto; }
+  table.itin-list { width: 100%; min-width: 1080px; border-collapse: collapse; }
   table.itin-list th {
     text-align: left; font-size: 11.5px; color: var(--text-muted); font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.03em;
@@ -200,7 +212,7 @@
   table.itin-list tr.itin-row.expanded { background: var(--accent-bg); }
   table.itin-list tr.itin-row.dimmed { opacity: 0.45; }
   table.itin-list tr.itin-row.dimmed:hover { opacity: 0.7; }
-  table.itin-list td.select-cell { width: 70px; }
+  table.itin-list td.select-cell { width: 90px; padding-right: 14px; }
   table.itin-list td.detail-cell { background: #FAFAFB; padding: 0; }
 
   /* Trip-type badges (ML/1L) are always blue; domestic/international
@@ -225,7 +237,7 @@
 
   @media (max-width: 720px) {
     table.itin-list thead { display: none; }
-    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; }
+    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; min-width: 0; }
     table.itin-list tr.itin-row {
       border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); margin-bottom: 8px; padding: 4px 0;
     }
@@ -686,6 +698,17 @@ let expandedDetailData = null;
 let pirepLogRecords = [];
 let expandedPirepId = null;
 let currentSettings = null;
+let carriersCache = null;
+
+async function getCarriers() {
+  if (!carriersCache) carriersCache = await (await fetch('/carriers')).json();
+  return carriersCache;
+}
+
+async function getOwnedAircraft() {
+  if (!currentSettings) currentSettings = await (await fetch('/settings')).json();
+  return new Set(currentSettings.profile.aircraft_owned || []);
+}
 
 async function searchFlights() {
   const origin = document.getElementById('origin').value.trim();
@@ -736,6 +759,7 @@ let sortState = { key: 'flight', dir: 'asc' };
 // separate places (the <thead> markup and the comparator table) that
 // could drift out of sync.
 const SORT_COLUMNS = {
+  carrier:   { label: 'AIRLINE',        cmp: (a, b) => a.carrier.localeCompare(b.carrier) },
   flight:    { label: 'FLIGHT(S)',      cmp: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}) },
   departure: { label: 'DEPARTURE',      cmp: (a, b) => a.departure_icao.localeCompare(b.departure_icao) },
   arrival:   { label: 'ARRIVAL',        cmp: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao) },
@@ -810,10 +834,12 @@ function renderListPanel() {
             </select>
           </div>
         </div>
-        <table class="itin-list" id="itinTable">
-          <thead id="itinTableHead"></thead>
-          <tbody id="itinTableBody"></tbody>
-        </table>
+        <div class="itin-table-wrap">
+          <table class="itin-list" id="itinTable">
+            <thead id="itinTableHead"></thead>
+            <tbody id="itinTableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>`;
   renderTable();
@@ -822,6 +848,7 @@ function renderListPanel() {
 function renderTable() {
   document.getElementById('itinTableHead').innerHTML = `
     <tr>
+      ${sortHeaderHtml('carrier')}
       <th>TYPE</th>
       ${sortHeaderHtml('flight')}
       ${sortHeaderHtml('departure')}
@@ -840,7 +867,7 @@ function renderTable() {
   const tbody = document.getElementById('itinTableBody');
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
@@ -849,11 +876,11 @@ function renderTable() {
     const isExpanded = key === expandedKey;
     const rowState = isExpanded ? 'expanded' : (expandedKey ? 'dimmed' : '');
     const domTag = itin.domestic ? `<span class="type-badge type-DOM">DOM</span>` : `<span class="type-badge type-INT">INT</span>`;
-    const carrierTag = `<span class="carrier-badge">${itin.carrier}</span>`;
     const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
     const row = `
       <tr class="itin-row ${rowState}" onclick="toggleItinerary('${key}')">
-        <td data-label="TYPE"><div class="type-cell">${carrierTag}<span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
+        <td data-label="AIRLINE"><span class="carrier-badge">${itin.carrier}</span></td>
+        <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
         <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
@@ -867,7 +894,7 @@ function renderTable() {
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="12" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="13" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
@@ -884,15 +911,24 @@ async function toggleItinerary(key) {
 async function loadDetail(key) {
   const cell = document.getElementById('detailCell');
   try {
-    const resp = await fetch(`/select?flights=${encodeURIComponent(key)}`);
+    const [resp, carriers, ownedAircraft] = await Promise.all([
+      fetch(`/select?flights=${encodeURIComponent(key)}`), getCarriers(), getOwnedAircraft()
+    ]);
     const data = await resp.json();
     expandedDetailData = data;
-    cell.innerHTML = buildDetailHtml(data, key);
+    cell.innerHTML = buildDetailHtml(data, key, carriers, ownedAircraft);
     data.legs.forEach((leg, i) => initRouteMap(`map-detail-${key}-${i}`, leg));
   } catch (err) {
     expandedDetailData = null;
     cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
   }
+}
+
+function fleetOptionsFor(leg, carriers, ownedAircraft) {
+  const carrier = carriers.find(c => c.icao === leg.carrier);
+  if (!carrier) return [];
+  const owned = carrier.fleet.filter(ac => ownedAircraft.has(ac.type));
+  return owned.length ? owned : carrier.fleet;
 }
 
 function legScheduleTable(leg) {
@@ -909,13 +945,42 @@ function legScheduleTable(leg) {
         </table>`;
 }
 
-function legLoadTable(leg) {
+function legLoadTable(leg, legIndex, fleetOptions) {
+  const aircraftCell = (fleetOptions && fleetOptions.length > 1)
+    ? `<select class="aircraft-reassign-select" data-leg-index="${legIndex}" onchange="reassignAircraft(this)">
+         ${fleetOptions.map(ac => `<option value="${escAttr(ac.type)}" ${ac.type === leg.aircraft_type ? 'selected' : ''}>${escAttr(ac.type)} (${ac.seats} seats)</option>`).join('')}
+       </select>`
+    : `${escAttr(leg.aircraft_type || 'N/A')}`;
   return `
         <table class="kv" style="margin-bottom:10px;">
+          <tr><td class="k">AIRCRAFT</td><td class="v">${aircraftCell}</td></tr>
           <tr><td class="k">EXPECTED PAX</td><td class="v">${fmtNum(leg.pax_count)} / ${fmtNum(leg.seat_capacity)}</td></tr>
           <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
           <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${fmtNum(leg.cargo_weight_kg)} KG</td></tr>
         </table>`;
+}
+
+async function reassignAircraft(selectEl) {
+  const legIndex = Number(selectEl.dataset.legIndex);
+  const aircraftType = selectEl.value;
+  const leg = expandedDetailData.legs[legIndex];
+  selectEl.disabled = true;
+  try {
+    const params = new URLSearchParams({
+      flight_number: leg.flight_number, aircraft_type: aircraftType, load_factor: leg.load_factor,
+    });
+    const resp = await fetch(`/select/reassign-aircraft?${params}`);
+    const result = await resp.json();
+    if (result.error) throw new Error(result.error);
+    Object.assign(leg, result);
+    const cell = document.getElementById('detailCell');
+    const [carriers, ownedAircraft] = await Promise.all([getCarriers(), getOwnedAircraft()]);
+    cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
+    expandedDetailData.legs.forEach((l, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, l));
+  } catch (err) {
+    alert('Could not change the aircraft. Check the connection and retry.');
+    selectEl.disabled = false;
+  }
 }
 
 function legWeatherBlock(leg) {
@@ -957,7 +1022,7 @@ function legOfpTable(ofp) {
         </table>`;
 }
 
-function buildDetailHtml(data, key) {
+function buildDetailHtml(data, key, carriers, ownedAircraft) {
   const legBlocks = data.legs.map((leg, i) => `
     <div class="leg-block">
       <div class="leg-block-header">LEG ${i + 1} &mdash; ${leg.flight_number}</div>
@@ -968,7 +1033,7 @@ function buildDetailHtml(data, key) {
         </table>
         ${routeMapDiv(leg, `map-detail-${key}-${i}`)}
         ${legScheduleTable(leg)}
-        ${legLoadTable(leg)}
+        ${legLoadTable(leg, i, fleetOptionsFor(leg, carriers, ownedAircraft))}
         ${legWeatherBlock(leg)}
         ${legDelayMelBlock(leg)}
       </div>
@@ -1132,6 +1197,7 @@ async function prepareLeg(index) {
     flights: leg.flight_number,
     civalue: leg.cost_index,
     pax: leg.pax_count,
+    aircraft_type: leg.aircraft_type || '',
     static_id: staticId,
     callsign: flight.callsigns ? flight.callsigns[index] : '',
     delay_minutes: delayMinutes,
@@ -1415,11 +1481,12 @@ function initDestinationsMap(id, airports, baseIcao) {
 async function renderAccountSettings() {
   document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state">LOADING...</div></div></div>`;
 
-  let settings = null, genOptions = null;
+  let settings = null, genOptions = null, carriers = null;
   try {
-    const [settingsResp, optionsResp] = await Promise.all([fetch('/settings'), fetch('/generation-options')]);
+    const [settingsResp, optionsResp, carriersResp] = await Promise.all([fetch('/settings'), fetch('/generation-options'), fetch('/carriers')]);
     settings = await settingsResp.json();
     genOptions = await optionsResp.json();
+    carriers = await carriersResp.json();
   } catch (err) {
     document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD ACCOUNT SETTINGS. CHECK THE CONNECTION AND RETRY.</div></div>`;
     return;
@@ -1429,6 +1496,13 @@ async function renderAccountSettings() {
   const simbriefUsername = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
   const countryOptions = COUNTRIES.map(c => `<option value="${escAttr(c)}" ${p.nationality === c ? 'selected' : ''}>${c}</option>`).join('');
   const simulatorOptions = SIMULATORS.map(s => `<option value="${escAttr(s)}" ${p.simulator === s ? 'selected' : ''}>${s}</option>`).join('');
+  const ownedAircraft = new Set(p.aircraft_owned || []);
+  const aircraftGroupsHtml = carriers.map(c => `
+    <div class="gen-items-group-label">${escAttr(c.name.toUpperCase())}</div>
+    ${c.fleet.map(ac => `
+      <label class="checkbox-row"><input type="checkbox" class="aircraft-owned-item" value="${escAttr(ac.type)}" ${ownedAircraft.has(ac.type) ? 'checked' : ''}> ${escAttr(ac.type)} <span class="hint">(${ac.seats} seats)</span></label>
+    `).join('')}
+  `).join('');
 
   document.getElementById('mainContent').innerHTML = `
     <div class="panel">
@@ -1487,6 +1561,18 @@ async function renderAccountSettings() {
     </div>
 
     <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">AIRCRAFT YOU FLY</div>
+      <div class="panel-body">
+        <p class="placeholder-text">Tell us which aircraft you actually fly/have installed in the simulator - it affects which aircraft gets assigned to your flights (a carrier that flies more than one type, like easyJet, picks between your selections; leave all unchecked for no preference). You can change this any time.</p>
+        <div class="gen-items-list" style="max-height:none;">${aircraftGroupsHtml}</div>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <button class="action" onclick="savePilotProfile()">SAVE</button>
+          <span class="placeholder-text" id="aircraftOwnedSaveStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
       <div class="panel-header">DISPATCH COMPLICATIONS</div>
       <div class="panel-body">
         ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief.", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
@@ -1516,7 +1602,7 @@ function renderDeleteAccountPage() {
       <div class="panel-body">
         <div id="deleteAccountStep1">
           <p class="placeholder-text">This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone and this data cannot be recovered.</p>
-          <div class="field" style="max-width:260px;">
+          <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deleteConfirmText">Type DELETE to confirm</label>
             <input type="text" id="deleteConfirmText" autocomplete="off">
           </div>
@@ -1524,11 +1610,11 @@ function renderDeleteAccountPage() {
         </div>
         <div id="deleteAccountStep2" style="display:none;">
           <p class="placeholder-text">Enter your password to permanently delete your account.</p>
-          <div class="field" style="max-width:260px;">
+          <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deletePassword">Password</label>
             <input type="password" id="deletePassword" autocomplete="off">
           </div>
-          <div class="notice-banner" id="deleteError" style="display:none;"></div>
+          <div class="notice-banner" id="deleteError" style="display:none; margin-bottom:16px;"></div>
           <button class="action danger" type="button" onclick="confirmDeleteAccount()">PERMANENTLY DELETE ACCOUNT</button>
           <button class="action small" type="button" onclick="renderAccountSettings()">CANCEL</button>
         </div>
@@ -1701,6 +1787,8 @@ async function savePilotProfile() {
 
   if (!usernameValid || !birthDateValid) return;
 
+  const aircraftOwned = Array.from(document.querySelectorAll('.aircraft-owned-item:checked')).map(cb => cb.value);
+
   const profile = {
     ...currentSettings.profile,
     first_name: document.getElementById('profileFirstName').value.trim(),
@@ -1709,6 +1797,7 @@ async function savePilotProfile() {
     nationality: document.getElementById('profileNationality').value,
     preferred_base: document.getElementById('profilePreferredBase').value.trim().toUpperCase(),
     simulator: document.getElementById('profileSimulator').value,
+    aircraft_owned: aircraftOwned,
   };
   const payload = { profile, generation: currentSettings.generation };
   try {
@@ -1718,6 +1807,7 @@ async function savePilotProfile() {
     if (username) localStorage.setItem(SIMBRIEF_USERNAME_KEY, username);
     else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
     document.getElementById('profileSaveStatus').textContent = 'SAVED.';
+    document.getElementById('aircraftOwnedSaveStatus').textContent = 'SAVED.';
   } catch (err) {
     alert('Could not save the profile. Check the connection (and that a database is configured) and retry.');
   }
