@@ -719,7 +719,8 @@ def carriers_route():
     return jsonify([
         {
             "icao": CARRIERS[code]["icao"], "name": CARRIERS[code]["name"],
-            "fleet": [{"type": t, "seats": ac["seats"]} for t, ac in CARRIERS[code]["fleet_by_type"].items()],
+            "fleet": [{"type": t, "seats": ac["seats"], "simbrief_type": ac["simbrief_type"]}
+                      for t, ac in CARRIERS[code]["fleet_by_type"].items()],
         }
         for code in ACTIVE_CARRIER_CODES
     ])
