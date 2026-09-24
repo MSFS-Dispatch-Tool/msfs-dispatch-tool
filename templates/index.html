@@ -215,6 +215,14 @@
   .type-INT { background: var(--orange-bg); color: var(--orange); }
   .type-cell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 
+  /* Carrier badge - a distinct neutral color so it never gets confused
+     with the blue/green/orange trip-type family above it in the stack. */
+  .carrier-badge {
+    display: inline-block; min-width: 34px; text-align: center;
+    font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+    background: var(--shadow-md); color: var(--text);
+  }
+
   @media (max-width: 720px) {
     table.itin-list thead { display: none; }
     table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; }
@@ -242,6 +250,11 @@
   }
   .gen-items-list .checkbox-row { margin-top: 3px; }
   .gen-items-list .checkbox-row:first-child { margin-top: 0; }
+  .gen-items-group-label {
+    font-size: 10.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em;
+    margin-top: 10px; padding-top: 6px; border-top: 1px solid var(--shadow-md);
+  }
+  .gen-items-group-label:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 
   .kv { width: 100%; border-collapse: collapse; }
   .kv td { padding: 6px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; word-break: break-word; }
@@ -417,7 +430,7 @@
         <dl>
           <div class="glossary-entry"><dt>CARGO</dt><dd>Expected checked/hold baggage weight (this tool doesn't model belly freight). Scaled off the leg's passenger count and sector length &mdash; longer sectors see a higher share of passengers checking a bag &mdash; with some built-in randomness, plus an occasional high-cargo "surge" leg.</dd></div>
           <div class="glossary-entry"><dt>COST INDEX</dt><dd>Randomly rolled per leg between 2 and 16 (centered around 6). In real dispatch this balances fuel cost against time cost for the FMC's speed/altitude optimization; it's sent to SimBrief to generate the OFP.</dd></div>
-          <div class="glossary-entry"><dt>PAX</dt><dd>The 738's 189 seats times a randomized load factor (roughly 82&ndash;99%, with a 30% chance of a full 189/189 house) gives the expected passenger count used to build the OFP (EPAX) and, ultimately, the loadsheet.</dd></div>
+          <div class="glossary-entry"><dt>PAX</dt><dd>The aircraft's seat capacity (189 on Ryanair's 737-800, 156&ndash;235 across easyJet's A320 family depending on type) times a randomized load factor (roughly 82&ndash;99%, with a 30% chance of a completely full house) gives the expected passenger count used to build the OFP (EPAX) and, ultimately, the loadsheet.</dd></div>
         </dl>
       </div>
 
@@ -621,8 +634,9 @@ async function renderSearchUI() {
           </div>
           <div class="field">
             <label for="airlineFilter">AIRLINE</label>
-            <input type="text" id="airlineFilter" autocomplete="off" disabled placeholder="Any">
-            <p class="field-note">Feature coming soon</p>
+            <select id="airlineFilter" onchange="updateSearchButtonState()">
+              <option value="">ALL</option>
+            </select>
           </div>
         </div>
         <p class="field-note" id="searchRequirementNote">Enter a departure and/or destination airport to search.</p>
@@ -645,6 +659,18 @@ async function renderSearchUI() {
     const base = settings.profile && settings.profile.preferred_base;
     if (base) document.getElementById('origin').value = base;
   } catch (err) { /* non-critical - search still works without a prefill */ }
+
+  try {
+    const carriers = await (await fetch('/carriers')).json();
+    const select = document.getElementById('airlineFilter');
+    carriers.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.icao;
+      opt.textContent = c.name.toUpperCase();
+      select.appendChild(opt);
+    });
+  } catch (err) { /* non-critical - AIRLINE just stays on ALL */ }
+
   updateSearchButtonState();
 }
 
@@ -670,6 +696,7 @@ async function searchFlights() {
   const destValid = await validateAirport('destination');
   if (!originValid || !destValid) return;
   const tripType = document.getElementById('tripType').value;
+  const airline = document.getElementById('airlineFilter').value;
 
   const btn = document.getElementById('searchBtn');
   btn.disabled = true;
@@ -677,6 +704,7 @@ async function searchFlights() {
 
   try {
     const params = new URLSearchParams({ origin, destination, trip_type: tripType });
+    if (airline) params.set('airline', airline);
     const resp = await fetch(`/search?${params}`);
     const data = await resp.json();
 
@@ -821,10 +849,11 @@ function renderTable() {
     const isExpanded = key === expandedKey;
     const rowState = isExpanded ? 'expanded' : (expandedKey ? 'dimmed' : '');
     const domTag = itin.domestic ? `<span class="type-badge type-DOM">DOM</span>` : `<span class="type-badge type-INT">INT</span>`;
+    const carrierTag = `<span class="carrier-badge">${itin.carrier}</span>`;
     const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
     const row = `
       <tr class="itin-row ${rowState}" onclick="toggleItinerary('${key}')">
-        <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
+        <td data-label="TYPE"><div class="type-cell">${carrierTag}<span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
         <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
@@ -1462,7 +1491,7 @@ async function renderAccountSettings() {
       <div class="panel-body">
         ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief.", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
         ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods.', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
-        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time.', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id)}
+        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time.', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -1574,14 +1603,35 @@ async function sendPasswordReset() {
   }
 }
 
-function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn) {
+const FLEET_LABELS = { '738': '737-800', 'a320fam': 'A320 FAMILY' };
+
+function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn, groupFn) {
   const disabledIds = new Set(categorySettings.disabled_codes || categorySettings.disabled_ids || []);
   const masterOn = categorySettings.enabled !== false;
-  const itemsHtml = items.map(item => {
+  const itemCheckbox = item => {
     const id = idFn(item);
     const checked = disabledIds.has(id) ? '' : 'checked';
     return `<label class="checkbox-row"><input type="checkbox" class="gen-item" data-id="${escAttr(id)}" ${checked} ${masterOn ? '' : 'disabled'}> ${labelFn(item)}</label>`;
-  }).join('');
+  };
+  let itemsHtml;
+  if (groupFn) {
+    // Items sharing a fleet (e.g. every A320-family MEL) get grouped
+    // under their own sub-heading instead of one flat, unlabeled list -
+    // with two carriers active, "Autopilot 1" with no fleet context
+    // reads as ambiguous between a 737 and an A320 item.
+    const groups = new Map();
+    items.forEach(item => {
+      const g = groupFn(item);
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(item);
+    });
+    itemsHtml = Array.from(groups.entries()).map(([g, groupItems]) => `
+      <div class="gen-items-group-label">${FLEET_LABELS[g] || g}</div>
+      ${groupItems.map(itemCheckbox).join('')}
+    `).join('');
+  } else {
+    itemsHtml = items.map(itemCheckbox).join('');
+  }
   return `
     <div class="leg-block" style="margin-bottom:12px;">
       <div class="leg-block-header">

@@ -39,8 +39,15 @@ def find_round_trip_pairs(routes):
     """
     Returns a dict flight_number -> partner_flight_number for routes that
     form a real round-trip pair: same two airports, reversed direction,
-    and flight numbers within 3 of each other (the numbering convention
-    real short-haul rotations use). A route with no match stays one-way.
+    same operating carrier, and flight numbers within 3 of each other
+    (the numbering convention real short-haul rotations use). A route
+    with no match stays one-way.
+
+    The same-carrier check matters once `routes` can span more than one
+    carrier (see app.py) - without it, two different airlines happening
+    to fly the same city pair with nearby flight numbers would get
+    paired into a single "rotation", which is nonsense (you can't fly
+    out on one airline and have it come back as a different one).
     """
     by_airport_pair = defaultdict(list)
     for r in routes:
@@ -57,7 +64,8 @@ def find_round_trip_pairs(routes):
             for r2 in group:
                 if r2["flight_number"] in used or r2 is r1:
                     continue
-                if r2["departure_icao"] == r1["arrival_icao"] and r2["arrival_icao"] == r1["departure_icao"]:
+                if r2["departure_icao"] == r1["arrival_icao"] and r2["arrival_icao"] == r1["departure_icao"] \
+                        and r2.get("carrier") == r1.get("carrier"):
                     diff = abs(_numeric_part(r1["flight_number"]) - _numeric_part(r2["flight_number"]))
                     if diff <= 3 and (best_diff is None or diff < best_diff):
                         best, best_diff = r2, diff
