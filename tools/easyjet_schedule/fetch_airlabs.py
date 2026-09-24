@@ -13,7 +13,12 @@ matches them against easyjet_routes.csv and writes:
 Google Colab
 ------------
     # Key: left sidebar -> key icon (Secrets) -> add AIRLABS_API_KEY,
-    # toggle notebook access on. Never paste it into a cell.
+    # toggle notebook access on. Never paste it into a cell. Secrets are
+    # only readable inside the notebook, not from a `!python` subprocess,
+    # so copy it into an env var (inherited by `!python`) in a cell first:
+    import os
+    from google.colab import userdata
+    os.environ["AIRLABS_API_KEY"] = userdata.get("AIRLABS_API_KEY")
     !pip install -q requests
     # upload this file, easyjet_routes.csv and (optional, for distance)
     # data/airports_world.json from the repo
@@ -53,11 +58,11 @@ def get_key(cli_key):
         return cli_key
     if os.environ.get("AIRLABS_API_KEY"):
         return os.environ["AIRLABS_API_KEY"]
-    try:
-        from google.colab import userdata  # only exists inside Colab
-        return userdata.get("AIRLABS_API_KEY")
-    except Exception:
-        sys.exit("No API key: set the AIRLABS_API_KEY Colab secret / env var, or pass --key")
+    sys.exit("No API key. In Colab, run this in a notebook cell first (secrets aren't "
+             "visible to `!python` subprocesses):\n"
+             "  import os; from google.colab import userdata\n"
+             "  os.environ['AIRLABS_API_KEY'] = userdata.get('AIRLABS_API_KEY')\n"
+             "Elsewhere: export AIRLABS_API_KEY=... or pass --key")
 
 
 class Budget:
