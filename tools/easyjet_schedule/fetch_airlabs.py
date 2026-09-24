@@ -236,8 +236,11 @@ def distance_nm(a, b):
 
 def probe(api):
     data = api.get({"airline_iata": "U2", "limit": 5, "offset": 0})
+    req = data.get("request", {})
+    if isinstance(req.get("key"), dict):
+        req = {**req, "key": {**req["key"], "api_key": "<redacted>"}}
     print("request metadata (plan limits etc.):")
-    print(json.dumps(data.get("request", {}), indent=2)[:3000])
+    print(json.dumps(req, indent=2)[:3000])
     print("\nfirst rows:")
     print(json.dumps(data.get("response", [])[:5], indent=2))
 
