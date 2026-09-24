@@ -84,6 +84,7 @@ class OutOfCalls(Exception):
 class Api:
     def __init__(self, key, cache_dir, max_calls):
         self.key, self.cache_dir, self.left, self.used = key, cache_dir, max_calls, 0
+        self.exhausted = False
 
     def get(self, params, endpoint="routes"):
         """One API page, cached on disk by endpoint + query parameters."""
@@ -121,7 +122,13 @@ class Api:
         # file names.)
         rows, offset = [], 0
         while True:
-            data = self.get({**filters, "limit": PAGE_SIZE, "offset": offset})
+            try:
+                data = self.get({**filters, "limit": PAGE_SIZE, "offset": offset})
+            except OutOfCalls:
+                # Only this query goes unfinished - later queries may still
+                # be served from the cache, so the run carries on.
+                self.exhausted = True
+                return rows, False
             page = data.get("response") or []
             total = (data.get("request") or {}).get("total_items")
             rows.extend(page)
@@ -141,11 +148,8 @@ def collect(api, routes):
     pool = []
     pairs = {(r["departure_iata"], r["arrival_iata"]) for r in routes}
     covered = set()
-    try:
-        _collect_steps(api, pairs, pool, covered)
-        return pool, pairs - covered, False
-    except OutOfCalls:
-        return pool, pairs - covered, True
+    _collect_steps(api, pairs, pool, covered)
+    return pool, pairs - covered, api.exhausted
 
 
 def _collect_steps(api, pairs, pool, covered):
