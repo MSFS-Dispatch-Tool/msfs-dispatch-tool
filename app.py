@@ -455,10 +455,17 @@ def load_carrier(code):
     carrier_routes = load_json(os.path.join(base, "routes.json"))
     fleet_by_type = {ac["type"]: ac for ac in config["fleet"]}
 
+    # A fleet entry can share a MEL set with other variants of the same
+    # family via "mel_group" (e.g. the A319/A320/A320neo/A321neo all fly
+    # under "a320fam" - their MELs don't meaningfully differ at the level
+    # of detail this app models) instead of each type needing its own
+    # identical copy. Falls back to the type code itself when omitted
+    # (738 doesn't set one - it's its own group of one).
+    mel_groups = {ac.get("mel_group", ac["type"]) for ac in fleet_by_type.values()}
     carrier_mels = []
     seen_mel_ids = set()
-    for aircraft_type in fleet_by_type:
-        mel_path = os.path.join("aircraft", aircraft_type, "mel_list.json")
+    for mel_group in mel_groups:
+        mel_path = os.path.join("aircraft", mel_group, "mel_list.json")
         if not os.path.exists(os.path.join(DATA_DIR, mel_path)):
             continue
         for m in load_json(mel_path):
