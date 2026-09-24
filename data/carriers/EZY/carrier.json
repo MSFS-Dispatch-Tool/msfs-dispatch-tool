@@ -4,9 +4,9 @@
   "name": "easyJet",
   "callsign_prefix": "EZY",
   "fleet": [
-    {"type": "320", "simbrief_type": "A320", "seats": 186, "mel_group": "a320fam"},
-    {"type": "32N", "simbrief_type": "A20N", "seats": 186, "mel_group": "a320fam"},
-    {"type": "319", "simbrief_type": "A319", "seats": 156, "mel_group": "a320fam"},
-    {"type": "32Q", "simbrief_type": "A21N", "seats": 235, "mel_group": "a320fam"}
+    {"type": "320", "simbrief_type": "A320", "seats": 186, "mel_group": "a320fam", "weight": 35},
+    {"type": "319", "simbrief_type": "A319", "seats": 156, "mel_group": "a320fam", "weight": 30},
+    {"type": "32N", "simbrief_type": "A20N", "seats": 186, "mel_group": "a320fam", "weight": 25},
+    {"type": "32Q", "simbrief_type": "A21N", "seats": 235, "mel_group": "a320fam", "weight": 10}
   ]
 }
