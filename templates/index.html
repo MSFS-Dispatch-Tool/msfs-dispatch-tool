@@ -472,6 +472,20 @@
   </div>
 </div>
 
+<div class="glossary-overlay" id="simbriefNoticeOverlay" onclick="if(event.target===this) closeSimbriefNotice()">
+  <div class="glossary-modal" style="max-width:440px;">
+    <div class="panel-header"><span>BEFORE YOU DISPATCH</span><button class="home-btn" onclick="closeSimbriefNotice()" title="Close">&times;</button></div>
+    <div class="panel-body">
+      <p class="placeholder-text">This app doesn't tell SimBrief which aircraft to use. On the dispatch form's <strong>Aircraft Info</strong> section, set the <strong>Aircraft Type</strong> yourself &mdash; and the specific <strong>Variant or Airframe</strong> too, if you have one you'd rather fly &mdash; before generating the OFP.</p>
+      <p class="placeholder-text">Reviewing the generated flight plan is your own responsibility. Only press Generate on SimBrief once you're satisfied the route, fuel, and weights all look right.</p>
+      <label class="checkbox-row" style="margin-top:8px;"><input type="checkbox" id="simbriefNoticeDontShow"> Don't show this again</label>
+      <div style="text-align:right; margin-top:14px;">
+        <button class="action" type="button" onclick="continueToSimbrief()">CONTINUE TO SIMBRIEF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'simdispatch_active_flight';
 const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
@@ -1176,6 +1190,7 @@ function renderRecap(flight) {
       ${legLoadTable(leg)}
       ${legWeatherBlock(leg)}
       ${legOfpTable(state.ofp)}
+      ${state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr((state.ofp||{}).icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : ''}
       ${legDelayMelBlock(leg)}
       ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
       ${loadsheetForm}
@@ -1188,7 +1203,34 @@ function renderRecap(flight) {
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
+const SIMBRIEF_NOTICE_DISMISSED_KEY = 'simdispatch_simbrief_aircraft_notice_dismissed';
+let pendingPrepareLegIndex = null;
+
 async function prepareLeg(index) {
+  if (localStorage.getItem(SIMBRIEF_NOTICE_DISMISSED_KEY)) {
+    await doPrepareLeg(index);
+    return;
+  }
+  pendingPrepareLegIndex = index;
+  document.getElementById('simbriefNoticeOverlay').classList.add('open');
+}
+
+function closeSimbriefNotice() {
+  document.getElementById('simbriefNoticeOverlay').classList.remove('open');
+  pendingPrepareLegIndex = null;
+}
+
+async function continueToSimbrief() {
+  if (document.getElementById('simbriefNoticeDontShow').checked) {
+    localStorage.setItem(SIMBRIEF_NOTICE_DISMISSED_KEY, '1');
+  }
+  const index = pendingPrepareLegIndex;
+  document.getElementById('simbriefNoticeOverlay').classList.remove('open');
+  pendingPrepareLegIndex = null;
+  if (index != null) await doPrepareLeg(index);
+}
+
+async function doPrepareLeg(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
   const staticId = `simdispatch-${Date.now()}-${index}`;
@@ -1220,6 +1262,7 @@ async function prepareLeg(index) {
 
 async function fetchOfp(index) {
   const flight = loadActiveFlight(); if (!flight) return;
+  const leg = flight.legs[index];
   const state = flight.leg_state[index];
   const username = getSimbriefUsername();
   if (!username) return;
@@ -1233,9 +1276,22 @@ async function fetchOfp(index) {
     }
     state.ofp = data;
     state.simbrief = 'available';
+    state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(leg, data);
     saveAndRender(flight);
   } catch (err) {
     alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.');
+  }
+}
+
+async function ofpAircraftTypeMismatch(leg, ofp) {
+  if (!leg.carrier || !leg.aircraft_type || !ofp.icao_type) return false;
+  try {
+    const carriers = await getCarriers();
+    const carrier = carriers.find(c => c.icao === leg.carrier);
+    const fleetEntry = carrier && carrier.fleet.find(ac => ac.type === leg.aircraft_type);
+    return !!(fleetEntry && fleetEntry.simbrief_type !== ofp.icao_type);
+  } catch (err) {
+    return false;
   }
 }
 function submitLoadsheet(index) {
