@@ -1,0 +1,12 @@
+{
+  "icao": "EZY",
+  "iata": "U2",
+  "name": "easyJet",
+  "callsign_prefix": "EZY",
+  "fleet": [
+    {"type": "320", "simbrief_type": "A320", "seats": 186},
+    {"type": "32N", "simbrief_type": "A20N", "seats": 186},
+    {"type": "319", "simbrief_type": "A319", "seats": 156},
+    {"type": "32Q", "simbrief_type": "A21N", "seats": 235}
+  ]
+}
