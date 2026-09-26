@@ -1,10 +1,17 @@
 /* Shared design system for VirtualDispatch's public-facing pages
    (landing, blog, legal). Same color language as the app itself
    (templates/index.html), reused here as its own stylesheet since
-   these pages don't share a Jinja base with the app shell. */
+   these pages don't share a Jinja base with the app shell.
+
+   Theme: variables are defined for light mode on :root, then
+   overridden either by the OS preference (prefers-color-scheme) or
+   by an explicit [data-theme] attribute the toggle button sets on
+   <html> - the attribute always wins over the OS preference, which
+   is what lets a visitor override the system default. */
 
 :root {
   --face:        #FFFFFF;
+  --face-2:      #F7F7F5;
   --face-dark:   #F3F4F6;
   --titlebar:    #1D4ED8;
   --titlebar-2:  #2563EB;
@@ -13,10 +20,50 @@
   --shadow-dk:   #D0D5DD;
   --shadow-md:   #E4E7EC;
   --accent-bg:   #EAF0FB;
-  --radius:      10px;
-  --radius-sm:   6px;
+  --band-mint:   #E4F5EE;
+  --band-peach:  #FBEDE3;
+  --band-lilac:  #EFEAFB;
+  --nav-bg:      rgba(255,255,255,0.82);
+  --radius:      20px;
+  --radius-sm:   10px;
+  --radius-pill: 999px;
   --shadow-card: 0 1px 2px rgba(16,24,40,0.06);
-  --max-width:   1100px;
+  --max-width:   1160px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --face:        #14161C;
+    --face-2:      #191B22;
+    --face-dark:   #1E2129;
+    --titlebar:    #5B8DF6;
+    --titlebar-2:  #7BA3FF;
+    --text:        #EDEFF3;
+    --text-muted:  #97A0AE;
+    --shadow-dk:   #333844;
+    --shadow-md:   #262A33;
+    --accent-bg:   #1C2A46;
+    --band-mint:   #172420;
+    --band-peach:  #2A2119;
+    --band-lilac:  #201E2E;
+    --nav-bg:      rgba(20,22,28,0.82);
+  }
+}
+:root[data-theme="dark"] {
+  --face:        #14161C;
+  --face-2:      #191B22;
+  --face-dark:   #1E2129;
+  --titlebar:    #5B8DF6;
+  --titlebar-2:  #7BA3FF;
+  --text:        #EDEFF3;
+  --text-muted:  #97A0AE;
+  --shadow-dk:   #333844;
+  --shadow-md:   #262A33;
+  --accent-bg:   #1C2A46;
+  --band-mint:   #172420;
+  --band-peach:  #2A2119;
+  --band-lilac:  #201E2E;
+  --nav-bg:      rgba(20,22,28,0.82);
 }
 
 * { box-sizing: border-box; }
@@ -30,6 +77,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.6;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a { color: var(--titlebar); }
@@ -42,7 +90,8 @@ img { max-width: 100%; }
 
 .site-nav {
   border-bottom: 1px solid var(--shadow-md);
-  background: var(--face);
+  background: var(--nav-bg);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   position: sticky; top: 0; z-index: 100;
 }
 .site-nav .container {
@@ -58,11 +107,11 @@ img { max-width: 100%; }
 .site-nav .links a { color: var(--text-muted); text-decoration: none; font-size: 14.5px; font-weight: 500; }
 .site-nav .links a:hover { color: var(--text); }
 .site-nav .cta {
-  background: var(--titlebar); color: #fff !important; padding: 9px 18px;
-  border-radius: var(--radius-sm); font-weight: 600 !important;
-  transition: background 0.12s ease;
+  background: var(--text); color: var(--face) !important; padding: 10px 20px;
+  border-radius: var(--radius-pill); font-weight: 600 !important;
+  transition: opacity 0.12s ease;
 }
-.site-nav .cta:hover { background: var(--titlebar-2); }
+.site-nav .cta:hover { opacity: 0.82; background: var(--text); }
 .site-nav .menu-toggle { display: none; }
 
 @media (max-width: 720px) {
@@ -72,7 +121,11 @@ img { max-width: 100%; }
     max-height: 0; overflow: hidden; transition: max-height 0.2s ease; }
   .site-nav .links.open { max-height: 320px; }
   .site-nav .links a { padding: 14px 24px; width: 100%; border-bottom: 1px solid var(--shadow-md); }
-  .site-nav .links .cta { margin: 14px 24px; text-align: center; }
+  /* Overrides the general width:100% from .links a above: that width
+     resolves against the nav's full content box, so adding this same
+     rule's side margins on top of it was overflowing past the right
+     edge and getting silently clipped by .links' overflow:hidden. */
+  .site-nav .links .cta { width: calc(100% - 48px); margin: 14px 24px; text-align: center; }
   .site-nav .menu-toggle {
     display: flex; align-items: center; justify-content: center;
     width: 36px; height: 36px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
@@ -84,34 +137,49 @@ img { max-width: 100%; }
 
 .hero {
   position: relative; overflow: hidden; text-align: center;
+  min-height: 88vh; display: flex; align-items: center;
   padding: 128px 0 96px; color: #fff;
 }
 .hero-media { position: absolute; inset: 0; z-index: 0; background: #0A0E1A; }
 .hero-media-asset { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero-media-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,14,26,0.5) 0%, rgba(10,14,26,0.72) 65%, rgba(10,14,26,0.82) 100%);
+  background: linear-gradient(180deg, rgba(10,14,26,0.35) 0%, rgba(10,14,26,0.55) 65%, rgba(10,14,26,0.72) 100%);
 }
-.hero-content { position: relative; z-index: 1; }
-.hero h1 { color: #fff; font-size: 42px; font-weight: 700; line-height: 1.15; margin: 0 0 18px; letter-spacing: -0.01em; }
-.hero p.lead { font-size: 18px; color: rgba(255,255,255,0.88); max-width: 620px; margin: 0 auto 32px; }
-.hero .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-@media (max-width: 560px) { .hero { padding: 96px 0 72px; } .hero h1 { font-size: 30px; } }
+.hero-content { position: relative; z-index: 1; width: 100%; }
+.hero h1 {
+  color: #fff; font-size: 64px; font-weight: 700; line-height: 1.05; margin: 0 0 22px;
+  letter-spacing: -0.02em; max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.hero p.lead { font-size: 19px; color: rgba(255,255,255,0.88); max-width: 600px; margin: 0 auto 36px; }
+.hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+@media (max-width: 720px) { .hero h1 { font-size: 44px; } }
+@media (max-width: 560px) { .hero { padding: 96px 0 72px; min-height: 80vh; } .hero h1 { font-size: 34px; } }
 
 .btn {
-  display: inline-block; font-weight: 600; font-size: 15px; padding: 12px 24px;
-  border-radius: var(--radius-sm); text-decoration: none; cursor: pointer; border: none;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  display: inline-block; font-weight: 600; font-size: 15.5px; padding: 14px 28px;
+  border-radius: var(--radius-pill); text-decoration: none; cursor: pointer; border: none;
+  transition: opacity 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
-.btn-primary { background: var(--titlebar); color: #fff; }
-.btn-primary:hover { background: var(--titlebar-2); }
-.btn-secondary { background: var(--face); color: var(--text); border: 1px solid var(--shadow-dk); }
-.btn-secondary:hover { background: var(--face-dark); }
+.btn-primary { background: #fff; color: #101828; }
+.btn-primary:hover { opacity: 0.88; }
+.btn-secondary { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.6); }
+.btn-secondary:hover { background: rgba(255,255,255,0.12); }
 
-section { padding: 56px 0; }
-section.alt { background: var(--face-dark); }
-section h2 { font-size: 28px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
-section p.section-lead { color: var(--text-muted); font-size: 16px; max-width: 640px; margin: 0 0 36px; }
+/* Solid-background sections (feature grid on --face, steps, screenshots)
+   use the dark-text button pair instead of the hero's white-on-video one.
+   The hero and the (also dark-background) cta-band keep their own pairs. */
+section:not(.hero):not(.cta-band) .btn-primary { background: var(--text); color: var(--face); }
+section:not(.hero):not(.cta-band) .btn-primary:hover { opacity: 0.85; }
+section:not(.hero):not(.cta-band) .btn-secondary { background: var(--face); color: var(--text); border: 1.5px solid var(--shadow-dk); }
+section:not(.hero):not(.cta-band) .btn-secondary:hover { background: var(--face-dark); }
+
+section { padding: 72px 0; }
+section.alt { background: var(--face-2); }
+section h2 { font-size: 32px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.015em; }
+section p.section-lead { color: var(--text-muted); font-size: 16.5px; max-width: 640px; margin: 0 0 40px; }
+section.centered { text-align: center; }
+section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 
 .feature-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
@@ -119,33 +187,67 @@ section p.section-lead { color: var(--text-muted); font-size: 16px; max-width: 6
 @media (max-width: 820px) { .feature-grid { grid-template-columns: 1fr; } }
 .feature-card {
   background: var(--face); border: 1px solid var(--shadow-md); border-radius: var(--radius);
-  padding: 24px; box-shadow: var(--shadow-card);
+  padding: 28px; box-shadow: var(--shadow-card); text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16,24,40,0.08); }
 .feature-card .icon {
-  width: 40px; height: 40px; border-radius: 10px; background: var(--accent-bg); color: var(--titlebar);
-  display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+  width: 44px; height: 44px; border-radius: 14px; background: var(--accent-bg); color: var(--titlebar);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
 }
-.feature-card h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+.feature-card h3 { font-size: 16.5px; font-weight: 650; margin: 0 0 8px; }
 .feature-card p { font-size: 14.5px; color: var(--text-muted); margin: 0; }
 
-.step-list { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+/* Alternating pastel "bands" behind a feature card, Wealthsimple-style -
+   opt in per card with a modifier class so the grid isn't monochrome. */
+.feature-card.band-mint { background: var(--band-mint); border-color: transparent; }
+.feature-card.band-peach { background: var(--band-peach); border-color: transparent; }
+.feature-card.band-lilac { background: var(--band-lilac); border-color: transparent; }
+
+.step-list { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
 .step-list li {
-  counter-increment: step; display: flex; gap: 16px; align-items: flex-start;
+  counter-increment: step; display: flex; gap: 18px; align-items: flex-start;
 }
 .step-list li::before {
-  content: counter(step); flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
-  background: var(--titlebar); color: #fff; font-weight: 700; font-size: 14px;
+  content: counter(step); flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--text); color: var(--face); font-weight: 700; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
 }
-.step-list h4 { margin: 0 0 4px; font-size: 15.5px; font-weight: 600; }
+.step-list h4 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
 .step-list p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
 
 .cta-band {
-  background: var(--titlebar); color: #fff; text-align: center; padding: 64px 0;
+  background: var(--titlebar); color: #fff; text-align: center; padding: 72px 0;
+  border-radius: var(--radius); margin: 0 24px;
+  max-width: calc(var(--max-width) - 48px); margin-left: auto; margin-right: auto;
 }
 .cta-band h2 { color: #fff; }
 .cta-band p.section-lead { color: rgba(255,255,255,0.85); margin: 0 auto 28px; }
-.cta-band .btn-secondary { background: #fff; border-color: #fff; }
+.cta-band .btn-primary { background: #fff; color: var(--titlebar); }
+.cta-band .btn-secondary { background: transparent; border: 1.5px solid rgba(255,255,255,0.6); color: #fff; }
+.cta-band .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+/* ---- Theme toggle ---- */
+
+.theme-toggle {
+  position: fixed; right: 20px; bottom: 20px; z-index: 500;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--face); border: 1px solid var(--shadow-dk);
+  box-shadow: 0 4px 16px rgba(16,24,40,0.14);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text); padding: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.theme-toggle:hover { transform: translateY(-2px); }
+.theme-toggle svg { width: 22px; height: 22px; }
+.theme-toggle .icon-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: none; }
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: block; }
+}
+@media (max-width: 560px) { .theme-toggle { right: 14px; bottom: 14px; width: 44px; height: 44px; } }
 
 /* ---- Footer ---- */
 
@@ -205,6 +307,9 @@ section p.section-lead { color: var(--text-muted); font-size: 16px; max-width: 6
   display: none;
 }
 #cookie-banner.visible { display: block; }
+/* Narrow viewports: the banner spans near-full-width, so lift it clear
+   of the fixed bottom-right theme toggle instead of overlapping it. */
+@media (max-width: 640px) { #cookie-banner { bottom: 76px; } }
 #cookie-banner p { margin: 0 0 14px; font-size: 14px; color: var(--text-muted); }
 #cookie-banner p a { color: var(--titlebar); }
 #cookie-banner .cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }

@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}VirtualDispatch{% endblock %}</title>
 <meta name="description" content="{% block meta_description %}VirtualDispatch generates real dispatch data for your Microsoft Flight Simulator flights.{% endblock %}">
+<script>
+  /* Runs before first paint so the page never flashes the wrong theme:
+     an explicit choice saved by the toggle wins, otherwise the OS
+     preference (handled by CSS) applies with no attribute set at all. */
+  (function () {
+    try {
+      var saved = localStorage.getItem('vd-theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch (e) {}
+  })();
+  // Defined here (not at the bottom of <body>) so page content - the
+  // hero video, in particular - can call it immediately as it renders,
+  // rather than waiting for the deferred script near the footer.
+  function vdCurrentTheme() {
+    var explicit = document.documentElement.getAttribute('data-theme');
+    if (explicit === 'light' || explicit === 'dark') return explicit;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  window.vdCurrentTheme = vdCurrentTheme;
+</script>
 {% include "_favicons.html" %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,6 +79,11 @@
   </div>
 </footer>
 
+<button class="theme-toggle" id="themeToggle" aria-label="Switch between light and dark mode" title="Switch theme">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+</button>
+
 <div id="cookie-banner">
   <p>We use strictly-necessary cookies to run your account and session. With your consent, we'd also like to use analytics cookies to understand how the app is used. See our <a href="/cookies">Cookie Policy</a>.</p>
   <div class="cookie-actions">
@@ -73,6 +100,16 @@
     navToggle.addEventListener('click', function () {
       var open = navLinks.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  var themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+      var next = vdCurrentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('vd-theme', next); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('vd-theme-change', { detail: { theme: next } }));
     });
   }
 </script>
