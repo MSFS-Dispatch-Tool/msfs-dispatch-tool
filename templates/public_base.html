@@ -7,23 +7,17 @@
 <meta name="description" content="{% block meta_description %}VirtualDispatch generates real dispatch data for your Microsoft Flight Simulator flights.{% endblock %}">
 <script>
   /* Runs before first paint so the page never flashes the wrong theme:
-     an explicit choice saved by the toggle wins, otherwise the OS
-     preference (handled by CSS) applies with no attribute set at all. */
+     light for everyone, unless the visitor has chosen dark with the
+     toggle before (remembered in localStorage). */
   (function () {
-    try {
-      var saved = localStorage.getItem('vd-theme');
-      if (saved === 'light' || saved === 'dark') {
-        document.documentElement.setAttribute('data-theme', saved);
-      }
-    } catch (e) {}
+    var theme = 'light';
+    try { if (localStorage.getItem('vd-theme') === 'dark') theme = 'dark'; } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
   })();
   // Defined here (not at the bottom of <body>) so page content - the
-  // hero video, in particular - can call it immediately as it renders,
-  // rather than waiting for the deferred script near the footer.
+  // hero video, in particular - can call it immediately as it renders.
   function vdCurrentTheme() {
-    var explicit = document.documentElement.getAttribute('data-theme');
-    if (explicit === 'light' || explicit === 'dark') return explicit;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
   window.vdCurrentTheme = vdCurrentTheme;
 </script>
@@ -36,19 +30,17 @@
 </head>
 <body>
 
-<nav class="site-nav">
-  <div class="container">
-    <a class="brand" href="/"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="28" height="28">VirtualDispatch</a>
-    <button class="menu-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div class="links" id="navLinks">
-      <a href="/#features">Features</a>
-      <a href="/blog">Blog</a>
-      <a href="/app" class="cta">Open app</a>
-    </div>
+{# Child templates set nav_current ("home", "blog") before extending. #}
+{% set nav_current = nav_current | default('') %}
+<nav class="site-nav" aria-label="Main">
+  <div class="nav-pills">
+    <a href="/" class="{{ 'is-current' if nav_current == 'home' }}"{% if nav_current == 'home' %} aria-current="page"{% endif %}>Home</a>
+    <a href="/#how-it-works" id="navHowItWorks">How it works</a>
+    <a href="/blog" class="{{ 'is-current' if nav_current == 'blog' }}"{% if nav_current == 'blog' %} aria-current="page"{% endif %}>Blog</a>
+    <a href="/app">Open app</a>
   </div>
 </nav>
+{% block nav_spacer %}<div class="nav-spacer"></div>{% endblock %}
 
 {% block content %}{% endblock %}
 
@@ -58,7 +50,7 @@
       <div class="footer-col">
         <h5>Product</h5>
         <a href="/">Overview</a>
-        <a href="/#features">Features</a>
+        <a href="/#how-it-works">How it works</a>
         <a href="/app">Open app</a>
       </div>
       <div class="footer-col">
@@ -94,15 +86,6 @@
 
 <script src="{{ url_for('static', filename='js/cookie-consent.js') }}"></script>
 <script>
-  var navToggle = document.getElementById('navToggle');
-  var navLinks = document.getElementById('navLinks');
-  if (navToggle) {
-    navToggle.addEventListener('click', function () {
-      var open = navLinks.classList.toggle('open');
-      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-  }
-
   var themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', function () {
