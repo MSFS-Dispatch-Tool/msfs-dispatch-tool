@@ -534,6 +534,32 @@ tz_by_icao = {a["icao"]: a["tz"] for a in airports}
 airports_by_icao = {a["icao"]: a for a in airports}
 airports_world_by_icao = {a["icao"]: a for a in airports_world}
 
+
+def build_network():
+    """Compact route-network summary for the flight-selection map: every
+    airport with at least one route, and every directed airport pair with
+    a bitmask of the carriers flying it (bit i = ACTIVE_CARRIER_CODES[i]).
+    Indices instead of repeated ICAO strings keep ~6.7k pairs small."""
+    carrier_bit = {code: 1 << i for i, code in enumerate(ACTIVE_CARRIER_CODES)}
+    masks = {}
+    for r in routes:
+        key = (r["departure_icao"], r["arrival_icao"])
+        masks[key] = masks.get(key, 0) | carrier_bit[r["carrier"]]
+    served = sorted({icao for pair in masks for icao in pair if icao in airports_by_icao})
+    index = {icao: i for i, icao in enumerate(served)}
+    return {
+        "carriers": list(ACTIVE_CARRIER_CODES),
+        "airports": [
+            {k: airports_by_icao[icao][k] for k in ("icao", "iata", "name", "city", "country", "lat", "lon")}
+            for icao in served
+        ],
+        "routes": [[index[d], index[a], m] for (d, a), m in sorted(masks.items())
+                   if d in index and a in index],
+    }
+
+
+network = build_network()
+
 WEATHER_USER_AGENT = "VirtualDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
 
@@ -726,6 +752,16 @@ def carriers_route():
     ])
 
 
+@app.route("/network")
+def network_route():
+    """Airports and airport pairs for the flight-selection map. Static for
+    the life of the process (it only changes when route data does), so
+    browsers may cache it."""
+    resp = jsonify(network)
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
 @app.route("/airports/search/world")
 def airports_search_world():
     """Same shape as /airports/search but scoped to the full worldwide
@@ -785,6 +821,16 @@ def search():
                 and leg_data[1]["_dep_dt"] < leg_data[0]["_dep_dt"]:
             legs = [legs[1], legs[0]]
             leg_data = [leg_data[1], leg_data[0]]
+
+        # The time order is the real rotation (e.g. a Geneva-based aircraft
+        # flies GVA-LGW-GVA), so the airport filters must hold after it:
+        # otherwise a search "from EGKK" lists rotations that start in
+        # Geneva, and the map draws their origin and turnaround swapped.
+        # Each rotation still appears under its true origin/turnaround.
+        if itin["trip_type"] == "RT" and (
+                (origin_icao and legs[0]["departure_icao"] != origin_icao)
+                or (destination_icao and legs[0]["arrival_icao"] != destination_icao)):
+            continue
 
         # Even in the right order, scraped schedule times occasionally
         # leave too little (or a negative) turnaround between the two

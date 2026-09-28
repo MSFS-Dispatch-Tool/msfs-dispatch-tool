@@ -122,8 +122,13 @@ def find_itineraries(routes, rt_pairing, origin_icao=None, destination_icao=None
 
             leg_out = by_flight[fn]
             leg_back = by_flight[partner_fn]
-            # orient leg_out as the outbound (matches origin filter if given)
-            if origin_icao and leg_out["departure_icao"] != origin_icao:
+            # A pair is visited once, in whichever order rt_pairing yields
+            # it, so orient leg_out explicitly: by the origin when one is
+            # given, otherwise so the outbound lands at the destination.
+            if origin_icao:
+                if leg_out["departure_icao"] != origin_icao:
+                    leg_out, leg_back = leg_back, leg_out
+            elif destination_icao and leg_out["arrival_icao"] != destination_icao:
                 leg_out, leg_back = leg_back, leg_out
 
             if origin_icao and leg_out["departure_icao"] != origin_icao:
