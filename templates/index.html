@@ -148,7 +148,6 @@
   th.sortable.sort-active .sort-arrow { color: var(--titlebar); }
   th.sortable:hover { color: var(--titlebar); }
 
-  .filter-icon { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; color: var(--text-muted); }
 
 
   .notice-banner {
@@ -193,8 +192,6 @@
   button.action.danger { background: var(--red); }
   button.action.danger:hover { background: #93251A; }
 
-  .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 12px; }
-  .toolbar .field { min-width: 160px; }
 
   /* The table must fit its panel with no horizontal scroll: the expanded
      detail row spans every column, so any overflow pushes its CONFIRM
@@ -212,7 +209,10 @@
   table.itin-list tr.itin-row.expanded { background: var(--accent-bg); }
   table.itin-list tr.itin-row.dimmed { opacity: 0.45; }
   table.itin-list tr.itin-row.dimmed:hover { opacity: 0.7; }
-  table.itin-list td.select-cell { width: 1%; padding-right: 14px; text-align: right; }
+  table.itin-list td.select-cell { width: 1%; padding-right: 14px; text-align: right; white-space: nowrap; }
+  table.itin-list tr.itin-row.map-hl { box-shadow: inset 3px 0 0 #6938EF; }
+  table.itin-list td.matched-cell { font-weight: 700; color: var(--orange); }
+  .row-map-btn { width: 28px; height: 26px; padding: 0; justify-content: center; margin-right: 6px; vertical-align: middle; }
   table.itin-list td.nowrap { white-space: nowrap; }
   table.itin-list td.detail-cell { background: #FAFAFB; padding: 0; }
 
@@ -234,6 +234,117 @@
     display: inline-block; min-width: 34px; text-align: center;
     font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
     background: var(--shadow-md); color: var(--text);
+  }
+
+  /* ---- Flight selection: actions, criteria bar, route map ---- */
+  .params-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  button.ghost {
+    font-family: inherit; font-weight: 600; font-size: 12.5px; line-height: 1.3;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--white); color: var(--text); padding: 7px 12px; cursor: pointer;
+    border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
+  }
+  button.ghost:hover { background: var(--face-dark); }
+  button.ghost:disabled { opacity: 0.45; cursor: default; background: var(--white); }
+  button.ghost.small { padding: 4px 10px; font-size: 11.5px; }
+  button.ghost:focus-visible, button.action:focus-visible { outline: 2px solid var(--titlebar); outline-offset: 2px; }
+
+  .criteria-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 16px; }
+  .result-count { font-size: 12.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.02em; white-space: nowrap; }
+  .result-count strong { font-size: 24px; color: var(--text); margin-right: 6px; vertical-align: -3px; font-variant-numeric: tabular-nums; }
+  .result-count.error { color: var(--red); }
+  .crit-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+  .crit-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
+    background: var(--face-dark); color: var(--text); border-radius: 20px; padding: 3px 3px 3px 10px;
+  }
+  .crit-chip .k { color: var(--text-muted); font-weight: 600; }
+  .crit-chip.dep { background: var(--accent-bg); color: #1D4ED8; }
+  .crit-chip.dest { background: var(--orange-bg); color: #C4320A; }
+  .crit-chip button {
+    border: none; background: transparent; color: inherit; cursor: pointer; font-size: 15px; line-height: 1;
+    width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .crit-chip button:hover { background: rgba(16,24,40,0.1); }
+  .chip-swap {
+    border: 1px solid var(--shadow-dk); background: var(--white); color: var(--text); cursor: pointer;
+    width: 26px; height: 26px; border-radius: 50%; font-size: 14px; line-height: 1;
+  }
+  .chip-swap:hover { background: var(--face-dark); }
+  .crit-empty { color: var(--text-muted); font-size: 12.5px; }
+
+  .spinner {
+    display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px;
+    border: 2px solid var(--shadow-dk); border-top-color: var(--titlebar); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+  .map-toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .seg-control { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; border: 0; padding: 0; margin: 0; min-width: 0; }
+  .seg-control legend { float: left; font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-right: 8px; padding: 0; line-height: 26px; }
+  .seg-control label { position: relative; }
+  .seg-control input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg-control span {
+    display: inline-block; font-size: 11.5px; font-weight: 700; padding: 5px 10px; margin-left: -1px; cursor: pointer;
+    border: 1px solid var(--shadow-dk); background: var(--white); color: var(--text);
+  }
+  .seg-control label:first-of-type span { border-radius: var(--radius-sm) 0 0 var(--radius-sm); margin-left: 0; }
+  .seg-control label:last-of-type span { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .seg-control input:checked + span { background: var(--titlebar); border-color: var(--titlebar); color: #fff; }
+  .seg-control input:focus-visible + span { outline: 2px solid var(--titlebar); outline-offset: 2px; position: relative; z-index: 1; }
+
+  .selection-map-wrap { position: relative; }
+  .selection-map { height: 400px; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); background: #E5E7EB; }
+  .selection-map.pick-direct .leaflet-interactive { cursor: crosshair; }
+  .map-overlay {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 800; pointer-events: none;
+    background: rgba(255,255,255,0.96); border: 1px solid var(--shadow-dk); border-radius: 20px;
+    padding: 5px 14px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 6px rgba(16,24,40,0.12); white-space: nowrap;
+  }
+  .map-overlay[hidden] { display: none; }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+  .map-legend .sw { display: inline-block; vertical-align: middle; margin-right: 5px; }
+  .sw-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .sw-ring { width: 10px; height: 10px; border-radius: 50%; border: 2.5px solid #344054; background: #fff; }
+  .sw-line { width: 22px; border-top: 2px solid #2563EB; }
+  .sw-line.dashed { border-top-style: dashed; }
+  .sw-line.hl { border-top: 4px solid #6938EF; }
+  .map-hint { font-size: 11.5px; color: var(--text-muted); margin: 6px 0 0; }
+
+  .selection-map .map-label { font-family: inherit; font-size: 11px; font-weight: 700; padding: 1px 6px; }
+  .selection-map .map-label-dep { color: #1D4ED8; }
+  .selection-map .map-label-dest { color: #C4320A; }
+  .selection-map .map-label-hl { color: #6938EF; border-color: #6938EF; }
+  .map-popup-wrap .leaflet-popup-content { margin: 12px 14px; font-family: 'Inter', sans-serif; }
+  .map-popup .mp-title { font-weight: 700; font-size: 13.5px; }
+  .map-popup .mp-name { font-size: 12px; color: var(--text); }
+  .map-popup .mp-sub { font-size: 11.5px; color: var(--text-muted); margin: 4px 0 10px; }
+  .map-popup .mp-actions { display: flex; flex-direction: column; gap: 6px; }
+  .map-popup .mp-actions button { width: 100%; justify-content: center; }
+
+  .map-toggle-btn { display: none !important; }
+  @media (max-width: 720px) {
+    .map-toggle-btn { display: inline-flex !important; }
+    #mapPanel:not(.map-open) .map-body { display: none; }
+    .selection-map { height: 300px; }
+    .seg-control { width: 100%; flex-wrap: nowrap; }
+    .seg-control legend { float: none; display: block; width: 100%; line-height: 1.4; margin: 0 0 5px; }
+    .seg-control label { flex: 1; min-width: 0; }
+    .seg-control span { display: block; text-align: center; padding: 6px 4px; height: 100%; }
+    .criteria-bar { flex-direction: column; align-items: flex-start; }
+    .crit-chips { flex: none; width: 100%; }
+  }
+
+  .no-results { padding: 24px 12px; text-align: center; }
+  .no-results h4 { margin: 0 0 6px; font-size: 14px; }
+  .no-results p { margin: 0 auto 14px; max-width: 560px; color: var(--text-muted); font-size: 13px; }
+  .no-results .relax-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
   }
 
   /* 1000px: the table's min-content width (~893px) plus panel and page
@@ -543,7 +654,6 @@ function boot() {
     renderSearchUI();
   }
 }
-boot();
 
 function updateActiveFlightButtonState() {
   const btn = document.getElementById('activeFlightBtn');
@@ -583,11 +693,17 @@ function attachAirportDropdown(inputId, dropdownId, endpoint) {
   endpoint = endpoint || '/airports/search';
   let items = [];
   let activeIndex = -1;
+  let querySeq = 0;
 
   async function query(q) {
+    const seq = ++querySeq;
     if (!q) { dropdown.classList.remove('open'); return; }
     const resp = await fetch(`${endpoint}?q=${encodeURIComponent(q)}`);
-    items = await resp.json();
+    const result = await resp.json();
+    // A value committed (change event) while this was in flight wins -
+    // don't pop the list back open over it.
+    if (seq !== querySeq) return;
+    items = result;
     renderItems();
   }
 
@@ -611,6 +727,7 @@ function attachAirportDropdown(inputId, dropdownId, endpoint) {
   }
 
   input.addEventListener('input', (e) => { activeIndex = -1; query(e.target.value); });
+  input.addEventListener('change', () => { querySeq++; dropdown.classList.remove('open'); });
   input.addEventListener('keydown', (e) => {
     if (!dropdown.classList.contains('open')) return;
     if (e.key === 'ArrowDown') { activeIndex = Math.min(activeIndex + 1, items.length - 1); renderItems(); e.preventDefault(); }
@@ -634,7 +751,43 @@ async function validateAirport(fieldId) {
   return result.valid;
 }
 
+// ---------------------------------------------------------------------
+// Flight selection. One shared searchState drives the fields, the
+// criteria bar, the route map and the itinerary table. Only the two
+// airports go to the server (/search); airline, sector legs, flight
+// country and the map's route focus are applied client-side, so
+// changing any of them is instant, never refetches, and never resets
+// the others.
+// ---------------------------------------------------------------------
+const LEG_FILTER_LABELS = { all: 'ALL', '1W': 'ONE-LEG ONLY', RT: 'MULTI-LEG ONLY' };
+const COUNTRY_FILTER_LABELS = { all: 'ALL', domestic: 'DOMESTIC ONLY', international: 'INTERNATIONAL ONLY' };
+const ROUTE_KEY_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+
+function defaultSearchState() {
+  return { origin: '', destination: '', airline: '', legs: 'all', country: 'all', route: '' };
+}
+let searchState = defaultSearchState();
+let searchStatus = 'idle';   // idle (no airport) | loading | ready | error
+let searchError = '';
+let searchAbort = null;
+let mapPickMode = 'ask';     // ask | origin | destination
+let mapOpenOnMobile = false;
+let networkData = null;
+let networkPromise = null;
+
+function selectOptionsHtml(labels, current) {
+  return Object.entries(labels).map(([v, l]) => `<option value="${v}"${v === current ? ' selected' : ''}>${l}</option>`).join('');
+}
+
 async function renderSearchUI() {
+  if (selMap) { selMap.remove(); selMap = null; }
+  const fromUrl = readSearchUrl();
+  searchState = fromUrl || defaultSearchState();
+  currentItineraries = [];
+  searchStatus = 'idle';
+  expandedKey = null; expandedDetailData = null; expandedDetailKey = null;
+  hoverKey = null; pinnedKey = null;
+
   document.getElementById('mainContent').innerHTML = `
     ${simbriefNoticeHtml()}
     <div class="panel">
@@ -645,57 +798,111 @@ async function renderSearchUI() {
             <label for="origin">DEPARTURE AIRPORT <span class="hint">(ICAO/IATA)</span></label>
             <input type="text" id="origin" autocomplete="off" placeholder="e.g. BGY or LIME">
             <div class="custom-dropdown" id="originDropdown"></div>
-            <div class="field-error" id="originError">UNKNOWN AIRPORT CODE</div>
+            <div class="field-error" id="originError">UNKNOWN AIRPORT CODE &ndash; NOT APPLIED</div>
           </div>
           <div class="field">
             <label for="destination">DESTINATION AIRPORT <span class="hint">(ICAO/IATA)</span></label>
             <input type="text" id="destination" autocomplete="off" placeholder="e.g. STN or EGSS">
             <div class="custom-dropdown" id="destinationDropdown"></div>
-            <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE</div>
+            <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE &ndash; NOT APPLIED</div>
           </div>
           <div class="field">
-            <label for="tripType">SECTOR LEGS</label>
-            <select id="tripType">
-              <option value="random" selected>BOTH</option>
-              <option value="one_way">ONE-LEG ONLY</option>
-              <option value="round_trip">MULTI-LEG ONLY</option>
+            <label for="legsFilter">SECTOR LEGS</label>
+            <select id="legsFilter" onchange="setSearchFilter('legs', this.value)">${selectOptionsHtml(LEG_FILTER_LABELS, searchState.legs)}</select>
+          </div>
+          <div class="field">
+            <label for="airlineFilter">AIRLINE</label>
+            <select id="airlineFilter" onchange="setSearchFilter('airline', this.value)">
+              <option value="">ALL</option>
             </select>
+          </div>
+          <div class="field">
+            <label for="countryFilter">FLIGHT COUNTRY</label>
+            <select id="countryFilter" onchange="setSearchFilter('country', this.value)">${selectOptionsHtml(COUNTRY_FILTER_LABELS, searchState.country)}</select>
           </div>
           <div class="field">
             <label for="aircraftFilter">AIRCRAFT</label>
             <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any">
             <p class="field-note">Feature coming soon</p>
           </div>
-          <div class="field">
-            <label for="airlineFilter">AIRLINE</label>
-            <select id="airlineFilter" onchange="updateSearchButtonState()">
-              <option value="">ALL</option>
-            </select>
-          </div>
         </div>
-        <p class="field-note" id="searchRequirementNote">Enter a departure and/or destination airport to search.</p>
-        <button class="action" id="searchBtn" onclick="searchFlights()" disabled>SEARCH</button>
+        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline and flight country apply instantly.</p>
+        <div class="params-actions">
+          <button class="action" id="searchBtn" onclick="applyTypedAirports()">SEARCH</button>
+          <button class="ghost" type="button" id="swapBtn" onclick="swapAirports()" title="Swap departure and destination">&#8644; SWAP</button>
+          <button class="ghost" type="button" onclick="resetSearch()">RESET ALL</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="criteria-bar" id="criteriaBar"></div>
+    </div>
+    <div class="panel" id="mapPanel">
+      <div class="panel-header">
+        <span>ROUTE MAP</span>
+        <button class="ghost small map-toggle-btn" type="button" id="mapToggleBtn" aria-controls="mapBody" aria-expanded="false" onclick="toggleMapOnMobile()">SHOW MAP</button>
+      </div>
+      <div class="panel-body map-body" id="mapBody">
+        <div class="map-toolbar">
+          <fieldset class="seg-control">
+            <legend>CLICK AN AIRPORT TO</legend>
+            <label><input type="radio" name="mapPickMode" value="ask" checked onchange="setMapPickMode(this.value)"><span>CHOOSE EACH TIME</span></label>
+            <label><input type="radio" name="mapPickMode" value="origin" onchange="setMapPickMode(this.value)"><span>SET DEPARTURE</span></label>
+            <label><input type="radio" name="mapPickMode" value="destination" onchange="setMapPickMode(this.value)"><span>SET DESTINATION</span></label>
+          </fieldset>
+          <button class="ghost small" type="button" onclick="fitSelectionMap()">FIT TO RESULTS</button>
+        </div>
+        <div class="selection-map-wrap">
+          <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the table below."></div>
+          <div class="map-overlay" id="mapOverlay" hidden></div>
+        </div>
+        <div class="map-legend" aria-hidden="true">
+          <span><i class="sw sw-dot" style="background:#1D4ED8"></i>DEPARTURE</span>
+          <span><i class="sw sw-dot" style="background:#C4320A"></i>DESTINATION</span>
+          <span><i class="sw sw-dot" style="background:#344054"></i>AIRPORT WITH ITINERARIES</span>
+          <span><i class="sw sw-dot sw-ring"></i>MULTI-LEG TURNAROUND (VIA) ONLY</span>
+          <span><i class="sw sw-line"></i>ONE-LEG ROUTE</span>
+          <span><i class="sw sw-line dashed"></i>MULTI-LEG ONLY</span>
+          <span><i class="sw sw-line hl"></i>ROW YOU'RE POINTING AT</span>
+        </div>
+        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the table.</p>
       </div>
     </div>
     <div id="listPanel"></div>
   `;
   attachAirportDropdown('origin', 'originDropdown');
   attachAirportDropdown('destination', 'destinationDropdown');
-  document.getElementById('origin').addEventListener('blur', () => setTimeout(() => validateAirport('origin'), 150));
-  document.getElementById('destination').addEventListener('blur', () => setTimeout(() => validateAirport('destination'), 150));
-  document.getElementById('origin').addEventListener('input', updateSearchButtonState);
-  document.getElementById('destination').addEventListener('input', updateSearchButtonState);
+  ['origin', 'destination'].forEach(role => {
+    const input = document.getElementById(role);
+    input.value = searchState[role];
+    // "change" covers both a dropdown pick (attachAirportDropdown fires it)
+    // and a typed code once the field loses focus.
+    input.addEventListener('change', () => commitAirportField(role));
+    input.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const dropdown = document.getElementById(role + 'Dropdown');
+      // A highlighted suggestion is picked by attachAirportDropdown itself.
+      if (dropdown.classList.contains('open') && dropdown.querySelector('.opt.active')) return;
+      e.preventDefault();
+      input.dispatchEvent(new Event('change'));
+    });
+  });
 
   // Prefill from the pilot's preferred base (set during onboarding /
-  // account settings) so a returning pilot doesn't retype it every visit.
-  try {
-    const settings = await (await fetch('/settings')).json();
-    const base = settings.profile && settings.profile.preferred_base;
-    if (base) document.getElementById('origin').value = base;
-  } catch (err) { /* non-critical - search still works without a prefill */ }
+  // account settings) unless the URL already carries a search.
+  if (!fromUrl) {
+    try {
+      const settings = await (await fetch('/settings')).json();
+      const base = settings.profile && settings.profile.preferred_base;
+      if (base) {
+        const icao = await resolveAirportCode(base);
+        if (icao) { searchState.origin = icao; document.getElementById('origin').value = icao; }
+      }
+    } catch (err) { /* non-critical - search still works without a prefill */ }
+  }
 
   try {
-    const carriers = await (await fetch('/carriers')).json();
+    const carriers = await getCarriers();
     const select = document.getElementById('airlineFilter');
     carriers.forEach(c => {
       const opt = document.createElement('option');
@@ -703,15 +910,170 @@ async function renderSearchUI() {
       opt.textContent = c.name.toUpperCase();
       select.appendChild(opt);
     });
-  } catch (err) { /* non-critical - AIRLINE just stays on ALL */ }
+    if (searchState.airline && !carriers.some(c => c.icao === searchState.airline)) searchState.airline = '';
+    select.value = searchState.airline;
+  } catch (err) { searchState.airline = ''; }
 
-  updateSearchButtonState();
+  // While a search is in flight its own result render does the fit.
+  getNetwork().then(() => renderSelection({ fit: searchStatus !== 'loading' })).catch(() => renderSelection({ fit: false }));
+  runSearch();
 }
 
-function updateSearchButtonState() {
-  const origin = document.getElementById('origin').value.trim();
-  const destination = document.getElementById('destination').value.trim();
-  document.getElementById('searchBtn').disabled = !origin && !destination;
+// ---- Search state: URL, fields, filters ----
+
+function syncSearchUrl() {
+  const s = searchState;
+  const p = new URLSearchParams();
+  if (s.origin) p.set('from', s.origin);
+  if (s.destination) p.set('to', s.destination);
+  if (s.airline) p.set('airline', s.airline);
+  if (s.legs !== 'all') p.set('legs', s.legs);
+  if (s.country !== 'all') p.set('country', s.country);
+  if (s.route) p.set('route', s.route);
+  const qs = p.toString();
+  history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+}
+
+function readSearchUrl() {
+  const p = new URLSearchParams(location.search);
+  if (![...p.keys()].some(k => ['from', 'to', 'airline', 'legs', 'country', 'route'].includes(k))) return null;
+  const code = v => (v || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  const s = defaultSearchState();
+  s.origin = code(p.get('from'));
+  s.destination = code(p.get('to'));
+  s.airline = code(p.get('airline'));
+  if (p.get('legs') in LEG_FILTER_LABELS) s.legs = p.get('legs');
+  if (p.get('country') in COUNTRY_FILTER_LABELS) s.country = p.get('country');
+  const route = (p.get('route') || '').toUpperCase();
+  if (ROUTE_KEY_RE.test(route)) s.route = route;
+  return s;
+}
+
+async function resolveAirportCode(code) {
+  try {
+    const result = await (await fetch(`/airports/validate?code=${encodeURIComponent(code)}`)).json();
+    return result.valid ? result.icao : null;
+  } catch (err) { return null; }
+}
+
+async function commitAirportField(role) {
+  const field = document.getElementById(role);
+  if (!field) return;
+  const errorEl = document.getElementById(role + 'Error');
+  const raw = field.value.trim();
+  if (!raw) {
+    errorEl.classList.remove('show');
+    setAirport(role, '');
+    return;
+  }
+  const icao = await resolveAirportCode(raw);
+  if (field.value.trim() !== raw) return;   // user kept typing meanwhile
+  if (!icao) {
+    // Keep the last applied airport in the search; the error says the
+    // typed value was not applied, so the criteria bar never disagrees
+    // with the results it describes.
+    errorEl.classList.add('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+  field.value = icao;
+  setAirport(role, icao);
+}
+
+async function applyTypedAirports() {
+  await Promise.all(['origin', 'destination'].map(commitAirportField));
+}
+
+function setFieldValue(role, icao) {
+  const field = document.getElementById(role);
+  if (field) field.value = icao;
+  const errorEl = document.getElementById(role + 'Error');
+  if (errorEl) errorEl.classList.remove('show');
+}
+
+function setAirport(role, icao) {
+  if (searchState[role] === icao) return;
+  searchState[role] = icao;
+  setFieldValue(role, icao);
+  runSearch();
+}
+
+// Map clicks move an airport between roles instead of producing a
+// same-airport-both-ends search: picking the current destination as the
+// departure clears it from the destination.
+function mapSetAirport(role, icao) {
+  if (selMap) selMap.closePopup();
+  const other = role === 'origin' ? 'destination' : 'origin';
+  let changed = false;
+  if (searchState[other] === icao) { searchState[other] = ''; setFieldValue(other, ''); changed = true; }
+  if (searchState[role] !== icao) { searchState[role] = icao; setFieldValue(role, icao); changed = true; }
+  if (changed) runSearch();
+}
+
+function swapAirports() {
+  if (selMap) selMap.closePopup();
+  const s = searchState;
+  if (!s.origin && !s.destination) return;
+  [s.origin, s.destination] = [s.destination, s.origin];
+  setFieldValue('origin', s.origin);
+  setFieldValue('destination', s.destination);
+  runSearch();
+}
+
+function setSearchFilter(name, value) {
+  if (searchState[name] === value) return;
+  searchState[name] = value;
+  const ids = { legs: 'legsFilter', airline: 'airlineFilter', country: 'countryFilter' };
+  if (ids[name]) { const el = document.getElementById(ids[name]); if (el && el.value !== value) el.value = value; }
+  syncSearchUrl();
+  renderSelection({ fit: false });
+}
+
+function toggleRouteFocus(routeKey) {
+  searchState.route = searchState.route === routeKey ? '' : routeKey;
+  syncSearchUrl();
+  renderSelection({ fit: false });
+}
+
+function resetSearch() {
+  if (selMap) selMap.closePopup();
+  searchState = defaultSearchState();
+  ['origin', 'destination'].forEach(r => setFieldValue(r, ''));
+  document.getElementById('legsFilter').value = 'all';
+  document.getElementById('airlineFilter').value = '';
+  document.getElementById('countryFilter').value = 'all';
+  runSearch();
+}
+
+function resetResultFilters() {
+  searchState.airline = ''; searchState.legs = 'all'; searchState.country = 'all'; searchState.route = '';
+  document.getElementById('legsFilter').value = 'all';
+  document.getElementById('airlineFilter').value = '';
+  document.getElementById('countryFilter').value = 'all';
+  syncSearchUrl();
+  renderSelection({ fit: false });
+}
+
+function setMapPickMode(mode) {
+  mapPickMode = mode;
+  if (selMap) selMap.closePopup();
+  const el = document.getElementById('selectionMap');
+  if (el) el.classList.toggle('pick-direct', mode !== 'ask');
+}
+
+function toggleMapOnMobile() {
+  mapOpenOnMobile = !mapOpenOnMobile;
+  applyMapPanelOpenState();
+  if (mapOpenOnMobile && selMap) { selMap.invalidateSize(); fitSelectionMap(); }
+}
+
+function applyMapPanelOpenState() {
+  const panel = document.getElementById('mapPanel');
+  const btn = document.getElementById('mapToggleBtn');
+  if (!panel || !btn) return;
+  panel.classList.toggle('map-open', mapOpenOnMobile);
+  btn.setAttribute('aria-expanded', mapOpenOnMobile ? 'true' : 'false');
+  btn.textContent = mapOpenOnMobile ? 'HIDE MAP' : 'SHOW MAP';
 }
 
 let currentItineraries = [];
@@ -732,44 +1094,163 @@ async function getOwnedAircraft() {
   return new Set(currentSettings.profile.aircraft_owned || []);
 }
 
-async function searchFlights() {
-  const origin = document.getElementById('origin').value.trim();
-  const destination = document.getElementById('destination').value.trim();
-  if (!origin && !destination) return;
+let expandedDetailKey = null;   // which itinerary expandedDetailData was rolled for
+let detailLoadingKey = null;
+let hoverKey = null;            // table row under the pointer / keyboard focus
+let pinnedKey = null;           // row whose "show on map" was pressed
+let hoverSuppressedAt = null;   // pointer position at that press
 
-  const originValid = await validateAirport('origin');
-  const destValid = await validateAirport('destination');
-  if (!originValid || !destValid) return;
-  const tripType = document.getElementById('tripType').value;
-  const airline = document.getElementById('airlineFilter').value;
+async function runSearch() {
+  syncSearchUrl();
+  if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+  expandedKey = null; expandedDetailData = null; expandedDetailKey = null; detailLoadingKey = null;
+  hoverKey = null; pinnedKey = null;
 
-  const btn = document.getElementById('searchBtn');
-  btn.disabled = true;
-  btn.textContent = 'SEARCHING...';
-
-  try {
-    const params = new URLSearchParams({ origin, destination, trip_type: tripType });
-    if (airline) params.set('airline', airline);
-    const resp = await fetch(`/search?${params}`);
-    const data = await resp.json();
-
-    if (data.error) {
-      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">${data.error}</div></div>`;
-      return;
-    }
-    if (data.count === 0) {
-      document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">NO ITINERARIES MATCH THESE PARAMETERS. CLEAR A FILTER AND RETRY.</div></div>`;
-      return;
-    }
-    currentItineraries = data.itineraries;
-    expandedKey = null;
-    renderListPanel();
-  } catch (err) {
-    document.getElementById('listPanel').innerHTML = `<div class="panel"><div class="empty-state">SEARCH FAILED. CHECK CONNECTION AND RETRY.</div></div>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'SEARCH';
+  if (!searchState.origin && !searchState.destination) {
+    currentItineraries = [];
+    searchStatus = 'idle';
+    renderSelection({ fit: true });
+    return;
   }
+
+  searchStatus = 'loading';
+  renderSelection({ fit: false });
+  const ctrl = new AbortController();
+  searchAbort = ctrl;
+  try {
+    const params = new URLSearchParams({ origin: searchState.origin, destination: searchState.destination, trip_type: 'random' });
+    const data = await (await fetch(`/search?${params}`, { signal: ctrl.signal })).json();
+    if (searchAbort !== ctrl) return;
+    if (data.error) {
+      currentItineraries = []; searchStatus = 'error'; searchError = data.error.toUpperCase();
+    } else {
+      currentItineraries = data.itineraries;
+      searchStatus = 'ready';
+      // A route focus survives an airport change only if that route is
+      // still part of the new results.
+      if (searchState.route && !currentItineraries.some(i => itinRouteKey(i) === searchState.route)) {
+        searchState.route = '';
+        syncSearchUrl();
+      }
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') return;
+    currentItineraries = []; searchStatus = 'error'; searchError = 'SEARCH FAILED. CHECK THE CONNECTION AND RETRY.';
+  }
+  if (searchAbort === ctrl) searchAbort = null;
+  renderSelection({ fit: true });
+}
+
+// The geographic segment an itinerary is drawn on: a round trip A->X->A
+// flies the A-X segment twice, a one-leg flight its own two airports.
+function routeKeyFor(a, b) { return [a, b].sort().join('-'); }
+function itinRouteKey(itin) { return routeKeyFor(itin.departure_icao, itin.via_icao || itin.arrival_icao); }
+
+function passesFilters(itin, skip) {
+  const s = searchState;
+  if (skip !== 'airline' && s.airline && itin.carrier !== s.airline) return false;
+  if (skip !== 'legs' && s.legs !== 'all' && itin.trip_type !== s.legs) return false;
+  if (skip !== 'country' && s.country === 'domestic' && !itin.domestic) return false;
+  if (skip !== 'country' && s.country === 'international' && itin.domestic) return false;
+  if (skip !== 'route' && s.route && itinRouteKey(itin) !== s.route) return false;
+  return true;
+}
+
+function filteredItineraries(skip) {
+  return currentItineraries.filter(i => passesFilters(i, skip));
+}
+
+function airportLabel(icao) {
+  const a = networkData && networkData.airportsByIcao[icao];
+  return a ? `${icao} (${a.city.toUpperCase()})` : icao;
+}
+
+function carrierName(code) {
+  const c = (carriersCache || []).find(c => c.icao === code);
+  return c ? c.name.toUpperCase() : code;
+}
+
+// Everything the criteria bar can show, in display order, each with the
+// action that removes it - the bar and the no-results suggestions share it.
+function activeCriteria() {
+  const s = searchState;
+  const list = [];
+  if (s.origin) list.push({ id: 'origin', cls: 'dep', k: 'FROM', v: airportLabel(s.origin), clear: "setAirport('origin','')" });
+  if (s.destination) list.push({ id: 'destination', cls: 'dest', k: 'TO', v: airportLabel(s.destination), clear: "setAirport('destination','')" });
+  if (s.airline) list.push({ id: 'airline', k: 'AIRLINE', v: carrierName(s.airline), clear: "setSearchFilter('airline','')" });
+  if (s.legs !== 'all') list.push({ id: 'legs', k: 'LEGS', v: LEG_FILTER_LABELS[s.legs], clear: "setSearchFilter('legs','all')" });
+  if (s.country !== 'all') list.push({ id: 'country', k: 'COUNTRY', v: COUNTRY_FILTER_LABELS[s.country], clear: "setSearchFilter('country','all')" });
+  if (s.route) list.push({ id: 'route', k: 'ROUTE', v: s.route.replace('-', ' – '), clear: "toggleRouteFocus(searchState.route)" });
+  return list;
+}
+
+function renderCriteriaBar(visibleCount) {
+  const bar = document.getElementById('criteriaBar');
+  if (!bar) return;
+  let countHtml;
+  if (searchStatus === 'idle') countHtml = `<div class="result-count muted">NO AIRPORT SELECTED</div>`;
+  else if (searchStatus === 'loading') countHtml = `<div class="result-count muted"><span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;</div>`;
+  else if (searchStatus === 'error') countHtml = `<div class="result-count error">SEARCH ERROR</div>`;
+  else countHtml = `<div class="result-count"><strong>${fmtNum(visibleCount)}</strong>${visibleCount === 1 ? 'ITINERARY' : 'ITINERARIES'}</div>`;
+
+  const crit = activeCriteria();
+  const chips = crit.length
+    ? crit.map((c, i) => `${c.id === 'destination' && searchState.origin ? `<button class="chip-swap" type="button" onclick="swapAirports()" title="Swap departure and destination" aria-label="Swap departure and destination">&#8644;</button>` : ''}<span class="crit-chip ${c.cls || ''}"><span class="k">${c.k}</span>${c.v}<button type="button" onclick="${c.clear}" aria-label="Remove ${c.k.toLowerCase()} ${escAttr(c.v)}" title="Remove">&times;</button></span>`).join('')
+    : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map.</span>`;
+
+  bar.innerHTML = `
+    <div aria-live="polite" aria-atomic="true">${countHtml}</div>
+    <div class="crit-chips">${chips}</div>
+    ${crit.length ? `<button class="ghost small" type="button" onclick="resetSearch()">RESET ALL</button>` : ''}`;
+}
+
+// Explains an empty result and offers the single changes that would fix
+// it, with the itinerary count each one would give - criteria are kept.
+function noResultsHtml() {
+  const s = searchState;
+  const btn = (action, label, disabled) => `<button class="ghost" type="button" onclick="${action}"${disabled ? ' disabled' : ''}>${label}</button>`;
+  if (currentItineraries.length === 0) {
+    const actions = [];
+    let msg;
+    if (s.origin && s.origin === s.destination) {
+      msg = `Departure and destination are both ${s.origin}.`;
+    } else if (s.origin && s.destination) {
+      msg = `No scheduled flights go from ${airportLabel(s.origin)} to ${airportLabel(s.destination)} in the loaded network.`;
+      const reverse = networkData && networkData.pairs.has(`${s.destination}>${s.origin}`);
+      if (reverse) actions.push(btn('swapAirports()', `SWAP TO ${s.destination} &rarr; ${s.origin}`));
+    } else {
+      msg = `No itineraries were found for ${airportLabel(s.origin || s.destination)}.`;
+    }
+    if (s.destination) actions.push(btn("setAirport('destination','')", `REMOVE DESTINATION${s.origin ? ` &middot; ${fmtNum(networkDestinationCount(s.origin))} DESTINATIONS FROM ${s.origin}` : ''}`));
+    if (s.origin) actions.push(btn("setAirport('origin','')", `REMOVE DEPARTURE${s.destination ? ` &middot; ${fmtNum(networkOriginCount(s.destination))} ORIGINS TO ${s.destination}` : ''}`));
+    return `<div class="no-results"><h4>NO ITINERARIES MATCH</h4><p>${msg} Your criteria are kept &mdash; relax one to see flights.</p><div class="relax-actions">${actions.join('')}</div></div>`;
+  }
+  const relaxable = activeCriteria().filter(c => ['airline', 'legs', 'country', 'route'].includes(c.id));
+  const suggestions = relaxable.map(c => {
+    const n = filteredItineraries(c.id).length;
+    return btn(c.clear, `REMOVE ${c.k}: ${c.v} &middot; ${fmtNum(n)} ${n === 1 ? 'ITINERARY' : 'ITINERARIES'}`, n === 0);
+  });
+  const anySingleFix = relaxable.some(c => filteredItineraries(c.id).length > 0);
+  if (!anySingleFix && relaxable.length > 1) suggestions.push(btn('resetResultFilters()', `CLEAR ALL FILTERS &middot; KEEP AIRPORTS (${fmtNum(currentItineraries.length)})`));
+  return `<div class="no-results"><h4>NO ITINERARIES MATCH ALL YOUR FILTERS</h4><p>${fmtNum(currentItineraries.length)} itineraries match the airports, but not every filter below. Your criteria are kept &mdash; relax one to see flights:</p><div class="relax-actions">${suggestions.join('')}</div></div>`;
+}
+
+function networkDestinationCount(icao) {
+  if (!networkData) return 0;
+  return networkData.routes.filter(([d]) => networkData.airports[d].icao === icao).length;
+}
+function networkOriginCount(icao) {
+  if (!networkData) return 0;
+  return networkData.routes.filter(([, a]) => networkData.airports[a].icao === icao).length;
+}
+
+// Single render pass for everything that depends on the search state.
+function renderSelection({ fit }) {
+  const visible = searchStatus === 'ready' ? filteredItineraries() : [];
+  renderCriteriaBar(visible.length);
+  renderListPanel(visible);
+  renderSelectionMap({ fit });
+  applyMapPanelOpenState();
 }
 
 function itinKey(itin) { return itin.flight_numbers.join(','); }
@@ -794,21 +1275,12 @@ const SORT_COLUMNS = {
   ebt:       { label: 'EBT',            cmp: (a, b) => (a.ebt_minutes ?? -1) - (b.ebt_minutes ?? -1) },
 };
 
-function applySortAndFilter(list) {
-  const showFilter = document.getElementById('showFilter') ? document.getElementById('showFilter').value : 'all';
-  const typeFilter = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
-
-  let filtered = list;
-  if (showFilter === 'domestic') filtered = filtered.filter(i => i.domestic);
-  if (showFilter === 'international') filtered = filtered.filter(i => !i.domestic);
-  if (typeFilter !== 'all') filtered = filtered.filter(i => i.trip_type === typeFilter);
-
-  const sorted = [...filtered];
+function sortItineraries(list) {
+  const sorted = [...list];
   sorted.sort(SORT_COLUMNS[sortState.key].cmp);
   if (sortState.dir === 'desc') sorted.reverse();
   return sorted;
 }
-
 function setSort(key) {
   if (sortState.key === key) {
     sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
@@ -833,42 +1305,57 @@ function sortHeaderHtml(key) {
   return `<th class="sortable${active ? ' sort-active' : ''}" onclick="setSort('${key}')">${col.label}<span class="sort-arrow">${arrow}</span></th>`;
 }
 
-const FILTER_ICON_SVG = `<svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`;
+const MAP_PIN_SVG = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`;
 
-function renderListPanel() {
-  document.getElementById('listPanel').innerHTML = `
+let tableVisibleItineraries = [];
+
+function renderListPanel(visible) {
+  const panel = document.getElementById('listPanel');
+  if (!panel) return;
+  tableVisibleItineraries = visible || [];
+  let body;
+  if (searchStatus === 'idle') {
+    body = `<div class="empty-state">Choose a departure or destination airport &mdash; type it in Search Parameters or click it on the map.</div>`;
+  } else if (searchStatus === 'loading') {
+    body = `<div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING ITINERARIES&hellip;</div>`;
+  } else if (searchStatus === 'error') {
+    body = `<div class="no-results"><h4>${searchError}</h4><div class="relax-actions"><button class="ghost" type="button" onclick="runSearch()">RETRY</button></div></div>`;
+  } else if (tableVisibleItineraries.length === 0) {
+    body = noResultsHtml();
+  } else {
+    body = `<table class="itin-list" id="itinTable"><thead id="itinTableHead"></thead><tbody id="itinTableBody"></tbody></table>`;
+  }
+  panel.innerHTML = `
     <div class="panel">
       <div class="panel-header">MATCHING ITINERARIES</div>
-      <div class="panel-body">
-        <div class="toolbar">
-          <div class="field">
-            <label for="typeFilter">${FILTER_ICON_SVG}SECTOR LEGS</label>
-            <select id="typeFilter" onchange="renderTable()">
-              <option value="all">ALL</option>
-              <option value="RT">MULTI-LEG ONLY</option>
-              <option value="1W">ONE-LEG ONLY</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="showFilter">${FILTER_ICON_SVG}FLIGHT COUNTRY</label>
-            <select id="showFilter" onchange="renderTable()">
-              <option value="all">ALL</option>
-              <option value="domestic">DOMESTIC ONLY</option>
-              <option value="international">INTERNATIONAL ONLY</option>
-            </select>
-          </div>
-        </div>
-        <table class="itin-list" id="itinTable">
-          <thead id="itinTableHead"></thead>
-          <tbody id="itinTableBody"></tbody>
-        </table>
-      </div>
+      <div class="panel-body">${body}</div>
     </div>`;
+  const tbody = document.getElementById('itinTableBody');
+  if (!tbody) return;
+  // Delegated once per table: hovering or keyboard-focusing a row
+  // identifies its route on the map.
+  const rowKey = (e) => { const tr = e.target.closest('tr.itin-row'); return tr ? tr.dataset.key : null; };
+  tbody.addEventListener('mouseover', (e) => {
+    // After "show on map" scrolls the page, rows slide under a pointer
+    // that never moved; ignore that until the pointer really moves, or it
+    // would replace the pinned itinerary with whatever row landed there.
+    if (hoverSuppressedAt) {
+      if (e.screenX === hoverSuppressedAt.x && e.screenY === hoverSuppressedAt.y) return;
+      hoverSuppressedAt = null;
+    }
+    hoverItinerary(rowKey(e));
+  });
+  tbody.addEventListener('mouseleave', () => hoverItinerary(null));
+  tbody.addEventListener('focusin', (e) => hoverItinerary(rowKey(e)));
+  tbody.addEventListener('focusout', (e) => { if (!tbody.contains(e.relatedTarget)) hoverItinerary(null); });
   renderTable();
 }
 
 function renderTable() {
-  document.getElementById('itinTableHead').innerHTML = `
+  const head = document.getElementById('itinTableHead');
+  const tbody = document.getElementById('itinTableBody');
+  if (!head || !tbody) return;
+  head.innerHTML = `
     <tr>
       ${sortHeaderHtml('carrier')}
       ${sortHeaderHtml('type')}
@@ -881,17 +1368,12 @@ function renderTable() {
       <th>TURNAROUND</th>
       ${sortHeaderHtml('distance')}
       ${sortHeaderHtml('ebt')}
-      <th></th>
+      <th><span class="sr-only">Actions</span></th>
     </tr>`;
 
-  const sorted = applySortAndFilter(currentItineraries);
-  const tbody = document.getElementById('itinTableBody');
-  const colCount = document.querySelectorAll('#itinTableHead th').length;
-
-  if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${colCount}" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
-    return;
-  }
+  const sorted = sortItineraries(tableVisibleItineraries);
+  const colCount = head.querySelectorAll('th').length;
+  const highlighted = currentHighlightKey();
 
   tbody.innerHTML = sorted.map(itin => {
     const key = itinKey(itin);
@@ -899,20 +1381,21 @@ function renderTable() {
     const rowState = isExpanded ? 'expanded' : (expandedKey ? 'dimmed' : '');
     const domTag = itin.domestic ? `<span class="type-badge type-DOM">DOM</span>` : `<span class="type-badge type-INT">INT</span>`;
     const turnaround = itin.leg_details.length > 1 ? fmtMinutes(itin.leg_details[1].turnaround_minutes) : '&mdash;';
+    const flights = itin.flight_numbers.join(' / ');
     const row = `
-      <tr class="itin-row ${rowState}" onclick="toggleItinerary('${key}')">
+      <tr class="itin-row ${rowState}${key === highlighted ? ' map-hl' : ''}" data-key="${key}" onclick="toggleItinerary('${key}')">
         <td data-label="AIRLINE"><span class="carrier-badge">${itin.carrier}</span></td>
         <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
-        <td data-label="FLIGHT(S)">${itin.flight_numbers.join(' / ')}</td>
+        <td data-label="FLIGHT(S)">${flights}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
-        <td data-label="VIA">${itin.via_icao || '&mdash;'}</td>
+        <td data-label="VIA"${itin.via_icao && itin.via_icao === searchState.destination ? ' class="matched-cell" title="Matches your destination: the turnaround airport of this multi-leg rotation"' : ''}>${itin.via_icao || '&mdash;'}</td>
         <td data-label="ARRIVAL">${itin.arrival_icao}</td>
         <td data-label="ETD (Z)">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
         <td data-label="ETA (Z)">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
         <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' NM' : 'N/A'}</td>
         <td data-label="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
-        <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
+        <td class="select-cell" data-label=""><button class="ghost row-map-btn" type="button" onclick="event.stopPropagation(); showItineraryOnMap('${key}', event)" title="Show on map" aria-label="Show ${flights} on the map">${MAP_PIN_SVG}</button><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')" aria-expanded="${isExpanded}">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
       ? `<tr><td colspan="${colCount}" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
@@ -920,29 +1403,386 @@ function renderTable() {
     return row + detailRow;
   }).join('');
 
-  if (expandedKey) loadDetail(expandedKey);
+  // Re-rendering (sorting, filtering, a map click) must never re-roll the
+  // open flight: /select randomizes delay/MEL/pax each call, so reuse the
+  // roll the pilot is already looking at.
+  if (expandedKey && document.getElementById('detailCell')) {
+    if (expandedDetailData && expandedDetailKey === expandedKey) paintDetail();
+    else loadDetail(expandedKey);
+  }
 }
 
-async function toggleItinerary(key) {
+function toggleItinerary(key) {
   expandedKey = (expandedKey === key) ? null : key;
   expandedDetailData = null;
+  expandedDetailKey = null;
   renderTable();
+  refreshMapHighlight();
 }
 
 async function loadDetail(key) {
-  const cell = document.getElementById('detailCell');
+  if (detailLoadingKey === key) return;
+  detailLoadingKey = key;
   try {
-    const [resp, carriers, ownedAircraft] = await Promise.all([
-      fetch(`/select?flights=${encodeURIComponent(key)}`), getCarriers(), getOwnedAircraft()
-    ]);
-    const data = await resp.json();
+    const data = await (await fetch(`/select?flights=${encodeURIComponent(key)}`)).json();
+    if (expandedKey !== key) return;   // closed or switched while loading
+    if (data.error) throw new Error(data.error);
     expandedDetailData = data;
-    cell.innerHTML = buildDetailHtml(data, key, carriers, ownedAircraft);
-    data.legs.forEach((leg, i) => initRouteMap(`map-detail-${key}-${i}`, leg));
+    expandedDetailKey = key;
+    await paintDetail();
   } catch (err) {
+    if (expandedKey !== key) return;
     expandedDetailData = null;
-    cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
+    expandedDetailKey = null;
+    const cell = document.getElementById('detailCell');
+    if (cell) cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
+  } finally {
+    if (detailLoadingKey === key) detailLoadingKey = null;
   }
+}
+
+async function paintDetail() {
+  const [carriers, ownedAircraft] = await Promise.all([getCarriers(), getOwnedAircraft()]);
+  const cell = document.getElementById('detailCell');
+  if (!cell || !expandedDetailData || expandedDetailKey !== expandedKey) return;
+  cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
+  expandedDetailData.legs.forEach((leg, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, leg));
+}
+
+// ---- Table <-> map linking (never re-renders the table) ----
+
+function currentHighlightKey() { return hoverKey || pinnedKey || expandedKey; }
+
+function hoverItinerary(key) {
+  if (hoverKey === key) return;
+  hoverKey = key;
+  refreshMapHighlight();
+}
+
+function showItineraryOnMap(key, event) {
+  pinnedKey = key;
+  hoverKey = null;
+  hoverSuppressedAt = event && event.screenX != null ? { x: event.screenX, y: event.screenY } : null;
+  if (window.matchMedia('(max-width: 720px)').matches && !mapOpenOnMobile) toggleMapOnMobile();
+  refreshMapHighlight({ pan: true });
+  const panel = document.getElementById('mapPanel');
+  if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function syncRowHighlightClass() {
+  const key = currentHighlightKey();
+  document.querySelectorAll('#itinTableBody tr.itin-row').forEach(tr => {
+    tr.classList.toggle('map-hl', tr.dataset.key === key);
+  });
+}
+
+// ---- Route map (Leaflet, OpenStreetMap tiles, canvas-rendered) ----
+
+let selMap = null;
+let selLayers = null;
+let mapPoints = [];        // what "fit to results" frames
+let mapAirportEntries = []; // every clickable airport currently drawn
+let mapSegmentEntries = []; // every clickable route line currently drawn
+let mapNeedsFit = false;   // a fit requested while the map was hidden
+
+const MAP_COLORS = { dep: '#1D4ED8', dest: '#C4320A', airport: '#344054', route: '#2563EB', hl: '#6938EF' };
+const AIRPORT_MARKER_STYLES = {
+  overview: { radius: 4,   fillColor: '#475467', color: '#FFFFFF', weight: 1,   fillOpacity: 0.85 },
+  endpoint: { radius: 5.5, fillColor: '#344054', color: '#FFFFFF', weight: 1.5, fillOpacity: 1 },
+  via:      { radius: 5,   fillColor: '#FFFFFF', color: '#344054', weight: 2.5, fillOpacity: 1 },
+  dep:      { radius: 9,   fillColor: '#1D4ED8', color: '#FFFFFF', weight: 2.5, fillOpacity: 1 },
+  dest:     { radius: 9,   fillColor: '#C4320A', color: '#FFFFFF', weight: 2.5, fillOpacity: 1 },
+};
+
+function getNetwork() {
+  if (networkData) return Promise.resolve(networkData);
+  if (!networkPromise) {
+    networkPromise = fetch('/network')
+      .then(r => { if (!r.ok) throw new Error('network unavailable'); return r.json(); })
+      .then(d => {
+        const airportsByIcao = {};
+        const airportMask = {};
+        d.airports.forEach(a => { airportsByIcao[a.icao] = a; airportMask[a.icao] = 0; });
+        const pairs = new Set();
+        d.routes.forEach(([di, ai, mask]) => {
+          const dep = d.airports[di].icao, arr = d.airports[ai].icao;
+          pairs.add(`${dep}>${arr}`);
+          airportMask[dep] |= mask;
+          airportMask[arr] |= mask;
+        });
+        networkData = { ...d, airportsByIcao, airportMask, pairs };
+        return networkData;
+      })
+      .catch(err => { networkPromise = null; throw err; });
+  }
+  return networkPromise;
+}
+
+function carrierBit(code) {
+  const i = networkData ? networkData.carriers.indexOf(code) : -1;
+  return i < 0 ? 0 : (1 << i);
+}
+
+function showMapOverlay(html) {
+  const el = document.getElementById('mapOverlay');
+  if (!el) return;
+  el.hidden = !html;
+  el.innerHTML = html || '';
+}
+
+function ensureSelectionMap() {
+  const el = document.getElementById('selectionMap');
+  if (!el) return null;
+  if (typeof L === 'undefined') { showMapOverlay('MAP UNAVAILABLE &mdash; THE FIELDS AND TABLE STILL WORK'); return null; }
+  if (selMap && selMap.getContainer() === el) return selMap;
+  if (selMap) selMap.remove();
+  // keyboard:false keeps the map out of the tab order - the fields and
+  // table are the complete keyboard path; the map is a visual aid.
+  selMap = L.map(el, {
+    renderer: L.canvas({ padding: 0.5, tolerance: 5 }),
+    zoomControl: true, scrollWheelZoom: false, keyboard: false,
+    minZoom: 3, maxZoom: 10, worldCopyJump: true,
+  });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 10,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+  }).addTo(selMap);
+  selLayers = {
+    routes: L.layerGroup().addTo(selMap),
+    airports: L.layerGroup().addTo(selMap),
+    highlight: L.layerGroup().addTo(selMap),
+  };
+  selMap.setView([47, 8], 4);
+  el.classList.toggle('pick-direct', mapPickMode !== 'ask');
+  return selMap;
+}
+
+// Segments and airports for the current results, after every filter
+// except the route focus (the focus highlights one segment among them).
+function buildMapModel() {
+  const segments = new Map();
+  const airportsInfo = new Map();
+  const note = (icao, role) => {
+    let info = airportsInfo.get(icao);
+    if (!info) { info = { endpoint: false, via: false, count: 0 }; airportsInfo.set(icao, info); }
+    info[role] = true;
+    info.count++;
+  };
+  filteredItineraries('route').forEach(it => {
+    const far = it.via_icao || it.arrival_icao;
+    const key = routeKeyFor(it.departure_icao, far);
+    let seg = segments.get(key);
+    if (!seg) { seg = { key, a: it.departure_icao, b: far, oneLeg: 0, multi: 0 }; segments.set(key, seg); }
+    note(it.departure_icao, 'endpoint');
+    if (it.trip_type === 'RT') { seg.multi++; note(it.via_icao, 'via'); }
+    else { seg.oneLeg++; note(it.arrival_icao, 'endpoint'); }
+  });
+  return { segments, airportsInfo };
+}
+
+function plural(n, one, many) { return `${fmtNum(n)} ${n === 1 ? one : many}`; }
+
+function renderSelectionMap({ fit }) {
+  const map = ensureSelectionMap();
+  if (!map) return;
+  selLayers.routes.clearLayers();
+  selLayers.airports.clearLayers();
+  selLayers.highlight.clearLayers();
+  mapPoints = [];
+  mapAirportEntries = [];
+  mapSegmentEntries = [];
+  if (!networkData) {
+    showMapOverlay(networkPromise ? 'LOADING MAP&hellip;' : 'MAP DATA UNAVAILABLE &mdash; THE FIELDS AND TABLE STILL WORK');
+    return;
+  }
+  const s = searchState;
+  const ab = networkData.airportsByIcao;
+
+  if (searchStatus === 'idle') {
+    const mask = s.airline ? carrierBit(s.airline) : 0;
+    networkData.airports.forEach(a => {
+      if (mask && !(networkData.airportMask[a.icao] & mask)) return;
+      addAirportMarker(a, 'overview', null);
+    });
+    showMapOverlay(null);
+  } else {
+    const model = searchStatus === 'ready' ? buildMapModel() : { segments: new Map(), airportsInfo: new Map() };
+    model.segments.forEach(seg => {
+      const A = ab[seg.a], B = ab[seg.b];
+      if (!A || !B) return;
+      const focused = s.route === seg.key;
+      const n = seg.oneLeg + seg.multi;
+      const parts = [seg.oneLeg ? plural(seg.oneLeg, 'one-leg', 'one-leg') : '', seg.multi ? plural(seg.multi, 'multi-leg', 'multi-leg') : ''].filter(Boolean).join(', ');
+      L.polyline([[A.lat, A.lon], [B.lat, B.lon]], {
+        color: focused ? MAP_COLORS.dep : MAP_COLORS.route,
+        weight: focused ? 4.5 : 2,
+        opacity: s.route && !focused ? 0.18 : (focused ? 1 : 0.6),
+        dashArray: seg.oneLeg ? null : '5 6',
+      }).bindTooltip(`${seg.a} &ndash; ${seg.b} &middot; ${plural(n, 'itinerary', 'itineraries')} (${parts})<br>${focused ? 'Click to show every route again' : 'Click to list only these in the table'}`, { sticky: true })
+        .on('click', (e) => { L.DomEvent.stopPropagation(e); onMapRouteClick(e, seg); })
+        .addTo(selLayers.routes);
+      mapSegmentEntries.push({ seg, n, A, B });
+    });
+    model.airportsInfo.forEach((info, icao) => {
+      if (icao === s.origin || icao === s.destination || !ab[icao]) return;
+      addAirportMarker(ab[icao], info.endpoint ? 'endpoint' : 'via', info);
+    });
+    if (s.origin && ab[s.origin]) addAirportMarker(ab[s.origin], 'dep', model.airportsInfo.get(s.origin));
+    if (s.destination && ab[s.destination]) addAirportMarker(ab[s.destination], 'dest', model.airportsInfo.get(s.destination));
+
+    if (searchStatus === 'loading') showMapOverlay('<span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;');
+    else if (searchStatus === 'error') showMapOverlay('SEARCH ERROR &mdash; SEE BELOW');
+    else if (model.segments.size === 0) showMapOverlay('NO MATCHING ROUTES &mdash; SEE THE SUGGESTIONS BELOW');
+    else showMapOverlay(null);
+  }
+  if (fit || mapNeedsFit) fitSelectionMap();
+  refreshMapHighlight();
+}
+
+function addAirportMarker(a, kind, info) {
+  mapPoints.push([a.lat, a.lon]);
+  const marker = L.circleMarker([a.lat, a.lon], AIRPORT_MARKER_STYLES[kind]).addTo(selLayers.airports);
+  if (kind === 'dep' || kind === 'dest') {
+    marker.bindTooltip(`${a.icao} &middot; ${kind === 'dep' ? 'DEPARTURE' : 'DESTINATION'}`,
+      { permanent: true, direction: 'top', offset: [0, -9], className: `map-label map-label-${kind}` });
+  } else {
+    const count = info ? ` &middot; ${plural(info.count, 'itinerary', 'itineraries')}` : '';
+    const via = kind === 'via' ? '<br>Multi-leg turnaround (via) only' : '';
+    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}`, { direction: 'top', offset: [0, -6] });
+  }
+  mapAirportEntries.push({ a, info });
+  marker.on('click', (e) => { L.DomEvent.stopPropagation(e); onMapAirportMarkerClick(e, a, info); });
+}
+
+// Close airports (London, Milan, Paris...) overlap at low zoom, so a click
+// covering more than one opens a short "which airport?" list instead of
+// silently picking whichever marker happens to be drawn on top.
+function onMapAirportMarkerClick(e, a, info) {
+  const pt = e.containerPoint;
+  const nearby = mapAirportEntries
+    .map(x => ({ ...x, d: selMap.latLngToContainerPoint([x.a.lat, x.a.lon]).distanceTo(pt) }))
+    .filter(x => x.d <= 12)
+    .sort((x, y) => x.d - y.d);
+  const unique = nearby.filter((x, i) => nearby.findIndex(y => y.a.icao === x.a.icao) === i);
+  if (unique.length <= 1) { onMapAirportClick(a, info); return; }
+  const html = `
+    <div class="map-popup">
+      <div class="mp-title">WHICH AIRPORT?</div>
+      <div class="mp-sub">${unique.length} airports overlap here &mdash; zoom in, or choose one:</div>
+      <div class="mp-actions">${unique.map(x => `<button class="ghost" type="button" onclick="mapPickFromList('${x.a.icao}')"><strong>${x.a.icao}</strong>&nbsp;${x.a.name}</button>`).join('')}</div>
+    </div>`;
+  L.popup({ autoPan: true, maxWidth: 300, className: 'map-popup-wrap' }).setLatLng(e.latlng).setContent(html).openOn(selMap);
+}
+
+// Routes fanning out of one airport run close together, so a click within
+// reach of several lines asks which one rather than guessing.
+function onMapRouteClick(e, seg) {
+  const pt = e.containerPoint;
+  const near = mapSegmentEntries
+    .map(x => ({ ...x, d: L.LineUtil.pointToSegmentDistance(pt,
+        selMap.latLngToContainerPoint([x.A.lat, x.A.lon]), selMap.latLngToContainerPoint([x.B.lat, x.B.lon])) }))
+    .filter(x => x.d <= 7)
+    .sort((x, y) => x.d - y.d);
+  if (near.length <= 1) { toggleRouteFocus(seg.key); return; }
+  const shown = near.slice(0, 8);
+  const more = near.length - shown.length;
+  const html = `
+    <div class="map-popup">
+      <div class="mp-title">WHICH ROUTE?</div>
+      <div class="mp-sub">${near.length} routes pass here &mdash; choose one to list its itineraries${more ? `, or zoom in to separate the other ${more}` : ''}:</div>
+      <div class="mp-actions">${shown.map(x => `<button class="ghost" type="button" onclick="selMap.closePopup(); toggleRouteFocus('${x.seg.key}')"><strong>${x.seg.a} &ndash; ${x.seg.b}</strong>&nbsp;&middot; ${plural(x.n, 'itinerary', 'itineraries')}</button>`).join('')}</div>
+    </div>`;
+  L.popup({ autoPan: true, maxWidth: 300, className: 'map-popup-wrap' }).setLatLng(e.latlng).setContent(html).openOn(selMap);
+}
+
+function mapPickFromList(icao) {
+  const entry = mapAirportEntries.find(x => x.a.icao === icao);
+  if (!entry) return;
+  selMap.closePopup();
+  onMapAirportClick(entry.a, entry.info);
+}
+
+function onMapAirportClick(a, info) {
+  const s = searchState;
+  const selectedRole = s.origin === a.icao ? 'origin' : (s.destination === a.icao ? 'destination' : null);
+  if (mapPickMode !== 'ask' && !selectedRole) { mapSetAirport(mapPickMode, a.icao); return; }
+  openAirportPopup(a, selectedRole, info);
+}
+
+function openAirportPopup(a, selectedRole, info) {
+  const s = searchState;
+  const actions = [];
+  let sub;
+  if (selectedRole) {
+    const roleName = selectedRole === 'origin' ? 'DEPARTURE' : 'DESTINATION';
+    const other = selectedRole === 'origin' ? 'destination' : 'origin';
+    sub = `Selected as ${roleName.toLowerCase()}.`;
+    actions.push(`<button class="ghost" type="button" onclick="mapClearAirport('${selectedRole}')">REMOVE AS ${roleName}</button>`);
+    if (s.origin && s.destination) actions.push(`<button class="ghost" type="button" onclick="swapAirports()">&#8644; SWAP DEPARTURE AND DESTINATION</button>`);
+    else actions.push(`<button class="ghost" type="button" onclick="mapSetAirport('${other}','${a.icao}')">USE AS ${other === 'origin' ? 'DEPARTURE' : 'DESTINATION'} INSTEAD</button>`);
+  } else {
+    const n = info ? info.count : null;
+    sub = n != null ? `${plural(n, 'matching itinerary', 'matching itineraries')} with the current search.`
+                    : `${plural(networkDestinationCount(a.icao), 'destination', 'destinations')} &middot; ${plural(networkOriginCount(a.icao), 'origin', 'origins')} in the network.`;
+    const depSuffix = n != null && s.destination && !s.origin ? ` (${fmtNum(n)})` : '';
+    const destSuffix = n != null && s.origin && !s.destination ? ` (${fmtNum(n)})` : '';
+    actions.push(`<button class="action small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS DEPARTURE${depSuffix}</button>`);
+    actions.push(`<button class="action small" type="button" onclick="mapSetAirport('destination','${a.icao}')">SET AS DESTINATION${destSuffix}</button>`);
+  }
+  const html = `
+    <div class="map-popup">
+      <div class="mp-title">${a.icao} / ${a.iata}</div>
+      <div class="mp-name">${a.name}, ${a.city} (${a.country})</div>
+      <div class="mp-sub">${sub}</div>
+      <div class="mp-actions">${actions.join('')}</div>
+    </div>`;
+  L.popup({ autoPan: true, maxWidth: 280, className: 'map-popup-wrap' })
+    .setLatLng([a.lat, a.lon]).setContent(html).openOn(selMap);
+}
+
+function mapClearAirport(role) {
+  if (selMap) selMap.closePopup();
+  setAirport(role, '');
+}
+
+function fitSelectionMap() {
+  if (!selMap) return;
+  const el = selMap.getContainer();
+  if (!el.offsetWidth) { mapNeedsFit = true; return; }
+  mapNeedsFit = false;
+  selMap.invalidateSize();
+  // No animation: Leaflet drops a view change requested while a zoom
+  // animation is still running, so an earlier fit could win over this one.
+  if (mapPoints.length === 1) selMap.setView(mapPoints[0], 6, { animate: false });
+  else if (mapPoints.length > 1) selMap.fitBounds(L.latLngBounds(mapPoints), { padding: [30, 30], maxZoom: 7, animate: false });
+}
+
+// Draws the highlighted itinerary (hovered, focused, pinned or expanded
+// row) on top of everything, with its intermediate stop drawn distinctly
+// from its origin and final destination.
+function refreshMapHighlight(opts) {
+  syncRowHighlightClass();
+  if (!selMap || !selLayers || !networkData) return;
+  selLayers.highlight.clearLayers();
+  const key = currentHighlightKey();
+  const itin = key && currentItineraries.find(i => itinKey(i) === key);
+  if (!itin) return;
+  const ab = networkData.airportsByIcao;
+  const A = ab[itin.departure_icao];
+  const B = ab[itin.via_icao || itin.arrival_icao];
+  if (!A || !B) return;
+  const line = L.polyline([[A.lat, A.lon], [B.lat, B.lon]], { color: MAP_COLORS.hl, weight: 5, opacity: 0.95, interactive: false }).addTo(selLayers.highlight);
+  L.circleMarker([A.lat, A.lon], { radius: 7, fillColor: MAP_COLORS.hl, color: '#FFFFFF', weight: 2, fillOpacity: 1, interactive: false }).addTo(selLayers.highlight);
+  const path = itin.trip_type === 'RT'
+    ? `${itin.departure_icao} &rarr; <em>${itin.via_icao} (via)</em> &rarr; ${itin.arrival_icao}`
+    : `${itin.departure_icao} &rarr; ${itin.arrival_icao}`;
+  if (itin.trip_type === 'RT') {
+    L.circleMarker([B.lat, B.lon], { radius: 7, fillColor: '#FFFFFF', color: MAP_COLORS.hl, weight: 3, fillOpacity: 1, interactive: false }).addTo(selLayers.highlight);
+  } else {
+    L.circleMarker([B.lat, B.lon], { radius: 7, fillColor: MAP_COLORS.hl, color: '#FFFFFF', weight: 2, fillOpacity: 1, interactive: false }).addTo(selLayers.highlight);
+  }
+  line.bindTooltip(`${itin.flight_numbers.join(' / ')} &middot; ${path}`, { permanent: true, direction: 'center', className: 'map-label map-label-hl' }).openTooltip();
+  if (opts && opts.pan) selMap.fitBounds(L.latLngBounds([[A.lat, A.lon], [B.lat, B.lon]]), { padding: [50, 50], maxZoom: 7 });
 }
 
 function fleetOptionsFor(leg, carriers, ownedAircraft) {
@@ -1980,6 +2820,10 @@ function startNewFlight() {
   clearActiveFlight();
   renderSearchUI();
 }
+
+// Last, so every top-level let/const above is initialized before the
+// first page renders (the search page reads several synchronously).
+boot();
 </script>
 
 </body>
