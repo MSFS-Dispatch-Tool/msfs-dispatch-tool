@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlencode
 import db
 import auth
+import wxmap
 import blog
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
@@ -759,6 +760,32 @@ def network_route():
     browsers may cache it."""
     resp = jsonify(network)
     resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
+@app.route("/wx/metars")
+def wx_metars():
+    """Flight category + raw METAR for every network airport, for the map's
+    weather overlay. Cached server-side (see wxmap), so page loads never
+    fan out into aviationweather.gov requests."""
+    try:
+        data = wxmap.metar_categories([a["icao"] for a in network["airports"]], WEATHER_USER_AGENT)
+    except Exception:
+        return jsonify({"error": "Weather data is unavailable right now."}), 503
+    resp = jsonify(data)
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
+@app.route("/wx/sigmets")
+def wx_sigmets():
+    """Current international SIGMETs over the network region, as polygons."""
+    try:
+        data = wxmap.current_sigmets(WEATHER_USER_AGENT)
+    except Exception:
+        return jsonify({"error": "SIGMET data is unavailable right now."}), 503
+    resp = jsonify(data)
+    resp.headers["Cache-Control"] = "public, max-age=120"
     return resp
 
 

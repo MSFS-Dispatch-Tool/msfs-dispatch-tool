@@ -324,6 +324,20 @@
   .map-popup .mp-actions { display: flex; flex-direction: column; gap: 6px; }
   .map-popup .mp-actions button { width: 100%; justify-content: center; }
 
+  .wx-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 0 0 10px; font-size: 11.5px; font-weight: 700; }
+  .wx-toolbar .wx-title { color: var(--text-muted); font-weight: 600; }
+  .wx-toolbar .switch-row { gap: 7px; cursor: pointer; }
+  .wx-status { font-weight: 500; color: var(--text-muted); font-size: 11.5px; }
+  .sw-area { width: 16px; height: 10px; border: 1.5px dashed; border-radius: 2px; }
+  .wx-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.03em; color: #fff; padding: 1px 5px; border-radius: 3px; vertical-align: 1px; }
+  .wx-raw { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10.5px; }
+  .leaflet-tooltip.wx-tip { white-space: normal; width: 280px; }
+  .selection-map.popup-open .sigmet-tip { display: none; }
+  .map-popup .mp-wx { margin: 6px 0 2px; line-height: 1.45; }
+  .sigmet-raw {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10.5px; white-space: pre-wrap;
+    max-height: 130px; overflow: auto; background: var(--face-dark); border-radius: 4px; padding: 6px 8px; margin-top: 6px;
+  }
   .map-toggle-btn { display: none !important; }
   @media (max-width: 720px) {
     .map-toggle-btn { display: inline-flex !important; }
@@ -868,6 +882,12 @@ async function renderSearchUI() {
           </fieldset>
           <button class="ghost small" type="button" onclick="fitSelectionMap()">FIT TO RESULTS</button>
         </div>
+        <div class="wx-toolbar">
+          <span class="wx-title">WEATHER</span>
+          <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxCatToggle" onchange="setWeatherLayer('cat', this.checked)"><span class="track"></span></span>FLIGHT CATEGORY</label>
+          <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxSigmetToggle" onchange="setWeatherLayer('sigmet', this.checked)"><span class="track"></span></span>SIGMETS</label>
+          <span class="wx-status" id="wxStatus" aria-live="polite"></span>
+        </div>
         <div class="selection-map-wrap">
           <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the table below."></div>
           <div class="map-overlay" id="mapOverlay" hidden></div>
@@ -881,6 +901,7 @@ async function renderSearchUI() {
           <span><i class="sw sw-line dashed"></i>MULTI-LEG ONLY</span>
           <span><i class="sw sw-line hl"></i>ROW YOU'RE POINTING AT</span>
         </div>
+        <div class="map-legend wx-legend" id="wxLegend" aria-hidden="true" hidden></div>
         <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the table.</p>
       </div>
     </div>
@@ -932,6 +953,7 @@ async function renderSearchUI() {
 
   // While a search is in flight its own result render does the fit.
   getNetwork().then(() => renderSelection({ fit: searchStatus !== 'loading' })).catch(() => renderSelection({ fit: false }));
+  initWeather();
   runSearch();
 }
 
@@ -1576,6 +1598,158 @@ function addBasemap(map) {
   });
 }
 
+// ---- Weather overlays on the route map: flight category per airport
+// (current METAR) and SIGMET areas, via the cached /wx endpoints. Both are
+// optional, off by default, and remembered per browser. ----
+const WX_PREFS_KEY = 'vd_map_weather';
+const WX_REFRESH_MS = 5 * 60 * 1000;
+const FLIGHT_CAT_COLORS = { VFR: '#12B76A', MVFR: '#2E90FA', IFR: '#F04438', LIFR: '#D444F1' };
+const SIGMET_COLORS = {
+  TS: '#D92D20', TSGR: '#D92D20', CB: '#D92D20', TURB: '#F79009', ICE: '#1570EF',
+  MTW: '#93370D', VA: '#6941C6', TC: '#912018', DS: '#A15C07', SS: '#A15C07', RDOACT: '#C11574',
+};
+const SIGMET_LEGEND = [['TS', 'THUNDERSTORMS'], ['TURB', 'TURBULENCE'], ['ICE', 'ICING'], ['MTW', 'MOUNTAIN WAVES'], ['VA', 'VOLCANIC ASH']];
+const SIGMET_CHANGE = { NC: 'no change', WKN: 'weakening', INTSF: 'intensifying' };
+
+let wxPrefs = loadWxPrefs();
+const wxData = { cat: null, sigmet: null };
+const wxState = { cat: 'idle', sigmet: 'idle' };   // idle | loading | ok | error
+const wxLoadedAt = { cat: 0, sigmet: 0 };
+let wxTimer = null;
+
+function loadWxPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(WX_PREFS_KEY) || '{}');
+    return { cat: !!p.cat, sigmet: !!p.sigmet };
+  } catch (e) { return { cat: false, sigmet: false }; }
+}
+
+function initWeather() {
+  ['cat', 'sigmet'].forEach(k => {
+    if (wxPrefs[k] && Date.now() - wxLoadedAt[k] > WX_REFRESH_MS) loadWeather(k);
+  });
+  syncWeatherTimer();
+  renderWeatherChrome();
+}
+
+function setWeatherLayer(kind, on) {
+  wxPrefs[kind] = on;
+  try { localStorage.setItem(WX_PREFS_KEY, JSON.stringify(wxPrefs)); } catch (e) {}
+  if (on && Date.now() - wxLoadedAt[kind] > WX_REFRESH_MS) loadWeather(kind);
+  syncWeatherTimer();
+  renderWeatherChrome();
+  renderSelectionMap({ fit: false });
+}
+
+async function loadWeather(kind) {
+  if (wxState[kind] === 'loading') return;
+  wxState[kind] = 'loading';
+  renderWeatherChrome();
+  try {
+    const resp = await fetch(kind === 'cat' ? '/wx/metars' : '/wx/sigmets');
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || 'unavailable');
+    wxData[kind] = data;
+    wxLoadedAt[kind] = Date.now();
+    wxState[kind] = 'ok';
+  } catch (err) {
+    wxState[kind] = 'error';   // whatever was loaded before stays on screen, flagged
+  }
+  renderWeatherChrome();
+  if (wxPrefs[kind] && selMap) renderSelectionMap({ fit: false });
+}
+
+function syncWeatherTimer() {
+  const any = wxPrefs.cat || wxPrefs.sigmet;
+  if (any && !wxTimer) {
+    wxTimer = setInterval(() => {
+      if (!document.getElementById('selectionMap')) { clearInterval(wxTimer); wxTimer = null; return; }
+      ['cat', 'sigmet'].forEach(k => { if (wxPrefs[k]) loadWeather(k); });
+    }, WX_REFRESH_MS);
+  } else if (!any && wxTimer) {
+    clearInterval(wxTimer);
+    wxTimer = null;
+  }
+}
+
+function zuluOf(iso) { return iso ? `${iso.slice(8, 10)}/${iso.slice(11, 13)}${iso.slice(14, 16)}Z` : '?'; }
+
+function renderWeatherChrome() {
+  const catToggle = document.getElementById('wxCatToggle');
+  if (!catToggle) return;
+  catToggle.checked = wxPrefs.cat;
+  document.getElementById('wxSigmetToggle').checked = wxPrefs.sigmet;
+  const names = { cat: 'METARs', sigmet: 'SIGMETs' };
+  const parts = [];
+  ['cat', 'sigmet'].forEach(k => {
+    if (!wxPrefs[k]) return;
+    const d = wxData[k], st = wxState[k];
+    if (!d) { parts.push(st === 'error' ? `${names[k]} unavailable right now` : `${names[k]} loading…`); return; }
+    const count = k === 'sigmet' ? `, ${plural(d.sigmets.length, 'active', 'active')}` : '';
+    const old = st === 'error' || d.stale ? ' – outdated, refresh failed' : '';
+    parts.push(`${names[k]} ${zuluOf(d.updated)}${count}${old}`);
+  });
+  document.getElementById('wxStatus').textContent = parts.join(' · ');
+
+  const legend = document.getElementById('wxLegend');
+  const items = [];
+  if (wxPrefs.cat) {
+    Object.entries(FLIGHT_CAT_COLORS).forEach(([c, col]) => items.push(`<span><i class="sw sw-dot" style="background:${col}"></i>${c}</span>`));
+  }
+  if (wxPrefs.sigmet) {
+    SIGMET_LEGEND.forEach(([h, label]) => items.push(`<span><i class="sw sw-area" style="border-color:${SIGMET_COLORS[h]}; background:${SIGMET_COLORS[h]}22"></i>${label}</span>`));
+  }
+  legend.innerHTML = items.join('');
+  legend.hidden = items.length === 0;
+}
+
+function metarLineHtml(icao) {
+  if (!wxPrefs.cat || !wxData.cat) return '';
+  const w = wxData.cat.stations[icao];
+  if (!w || !w.raw) return '<span class="wx-raw">No current METAR</span>';
+  const cat = FLIGHT_CAT_COLORS[w.cat] ? w.cat : null;
+  return `${cat ? `<span class="wx-badge" style="background:${FLIGHT_CAT_COLORS[cat]}">${cat}</span> ` : ''}<span class="wx-raw">${escText(w.raw)}</span>`;
+}
+
+function flightLevel(ft) {
+  if (ft == null || ft === '') return null;
+  const n = Number(ft);
+  if (!Number.isFinite(n)) return null;
+  return n <= 0 ? 'SFC' : `FL${String(Math.round(n / 100)).padStart(3, '0')}`;
+}
+
+function sigmetSummary(sg) {
+  const levels = [flightLevel(sg.base), flightLevel(sg.top)];
+  const lv = levels[0] || levels[1] ? `${levels[0] || '?'}&ndash;${levels[1] || '?'}` : '';
+  return { levels: lv, title: `${sg.hazard_name.toUpperCase()}${sg.qualifier ? ' (' + escText(sg.qualifier) + ')' : ''}` };
+}
+
+function drawSigmets() {
+  if (!wxPrefs.sigmet || !wxData.sigmet) return;
+  wxData.sigmet.sigmets.forEach(sg => {
+    const color = SIGMET_COLORS[sg.hazard] || '#475467';
+    const { levels, title } = sigmetSummary(sg);
+    L.polygon(sg.coords, { color, weight: 1.5, dashArray: '6 4', fillColor: color, fillOpacity: 0.12 })
+      .bindTooltip(`SIGMET &middot; ${title}${levels ? ' &middot; ' + levels : ''}<br>Click for details`, { sticky: true, className: 'sigmet-tip' })
+      .on('click', (e) => { L.DomEvent.stopPropagation(e); openSigmetPopup(e.latlng, sg); })
+      .addTo(selLayers.wx);
+  });
+}
+
+function openSigmetPopup(latlng, sg) {
+  const { levels, title } = sigmetSummary(sg);
+  const move = sg.dir && sg.spd ? `Moving ${escText(sg.dir)} at ${escText(sg.spd)} kt` : (sg.dir === 'STNR' ? 'Stationary' : '');
+  const change = SIGMET_CHANGE[sg.chng] ? `, ${SIGMET_CHANGE[sg.chng]}` : '';
+  const html = `
+    <div class="map-popup sigmet-popup">
+      <div class="mp-title" style="color:${SIGMET_COLORS[sg.hazard] || '#475467'}">SIGMET &middot; ${title}</div>
+      <div class="mp-name">${escText(sg.fir)}${sg.id ? ' &middot; ' + escText(sg.id) : ''}</div>
+      <div class="mp-sub">Valid ${zuluOf(sg.from)} &ndash; ${zuluOf(sg.to)}${levels ? ' &middot; ' + levels : ''}${move ? '<br>' + move + change : ''}</div>
+      ${sg.raw ? `<div class="sigmet-raw">${escText(sg.raw)}</div>` : ''}
+    </div>`;
+  L.popup({ autoPan: true, maxWidth: 320, className: 'map-popup-wrap' }).setLatLng(latlng).setContent(html).openOn(selMap);
+}
+
 // ---- Route map (Leaflet, own base map, canvas-rendered) ----
 
 let selMap = null;
@@ -1645,11 +1819,15 @@ function ensureSelectionMap() {
   });
   addBasemap(selMap);
   selLayers = {
+    wx: L.layerGroup().addTo(selMap),
     routes: L.layerGroup().addTo(selMap),
     airports: L.layerGroup().addTo(selMap),
     highlight: L.layerGroup().addTo(selMap),
   };
   selMap.setView([47, 8], 4);
+  // A SIGMET's hover tooltip would otherwise sit right under its own popup.
+  selMap.on('popupopen', () => el.classList.add('popup-open'));
+  selMap.on('popupclose', () => el.classList.remove('popup-open'));
   el.classList.toggle('pick-direct', mapPickMode !== 'ask');
   return selMap;
 }
@@ -1682,6 +1860,7 @@ function plural(n, one, many) { return `${fmtNum(n)} ${n === 1 ? one : many}`; }
 function renderSelectionMap({ fit }) {
   const map = ensureSelectionMap();
   if (!map) return;
+  selLayers.wx.clearLayers();
   selLayers.routes.clearLayers();
   selLayers.airports.clearLayers();
   selLayers.highlight.clearLayers();
@@ -1694,13 +1873,19 @@ function renderSelectionMap({ fit }) {
   }
   const s = searchState;
   const ab = networkData.airportsByIcao;
+  // Canvas draw order is add order: SIGMET areas, routes, category rings,
+  // airport markers, highlight - so airports and routes stay on top and
+  // keep receiving clicks inside a SIGMET area.
+  drawSigmets();
+  const airportQueue = [];
 
   if (searchStatus === 'idle') {
     const mask = s.airline ? carrierBit(s.airline) : 0;
     networkData.airports.forEach(a => {
       if (mask && !(networkData.airportMask[a.icao] & mask)) return;
-      addAirportMarker(a, 'overview', null);
+      airportQueue.push([a, 'overview', null]);
     });
+    drawAirports(airportQueue);
     showMapOverlay(null);
   } else {
     const model = searchStatus === 'ready' ? buildMapModel() : { segments: new Map(), airportsInfo: new Map() };
@@ -1722,10 +1907,11 @@ function renderSelectionMap({ fit }) {
     });
     model.airportsInfo.forEach((info, icao) => {
       if (icao === s.origin || icao === s.destination || !ab[icao]) return;
-      addAirportMarker(ab[icao], info.endpoint ? 'endpoint' : 'via', info);
+      airportQueue.push([ab[icao], info.endpoint ? 'endpoint' : 'via', info]);
     });
-    if (s.origin && ab[s.origin]) addAirportMarker(ab[s.origin], 'dep', model.airportsInfo.get(s.origin));
-    if (s.destination && ab[s.destination]) addAirportMarker(ab[s.destination], 'dest', model.airportsInfo.get(s.destination));
+    if (s.origin && ab[s.origin]) airportQueue.push([ab[s.origin], 'dep', model.airportsInfo.get(s.origin)]);
+    if (s.destination && ab[s.destination]) airportQueue.push([ab[s.destination], 'dest', model.airportsInfo.get(s.destination)]);
+    drawAirports(airportQueue);
 
     if (searchStatus === 'loading') showMapOverlay('<span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;');
     else if (searchStatus === 'error') showMapOverlay('SEARCH ERROR &mdash; SEE BELOW');
@@ -1736,16 +1922,32 @@ function renderSelectionMap({ fit }) {
   refreshMapHighlight();
 }
 
+function drawAirports(queue) {
+  if (wxPrefs.cat && wxData.cat) {
+    queue.forEach(([a, kind]) => {
+      const w = wxData.cat.stations[a.icao];
+      if (!w || !FLIGHT_CAT_COLORS[w.cat]) return;
+      L.circleMarker([a.lat, a.lon], {
+        radius: AIRPORT_MARKER_STYLES[kind].radius + 4, stroke: false,
+        fillColor: FLIGHT_CAT_COLORS[w.cat], fillOpacity: 0.95, interactive: false,
+      }).addTo(selLayers.airports);
+    });
+  }
+  queue.forEach(([a, kind, info]) => addAirportMarker(a, kind, info));
+}
+
 function addAirportMarker(a, kind, info) {
   mapPoints.push([a.lat, a.lon]);
   const marker = L.circleMarker([a.lat, a.lon], AIRPORT_MARKER_STYLES[kind]).addTo(selLayers.airports);
+  const wx = metarLineHtml(a.icao);
   if (kind === 'dep' || kind === 'dest') {
     marker.bindTooltip(`${a.icao} &middot; ${kind === 'dep' ? 'DEPARTURE' : 'DESTINATION'}`,
       { permanent: true, direction: 'top', offset: [0, -9], className: `map-label map-label-${kind}` });
   } else {
     const count = info ? ` &middot; ${plural(info.count, 'itinerary', 'itineraries')}` : '';
     const via = kind === 'via' ? '<br>Multi-leg turnaround (via) only' : '';
-    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}`, { direction: 'top', offset: [0, -6] });
+    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
+      { direction: 'top', offset: [0, -6], className: wx ? 'wx-tip' : '' });
   }
   mapAirportEntries.push({ a, info });
   marker.on('click', (e) => { L.DomEvent.stopPropagation(e); onMapAirportMarkerClick(e, a, info); });
@@ -1830,6 +2032,7 @@ function openAirportPopup(a, selectedRole, info) {
     <div class="map-popup">
       <div class="mp-title">${a.icao} / ${a.iata}</div>
       <div class="mp-name">${a.name}, ${a.city} (${a.country})</div>
+      ${metarLineHtml(a.icao) ? `<div class="mp-wx">${metarLineHtml(a.icao)}</div>` : ''}
       <div class="mp-sub">${sub}</div>
       <div class="mp-actions">${actions.join('')}</div>
     </div>`;
