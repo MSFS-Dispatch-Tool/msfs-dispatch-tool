@@ -196,12 +196,12 @@
   .toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 12px; }
   .toolbar .field { min-width: 160px; }
 
-  /* A fixed 100%-width table forces its columns to compress as more get
-     added (e.g. the AIRLINE column) - letting the wrapper scroll instead
-     of the table shrinking keeps every column, and the SELECT button in
-     the last one, readable instead of squeezed against the edge. */
-  .itin-table-wrap { overflow-x: auto; }
-  table.itin-list { width: 100%; min-width: 1080px; border-collapse: collapse; }
+  /* The table must fit its panel with no horizontal scroll: the expanded
+     detail row spans every column, so any overflow pushes its CONFIRM
+     button out of view. Headers are kept short (FROM/TO, units in the
+     cells) because nowrap header labels, not the data, set the minimum
+     column widths. Below the 1000px breakpoint it becomes cards. */
+  table.itin-list { width: 100%; border-collapse: collapse; }
   table.itin-list th {
     text-align: left; font-size: 11.5px; color: var(--text-muted); font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.03em;
@@ -212,7 +212,8 @@
   table.itin-list tr.itin-row.expanded { background: var(--accent-bg); }
   table.itin-list tr.itin-row.dimmed { opacity: 0.45; }
   table.itin-list tr.itin-row.dimmed:hover { opacity: 0.7; }
-  table.itin-list td.select-cell { width: 90px; padding-right: 14px; }
+  table.itin-list td.select-cell { width: 1%; padding-right: 14px; text-align: right; }
+  table.itin-list td.nowrap { white-space: nowrap; }
   table.itin-list td.detail-cell { background: #FAFAFB; padding: 0; }
 
   /* Trip-type badges (ML/1L) are always blue; domestic/international
@@ -235,14 +236,21 @@
     background: var(--shadow-md); color: var(--text);
   }
 
-  @media (max-width: 720px) {
+  /* 1000px: the table's min-content width (~893px) plus panel and page
+     padding is ~957px; switching to cards a bit earlier leaves headroom
+     for wider values (e.g. an ETA with a "(+1d)" day marker). */
+  @media (max-width: 1000px) {
     table.itin-list thead { display: none; }
-    table.itin-list, table.itin-list tbody, table.itin-list tr { display: block; width: 100%; min-width: 0; }
+    /* Child combinators, not descendant ones: the expanded detail row
+       contains its own nested tables (schedule, load, OFP), which must
+       keep normal table layout rather than being flattened too. */
+    table.itin-list, table.itin-list > tbody, table.itin-list > tbody > tr { display: block; width: 100%; min-width: 0; }
     table.itin-list tr.itin-row {
       border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); margin-bottom: 8px; padding: 4px 0;
     }
     table.itin-list tr.itin-row td { display: block; border-bottom: none; padding: 3px 10px; white-space: normal; }
-    table.itin-list tr.itin-row td.select-cell { padding: 8px 10px 4px; }
+    table.itin-list tr.itin-row td.select-cell { width: auto; text-align: left; padding: 8px 10px 4px; }
+    table.itin-list tr.itin-row .type-cell { display: inline-flex; flex-direction: row; gap: 4px; vertical-align: middle; }
     table.itin-list tr.itin-row td[data-label]::before {
       content: attr(data-label);
       display: inline-block; min-width: 110px; color: var(--text-muted); font-size: 10.5px; font-weight: 700;
@@ -774,13 +782,15 @@ let sortState = { key: 'flight', dir: 'asc' };
 // could drift out of sync.
 const SORT_COLUMNS = {
   carrier:   { label: 'AIRLINE',        cmp: (a, b) => a.carrier.localeCompare(b.carrier) },
+  // TYPE's badges already say how many legs (ML = 2, 1L = 1), so it
+  // sorts by leg count and replaces the old, redundant LEGS column.
+  type:      { label: 'TYPE',           cmp: (a, b) => (a.legs - b.legs) || (b.domestic - a.domestic) },
   flight:    { label: 'FLIGHT(S)',      cmp: (a, b) => a.flight_numbers[0].localeCompare(b.flight_numbers[0], undefined, {numeric: true}) },
-  departure: { label: 'DEPARTURE',      cmp: (a, b) => a.departure_icao.localeCompare(b.departure_icao) },
-  arrival:   { label: 'ARRIVAL',        cmp: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao) },
+  departure: { label: 'FROM',           cmp: (a, b) => a.departure_icao.localeCompare(b.departure_icao) },
+  arrival:   { label: 'TO',             cmp: (a, b) => a.arrival_icao.localeCompare(b.arrival_icao) },
   dep_time:  { label: 'ETD (Z)',        cmp: (a, b) => (a.first_departure_zulu || '').localeCompare(b.first_departure_zulu || '') },
   arr_time:  { label: 'ETA (Z)',        cmp: (a, b) => (a.last_arrival_zulu || '').localeCompare(b.last_arrival_zulu || '') },
-  legs:      { label: 'LEGS',           cmp: (a, b) => a.legs - b.legs },
-  distance:  { label: 'DISTANCE (NM)',  cmp: (a, b) => (a.total_distance_nm ?? -1) - (b.total_distance_nm ?? -1) },
+  distance:  { label: 'DISTANCE',       cmp: (a, b) => (a.total_distance_nm ?? -1) - (b.total_distance_nm ?? -1) },
   ebt:       { label: 'EBT',            cmp: (a, b) => (a.ebt_minutes ?? -1) - (b.ebt_minutes ?? -1) },
 };
 
@@ -848,12 +858,10 @@ function renderListPanel() {
             </select>
           </div>
         </div>
-        <div class="itin-table-wrap">
-          <table class="itin-list" id="itinTable">
-            <thead id="itinTableHead"></thead>
-            <tbody id="itinTableBody"></tbody>
-          </table>
-        </div>
+        <table class="itin-list" id="itinTable">
+          <thead id="itinTableHead"></thead>
+          <tbody id="itinTableBody"></tbody>
+        </table>
       </div>
     </div>`;
   renderTable();
@@ -863,14 +871,13 @@ function renderTable() {
   document.getElementById('itinTableHead').innerHTML = `
     <tr>
       ${sortHeaderHtml('carrier')}
-      <th>TYPE</th>
+      ${sortHeaderHtml('type')}
       ${sortHeaderHtml('flight')}
       ${sortHeaderHtml('departure')}
       <th>VIA</th>
       ${sortHeaderHtml('arrival')}
       ${sortHeaderHtml('dep_time')}
       ${sortHeaderHtml('arr_time')}
-      ${sortHeaderHtml('legs')}
       <th>TURNAROUND</th>
       ${sortHeaderHtml('distance')}
       ${sortHeaderHtml('ebt')}
@@ -879,9 +886,10 @@ function renderTable() {
 
   const sorted = applySortAndFilter(currentItineraries);
   const tbody = document.getElementById('itinTableBody');
+  const colCount = document.querySelectorAll('#itinTableHead th').length;
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="13" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="empty-state">NO ITINERARIES MATCH THIS FILTER.</td></tr>`;
     return;
   }
 
@@ -901,14 +909,13 @@ function renderTable() {
         <td data-label="ARRIVAL">${itin.arrival_icao}</td>
         <td data-label="ETD (Z)">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
         <td data-label="ETA (Z)">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
-        <td data-label="LEGS">${itin.legs}</td>
         <td data-label="TURNAROUND">${turnaround}</td>
-        <td data-label="DISTANCE (NM)">${fmtNum(itin.total_distance_nm)}</td>
+        <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' NM' : 'N/A'}</td>
         <td data-label="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
         <td class="select-cell" data-label=""><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
-      ? `<tr><td colspan="13" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
+      ? `<tr><td colspan="${colCount}" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
       : '';
     return row + detailRow;
   }).join('');
