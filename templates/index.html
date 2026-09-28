@@ -419,6 +419,22 @@
 
   footer { max-width: 1000px; margin: 0 auto; padding: 0 16px 30px; color: var(--text-muted); font-size: 12px; }
 
+/* Own base map (addBasemap): sea, then land/borders on canvas, then labels. */
+.leaflet-container.vd-map { background: #DCE6EF; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.vd-country-label, .vd-city-label { background: none; border: none; }
+.vd-country-label span {
+  position: absolute; transform: translate(-50%, -50%); white-space: nowrap;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #98A2B3;
+  text-shadow: 0 0 2px #FBFBF8, 0 0 2px #FBFBF8, 0 0 3px #FBFBF8;
+}
+.vd-city-label i { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; border-radius: 50%; background: #98A2B3; }
+.vd-city-label.cap i { left: -3px; top: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #667085; box-sizing: border-box; }
+.vd-city-label span {
+  position: absolute; left: 6px; top: -8px; white-space: nowrap;
+  font-size: 10.5px; font-weight: 500; color: #667085;
+  text-shadow: 0 0 2px #FBFBF8, 0 0 2px #FBFBF8, 0 0 3px #FBFBF8;
+}
+.vd-city-label.cap span { font-weight: 700; color: #475467; }
 .route-map { margin:8px 0 4px; max-width:340px; height:180px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); }
 .route-map .leaflet-tooltip { font-family: inherit; font-size:11px; font-weight:700; padding:1px 5px; }
 .pirep-form { margin-top:10px; padding:10px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
@@ -1476,7 +1492,91 @@ function syncRowHighlightClass() {
   });
 }
 
-// ---- Route map (Leaflet, OpenStreetMap tiles, canvas-rendered) ----
+// ---- Base map: the app's own minimal background (land, borders, country
+// names, major cities from Natural Earth, built by tools/basemap) instead
+// of OpenStreetMap's detailed raster tiles. Shared by every map. ----
+const BASEMAP_URL = {{ url_for('static', filename='data/basemap.json')|tojson }};
+const BASEMAP_MAX_ZOOM = 8;
+let basemapPromise = null;
+
+function getBasemap() {
+  if (!basemapPromise) {
+    basemapPromise = fetch(BASEMAP_URL)
+      .then(r => { if (!r.ok) throw new Error('basemap unavailable'); return r.json(); })
+      .catch(err => { basemapPromise = null; throw err; });
+  }
+  return basemapPromise;
+}
+
+function escText(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function addBasemap(map) {
+  map.getContainer().classList.add('vd-map');
+  map.createPane('vdLand').style.zIndex = 200;
+  const labelPane = map.createPane('vdLabels');
+  labelPane.style.zIndex = 390;             // under routes/airports (400+)
+  labelPane.style.pointerEvents = 'none';
+  getBasemap().then(data => {
+    if (!map.getContainer()._leaflet_id) return;   // map removed while loading
+    L.geoJSON(data.countries, {
+      pane: 'vdLand', renderer: L.canvas({ pane: 'vdLand' }), interactive: false,
+      style: { fillColor: '#FBFBF8', fillOpacity: 1, color: '#C3CAD5', weight: 0.8 },
+    }).addTo(map);
+    // Label boxes are estimated from text length (px per character at the
+    // CSS sizes below) rather than measured, so hidden labels need no DOM.
+    const labels = [];
+    const label = (lat, lon, minz, rank, className, html, box) => labels.push({
+      latlng: L.latLng(lat, lon), minz, rank, box, shown: false,
+      marker: L.marker([lat, lon], { pane: 'vdLabels', interactive: false, keyboard: false,
+        icon: L.divIcon({ className, html, iconSize: null }) }),
+    });
+    data.countries.features.forEach(f => {
+      const w = f.properties.name.length * 8.2;
+      label(f.properties.label[1], f.properties.label[0], f.properties.minz, 0, 'vd-country-label',
+        `<span>${escText(f.properties.name)}</span>`, [-w / 2, -7, w / 2, 7]);
+    });
+    data.cities.forEach(c => {
+      const w = c.name.length * (c.cap ? 6.6 : 6.2);
+      label(c.lat, c.lon, c.minz, c.cap ? 1 : 2, c.cap ? 'vd-city-label cap' : 'vd-city-label',
+        `<i></i><span>${escText(c.name)}</span>`, [-4, -8, 6 + w, 6]);
+    });
+    // Countries first, then capitals, then other cities; within each, the
+    // ones Natural Earth shows earliest are the more important ones.
+    labels.sort((a, b) => a.rank - b.rank || a.minz - b.minz);
+    const group = L.layerGroup().addTo(map);
+    // Natural Earth's per-label minimum zoom keeps small countries and lesser
+    // cities out until there's room; a label that would overlap one already
+    // placed is skipped, so the map never shows text on top of text.
+    const update = () => {
+      const z = map.getZoom();
+      const placed = [];
+      labels.forEach(l => {
+        let show = z >= l.minz;
+        if (show) {
+          const p = map.latLngToLayerPoint(l.latlng);
+          const r = [p.x + l.box[0] - 3, p.y + l.box[1] - 2, p.x + l.box[2] + 3, p.y + l.box[3] + 2];
+          show = !placed.some(q => r[0] < q[2] && q[0] < r[2] && r[1] < q[3] && q[1] < r[3]);
+          if (show) placed.push(r);
+        }
+        if (show === l.shown) return;
+        l.shown = show;
+        if (show) group.addLayer(l.marker); else group.removeLayer(l.marker);
+      });
+    };
+    map.on('zoomend', update);
+    update();
+    map.attributionControl.addAttribution('Base map: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>');
+  }).catch(() => {
+    if (!map.getContainer()._leaflet_id) return;
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: BASEMAP_MAX_ZOOM, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    }).addTo(map);
+  });
+}
+
+// ---- Route map (Leaflet, own base map, canvas-rendered) ----
 
 let selMap = null;
 let selLayers = null;
@@ -1541,12 +1641,9 @@ function ensureSelectionMap() {
   selMap = L.map(el, {
     renderer: L.canvas({ padding: 0.5, tolerance: 5 }),
     zoomControl: true, scrollWheelZoom: false, keyboard: false,
-    minZoom: 3, maxZoom: 10, worldCopyJump: true,
+    minZoom: 3, maxZoom: BASEMAP_MAX_ZOOM, worldCopyJump: true,
   });
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 10,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-  }).addTo(selMap);
+  addBasemap(selMap);
   selLayers = {
     routes: L.layerGroup().addTo(selMap),
     airports: L.layerGroup().addTo(selMap),
@@ -1956,11 +2053,8 @@ function initRouteMap(id, leg) {
   const a = leg.departure_info, b = leg.arrival_info;
   if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) return;
   el.dataset.mapInit = '1';
-  const map = L.map(id, { zoomControl: false, scrollWheelZoom: false });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 11,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  const map = L.map(id, { zoomControl: false, scrollWheelZoom: false, maxZoom: BASEMAP_MAX_ZOOM });
+  addBasemap(map);
   L.marker([a.lat, a.lon]).addTo(map).bindTooltip(a.icao, { permanent: true, direction: 'top', offset: [0, -8] });
   L.marker([b.lat, b.lon]).addTo(map).bindTooltip(b.icao, { permanent: true, direction: 'top', offset: [0, -8] });
   L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#2563EB', weight: 2, dashArray: '5,5' }).addTo(map);
@@ -2361,10 +2455,8 @@ function initDestinationsMap(id, airports, baseIcao) {
   const el = document.getElementById(id);
   if (!el || typeof L === 'undefined') return;
   const plottable = airports.filter(a => a.lat != null && a.lon != null);
-  const map = L.map(id, { zoomControl: true, scrollWheelZoom: false });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 11, attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  const map = L.map(id, { zoomControl: true, scrollWheelZoom: false, maxZoom: BASEMAP_MAX_ZOOM });
+  addBasemap(map);
   if (!plottable.length) { map.setView([20, 0], 2); return; }
   const points = [];
   plottable.forEach(a => {
