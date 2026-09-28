@@ -3,11 +3,9 @@
    (templates/index.html), reused here as its own stylesheet since
    these pages don't share a Jinja base with the app shell.
 
-   Theme: variables are defined for light mode on :root, then
-   overridden either by the OS preference (prefers-color-scheme) or
-   by an explicit [data-theme] attribute the toggle button sets on
-   <html> - the attribute always wins over the OS preference, which
-   is what lets a visitor override the system default. */
+   Theme: light is the default for every visitor; the variables below
+   are light values, overridden only by [data-theme="dark"], which the
+   bottom-right toggle sets on <html> (and remembers). */
 
 :root {
   --face:        #FFFFFF;
@@ -23,7 +21,10 @@
   --band-mint:   #E4F5EE;
   --band-peach:  #FBEDE3;
   --band-lilac:  #EFEAFB;
-  --nav-bg:      rgba(255,255,255,0.82);
+  --glass:        rgba(255,255,255,0.6);
+  --glass-border: rgba(255,255,255,0.75);
+  --glass-hover:  rgba(16,24,40,0.06);
+  --hero-veil:    rgba(255,255,255,0.58);
   --radius:      20px;
   --radius-sm:   10px;
   --radius-pill: 999px;
@@ -31,24 +32,6 @@
   --max-width:   1160px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --face:        #14161C;
-    --face-2:      #191B22;
-    --face-dark:   #1E2129;
-    --titlebar:    #5B8DF6;
-    --titlebar-2:  #7BA3FF;
-    --text:        #EDEFF3;
-    --text-muted:  #97A0AE;
-    --shadow-dk:   #333844;
-    --shadow-md:   #262A33;
-    --accent-bg:   #1C2A46;
-    --band-mint:   #172420;
-    --band-peach:  #2A2119;
-    --band-lilac:  #201E2E;
-    --nav-bg:      rgba(20,22,28,0.82);
-  }
-}
 :root[data-theme="dark"] {
   --face:        #14161C;
   --face-2:      #191B22;
@@ -63,7 +46,11 @@
   --band-mint:   #172420;
   --band-peach:  #2A2119;
   --band-lilac:  #201E2E;
-  --nav-bg:      rgba(20,22,28,0.82);
+  --glass:        rgba(22,25,32,0.62);
+  --glass-border: rgba(255,255,255,0.1);
+  --glass-hover:  rgba(255,255,255,0.08);
+  /* The dark-mode logo is white, so its veil darkens instead of whitening. */
+  --hero-veil:    rgba(10,14,26,0.55);
 }
 
 * { box-sizing: border-box; }
@@ -86,93 +73,96 @@ img { max-width: 100%; }
 
 .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
 
-/* ---- Site nav ---- */
+/* ---- Site nav: a floating, centred group of equal-size pills - no bar
+   and no logo (the logo lives in the hero). Every pill has the same
+   fixed width and font weight whether idle, hovered or current, so the
+   group never shifts. ---- */
 
 .site-nav {
-  border-bottom: 1px solid var(--shadow-md);
-  background: var(--nav-bg);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  position: sticky; top: 0; z-index: 100;
+  position: fixed; top: 14px; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: center; padding: 0 12px;
+  pointer-events: none;   /* only the pills themselves take clicks */
 }
-.site-nav .container {
-  display: flex; align-items: center; justify-content: space-between;
-  height: 64px;
+.nav-pills {
+  pointer-events: auto;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px;
+  padding: 5px; border-radius: var(--radius-pill);
+  background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 8px 28px rgba(16,24,40,0.12);
 }
-.site-nav .brand {
-  font-weight: 700; font-size: 17px; color: var(--text); text-decoration: none;
-  display: flex; align-items: center; gap: 8px;
+.nav-pills a {
+  display: flex; align-items: center; justify-content: center;
+  width: 132px; height: 40px; border-radius: var(--radius-pill);
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
+  color: var(--text); text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.site-nav .brand img { width: 34px; height: 34px; border-radius: 50%; display: block; }
-.site-nav .links { display: flex; align-items: center; gap: 28px; }
-.site-nav .links a { color: var(--text-muted); text-decoration: none; font-size: 14.5px; font-weight: 500; }
-.site-nav .links a:hover { color: var(--text); }
-.site-nav .cta {
-  background: var(--text); color: var(--face) !important; padding: 10px 20px;
-  border-radius: var(--radius-pill); font-weight: 600 !important;
-  transition: opacity 0.12s ease;
+.nav-pills a:hover { background: var(--glass-hover); }
+.nav-pills a.is-current, .nav-pills a.is-current:hover { background: var(--text); color: var(--face); }
+.nav-pills a:focus-visible { outline: 2px solid var(--titlebar); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .site-nav { top: 10px; }
+  .nav-pills { width: 100%; max-width: 440px; }
+  .nav-pills a { width: auto; height: 38px; font-size: 12.5px; padding: 0 4px; }
 }
-.site-nav .cta:hover { opacity: 0.82; background: var(--text); }
-.site-nav .menu-toggle { display: none; }
+/* Pages without a full-bleed hero keep their content clear of the nav. */
+.nav-spacer { height: 76px; }
 
-@media (max-width: 720px) {
-  .site-nav .links { position: fixed; top: 64px; left: 0; right: 0; background: var(--face);
-    flex-direction: column; align-items: flex-start; gap: 0; border-bottom: 1px solid var(--shadow-md);
-    box-shadow: 0 8px 16px rgba(16,24,40,0.08);
-    max-height: 0; overflow: hidden; transition: max-height 0.2s ease; }
-  .site-nav .links.open { max-height: 320px; }
-  .site-nav .links a { padding: 14px 24px; width: 100%; border-bottom: 1px solid var(--shadow-md); }
-  /* Overrides the general width:100% from .links a above: that width
-     resolves against the nav's full content box, so adding this same
-     rule's side margins on top of it was overflowing past the right
-     edge and getting silently clipped by .links' overflow:hidden. */
-  .site-nav .links .cta { width: calc(100% - 48px); margin: 14px 24px; text-align: center; }
-  .site-nav .menu-toggle {
-    display: flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
-    background: none; cursor: pointer;
-  }
+/* "Create an account", pinned at the top once the hero's own button has
+   scrolled away (toggled by the landing page script). */
+.sticky-cta {
+  position: fixed; top: 14px; right: 20px; z-index: 101;
+  opacity: 0; transform: translateY(-10px); pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
+.sticky-cta.visible { opacity: 1; transform: none; }
+.sticky-cta.visible .btn { pointer-events: auto; }
+.sticky-cta .btn { height: 52px; display: inline-flex; align-items: center; padding: 0 24px; font-size: 14px; box-shadow: 0 8px 28px rgba(16,24,40,0.18); }
+@media (max-width: 1040px) {
+  /* Not enough room beside the centred nav: sit just below it instead. */
+  .sticky-cta { top: 66px; left: 0; right: 0; display: flex; justify-content: center; }
+  .sticky-cta .btn { height: 42px; }
+}
+@media (max-width: 600px) { .sticky-cta { top: 58px; } }
 
 /* ---- Hero / sections ---- */
 
 .hero {
   position: relative; overflow: hidden; text-align: center;
-  min-height: 88vh; display: flex; align-items: center;
-  padding: 128px 0 96px; color: #fff;
+  min-height: 92vh; display: flex; align-items: center;
+  padding: 112px 0 88px; color: var(--text);
 }
 .hero-media { position: absolute; inset: 0; z-index: 0; background: #0A0E1A; }
 .hero-media-asset { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hero-media-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,14,26,0.35) 0%, rgba(10,14,26,0.55) 65%, rgba(10,14,26,0.72) 100%);
-}
+/* A translucent veil over the video so the logo reads cleanly: white in
+   light mode, dark in dark mode (where the logo itself is white). */
+.hero-media-overlay { position: absolute; inset: 0; background: var(--hero-veil); }
 .hero-content { position: relative; z-index: 1; width: 100%; }
-.hero h1 {
-  color: #fff; font-size: 64px; font-weight: 700; line-height: 1.05; margin: 0 0 22px;
-  letter-spacing: -0.02em; max-width: 900px; margin-left: auto; margin-right: auto;
-}
-.hero p.lead { font-size: 19px; color: rgba(255,255,255,0.88); max-width: 600px; margin: 0 auto 36px; }
+.hero-title { margin: 0; }
+.hero-logo { display: block; width: min(640px, 88vw); height: auto; margin: 0 auto 8px; }
+.hero-logo.for-dark { display: none; }
+:root[data-theme="dark"] .hero-logo.for-light { display: none; }
+:root[data-theme="dark"] .hero-logo.for-dark { display: block; }
+.hero p.lead { font-size: 19px; font-weight: 500; color: var(--text); opacity: 0.85; max-width: 620px; margin: 0 auto 36px; }
 .hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-@media (max-width: 720px) { .hero h1 { font-size: 44px; } }
-@media (max-width: 560px) { .hero { padding: 96px 0 72px; min-height: 80vh; } .hero h1 { font-size: 34px; } }
+.hero .actions .btn { width: 230px; }
+@media (max-width: 560px) {
+  .hero { padding: 96px 0 72px; min-height: 84vh; }
+  .hero p.lead { font-size: 17px; }
+  .hero .actions .btn { width: min(300px, 100%); }
+}
 
 .btn {
-  display: inline-block; font-weight: 600; font-size: 15.5px; padding: 14px 28px;
-  border-radius: var(--radius-pill); text-decoration: none; cursor: pointer; border: none;
+  display: inline-block; font-weight: 600; font-size: 15.5px; padding: 14px 28px; text-align: center;
+  border-radius: var(--radius-pill); text-decoration: none; cursor: pointer;
+  border: 1.5px solid transparent;   /* same box for filled and outlined buttons */
   transition: opacity 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
-.btn-primary { background: #fff; color: #101828; }
-.btn-primary:hover { opacity: 0.88; }
-.btn-secondary { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.6); }
-.btn-secondary:hover { background: rgba(255,255,255,0.12); }
-
-/* Solid-background sections (feature grid on --face, steps, screenshots)
-   use the dark-text button pair instead of the hero's white-on-video one.
-   The hero and the (also dark-background) cta-band keep their own pairs. */
-section:not(.hero):not(.cta-band) .btn-primary { background: var(--text); color: var(--face); }
-section:not(.hero):not(.cta-band) .btn-primary:hover { opacity: 0.85; }
-section:not(.hero):not(.cta-band) .btn-secondary { background: var(--face); color: var(--text); border: 1.5px solid var(--shadow-dk); }
-section:not(.hero):not(.cta-band) .btn-secondary:hover { background: var(--face-dark); }
+.btn-primary { background: var(--text); color: var(--face); border-color: var(--text); }
+.btn-primary:hover { opacity: 0.86; }
+.btn-secondary { background: var(--glass); color: var(--text); border-color: var(--text); }
+.btn-secondary:hover { background: var(--glass-hover); }
 
 section { padding: 72px 0; }
 section.alt { background: var(--face-2); }
@@ -216,16 +206,97 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .step-list h4 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
 .step-list p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
 
-.cta-band {
-  background: var(--titlebar); color: #fff; text-align: center; padding: 72px 0;
-  border-radius: var(--radius); margin: 0 24px;
-  max-width: calc(var(--max-width) - 48px); margin-left: auto; margin-right: auto;
+/* ---- How it works: text steps scroll on the left while a pinned
+   screenshot frame on the right cross-fades to the matching image. ---- */
+
+.how { padding: 104px 0 48px; scroll-margin-top: 24px; }
+.how-intro { text-align: center; max-width: 720px; margin: 0 auto 40px; }
+.eyebrow { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--titlebar); margin-bottom: 10px; }
+.how-intro h2 { font-size: 40px; letter-spacing: -0.02em; margin: 0 0 12px; }
+.how-intro p { color: var(--text-muted); font-size: 17px; margin: 0; }
+
+.story { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
+.story-step {
+  min-height: 58vh; display: flex; flex-direction: column; justify-content: center;
+  opacity: 0.32; transition: opacity 0.35s ease;
 }
-.cta-band h2 { color: #fff; }
-.cta-band p.section-lead { color: rgba(255,255,255,0.85); margin: 0 auto 28px; }
-.cta-band .btn-primary { background: #fff; color: var(--titlebar); }
-.cta-band .btn-secondary { background: transparent; border: 1.5px solid rgba(255,255,255,0.6); color: #fff; }
-.cta-band .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+.story-step.active { opacity: 1; }
+.story-step h3 { font-size: 26px; letter-spacing: -0.015em; line-height: 1.2; margin: 0 0 12px; }
+.story-step p { color: var(--text-muted); font-size: 16px; margin: 0 0 12px; }
+.story-step .step-shot { display: none; }
+
+.story-list { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 10px; }
+.story-list li { position: relative; padding-left: 28px; font-size: 15px; color: var(--text); }
+.story-list li::before {
+  content: ''; position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='%231D4ED8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+.story-list li span { display: block; color: var(--text-muted); font-size: 14px; }
+.story-list.planned li::before { background: var(--band-peach); background-image: none; border: 2px dashed var(--text-muted); width: 12px; height: 12px; top: 5px; }
+/* Numbering runs across all the set-up steps (1-6), not per list. */
+.story-chapter.setup { counter-reset: setup; }
+.story-steps-num { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 12px; }
+.story-steps-num li { counter-increment: setup; position: relative; padding-left: 40px; font-size: 15px; }
+.story-steps-num li::before {
+  content: counter(setup); position: absolute; left: 0; top: -2px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--text); color: var(--face); font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.story-steps-num li span { display: block; color: var(--text-muted); font-size: 14px; }
+.note { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+.story-visual { position: sticky; top: 84px; height: calc(100vh - 120px); min-height: 420px; display: flex; align-items: center; }
+.shot-stage { position: relative; width: 100%; }
+/* Soft brand-coloured glow behind the frame - the "transparency" layer. */
+.shot-stage::before {
+  content: ''; position: absolute; inset: -12% -8%; z-index: 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(37,99,235,0.22), rgba(37,99,235,0) 70%),
+              radial-gradient(closest-side at 70% 70%, rgba(20,184,166,0.16), rgba(20,184,166,0) 70%);
+  filter: blur(8px);
+}
+.shot-frame {
+  position: relative; z-index: 1; aspect-ratio: 16 / 10; overflow: hidden;
+  border-radius: 22px; padding: 10px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 40px 80px -30px rgba(16,24,40,0.45);
+}
+.shot-frame .shot {
+  position: absolute; inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+  object-fit: cover; object-position: top left; border-radius: 14px;
+  opacity: 0; transform: scale(1.03); transition: opacity 0.55s ease, transform 0.7s ease;
+  /* fade the bottom edge into the glass instead of a hard crop */
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+}
+.shot-frame .shot.active { opacity: 1; transform: none; }
+.shot-caption { position: relative; z-index: 1; text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 14px; min-height: 20px; }
+
+/* "What's next" has no screen yet - a card stands in for the screenshot. */
+.shot-roadmap {
+  display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 28px;
+  background: linear-gradient(135deg, var(--band-lilac), var(--band-mint));
+  -webkit-mask-image: none; mask-image: none;
+}
+.shot-roadmap .rm-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px;
+  background: var(--glass); border: 1px solid var(--glass-border); font-weight: 600; font-size: 15px;
+}
+.shot-roadmap .rm-tag { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+
+@media (max-width: 900px) {
+  .story { grid-template-columns: 1fr; gap: 0; }
+  .story-visual { display: none; }
+  .story-step { min-height: 0; opacity: 1; padding: 20px 0 28px; }
+  .story-step .step-shot {
+    display: block; width: 100%; margin-top: 14px; border-radius: 14px;
+    border: 1px solid var(--shadow-md); box-shadow: 0 16px 40px -20px rgba(16,24,40,0.35);
+  }
+  .how-intro h2 { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shot-frame .shot, .story-step { transition: none; }
+}
 
 /* ---- Theme toggle ---- */
 
@@ -243,10 +314,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .theme-toggle .icon-moon { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: none; }
-  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: block; }
-}
 @media (max-width: 560px) { .theme-toggle { right: 14px; bottom: 14px; width: 44px; height: 44px; } }
 
 /* ---- Footer ---- */
