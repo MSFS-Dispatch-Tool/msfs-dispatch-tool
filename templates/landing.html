@@ -105,6 +105,7 @@
     {% for step in tour %}
     <img class="tour-shot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot) }}" alt="" {% if not loop.first %}loading="lazy"{% endif %} width="1920" height="1080">
     {% endfor %}
+    <div class="tour-glass"></div>
     <div class="tour-scrim"></div>
     <nav class="tour-rail" aria-label="Steps">
       {% for step in tour %}
