@@ -1,15 +1,15 @@
-"""Build the easyJet schedule from the AirLabs Routes API.
+"""Build an airline's schedule from the AirLabs Routes API (--carrier EZY | WZZ).
 
 An AirLabs "route" row is one flight number on one weekday pattern with
 its local/UTC times and block time - U24636 ABZ-CDG can be four rows, one
 per departure time. The script collects every row for the routes in
-easyjet_routes.csv, folds each flight number's rows into one entry, and
-writes:
+<prefix>_routes.csv (easyjet_routes.csv / wizzair_routes.csv), folds each
+flight number's rows into one entry, and writes:
 
-    easyjet_schedule.csv   one row per flight number on a known route
-    easyjet_missing.csv    routes from the CSV with no AirLabs flight
-    easyjet_extra.csv      AirLabs flights on routes not in the CSV
-    routes.json            same schema as data/carriers/RYR/routes.json
+    <prefix>_schedule.csv   one row per flight number on a known route
+    <prefix>_missing.csv    routes from the CSV with no AirLabs flight
+    <prefix>_extra.csv      AirLabs flights on routes not in the CSV
+    routes.json             same schema as data/carriers/RYR/routes.json
 
 Free-plan limits (seen in --probe): 50 rows per call, and no query returns
 more than its first 300 rows. easyJet has ~14k rows, so the script queries
@@ -30,12 +30,12 @@ Google Colab
     from google.colab import userdata
     os.environ["AIRLABS_API_KEY"] = userdata.get("AIRLABS_API_KEY")
     !pip install -q requests
-    # upload this file, easyjet_routes.csv and (optional, for distance)
+    # upload this file, the route CSV and (optional, for distance)
     # data/airports_world.json from the repo
 
-    !python fetch_airlabs.py --probe            # 1 call: fields + plan limits
+    !python fetch_airlabs.py --carrier WZZ --probe   # which airline codes AirLabs uses
     !python fetch_airlabs.py --probe-aircraft   # 2 calls: do live endpoints carry aircraft type?
-    !python fetch_airlabs.py --airports airports_world.json
+    !python fetch_airlabs.py --carrier WZZ --airports airports_world.json
 """
 
 import argparse
@@ -58,6 +58,28 @@ ROW_CAP = 300     # free plan: offsets past this come back empty
 # as U2; AirLabs names the operator in cs_airline_iata (EC = easyJet Europe,
 # DS = easyJet Switzerland).
 OPERATOR_ICAO = {"U2": "EZY", "EC": "EJU", "DS": "EZS"}
+
+# Per-carrier settings. "codes" are the IATA codes queried (the first is the
+# marketing code flight numbers are normalised to); "operators" maps every
+# code seen in airline_iata / cs_airline_iata to the operator's ICAO callsign.
+CARRIERS = {
+    "EZY": {"codes": ["U2"], "prefix": "easyjet",
+            "operators": {"U2": "EZY", "EC": "EJU", "DS": "EZS"}},
+    # Wizz Air Hungary, Malta, UK, Abu Dhabi.
+    "WZZ": {"codes": ["W6"], "prefix": "wizzair",
+            "operators": {"W6": "WZZ", "W4": "WMT", "W9": "WUK", "5W": "WAZ"}},
+}
+CODES = ["U2"]
+MARKETING = "U2"
+
+
+def configure(carrier, codes=None):
+    global OPERATOR_ICAO, CODES, MARKETING
+    cfg = CARRIERS[carrier]
+    OPERATOR_ICAO = cfg["operators"]
+    CODES = codes or cfg["codes"]
+    MARKETING = CODES[0]
+    return cfg
 
 # AirLabs gives the ICAO type designator; the app keys fleets by the short
 # IATA-style code (Ryanair uses "738").
@@ -155,8 +177,11 @@ def collect(api, routes):
 def _collect_steps(api, pairs, pool, covered):
 
     def run(**filters):
-        rows, complete = api.query(airline_iata="U2", **filters)
-        pool.extend(rows)
+        complete = True
+        for code in CODES:
+            rows, ok = api.query(airline_iata=code, **filters)
+            pool.extend(rows)
+            complete = complete and ok
         return complete
 
     # 1. Departures per airport.
@@ -200,9 +225,9 @@ def _collect_steps(api, pairs, pool, covered):
 def canonical_flight(row):
     """Marketing U2 number when there is one, plus the operating carrier."""
     airline, cs = row.get("airline_iata"), row.get("cs_airline_iata")
-    if airline == "U2":
-        return row["flight_iata"], OPERATOR_ICAO.get(cs, "EZY")
-    if cs == "U2" and row.get("cs_flight_iata"):
+    if airline == MARKETING:
+        return row["flight_iata"], OPERATOR_ICAO.get(cs, OPERATOR_ICAO[MARKETING])
+    if cs == MARKETING and row.get("cs_flight_iata"):
         return row["cs_flight_iata"], OPERATOR_ICAO.get(airline, row.get("airline_icao"))
     return row["flight_iata"], OPERATOR_ICAO.get(airline, row.get("airline_icao"))
 
@@ -236,6 +261,8 @@ def fold(rows):
             "operator_icao": main["_operator"],
             "departure_iata": dep,
             "arrival_iata": arr,
+            "departure_icao_api": main.get("dep_icao"),
+            "arrival_icao_api": main.get("arr_icao"),
             "aircraft_icao": icao_type,
             "aircraft_type": AIRCRAFT_TYPE.get(icao_type, icao_type),
             "dep_local": main.get("dep_time"),
@@ -257,7 +284,15 @@ def distance_nm(a, b):
 
 
 def probe(api):
-    data = api.get({"airline_iata": "U2", "limit": 5, "offset": 0})
+    # One call per known code of the carrier: which ones does AirLabs use,
+    # and how many rows each? Decides --codes for the real run.
+    for code in OPERATOR_ICAO:
+        if code == MARKETING:
+            continue
+        req = api.get({"airline_iata": code, "limit": 5, "offset": 0}).get("request") or {}
+        print(f"airline_iata={code}: total_items={req.get('total_items')}")
+    data = api.get({"airline_iata": MARKETING, "limit": 5, "offset": 0})
+    print(f"airline_iata={MARKETING}: total_items={(data.get('request') or {}).get('total_items')}")
     req = data.get("request", {})
     if isinstance(req.get("key"), dict):
         req = {**req, "key": {**req["key"], "api_key": "<redacted>"}}
@@ -270,8 +305,9 @@ def probe(api):
 def probe_aircraft(api):
     """The routes table has no aircraft for easyJet. Checks whether the
     live endpoints (airport board, airborne flights) carry a type."""
-    for endpoint, params in (("schedules", {"dep_iata": "LGW", "airline_iata": "U2", "limit": 10}),
-                             ("flights", {"airline_iata": "U2", "limit": 10})):
+    hub = {"U2": "LGW", "W6": "BUD"}.get(MARKETING, "LGW")
+    for endpoint, params in (("schedules", {"dep_iata": hub, "airline_iata": MARKETING, "limit": 10}),
+                             ("flights", {"airline_iata": MARKETING, "limit": 10})):
         data = api.get(params, endpoint)
         rows = data.get("response") or []
         req = data.get("request") or {}
@@ -288,7 +324,9 @@ def probe_aircraft(api):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--key", help="AirLabs API key (prefer the AIRLABS_API_KEY secret)")
-    ap.add_argument("--routes", default="easyjet_routes.csv")
+    ap.add_argument("--carrier", default="EZY", choices=sorted(CARRIERS))
+    ap.add_argument("--codes", help="comma-separated airline IATA codes to query (default: carrier's)")
+    ap.add_argument("--routes", help="route list CSV (default: <prefix>_routes.csv)")
     ap.add_argument("--airports", help="data/airports_world.json from the repo (for distance_nm)")
     ap.add_argument("--cache-dir", default="airlabs_cache")
     ap.add_argument("--out-dir", default=".")
@@ -298,6 +336,9 @@ def main():
     ap.add_argument("--probe-aircraft", action="store_true", help="two calls to the live endpoints")
     args = ap.parse_args()
 
+    cfg = configure(args.carrier, args.codes.split(",") if args.codes else None)
+    prefix = cfg["prefix"]
+    args.routes = args.routes or f"{prefix}_routes.csv"
     os.makedirs(args.cache_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
     api = Api(get_key(args.key), args.cache_dir, args.max_calls)
@@ -311,7 +352,7 @@ def main():
         routes = list(csv.DictReader(fh))
 
     # Never leave last run's files behind to be mistaken for this run's.
-    for name in ("easyjet_schedule.csv", "easyjet_missing.csv", "easyjet_extra.csv", "routes.json"):
+    for name in (f"{prefix}_schedule.csv", f"{prefix}_missing.csv", f"{prefix}_extra.csv", "routes.json"):
         if os.path.exists(os.path.join(args.out_dir, name)):
             os.remove(os.path.join(args.out_dir, name))
 
@@ -327,6 +368,13 @@ def main():
     if args.airports:
         with open(args.airports, encoding="utf-8") as fh:
             airports = {a["icao"]: a for a in json.load(fh) if a.get("icao")}
+    # A route CSV scraped without the airports file has blank ICAO columns -
+    # fill them from the AirLabs rows.
+    for f in flights:
+        route = route_by_pair.get((f["departure_iata"], f["arrival_iata"]))
+        if route is not None:
+            route["departure_icao"] = route.get("departure_icao") or f["departure_icao_api"] or ""
+            route["arrival_icao"] = route.get("arrival_icao") or f["arrival_icao_api"] or ""
 
     matched, extra = [], []
     for f in flights:
@@ -364,9 +412,9 @@ def main():
                     r = {**r, "days_operated": "".join(map(str, r["days_operated"]))}
                 w.writerow(r)
 
-    write_csv("easyjet_schedule.csv", unique, fields)
-    write_csv("easyjet_missing.csv", missing, list(routes[0].keys()) + ["status"])
-    write_csv("easyjet_extra.csv", extra, list(extra[0].keys()) if extra else ["flight_number"])
+    write_csv(f"{prefix}_schedule.csv", unique, fields)
+    write_csv(f"{prefix}_missing.csv", missing, list(routes[0].keys()) + ["status"])
+    write_csv(f"{prefix}_extra.csv", extra, list(extra[0].keys()) if extra else ["flight_number"])
 
     app_routes = [{
         "flight_number": m["flight_number"],
