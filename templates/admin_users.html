@@ -51,8 +51,8 @@ async function load() {
   try {
     const resp = await fetch('/admin/api/users');
     const users = await resp.json();
-    if (!resp.ok) throw new Error(users.error || 'Failed to load users.');
-    if (!users.length) { body.innerHTML = '<div class="empty-state">No users yet.</div>'; return; }
+    if (!resp.ok) throw new Error(users.error || 'Failed to load users');
+    if (!users.length) { body.innerHTML = '<div class="empty-state">No users yet</div>'; return; }
     const rows = users.map(u => {
       const banned = !!u.banned_until && new Date(u.banned_until) > new Date();
       return `<tr>
@@ -84,7 +84,7 @@ async function ban(id, banned) {
   load();
 }
 async function del(id, email) {
-  if (!confirm(`Permanently delete ${email}? This cannot be undone.`)) return;
+  if (!confirm(`Permanently delete ${email}? This cannot be undone`)) return;
   await fetch(`/admin/api/users/${id}`, { method: 'DELETE' });
   load();
 }

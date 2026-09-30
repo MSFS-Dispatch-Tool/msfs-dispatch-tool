@@ -457,7 +457,17 @@
   .st-kpi { background: var(--face); border: 1px solid var(--shadow-md); border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 10px 14px; display: flex; flex-direction: column; min-width: 0; }
   .st-kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
   .st-kpi-value { font-size: 22px; font-weight: 700; color: var(--text); margin: 2px 0; white-space: nowrap; }
-  .st-delta { font-size: 11px; color: var(--text-muted); }
+  .st-delta { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .st-est { font-size: 12px; color: var(--text-muted); margin-left: 2px; cursor: help; }
+  .st-field select.is-set { border-color: var(--titlebar); background: var(--accent-bg); color: #1D4ED8; font-weight: 600; box-shadow: 0 0 0 1px var(--titlebar); }
+  .st-chip:disabled { opacity: 0.4; cursor: not-allowed; background: var(--white); }
+  .st-chip:disabled:hover { background: var(--white); }
+  .st-switch { font-size: 11.5px; font-weight: 700; color: var(--text); margin-left: 8px; cursor: pointer; }
+  .st-hint-right { text-align: right; }
+  .st-main .af-tabbar { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .st-main .af-tabbar button { text-align: center; padding-left: 6px; padding-right: 6px; }
+  @media (max-width: 900px) { .st-main .af-tabbar { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 420px) { .st-main .af-tabbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .st-main { overflow: hidden; }
   .st-content { padding: 14px 16px; }
   .st-grid { display: grid; gap: 16px; }
@@ -894,67 +904,67 @@
       <div class="glossary-cat">
         <h4>FLIGHT TYPE &amp; ROUTE</h4>
         <dl>
-          <div class="glossary-entry"><dt><span class="type-badge type-1W">1L</span> 1L</dt><dd>One-Leg &mdash; a single, direct itinerary with no connection.</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-DOM">DOM</span> DOM</dt><dd>Domestic &mdash; departure and arrival airports are in the same country.</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-INT">INT</span> INT</dt><dd>International &mdash; departure and arrival airports are in different countries.</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-RT">ML</span> ML</dt><dd>Multi-Leg &mdash; an itinerary of two connecting sectors flown back to back.</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-1W">1L</span> 1L</dt><dd>One-Leg &mdash; a single, direct itinerary with no connection</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-DOM">DOM</span> DOM</dt><dd>Domestic &mdash; departure and arrival airports are in the same country</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-INT">INT</span> INT</dt><dd>International &mdash; departure and arrival airports are in different countries</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-RT">ML</span> ML</dt><dd>Multi-Leg &mdash; an itinerary of two connecting sectors flown back to back</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
         <h4>SCHEDULED TIMES</h4>
         <dl>
-          <div class="glossary-entry"><dt>SIBT</dt><dd>Scheduled In-Block Time &mdash; scheduled gate arrival.</dd></div>
-          <div class="glossary-entry"><dt>SLDT</dt><dd>Scheduled Landing Time &mdash; SIBT minus taxi-in.</dd></div>
-          <div class="glossary-entry"><dt>SOBT</dt><dd>Scheduled Off-Block Time &mdash; scheduled gate departure.</dd></div>
-          <div class="glossary-entry"><dt>STOT</dt><dd>Scheduled Take-Off Time &mdash; SOBT plus taxi-out.</dd></div>
+          <div class="glossary-entry"><dt>SIBT</dt><dd>Scheduled In-Block Time &mdash; scheduled gate arrival</dd></div>
+          <div class="glossary-entry"><dt>SLDT</dt><dd>Scheduled Landing Time &mdash; SIBT minus taxi-in</dd></div>
+          <div class="glossary-entry"><dt>SOBT</dt><dd>Scheduled Off-Block Time &mdash; scheduled gate departure</dd></div>
+          <div class="glossary-entry"><dt>STOT</dt><dd>Scheduled Take-Off Time &mdash; SOBT plus taxi-out</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
         <h4>EXPECTED / PLANNED FIGURES</h4>
         <dl>
-          <div class="glossary-entry"><dt>EBT</dt><dd>Expected Block Time, shown in the itinerary list &mdash; the span from the first leg's departure to the last leg's arrival, including any ground time between legs.</dd></div>
-          <div class="glossary-entry"><dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT).</dd></div>
-          <div class="glossary-entry"><dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP.</dd></div>
-          <div class="glossary-entry"><dt>EOBT / ETOT / ELDT / EIBT</dt><dd>Expected Off-Block/Take-Off/Landing/In-Block Time &mdash; the SOBT/STOT/SLDT/SIBT figures shifted by the leg's delay, if any. Equal to the scheduled figure when there's no delay. This is what's sent to SimBrief, not the raw scheduled time.</dd></div>
-          <div class="glossary-entry"><dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP. See PAX below for how it's set.</dd></div>
-          <div class="glossary-entry"><dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP.</dd></div>
-          <div class="glossary-entry"><dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP.</dd></div>
+          <div class="glossary-entry"><dt>EBT</dt><dd>Expected Block Time, shown in the itinerary list &mdash; the span from the first leg's departure to the last leg's arrival, including any ground time between legs</dd></div>
+          <div class="glossary-entry"><dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT)</dd></div>
+          <div class="glossary-entry"><dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP</dd></div>
+          <div class="glossary-entry"><dt>EOBT / ETOT / ELDT / EIBT</dt><dd>Expected Off-Block/Take-Off/Landing/In-Block Time &mdash; the SOBT/STOT/SLDT/SIBT figures shifted by the leg's delay, if any. Equal to the scheduled figure when there's no delay. This is what's sent to SimBrief, not the raw scheduled time</dd></div>
+          <div class="glossary-entry"><dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP. See PAX below for how it's set</dd></div>
+          <div class="glossary-entry"><dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP</dd></div>
+          <div class="glossary-entry"><dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
         <h4>LOAD &amp; PERFORMANCE &mdash; HOW THEY'RE SET</h4>
         <dl>
-          <div class="glossary-entry"><dt>CARGO</dt><dd>Expected checked/hold baggage weight (this tool doesn't model belly freight). Scaled off the leg's passenger count and sector length &mdash; longer sectors see a higher share of passengers checking a bag &mdash; with some built-in randomness, plus an occasional high-cargo "surge" leg.</dd></div>
-          <div class="glossary-entry"><dt>COST INDEX</dt><dd>Randomly rolled per leg between 2 and 16 (centered around 6). In real dispatch this balances fuel cost against time cost for the FMC's speed/altitude optimization; it's sent to SimBrief to generate the OFP.</dd></div>
-          <div class="glossary-entry"><dt>PAX</dt><dd>The aircraft's seat capacity (189 on Ryanair's 737-800, 156&ndash;235 across easyJet's A320 family and 180&ndash;239 across Wizz Air's, depending on type) times a randomized load factor (roughly 82&ndash;99%, with a 30% chance of a completely full house) gives the expected passenger count used to build the OFP (EPAX) and, ultimately, the loadsheet.</dd></div>
+          <div class="glossary-entry"><dt>CARGO</dt><dd>Expected checked/hold baggage weight (this tool doesn't model belly freight). Scaled off the leg's passenger count and sector length &mdash; longer sectors see a higher share of passengers checking a bag &mdash; with some built-in randomness, plus an occasional high-cargo "surge" leg</dd></div>
+          <div class="glossary-entry"><dt>COST INDEX</dt><dd>Randomly rolled per leg between 2 and 16 (centered around 6). In real dispatch this balances fuel cost against time cost for the FMC's speed/altitude optimization; it's sent to SimBrief to generate the OFP</dd></div>
+          <div class="glossary-entry"><dt>PAX</dt><dd>The aircraft's seat capacity (189 on Ryanair's 737-800, 156&ndash;235 across easyJet's A320 family and 180&ndash;239 across Wizz Air's, depending on type) times a randomized load factor (roughly 82&ndash;99%, with a 30% chance of a completely full house) gives the expected passenger count used to build the OFP (EPAX) and, ultimately, the loadsheet</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
         <h4>ACTUALS &amp; PIREP</h4>
         <dl>
-          <div class="glossary-entry"><dt>ABIT</dt><dd>Actual In-Block Time (block in), entered when filing the PIREP.</dd></div>
-          <div class="glossary-entry"><dt>AFAD</dt><dd>Actual Fuel At Destination, entered when filing the PIREP &mdash; not to be confused with EFOB, which is the block fuel planned before departure.</dd></div>
-          <div class="glossary-entry"><dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP.</dd></div>
-          <div class="glossary-entry"><dt>AOBT</dt><dd>Actual Off-Block Time (block off), entered when filing the PIREP.</dd></div>
-          <div class="glossary-entry"><dt>ATOT</dt><dd>Actual Take-Off Time, entered when filing the PIREP.</dd></div>
-          <div class="glossary-entry"><dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg.</dd></div>
-          <div class="glossary-entry"><dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count.</dd></div>
+          <div class="glossary-entry"><dt>ABIT</dt><dd>Actual In-Block Time (block in), entered when filing the PIREP</dd></div>
+          <div class="glossary-entry"><dt>AFAD</dt><dd>Actual Fuel At Destination, entered when filing the PIREP &mdash; not to be confused with EFOB, which is the block fuel planned before departure</dd></div>
+          <div class="glossary-entry"><dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP</dd></div>
+          <div class="glossary-entry"><dt>AOBT</dt><dd>Actual Off-Block Time (block off), entered when filing the PIREP</dd></div>
+          <div class="glossary-entry"><dt>ATOT</dt><dd>Actual Take-Off Time, entered when filing the PIREP</dd></div>
+          <div class="glossary-entry"><dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg</dd></div>
+          <div class="glossary-entry"><dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
         <h4>OPERATIONAL EVENTS</h4>
         <dl>
-          <div class="glossary-entry"><dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared.</dd></div>
-          <div class="glossary-entry"><dt>MEL</dt><dd>Minimum Equipment List &mdash; a defect the aircraft is dispatched with under an MEL relief, with an associated operational consequence.</dd></div>
+          <div class="glossary-entry"><dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared</dd></div>
+          <div class="glossary-entry"><dt>MEL</dt><dd>Minimum Equipment List &mdash; a defect the aircraft is dispatched with under an MEL relief, with an associated operational consequence</dd></div>
         </dl>
       </div>
 
-      <div class="empty-state" id="glossaryNoMatch" style="display:none; margin-top:10px;">NO TERMS MATCH THIS SEARCH.</div>
+      <div class="empty-state" id="glossaryNoMatch" style="display:none; margin-top:10px;">NO TERMS MATCH THIS SEARCH</div>
     </div>
   </div>
 </div>
@@ -963,8 +973,8 @@
   <div class="glossary-modal" style="max-width:440px;">
     <div class="panel-header"><span>BEFORE YOU DISPATCH</span><button class="home-btn" onclick="closeSimbriefNotice()" title="Close">&times;</button></div>
     <div class="panel-body">
-      <p class="placeholder-text">This app doesn't tell SimBrief which aircraft to use. On the dispatch form's <strong>Aircraft Info</strong> section, set the <strong>Aircraft Type</strong> yourself &mdash; and the specific <strong>Variant or Airframe</strong> too, if you have one you'd rather fly &mdash; before generating the OFP.</p>
-      <p class="placeholder-text">Reviewing the generated flight plan is your own responsibility. Only press Generate on SimBrief once you're satisfied the route, fuel, and weights all look right.</p>
+      <p class="placeholder-text">This app doesn't tell SimBrief which aircraft to use. On the dispatch form's <strong>Aircraft Info</strong> section, set the <strong>Aircraft Type</strong> yourself &mdash; and the specific <strong>Variant or Airframe</strong> too, if you have one you'd rather fly &mdash; before generating the OFP</p>
+      <p class="placeholder-text">Reviewing the generated flight plan is your own responsibility. Only press Generate on SimBrief once you're satisfied the route, fuel, and weights all look right</p>
       <label class="checkbox-row" style="margin-top:8px;"><input type="checkbox" id="simbriefNoticeDontShow"> Don't show this again</label>
       <div style="text-align:right; margin-top:14px;">
         <button class="action" type="button" onclick="continueToSimbrief()">CONTINUE TO SIMBRIEF</button>
@@ -982,7 +992,7 @@ const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
 function simbriefNoticeHtml() {
   if (localStorage.getItem(SIMBRIEF_USERNAME_KEY)) return '';
-  return `<div class="notice-banner">SimBrief connection missing. <a href="#" onclick="renderAccountSettings(); return false;">Add your SimBrief username</a> to send loadsheets and flight plans.</div>`;
+  return `<div class="notice-banner">SimBrief connection missing. <a href="#" onclick="renderAccountSettings(); return false;">Add your SimBrief username</a> to send loadsheets and flight plans</div>`;
 }
 
 function updateClock() {
@@ -999,7 +1009,7 @@ function fmtMinutes(min) {
   if (min === null || min === undefined || Number.isNaN(min)) return 'N/A';
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return `${h}H${String(m).padStart(2, '0')}M`;
+  return `${h}h ${String(m).padStart(2, '0')}m`;
 }
 
 function fmtNum(value) {
@@ -1106,7 +1116,7 @@ async function pushActiveFlight(keepalive) {
     } else if (resp.status === 409) {
       // Another device saved first: its copy wins; show it.
       adoptServerActiveFlight(data);
-      activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+      activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version';
       refreshActiveFlightView();
     }
   } catch (e) {
@@ -1146,7 +1156,7 @@ function refreshActiveFlightView() {
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'hidden') { pushActiveFlight(true); return; }
   if (await pullActiveFlight()) {
-    activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+    activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version';
     refreshActiveFlightView();
   }
 });
@@ -1258,14 +1268,14 @@ const GREETINGS = [
   'Welcome back, Captain {name}. Which way are we flying today?',
   'Good {part}, Captain {name}. The aircraft is waiting: where are we taking her?',
   "Good {part}, Captain. What does today's roster look like?",
-  "Welcome aboard, Captain {name}. Pick a route and we'll get the briefing ready.",
+  "Welcome aboard, Captain {name}. Pick a route and we'll get the briefing ready",
   'Good {part}, Captain {name}. Ready to plan your next departure?',
   'Good {part}, Captain {name}. Dispatch is standing by. Where are we headed?',
   'Good {part}, Captain. Which city are we visiting today?',
   'Nice to see you, Captain {name}. Short hop or a long sector today?',
   "Good {part}, Captain {name}. Coffee's on. Where are we flying?",
   'Good {part}, Captain. The briefing room is open. Where to?',
-  "Welcome back, Captain {name}. Let's find you a flight.",
+  "Welcome back, Captain {name}. Let's find you a flight",
   'Good {part}, Captain {name}. Your crew is ready. Where are we going today?',
   "Good {part}, Captain. What's the destination today?",
   'Ready when you are, Captain {name}. Where are we headed?',
@@ -1349,7 +1359,7 @@ async function renderSearchUI() {
             <p class="field-note" id="aircraftNote">Feature coming soon</p>
           </div>
         </div>
-        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline and flight country apply instantly.</p>
+        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline and flight country apply instantly</p>
         <div class="params-actions">
           <button class="action" id="searchBtn" onclick="applyTypedAirports()">SEARCH</button>
           <button class="ghost" type="button" id="swapBtn" onclick="swapAirports()" title="Swap departure and destination">&#8644; SWAP</button>
@@ -1382,7 +1392,7 @@ async function renderSearchUI() {
           <span class="wx-status" id="wxStatus" aria-live="polite"></span>
         </div>
         <div class="selection-map-wrap">
-          <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the flight list."></div>
+          <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the flight list"></div>
           <div class="map-overlay" id="mapOverlay" hidden></div>
         </div>
         <div class="map-legend" aria-hidden="true">
@@ -1394,7 +1404,7 @@ async function renderSearchUI() {
           <span><i class="sw sw-line hl"></i>ROW YOU'RE POINTING AT</span>
         </div>
         <div class="map-legend wx-legend" id="wxLegend" aria-hidden="true" hidden></div>
-        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the list.</p>
+        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the list</p>
       </div>
     </div>
     </div>
@@ -1682,7 +1692,7 @@ async function runSearch() {
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    currentItineraries = []; searchStatus = 'error'; searchError = 'SEARCH FAILED. CHECK THE CONNECTION AND RETRY.';
+    currentItineraries = []; searchStatus = 'error'; searchError = 'SEARCH FAILED. CHECK THE CONNECTION AND RETRY';
   }
   if (searchAbort === ctrl) searchAbort = null;
   renderSelection({ fit: true });
@@ -1745,7 +1755,7 @@ function renderCriteriaBar(visibleCount) {
   const crit = activeCriteria();
   const chips = crit.length
     ? crit.map((c, i) => `${c.id === 'destination' && searchState.origin ? `<button class="chip-swap" type="button" onclick="swapAirports()" title="Swap departure and destination" aria-label="Swap departure and destination">&#8644;</button>` : ''}<span class="crit-chip ${c.cls || ''}"><span class="k">${c.k}</span>${c.v}<button type="button" onclick="${c.clear}" aria-label="Remove ${c.k.toLowerCase()} ${escAttr(c.v)}" title="Remove">&times;</button></span>`).join('')
-    : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map.</span>`;
+    : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map</span>`;
 
   const html = `
     <div aria-live="polite" aria-atomic="true">${countHtml}</div>
@@ -1765,7 +1775,7 @@ function noResultsHtml() {
     if (s.origin && s.origin === s.destination) {
       msg = `Departure and destination are both ${s.origin}.`;
     } else if (s.origin && s.destination) {
-      msg = `No scheduled flights go from ${airportLabel(s.origin)} to ${airportLabel(s.destination)} in the loaded network.`;
+      msg = `No scheduled flights go from ${airportLabel(s.origin)} to ${airportLabel(s.destination)} in the loaded network`;
       const reverse = networkData && networkData.pairs.has(`${s.destination}>${s.origin}`);
       if (reverse) actions.push(btn('swapAirports()', `SWAP TO ${s.destination} &rarr; ${s.origin}`));
     } else {
@@ -1773,7 +1783,7 @@ function noResultsHtml() {
     }
     if (s.destination) actions.push(btn("setAirport('destination','')", `REMOVE DESTINATION${s.origin ? ` &middot; ${fmtNum(networkDestinationCount(s.origin))} DESTINATIONS FROM ${s.origin}` : ''}`));
     if (s.origin) actions.push(btn("setAirport('origin','')", `REMOVE DEPARTURE${s.destination ? ` &middot; ${fmtNum(networkOriginCount(s.destination))} ORIGINS TO ${s.destination}` : ''}`));
-    return `<div class="no-results"><h4>NO ITINERARIES MATCH</h4><p>${msg} Your criteria are kept &mdash; relax one to see flights.</p><div class="relax-actions">${actions.join('')}</div></div>`;
+    return `<div class="no-results"><h4>NO ITINERARIES MATCH</h4><p>${msg} Your criteria are kept &mdash; relax one to see flights</p><div class="relax-actions">${actions.join('')}</div></div>`;
   }
   const relaxable = activeCriteria().filter(c => ['airline', 'legs', 'country', 'route'].includes(c.id));
   const suggestions = relaxable.map(c => {
@@ -1869,7 +1879,7 @@ function renderListPanel(visible) {
   tableVisibleItineraries = visible || [];
   let body;
   if (searchStatus === 'idle') {
-    body = `<div class="empty-state">Choose a departure or destination airport &mdash; type it in Search Parameters or click it on the map.</div>`;
+    body = `<div class="empty-state">Choose a departure or destination airport &mdash; type it in Search Parameters or click it on the map</div>`;
   } else if (searchStatus === 'loading') {
     body = `<div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING ITINERARIES&hellip;</div>`;
   } else if (searchStatus === 'error') {
@@ -1971,7 +1981,7 @@ function renderTable() {
         <td data-label="ETD (Z)" data-short="ETD">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
         <td data-label="ETA (Z)" data-short="ETA">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
         <td data-label="TURNAROUND" data-short="TURN"${itin.leg_details.length > 1 ? '' : ' class="no-turn"'}>${turnaround}</td>
-        <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' NM' : 'N/A'}</td>
+        <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' nm' : 'N/A'}</td>
         <td data-label="EBT" data-short="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
         <td class="select-cell" data-label=""><button class="ghost row-map-btn" type="button" onclick="event.stopPropagation(); showItineraryOnMap('${key}', event)" title="Show on map" aria-label="Show ${flights} on the map">${MAP_PIN_SVG}</button><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')" aria-expanded="${isExpanded}">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
@@ -2022,7 +2032,7 @@ async function loadDetail(key) {
     expandedDetailData = null;
     expandedDetailKey = null;
     const cell = document.getElementById('detailCell');
-    if (cell) cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS.</div>`;
+    if (cell) cell.innerHTML = `<div class="empty-state">COULD NOT LOAD FLIGHT DETAILS</div>`;
   } finally {
     if (detailLoadingKey === key) detailLoadingKey = null;
   }
@@ -2605,8 +2615,8 @@ function openAirportPopup(a, selectedRole, info) {
     else actions.push(`<button class="ghost" type="button" onclick="mapSetAirport('${other}','${a.icao}')">USE AS ${other === 'origin' ? 'DEPARTURE' : 'DESTINATION'} INSTEAD</button>`);
   } else {
     const n = info ? info.count : null;
-    sub = n != null ? `${plural(n, 'matching itinerary', 'matching itineraries')} with the current search.`
-                    : `${plural(networkDestinationCount(a.icao), 'destination', 'destinations')} &middot; ${plural(networkOriginCount(a.icao), 'origin', 'origins')} in the network.`;
+    sub = n != null ? `${plural(n, 'matching itinerary', 'matching itineraries')} with the current search`
+                    : `${plural(networkDestinationCount(a.icao), 'destination', 'destinations')} &middot; ${plural(networkOriginCount(a.icao), 'origin', 'origins')} in the network`;
     const depSuffix = n != null && s.destination && !s.origin ? ` (${fmtNum(n)})` : '';
     const destSuffix = n != null && s.origin && !s.destination ? ` (${fmtNum(n)})` : '';
     actions.push(`<button class="action small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS DEPARTURE${depSuffix}</button>`);
@@ -2723,7 +2733,7 @@ async function reassignAircraft(selectEl) {
     cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
     expandedDetailData.legs.forEach((l, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, l));
   } catch (err) {
-    alert('Could not change the aircraft. Check the connection and retry.');
+    alert('Could not change the aircraft. Check the connection and retry');
     selectEl.disabled = false;
   }
 }
@@ -2824,7 +2834,7 @@ async function confirmFlight(key) {
     saveActiveFlight(activeFlight);
     renderRecap(activeFlight);
   } catch (err) {
-    alert('Could not confirm this flight. Check the connection and retry.');
+    alert('Could not confirm this flight. Check the connection and retry');
   }
 }
 
@@ -2852,11 +2862,11 @@ function routeMapNote(leg, state, refetchIndex) {
   if (ofpRouteFixes(leg, ofp)) return `Planned route from the SimBrief OFP: ${escText(ofp.route || '')}`;
   const refetch = refetchIndex != null
     ? ` <button class="ghost small" type="button" onclick="fetchOfp(${refetchIndex})">FETCH OFP AGAIN</button>` : '';
-  if (!ofp) return 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief.';
+  if (!ofp) return 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief';
   if (ofp.origin_icao && ofp.destination_icao && (ofp.origin_icao !== leg.departure_info.icao || ofp.destination_icao !== leg.arrival_info.icao)) {
-    return `Straight line: the saved OFP is for ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, not this leg.${refetch}`;
+    return `Straight line: the saved OFP is for ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, not this leg${refetch}`;
   }
-  if (!Array.isArray(ofp.navlog)) return `Straight line: this OFP was saved before routes could be drawn. Fetch it again to draw its route.${refetch}`;
+  if (!Array.isArray(ofp.navlog)) return `Straight line: this OFP was saved before routes could be drawn. Fetch it again to draw its route${refetch}`;
   return `Straight line: SimBrief didn't include route coordinates in this OFP.${refetch}`;
 }
 
@@ -2952,23 +2962,23 @@ function recapNextStepHtml(flight, i, allDone) {
   const ofp = state.ofp || {};
   const loadsheetLine = state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : '';
   const pirepLine = state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : '';
-  const mismatch = state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : '';
+  const mismatch = state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '';
 
   if (done) {
-    return `<h3 class="af-step-title">Leg completed</h3><p class="af-step-text">The PIREP for this leg has been filed.</p>${loadsheetLine}${pirepLine}
-      ${allDone ? `<div class="af-step-end"><p class="af-step-text">ALL LEGS COMPLETED THROUGH PIREP. Start a new flight to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button></div>` : ''}`;
+    return `<h3 class="af-step-title">Leg completed</h3><p class="af-step-text">The PIREP for this leg has been filed</p>${loadsheetLine}${pirepLine}
+      ${allDone ? `<div class="af-step-end"><p class="af-step-text">ALL LEGS COMPLETED THROUGH PIREP. Start a new flight to begin another dispatch</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button></div>` : ''}`;
   }
   if (!current) {
-    return `<h3 class="af-step-title">Waiting for the previous leg</h3><p class="af-step-text">This leg opens once the PIREP for leg ${i} has been filed.</p>`;
+    return `<h3 class="af-step-title">Waiting for the previous leg</h3><p class="af-step-text">This leg opens once the PIREP for leg ${i} has been filed</p>`;
   }
   if (state.simbrief === 'not_sent') {
     return `<h3 class="af-step-title">Plan the flight on SimBrief</h3>
-      <p class="af-step-text">Send this leg to SimBrief: the flight number, callsign, aircraft, cost index, passengers and expected off-block time are filled in for you. Generate the OFP there, then come back to fetch it.</p>
+      <p class="af-step-text">Send this leg to SimBrief: the flight number, callsign, aircraft, cost index, passengers and expected off-block time are filled in for you. Generate the OFP there, then come back to fetch it</p>
       <button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
   }
   if (state.simbrief === 'sent') {
     return `<h3 class="af-step-title">Waiting for the OFP</h3>
-      <p class="af-step-text">Generate the OFP in the SimBrief tab that opened, then fetch it here.</p>
+      <p class="af-step-text">Generate the OFP in the SimBrief tab that opened, then fetch it here</p>
       <div class="af-step-actions"><button class="action" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button><button class="ghost" type="button" onclick="prepareLeg(${i})">RE-SEND TO SIMBRIEF</button></div>`;
   }
   if (!state.loadsheet_signed) {
@@ -2996,7 +3006,7 @@ function recapNextStepHtml(flight, i, allDone) {
         ${timeFieldHtml(`aldt-${i}`, 'ALDT (ZULU, LANDING)')}
         ${timeFieldHtml(`abit-${i}`, 'ABIT (ZULU, BLOCK IN)')}
         <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
-        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log.</label>
+        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log</label>
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
       </div>`;
 }
@@ -3032,8 +3042,8 @@ function renderRecap(flight) {
 
   const briefing = `${legLoadTable(leg)}${legDelayMelBlock(leg)}${legLmcDgBlock(flight)}`;
   const ofpBody = state.ofp
-    ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : '')
-    : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief.</div>`;
+    ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '')
+    : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief</div>`;
   const panes = { next: recapNextStepHtml(flight, i, allDone), briefing, weather: legWeatherBlock(leg), ofp: ofpBody };
   const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : 'next';
 
@@ -3135,7 +3145,7 @@ async function doPrepareLeg(index) {
     flight.leg_state[index].ofp = null;
     saveAndRender(flight);
   } catch (err) {
-    alert('Could not build the SimBrief dispatch link. Check the connection and retry.');
+    alert('Could not build the SimBrief dispatch link. Check the connection and retry');
   }
 }
 
@@ -3180,7 +3190,7 @@ function submitLoadsheet(index) {
   const crew = Number(document.getElementById('ls-crew-' + index).value);
   if (!Number.isFinite(zfw) || !Number.isFinite(fob) || zfw < 0 || fob < 0
       || !Number.isInteger(pax) || pax < 0 || !Number.isInteger(crew) || crew < 0) {
-    alert('Enter ZFW, FOB (any non-negative number), and whole-number PAX and CREW to sign the loadsheet.');
+    alert('Enter ZFW, FOB (any non-negative number), and whole-number PAX and CREW to sign the loadsheet');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
@@ -3214,7 +3224,7 @@ async function submitPirep(index) {
   const afad = Number(document.getElementById('afad-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
   if (!aobt || !atot || !aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
-    alert('Enter AOBT, ATOT, ALDT, ABIT (as HH and MM, 24-hour) and AFAD, then confirm no new MELs or non-normal occurrences.');
+    alert('Enter AOBT, ATOT, ALDT, ABIT (as HH and MM, 24-hour) and AFAD, then confirm no new MELs or non-normal occurrences');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
@@ -3246,7 +3256,7 @@ async function submitPirep(index) {
   }
 }
 function skipFlight() {
-  if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data.')) return;
+  if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data')) return;
   clearActiveFlight(); renderSearchUI();
 }
 
@@ -3278,7 +3288,7 @@ function setPageFit(on) {
 
 function goActiveFlight() {
   const flight = loadActiveFlight();
-  if (!flight) { alert('No active flight yet. Search and confirm one first.'); return; }
+  if (!flight) { alert('No active flight yet. Search and confirm one first'); return; }
   renderRecap(flight);
 }
 
@@ -3332,7 +3342,7 @@ async function renderUserPage() {
     stats = await statsResp.json();
     statsData = await logResp.json();
   } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD YOUR PROFILE. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD YOUR PROFILE. CHECK THE CONNECTION AND RETRY</div></div>`;
     return;
   }
   currentSettings = settings;
@@ -3366,7 +3376,7 @@ async function renderUserPage() {
       <div class="panel-header">DESTINATIONS REACHED</div>
       <div class="panel-body">
         <div id="destinationsMap" class="route-map destinations-map"></div>
-        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
+        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red</p>
       </div>
     </div>
     </div>
@@ -3404,7 +3414,7 @@ function profileStatsSummary() {
   const recent = rows.filter(r => r.date && r.date >= since).length;
   const cell = (label, value) => `<div><span>${label}</span><b>${value}</b></div>`;
   return `<div class="profile-stats-kpis">
-    ${cell('Flights', fmtNum(k.flights))}${cell('Flight time', fmtHours(k.ft))}${cell('Distance', fmtNum(Math.round(k.dist)) + ' NM')}
+    ${cell('Flights', fmtNum(k.flights))}${cell('Flight time', fmtHours(k.ft))}${cell('Distance', fmtNum(Math.round(k.dist)) + ' nm')}
     ${cell('Airports', fmtNum(k.airports))}${cell('Countries', fmtNum(k.countries))}${cell('Last 30 days', fmtNum(recent) + (recent === 1 ? ' flight' : ' flights'))}
   </div>`;
 }
@@ -3464,7 +3474,7 @@ async function renderAccountSettings() {
     genOptions = await optionsResp.json();
     carriers = await carriersResp.json();
   } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD ACCOUNT SETTINGS. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD ACCOUNT SETTINGS. CHECK THE CONNECTION AND RETRY</div></div>`;
     return;
   }
   currentSettings = settings;
@@ -3524,7 +3534,7 @@ async function renderAccountSettings() {
             <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
           </div>
         </div>
-        <p class="placeholder-text">Email and username can't be changed here yet.</p>
+        <p class="placeholder-text">Email and username can't be changed here yet</p>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="savePilotProfile()">SAVE</button>
           <span class="placeholder-text" id="profileSaveStatus"></span>
@@ -3539,7 +3549,7 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">AIRCRAFT YOU FLY</div>
       <div class="panel-body">
-        <p class="placeholder-text">Tell us which aircraft you actually fly/have installed in the simulator - it affects which aircraft gets assigned to your flights (a carrier that flies more than one type, like easyJet, picks between your selections; leave all unchecked for no preference). You can change this any time.</p>
+        <p class="placeholder-text">Tell us which aircraft you actually fly/have installed in the simulator - it affects which aircraft gets assigned to your flights (a carrier that flies more than one type, like easyJet, picks between your selections; leave all unchecked for no preference). You can change this any time</p>
         <div class="gen-items-list" style="max-height:none;">${aircraftGroupsHtml}</div>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="savePilotProfile()">SAVE</button>
@@ -3551,9 +3561,9 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">DISPATCH COMPLICATIONS</div>
       <div class="panel-body">
-        ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief.", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
-        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods.', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
-        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time.', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
+        ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
+        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
+        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -3578,7 +3588,7 @@ function renderDeleteAccountPage() {
       </div>
       <div class="panel-body">
         <div id="deleteAccountStep1">
-          <p class="placeholder-text">This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone and this data cannot be recovered.</p>
+          <p class="placeholder-text">This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone and this data cannot be recovered</p>
           <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deleteConfirmText">Type DELETE to confirm</label>
             <input type="text" id="deleteConfirmText" autocomplete="off">
@@ -3586,7 +3596,7 @@ function renderDeleteAccountPage() {
           <button class="action danger" type="button" onclick="proceedToDeleteStep2()">CONTINUE</button>
         </div>
         <div id="deleteAccountStep2" style="display:none;">
-          <p class="placeholder-text">Enter your password to permanently delete your account.</p>
+          <p class="placeholder-text">Enter your password to permanently delete your account</p>
           <div class="field" style="max-width:260px; margin-bottom:16px;">
             <label for="deletePassword">Password</label>
             <input type="password" id="deletePassword" autocomplete="off">
@@ -3601,7 +3611,7 @@ function renderDeleteAccountPage() {
 
 function proceedToDeleteStep2() {
   if (document.getElementById('deleteConfirmText').value.trim() !== 'DELETE') {
-    alert('Type DELETE exactly (all capitals) to confirm.');
+    alert('Type DELETE exactly (all capitals) to confirm');
     return;
   }
   document.getElementById('deleteAccountStep1').style.display = 'none';
@@ -3612,7 +3622,7 @@ async function confirmDeleteAccount() {
   const password = document.getElementById('deletePassword').value;
   const errEl = document.getElementById('deleteError');
   errEl.style.display = 'none';
-  if (!password) { errEl.textContent = 'Enter your password.'; errEl.style.display = 'block'; return; }
+  if (!password) { errEl.textContent = 'Enter your password'; errEl.style.display = 'block'; return; }
   if (!confirm('This is final and cannot be undone. Permanently delete your account?')) return;
   try {
     const resp = await fetch('/account/delete', {
@@ -3620,7 +3630,7 @@ async function confirmDeleteAccount() {
       body: 'password=' + encodeURIComponent(password),
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Could not delete account.');
+    if (!resp.ok) throw new Error(data.error || 'Could not delete account');
     localStorage.clear();
     window.location.href = '/';
   } catch (err) {
@@ -3640,10 +3650,10 @@ async function uploadAccountPhoto() {
   try {
     const resp = await fetch('/account/photo', { method: 'POST', body: formData });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Upload failed.');
+    if (!resp.ok) throw new Error(data.error || 'Upload failed');
     currentSettings = data;
     document.getElementById('acctPhotoPreview').innerHTML = avatarHtml(data.profile, 72);
-    status.textContent = 'Photo updated.';
+    status.textContent = 'Photo updated';
   } catch (err) {
     status.textContent = err.message;
   } finally {
@@ -3659,8 +3669,8 @@ async function sendPasswordReset() {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'email=' + encodeURIComponent(CURRENT_USER_EMAIL),
     });
-    if (!resp.ok) throw new Error('Could not send reset email.');
-    status.textContent = `Check ${CURRENT_USER_EMAIL} for a reset link.`;
+    if (!resp.ok) throw new Error('Could not send reset email');
+    status.textContent = `Check ${CURRENT_USER_EMAIL} for a reset link`;
   } catch (err) {
     status.textContent = err.message;
   }
@@ -3744,7 +3754,7 @@ async function saveGenerationSettings() {
     currentSettings = await resp.json();
     document.getElementById('generationSaveStatus').textContent = 'SAVED.';
   } catch (err) {
-    alert('Could not save these settings. Check the connection (and that a database is configured) and retry.');
+    alert('Could not save these settings. Check the connection (and that a database is configured) and retry');
   }
 }
 
@@ -3786,7 +3796,7 @@ async function savePilotProfile() {
     document.getElementById('profileSaveStatus').textContent = 'SAVED.';
     document.getElementById('aircraftOwnedSaveStatus').textContent = 'SAVED.';
   } catch (err) {
-    alert('Could not save the profile. Check the connection (and that a database is configured) and retry.');
+    alert('Could not save the profile. Check the connection (and that a database is configured) and retry');
   }
 }
 
@@ -3797,7 +3807,7 @@ async function loadPirepLog() {
     pirepLogRecords = await resp.json();
     renderPirepLog();
   } catch (err) {
-    body.innerHTML = '<div class="empty-state">COULD NOT LOAD PIREP LOG.</div>';
+    body.innerHTML = '<div class="empty-state">COULD NOT LOAD PIREP LOG</div>';
   }
 }
 
@@ -3831,7 +3841,7 @@ function renderPirepLog() {
 
 function buildPirepDetailHtml(r) {
   const leg = r.leg;
-  if (!leg) return '<p class="placeholder-text" style="margin-top:8px;">NO FLIGHT DETAIL WAS SAVED WITH THIS PIREP.</p>';
+  if (!leg) return '<p class="placeholder-text" style="margin-top:8px;">NO FLIGHT DETAIL WAS SAVED WITH THIS PIREP</p>';
   const unit = (r.ofp && r.ofp.weight_unit) || 'KG';
   const mapId = `map-pirep-${r.id}`;
   return `
@@ -3851,14 +3861,14 @@ function togglePirepRecord(id) {
 }
 
 async function deletePirepRecord(id) {
-  if (!confirm('Delete this PIREP record? This cannot be undone.')) return;
+  if (!confirm('Delete this PIREP record? This cannot be undone')) return;
   try {
     const resp = await fetch('/pireps/' + encodeURIComponent(id), { method: 'DELETE' });
     if (!resp.ok) throw new Error('delete failed');
     if (expandedPirepId === id) expandedPirepId = null;
     loadPirepLog();
   } catch (err) {
-    alert('Could not delete this record. Check the connection and retry.');
+    alert('Could not delete this record. Check the connection and retry');
   }
 }
 
@@ -3890,7 +3900,7 @@ function filterGlossary(query) {
 }
 
 function startNewFlight() {
-  if (!confirm('Are you sure? This will discard the current flight.')) return;
+  if (!confirm('Are you sure? This will discard the current flight')) return;
   clearActiveFlight();
   renderSearchUI();
 }
@@ -3918,7 +3928,7 @@ const STATS_TABS = [['overview', 'OVERVIEW'], ['fleet', 'FLEET & AIRLINES'], ['g
 const STATS_METRICS = {
   flights: { label: 'FLIGHTS', value: rows => rows.length, fmt: v => fmtNum(v) },
   ft: { label: 'FLIGHT TIME', value: rows => sumOf(rows, 'ft'), fmt: v => fmtHours(v) },
-  dist: { label: 'DISTANCE', value: rows => sumOf(rows, 'dist'), fmt: v => fmtNum(Math.round(v)) + ' NM' },
+  dist: { label: 'DISTANCE', value: rows => sumOf(rows, 'dist'), fmt: v => fmtNum(Math.round(v)) + ' nm' },
   pax: { label: 'PASSENGERS', value: rows => sumOf(rows, 'pax'), fmt: v => fmtNum(v) },
 };
 const STAT_BLUE = '#2a78d6', STAT_ORANGE = '#eb6834';
@@ -3938,9 +3948,9 @@ function sumOf(rows, key) { return rows.reduce((s, r) => s + (Number.isFinite(r[
 function fmtHours(min) {
   if (!Number.isFinite(min)) return 'N/A';
   const h = Math.floor(min / 60), m = Math.round(min % 60);
-  return `${fmtNum(h)}H${String(m).padStart(2, '0')}M`;
+  return `${fmtNum(h)}h ${String(m).padStart(2, '0')}m`;
 }
-function fmtSigned(min) { return min == null ? '&mdash;' : (min > 0 ? '+' : '') + min + ' MIN'; }
+function fmtSigned(min) { return min == null ? '&mdash;' : (min > 0 ? '+' : '') + min + ' min'; }
 function pct(n, d) { return d ? Math.round((n / d) * 100) : null; }
 let regionNames = null;
 function countryName(code) {
@@ -4048,12 +4058,12 @@ async function renderStatsPage() {
   try {
     statsData = await (await fetch('/stats/flights')).json();
   } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD YOUR FLIGHTS. CHECK THE CONNECTION AND RETRY.</div></div>`;
+    document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="empty-state">COULD NOT LOAD YOUR FLIGHTS. CHECK THE CONNECTION AND RETRY</div></div>`;
     return;
   }
   document.getElementById('mainContent').innerHTML = `
     <div class="panel st-controls">
-      <div class="panel-header"><span>FLIGHT STATISTICS</span><button class="ghost small" type="button" onclick="renderUserPage()">&larr; PROFILE</button></div>
+      <div class="panel-header"><span>FILTERS AND PARAMETERS</span><button class="ghost small" type="button" onclick="renderUserPage()">&larr; PROFILE</button></div>
       <div class="panel-body">
         <div class="st-row">
           <div class="st-presets" role="group" aria-label="Date range">${STATS_PRESETS.map(([k, l]) => `<button type="button" class="st-chip" data-preset="${k}" onclick="setStatsPreset('${k}')">${l}</button>`).join('')}</div>
@@ -4134,10 +4144,12 @@ function renderStatsBody() {
     const sel = document.getElementById('stF-' + k);
     sel.innerHTML = `<option value="">ALL</option>` + opts.map(([v, l]) => `<option value="${escAttr(v)}">${escText(l)}</option>`).join('');
     sel.value = s.f[k];
+    sel.classList.toggle('is-set', !!s.f[k]);
   });
   const scope = document.getElementById('stF-scope');
   scope.innerHTML = `<option value="">ALL</option><option value="domestic">DOMESTIC</option><option value="international">INTERNATIONAL</option>`;
   scope.value = s.f.scope;
+  scope.classList.toggle('is-set', !!s.f.scope);
   document.getElementById('stReset').disabled = !Object.values(s.f).some(Boolean);
   STATS_TABS.forEach(([k]) => { const b = document.getElementById('st-tab-' + k); b.classList.toggle('on', k === s.tab); b.setAttribute('aria-selected', k === s.tab); });
 
@@ -4145,11 +4157,11 @@ function renderStatsBody() {
   const content = document.getElementById('stContent');
   if (statsMap) { statsMap.remove(); statsMap = null; }
   if (!all.length) {
-    content.innerHTML = `<div class="empty-state">No flights logged yet. File a PIREP at the end of a flight and it appears here.</div>`;
+    content.innerHTML = `<div class="empty-state">No flights logged yet. File a PIREP at the end of a flight and it appears here</div>`;
     return;
   }
   if (!rows.length) {
-    content.innerHTML = `<div class="empty-state">No flights match this date range and these filters.</div>`;
+    content.innerHTML = `<div class="empty-state">No flights match this date range and these filters</div>`;
     return;
   }
   const views = { overview: statsOverview, fleet: statsFleet, geo: statsGeo, airports: statsAirports, ops: statsOperations, load: statsLoadFuel, records: statsRecords, logbook: statsLogbook };
@@ -4158,25 +4170,33 @@ function renderStatsBody() {
 
 function renderStatsKpis(rows, prevRows, range) {
   const k = statsKpis(rows), p = prevRows ? statsKpis(prevRows) : null;
-  const periodName = { '7d': 'previous 7 days', '30d': 'previous 30 days', '90d': 'previous 90 days', ytd: 'same length before', '12m': 'previous 12 months', custom: 'previous period' }[statsState.preset];
+  // One grey line per tile: the change vs the previous period when there
+  // is one (the full period name is in its tooltip), else the tile's note.
+  const periodName = { '7d': 'the previous 7 days', '30d': 'the previous 30 days', '90d': 'the previous 90 days', ytd: 'the same number of days before', '12m': 'the previous 12 months', custom: 'the previous period of the same length' }[statsState.preset];
   const delta = (key, points) => {
     if (!p || k[key] == null || p[key] == null) return '';
-    if (points) { const d = k[key] - p[key]; return `<span class="st-delta">${d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : ''} ${d > 0 ? '+' : ''}${d} pts vs ${periodName}</span>`; }
-    if (!p[key]) return k[key] ? `<span class="st-delta">new vs ${periodName}</span>` : '';
+    const arrow = d => d > 0 ? '&#9650; +' : d < 0 ? '&#9660; ' : '';
+    if (points) { const d = k[key] - p[key]; return `${arrow(d)}${d} pts vs previous`; }
+    if (!p[key]) return k[key] ? 'new vs previous' : '';
     const d = Math.round(((k[key] - p[key]) / p[key]) * 100);
-    return `<span class="st-delta">${d > 0 ? '&#9650;' : d < 0 ? '&#9660;' : ''} ${d > 0 ? '+' : ''}${d}% vs ${periodName}</span>`;
+    return `${arrow(d)}${d}% vs previous`;
   };
-  const tile = (label, value, key, extra = '', points = false) =>
-    `<div class="st-kpi"><span class="st-kpi-label">${label}</span><span class="st-kpi-value">${value}</span>${delta(key, points)}${extra}</div>`;
+  const tile = (label, value, key, note = '', points = false, noteTitle = '') => {
+    const d = delta(key, points);
+    const line = d || note;
+    const title = d ? `Compared with ${periodName}` : noteTitle;
+    return `<div class="st-kpi"><span class="st-kpi-label">${label}</span><span class="st-kpi-value">${value}</span>${line ? `<span class="st-delta"${title ? ` title="${escAttr(title)}"` : ''}>${line}</span>` : ''}</div>`;
+  };
+  const estTitle = 'PIREPs without actual block times count their scheduled block time';
   document.getElementById('stKpis').innerHTML = [
     tile('Flights', fmtNum(k.flights), 'flights'),
-    tile('Flight time', fmtHours(k.ft), 'ft', k.est ? `<span class="st-delta" title="PIREPs without actual block times count their scheduled block time">${k.est} estimated</span>` : ''),
+    tile('Flight time', fmtHours(k.ft) + (k.est && p ? `<sup class="st-est" title="${k.est} estimated: ${estTitle}">*</sup>` : ''), 'ft', k.est ? `${k.est} estimated` : '', false, estTitle),
     tile('Air time', fmtHours(k.air), 'air'),
-    tile('Distance', fmtNum(Math.round(k.dist)) + ' NM', 'dist'),
+    tile('Distance', fmtNum(Math.round(k.dist)) + ' nm', 'dist'),
     tile('Passengers', fmtNum(k.pax), 'pax'),
     tile('Airports', fmtNum(k.airports), 'airports'),
     tile('Countries', fmtNum(k.countries), 'countries'),
-    tile('On-time departures', k.otp == null ? '&mdash;' : k.otp + '%', 'otp', `<span class="st-delta" title="Off-block within 15 minutes of schedule">within 15 min</span>`, true),
+    tile('On-time departures', k.otp == null ? '&mdash;' : k.otp + '%', 'otp', 'within 15 min', true, 'Off-block within 15 minutes of schedule'),
   ].join('');
 }
 
@@ -4223,11 +4243,11 @@ function statsOverview(el, rows, range, group) {
     <div class="st-grid st-grid-overview">
       <section class="st-card st-card-grow">
         <div class="st-card-head">
-          <h3>${STATS_METRICS[s.metric].label} BY ${group.toUpperCase()}</h3>
-          <div class="st-seg" role="group" aria-label="Measure">${Object.entries(STATS_METRICS).map(([k, m]) => `<button type="button" class="st-chip${k === s.metric ? ' on' : ''}" aria-pressed="${k === s.metric}" onclick="statsState.metric='${k}'; renderStatsBody()">${m.label}</button>`).join('')}
-            <button type="button" class="st-chip${s.timelineTable ? ' on' : ''}" aria-pressed="${s.timelineTable}" onclick="statsState.timelineTable=!statsState.timelineTable; renderStatsBody()">TABLE</button></div>
+          <h3>${s.timelineTable ? 'ALL MEASURES' : STATS_METRICS[s.metric].label} BY ${group.toUpperCase()}</h3>
+          <div class="st-seg" role="group" aria-label="Measure">${Object.entries(STATS_METRICS).map(([k, m]) => `<button type="button" class="st-chip${k === s.metric && !s.timelineTable ? ' on' : ''}" aria-pressed="${k === s.metric && !s.timelineTable}"${s.timelineTable ? ' disabled title="The table shows every measure"' : ''} onclick="statsState.metric='${k}'; renderStatsBody()">${m.label}</button>`).join('')}
+            <label class="switch-row st-switch"><span class="switch-toggle"><input type="checkbox" id="stTableSwitch"${s.timelineTable ? ' checked' : ''} onchange="statsState.timelineTable = this.checked; renderStatsBody()"><span class="track"></span></span>TABLE</label></div>
         </div>
-        <p class="st-hint">${group === 'day' ? 'Hover a bar for its flights.' : 'Click a bar to zoom into that period.'}</p>
+        <p class="st-hint">${s.timelineTable ? 'Every measure per period, with periods that have flights' : group === 'day' ? 'Hover a bar for its flights' : 'Click a bar to zoom into that period'}</p>
         <div class="st-timeline" id="stTimeline"></div>
       </section>
       <section class="st-card">
@@ -4315,7 +4335,7 @@ function statsFleet(el, rows) {
   const line = (label, rs, pick, cls) => `<tr class="${cls || ''}"${pick ? ` onclick="${pick}" tabindex="0" title="Filter by this"` : ''}>
       <td>${label}</td><td class="num">${fmtNum(rs.length)}</td><td class="num">${fmtHours(sumOf(rs, 'ft'))}</td>
       <td class="st-share"><span class="st-bar-track"><span class="st-bar-fill" style="width:${(sumOf(rs, 'ft') / ftTotal) * 100}%"></span></span>${Math.round((sumOf(rs, 'ft') / ftTotal) * 100)}%</td>
-      <td class="num">${avg(rs, 'dist') != null ? fmtNum(Math.round(avg(rs, 'dist'))) + ' NM' : '&mdash;'}</td><td class="num">${avg(rs, 'ft') != null ? fmtHours(avg(rs, 'ft')) : '&mdash;'}</td></tr>`;
+      <td class="num">${avg(rs, 'dist') != null ? fmtNum(Math.round(avg(rs, 'dist'))) + ' nm' : '&mdash;'}</td><td class="num">${avg(rs, 'ft') != null ? fmtHours(avg(rs, 'ft')) : '&mdash;'}</td></tr>`;
   const head = (first) => `<thead><tr><th>${first}</th><th class="num">FLIGHTS</th><th class="num">FLIGHT TIME</th><th>SHARE OF TIME</th><th class="num">AVG SECTOR</th><th class="num">AVG FLIGHT</th></tr></thead>`;
   const carriers = [...groupRows(rows, r => r.carrier)].sort((a, b) => b[1].length - a[1].length);
   el.innerHTML = `
@@ -4329,7 +4349,7 @@ function statsFleet(el, rows) {
           [...groupRows(rs, r => r.op || '')].filter(([op]) => op).sort((a, b) => b[1].length - a[1].length)
             .map(([op, ors]) => line(`<span class="st-indent">${escText(OPERATOR_NAMES[op] || op)} <span class="st-muted">${escText(op)}</span></span>`, ors, '')).join('')).join('')}
       </tbody></table></div>
-      <p class="st-hint">${total} flights. Operators come from the callsign flown (e.g. WMT for Wizz Air Malta).</p></section>
+      <p class="st-hint st-hint-right">${total} flights. Operators come from the callsign flown (e.g. WMT for Wizz Air Malta)</p></section>
     </div>`;
 }
 
@@ -4346,7 +4366,7 @@ function statsGeo(el, rows) {
   const dom = rows.filter(isDomestic).length;
   el.innerHTML = `
     <div class="st-grid st-grid-geo">
-      <section class="st-card st-card-grow"><h3>ROUTES FLOWN</h3><p class="st-hint">Line weight grows with flights on the route; circle size with airport movements. Click an airport to filter.</p><div class="st-map" id="stMap"></div></section>
+      <section class="st-card st-card-grow"><h3>ROUTES FLOWN</h3><p class="st-hint">Line weight grows with flights on the route; circle size with airport movements. Click an airport to filter</p><div class="st-map" id="stMap"></div></section>
       <section class="st-card st-card-scroll">
         <h3>DOMESTIC / INTERNATIONAL</h3>
         ${statsSplit([{ label: 'Domestic', n: dom, color: STAT_BLUE, pick: 'domestic' }, { label: 'International', n: rows.length - dom, color: STAT_ORANGE, pick: 'international' }])}
@@ -4393,18 +4413,18 @@ function statsAirports(el, rows, range) {
   const routes = [...groupRows(rows, r => [r.dep, r.arr].sort().join('-'))].map(([k, rs]) => ({ k, rs, dist: rs.find(r => r.dist != null)?.dist ?? null }));
   const byDist = rows.filter(r => r.dist != null).sort((a, b) => b.dist - a.dist);
   const apLabel = a => `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`;
-  const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} NM</td><td class="num">${fmtDay(r.date)}</td></tr>`;
+  const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} nm</td><td class="num">${fmtDay(r.date)}</td></tr>`;
   el.innerHTML = `
     <div class="st-grid st-grid-3">
       <section class="st-card st-card-scroll"><h3>AIRPORTS <span class="st-muted">${ap.size}</span></h3><div class="st-scroll"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEP</th><th class="num">ARR</th><th class="num">FIRST VISIT</th></tr></thead><tbody>
         ${[...ap].sort((a, b) => (b[1].dep + b[1].arr) - (a[1].dep + a[1].arr)).map(([a, c]) => `<tr onclick="setStatsFilter('airport', '${a}')" tabindex="0" title="Filter by this"><td>${apLabel(a)}<span class="st-sub">${escText(countryName(statsAirport(a).country))}</span></td><td class="num">${c.dep}</td><td class="num">${c.arr}</td><td class="num">${fmtDay(firstSeen[a])}</td></tr>`).join('')}
       </tbody></table></div></section>
       <section class="st-card st-card-scroll"><h3>ROUTES <span class="st-muted">${routes.length}</span></h3><div class="st-scroll"><table class="st-table"><thead><tr><th>CITY PAIR</th><th class="num">FLIGHTS</th><th class="num">DISTANCE</th></tr></thead><tbody>
-        ${routes.sort((a, b) => b.rs.length - a.rs.length || (b.dist || 0) - (a.dist || 0)).map(x => { const [a, b] = x.k.split('-'); return `<tr><td>${apLabel(a)} &ndash; ${apLabel(b)}</td><td class="num">${x.rs.length}</td><td class="num">${x.dist != null ? fmtNum(x.dist) + ' NM' : '&mdash;'}</td></tr>`; }).join('')}
+        ${routes.sort((a, b) => b.rs.length - a.rs.length || (b.dist || 0) - (a.dist || 0)).map(x => { const [a, b] = x.k.split('-'); return `<tr><td>${apLabel(a)} &ndash; ${apLabel(b)}</td><td class="num">${x.rs.length}</td><td class="num">${x.dist != null ? fmtNum(x.dist) + ' nm' : '&mdash;'}</td></tr>`; }).join('')}
       </tbody></table></div></section>
       <section class="st-card st-card-stack">
         <h3>NEW AIRPORTS IN THIS PERIOD <span class="st-muted">${newOnes.length}</span></h3>
-        ${newOnes.length ? `<ul class="st-list">${newOnes.map(a => `<li>${apLabel(a)} <span class="st-muted">${fmtDay(firstSeen[a])}</span></li>`).join('')}</ul>` : '<p class="st-hint">No first visits in this period.</p>'}
+        ${newOnes.length ? `<ul class="st-list">${newOnes.map(a => `<li>${apLabel(a)} <span class="st-muted">${fmtDay(firstSeen[a])}</span></li>`).join('')}</ul>` : '<p class="st-hint">No first visits in this period</p>'}
         <h3>LONGEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(0, 5).map(flightLine).join('')}</tbody></table></div>
         <h3>SHORTEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(-5).reverse().map(flightLine).join('')}</tbody></table></div>
       </section>
@@ -4451,17 +4471,17 @@ function statsOperations(el, rows) {
           ${stat('Average arrival delay', avg(arr, 'arr_delay') == null ? '&mdash;' : fmtSigned(avg(arr, 'arr_delay')), 'vs scheduled in-block')}
         </div>
         <h3>DEPARTURE DELAY VS SCHEDULE</h3>
-        ${dep.length ? statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`) : '<p class="st-hint">No flights with actual off-block times in this selection.</p>'}
+        ${dep.length ? statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`) : '<p class="st-hint">No flights with actual off-block times in this selection</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>DISPATCHED DELAYS <span class="st-muted">${rows.filter(r => r.delay_code).length} of ${rows.length} flights</span></h3>
         ${codes.length ? `<div class="st-scroll st-scroll-short"><table class="st-table"><thead><tr><th>CODE</th><th>REASON</th><th class="num">FLIGHTS</th></tr></thead><tbody>
-          ${codes.map(([c, rs]) => `<tr><td><b>${escText(c)}</b></td><td>${escText(rs.find(r => r.delay_desc)?.delay_desc || '')}</td><td class="num">${rs.length}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">No delays were dispatched on these flights.</p>'}
+          ${codes.map(([c, rs]) => `<tr><td><b>${escText(c)}</b></td><td>${escText(rs.find(r => r.delay_desc)?.delay_desc || '')}</td><td class="num">${rs.length}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">No delays were dispatched on these flights</p>'}
         <h3>MEL ITEMS <span class="st-muted">${rows.filter(r => r.mel).length} of ${rows.length} flights</span></h3>
-        ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'flight' : 'flights'}` }) : '<p class="st-hint">No MEL items on these flights.</p>'}
+        ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'flight' : 'flights'}` }) : '<p class="st-hint">No MEL items on these flights</p>'}
         <h3>DEPARTURE PUNCTUALITY BY AIRPORT <span class="st-muted">2+ departures, worst first</span></h3>
         ${byAirport.length ? `<div class="st-scroll st-scroll-short"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEPARTURES</th><th class="num">ON TIME</th><th class="num">AVG DELAY</th></tr></thead><tbody>
-          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet.</p>'}
+          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>SCHEDULED DEPARTURE TIME (UTC)</h3>
@@ -4506,7 +4526,7 @@ function statsLoadFuel(el, rows) {
           ${byType.map(x => `<tr onclick="setStatsFilter('type', '${escAttr(x.t)}')" tabindex="0" title="Filter by this"><td>${escText(typeName(x.t))}</td><td class="num">${x.rs.length}</td><td class="num">${fmtNum(x.pax)}</td><td class="num">${x.lf == null ? '&mdash;' : x.lf + '%'}</td>
             <td class="num">${x.perFlight == null ? '&mdash;' : fmtNum(x.perFlight) + ' kg'}</td><td class="num">${x.perHour == null ? '&mdash;' : fmtNum(x.perHour) + ' kg/h'}</td></tr>`).join('')}
         </tbody></table></div>
-        <p class="st-hint">Burn is OFP block fuel minus your actual fuel at destination, over the flight time (off-block to in-block). It needs an OFP and a PIREP with AFAD.</p>
+        <p class="st-hint">Burn is OFP block fuel minus your actual fuel at destination, over the flight time (off-block to in-block). It needs an OFP and a PIREP with AFAD</p>
       </section>
       <section class="st-card st-card-stack">
         <h3>FUEL AT DESTINATION: ACTUAL VS PLANNED</h3>
@@ -4516,8 +4536,8 @@ function statsLoadFuel(el, rows) {
             ${stat('Within ±200 kg', within + '%', `${fuel.length} flights`)}
           </div>
           ${statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
-          <p class="st-hint">Your AFAD against the OFP's planned landing fuel. Negative means you landed with less fuel than planned.</p>`
-          : `<p class="st-hint">No flights with a planned landing fuel yet. The app started saving it from SimBrief with this release, so flights whose OFP you fetch from now on will appear here.</p>`}
+          <p class="st-hint">Your AFAD against the OFP's planned landing fuel. Negative means you landed with less fuel than planned</p>`
+          : `<p class="st-hint">No flights with a planned landing fuel yet. The app started saving it from SimBrief with this release, so flights whose OFP you fetch from now on will appear here</p>`}
       </section>
     </div>`;
 }
@@ -4543,9 +4563,9 @@ function statsRecords(el, rows) {
   const lateR = by('dep_delay'), fullR = rows.filter(r => r.pax != null).sort((a, b) => (b.lf || 0) - (a.lf || 0))[0];
   const card = (label, value, note) => value == null ? '' : `<div class="st-record"><span>${label}</span><b>${value}</b><em>${note || ''}</em></div>`;
   el.innerHTML = `<section class="st-card st-card-scroll"><div class="st-scroll"><div class="st-records">
-    ${card('Longest flight', by('dist') ? fmtNum(by('dist').dist) + ' NM' : null, flightNote(by('dist')))}
+    ${card('Longest flight', by('dist') ? fmtNum(by('dist').dist) + ' nm' : null, flightNote(by('dist')))}
     ${card('Longest flight time', by('ft') ? fmtHours(by('ft').ft) : null, flightNote(by('ft')))}
-    ${card('Shortest flight', by('dist', 1) ? fmtNum(by('dist', 1).dist) + ' NM' : null, flightNote(by('dist', 1)))}
+    ${card('Shortest flight', by('dist', 1) ? fmtNum(by('dist', 1).dist) + ' nm' : null, flightNote(by('dist', 1)))}
     ${card('Busiest day', busiest ? `${busiest[1].length} ${busiest[1].length === 1 ? 'flight' : 'flights'}` : null, busiest ? `${fmtDay(busiest[0], { weekday: 'short' })} &middot; ${fmtHours(sumOf(busiest[1], 'ft'))}` : '')}
     ${card('Most flying in a day', longestDay ? fmtHours(sumOf(longestDay[1], 'ft')) : null, longestDay ? fmtDay(longestDay[0], { weekday: 'short' }) : '')}
     ${card('Longest streak', best.n ? `${best.n} ${best.n === 1 ? 'day' : 'days'} in a row` : null, best.n ? `${fmtDay(best.from)} &ndash; ${fmtDay(best.to)}` : '')}
@@ -4567,7 +4587,7 @@ const LOGBOOK_COLUMNS = [
   ['type', 'AIRCRAFT', r => escText(typeName(r.type)), r => r.type],
   ['dep', 'FROM', r => r.dep, r => r.dep],
   ['arr', 'TO', r => r.arr, r => r.arr],
-  ['dist', 'DISTANCE', r => r.dist != null ? fmtNum(r.dist) + ' NM' : '&mdash;', r => r.dist],
+  ['dist', 'DISTANCE', r => r.dist != null ? fmtNum(r.dist) + ' nm' : '&mdash;', r => r.dist],
   ['ft', 'FLIGHT TIME', r => r.ft != null ? fmtHours(r.ft) + (r.ft_est ? '*' : '') : '&mdash;', r => r.ft],
   ['air', 'AIR TIME', r => r.air != null ? fmtHours(r.air) : '&mdash;', r => r.air],
   ['dep_delay', 'DEP DELAY', r => fmtSigned(r.dep_delay), r => r.dep_delay],
@@ -4589,7 +4609,7 @@ function statsLogbook(el, rows) {
       <div class="st-scroll"><table class="st-table st-log"><thead><tr>${LOGBOOK_COLUMNS.map(([k, l]) =>
         `<th class="sortable${k === s.key ? ' sort-active' : ''}${['dist', 'ft', 'air', 'dep_delay', 'pax'].includes(k) ? ' num' : ''}" onclick="sortStatsLog('${k}')" aria-sort="${k === s.key ? (s.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">${l}<span class="sort-arrow">${k === s.key ? (s.dir === 'asc' ? '&uarr;' : '&darr;') : '&uarr;'}</span></th>`).join('')}</tr></thead>
         <tbody>${sorted.map(r => `<tr>${LOGBOOK_COLUMNS.map(([k, , show]) => `<td class="${['dist', 'ft', 'air', 'dep_delay', 'pax'].includes(k) ? 'num' : ''}">${show(r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-      ${rows.some(r => r.ft_est) ? '<p class="st-hint">* Estimated: this PIREP has no actual block times, so its scheduled block time is counted.</p>' : ''}
+      ${rows.some(r => r.ft_est) ? '<p class="st-hint">* Estimated: this PIREP has no actual block times, so its scheduled block time is counted</p>' : ''}
     </section>`;
 }
 

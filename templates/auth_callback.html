@@ -38,7 +38,7 @@
         return;
       }
       if (!access_token || !refresh_token) {
-        msg.textContent = 'Missing or expired link. Please sign in again.';
+        msg.textContent = 'Missing or expired link. Please sign in again';
         return;
       }
       try {
@@ -48,7 +48,7 @@
           body: JSON.stringify({ access_token, refresh_token, expires_in: Number(expires_in) || 3600, type }),
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Could not establish session.');
+        if (!resp.ok) throw new Error(data.error || 'Could not establish session');
         window.location.replace(data.redirect || '/app');
       } catch (err) {
         msg.textContent = err.message;

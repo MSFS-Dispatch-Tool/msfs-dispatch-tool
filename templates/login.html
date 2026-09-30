@@ -102,7 +102,7 @@
       {% if just_signed_up %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
       <p class="notice" style="margin-bottom:var(--sp-3);">Thank you for choosing to join VirtualDispatch &mdash; we're glad to have you on board!</p>
-      <p style="margin:0 0 var(--sp-5);">Just one last step: check <strong>{{ signup_email }}</strong> for a verification link before signing in. If you don't see it within a few minutes, please check your spam/junk folder too. If you run into any trouble signing in afterwards, feel free to get in touch &mdash; we're happy to help.</p>
+      <p style="margin:0 0 var(--sp-5);">Just one last step: check <strong>{{ signup_email }}</strong> for a verification link before signing in. If you don't see it within a few minutes, please check your spam/junk folder too. If you run into any trouble signing in afterwards, feel free to get in touch &mdash; we're happy to help</p>
       <form method="POST" action="{{ url_for('resend_verification_route') }}" style="text-align:center;"
             onsubmit="this.email.value = {{ signup_email|tojson }}; return true;">
         <input type="hidden" name="email">
@@ -123,7 +123,7 @@
           <input type="password" id="password" name="password" required minlength="8"
                  {% if mode == "signup" %}oninput="updateStrength()"{% endif %}>
           {% if mode == "signup" %}
-          <p class="password-hint">At least 8 characters, with a letter, a number, and a symbol.</p>
+          <p class="password-hint">At least 8 characters, with a letter, a number, and a symbol</p>
           <div class="strength-bar"><div class="strength-bar-fill" id="strengthFill"></div></div>
           <div class="strength-label" id="strengthLabel">&nbsp;</div>
           {% endif %}
