@@ -434,27 +434,125 @@
   button.sort-dir { width: 26px; justify-content: center; padding: 3px 0; font-size: 13px; }
   .back-to-list { display: none !important; }
   #listPanel { container: itinlist / inline-size; }
+  .route-map.destinations-map { max-width: none; height: 320px; }
+  .list-criteria { display: none; }
 
-  /* ---- Desktop (1200px+): every page gets wider; flight search becomes
-     two columns - filters and a map sized to the viewport on the left, the
-     flight list scrolling on its own on the right. Where the right column
-     is too narrow for the full table, each flight becomes a two-line row. */
+  /* ---- Active flight ---- */
+  .af-top { display: flex; align-items: center; gap: 10px 18px; padding: 8px 12px; flex-wrap: wrap; overflow: visible; }
+  .af-legs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .af-leg {
+    font: inherit; font-size: 12px; text-align: left; color: var(--text); cursor: pointer;
+    border: 1px solid var(--shadow-dk); background: var(--white); border-radius: var(--radius-sm); padding: 6px 10px;
+  }
+  .af-leg small { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.02em; }
+  .af-leg.done small { color: var(--green); }
+  .af-leg.on { border-color: var(--titlebar); background: var(--accent-bg); box-shadow: inset 0 0 0 1px var(--titlebar); }
+  .af-leg.on small { color: var(--titlebar); }
+  .af-steps { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+  .af-steps li { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 20px; background: var(--face-dark); }
+  .af-steps li span { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--white); border: 1px solid var(--shadow-dk); }
+  .af-steps li.done { color: var(--green); }
+  .af-steps li.done span { background: var(--green); border-color: var(--green); color: #fff; }
+  .af-steps li.now { color: #1D4ED8; background: var(--accent-bg); }
+  .af-steps li.now span { background: var(--titlebar); border-color: var(--titlebar); color: #fff; }
+  .af-status { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .af-route-names { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
+  .af-route .route-map { max-width: none; height: 240px; margin-top: 0; }
+  .af-tabbar { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--shadow-md); background: var(--face-dark); }
+  .af-tabbar button {
+    font: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; cursor: pointer;
+    border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); padding: 11px 14px;
+  }
+  .af-tabbar button:hover { color: var(--text); }
+  .af-tabbar button.on { color: var(--titlebar); border-bottom-color: var(--titlebar); background: var(--face); }
+  .af-tabbar button:focus-visible { outline: 2px solid var(--titlebar); outline-offset: -2px; }
+  .af-pane[hidden] { display: none; }
+  .af-step-title { margin: 0 0 6px; font-size: 15px; }
+  .af-step-text { margin: 0 0 12px; font-size: 13px; color: var(--text-muted); max-width: 620px; }
+  .af-step-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .af-step-end { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--shadow-md); }
+  @media (max-width: 1199px) {
+    .profile-layout { display: flex; flex-direction: column; }
+    .profile-col { display: contents; }
+    .profile-panel { order: 1; } .stats-panel { order: 2; } .destinations-panel { order: 3; } .pirep-log-panel { order: 4; }
+  }
+
+  /* ---- Desktop (1200px+): every page is wider, and the app pages fit the
+     screen with no page scrolling - boxes with long content (the flight
+     list, the PIREP log) scroll inside themselves instead. The page height
+     never goes below 560px, so a very short window still scrolls. ---- */
   @media (min-width: 1200px) {
     main, footer { max-width: 1320px; }
-    body.page-search main, body.page-search footer { max-width: 1840px; }
-    body.page-search main { padding-bottom: 16px; }
-    .search-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(480px, 40%); gap: 16px; align-items: start; }
-    .search-side { position: sticky; top: var(--sticky-top, 88px); }
-    .search-side .list-panel { display: flex; flex-direction: column; max-height: calc(100vh - var(--sticky-top, 88px) - 16px); margin-bottom: 0; }
+    body.page-search main { max-width: 1840px; }
+    body.page-fit footer { display: none; }
+    body.page-fit main {
+      display: flex; flex-direction: column; margin-top: 12px; margin-bottom: 0; padding-bottom: 16px;
+      height: max(560px, calc(100vh - var(--sticky-top, 76px))); box-sizing: border-box;
+    }
+    body.page-fit main > * { flex: none; }
+    body.page-fit .greeting { font-size: 20px; margin: 0 2px 10px; }
+    body.page-fit .notice-banner { padding: 7px 12px; margin-bottom: 10px; }
+    body.page-fit .panel { margin-bottom: 12px; }
+
+    /* Pilot profile: profile and map on the left; stats and the PIREP log
+       (scrolling in its box) on the right. */
+    .profile-layout { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    .profile-col { min-height: 0; display: flex; flex-direction: column; }
+    .profile-col > .panel { flex: none; }
+    .profile-col > .panel:last-child { margin-bottom: 0; }
+    .destinations-panel, .pirep-log-panel { flex: 1 1 auto !important; min-height: 0; display: flex; flex-direction: column; }
+    .destinations-panel > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .destinations-panel .route-map.destinations-map { flex: 1 1 auto; min-height: 200px; height: auto; }
+    .pirep-log-panel > .panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+    /* Active flight: route map and schedule on the left, the tabs on the
+       right; a long tab scrolls inside its box. */
+    .af-cols { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    .af-route, .af-tabs { min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; }
+    .af-route > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .af-route .route-map { flex: 1 1 auto; min-height: 160px; height: auto; }
+    .af-route .kv { flex: none; margin: 8px 0 0 !important; }
+    .af-route .kv td { padding: 4px 0; }
+    .af-tabbar { flex: none; }
+    .af-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+    /* Flight search: filters, result count and map on the left; the list on
+       the right, its top level with the filters. The map takes whatever
+       height is left. */
+    .search-layout { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(480px, 40%); gap: 16px; }
+    .search-main, .search-side { min-height: 0; display: flex; flex-direction: column; }
+    .search-main > .panel { flex: none; }
+    .search-main > #mapPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; }
+    #mapPanel > .map-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding-top: 10px; padding-bottom: 10px; }
+    #mapPanel .selection-map-wrap { flex: 1 1 auto; min-height: 200px; }
+    #mapPanel .selection-map { height: 100%; }
+    #mapPanel .map-legend { flex: none; margin-top: 8px; gap: 4px 14px; font-size: 10.5px; }
+    #mapPanel .map-hint { display: none; }
+    /* The result count and criteria chips join the list's box; the map's
+       click-mode buttons move into its header and the weather switches
+       float over the map. */
+    .criteria-panel { display: none; }
+    .list-criteria { display: flex; flex: none; padding: 8px 16px; border-bottom: 1px solid var(--shadow-md); }
+    .result-count strong { font-size: 20px; }
+    #aircraftNote { display: none; }
+    #mapPanel .map-title { visibility: hidden; }
+    #mapPanel .map-toolbar { position: absolute; top: 6px; left: 14px; right: 14px; margin: 0; }
+    #mapPanel .wx-toolbar {
+      top: 60px; right: 24px; z-index: 800; max-width: 480px; padding: 6px 10px; gap: 4px 12px;
+      background: rgba(255,255,255,0.94); border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); box-shadow: 0 2px 6px rgba(16,24,40,0.12);
+    }
+    .search-side .list-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; height: 100%; box-sizing: border-box; }
     .search-side .list-panel > .panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-    /* Compact left column: the search buttons and the weather switches move
-       up into their panel headers, leaving the height to the map. */
+    /* Compact filters: the search buttons and the weather switches move up
+       into their panel headers. */
     .params-panel, #mapPanel { position: relative; }
     .params-panel .params-actions { position: absolute; top: 5px; right: 12px; margin: 0; }
     .params-panel .params-actions button { padding: 5px 12px; font-size: 12px; }
+    .params-panel .panel-body { padding-top: 10px; padding-bottom: 10px; }
     #searchRequirementNote { display: none; }
-    .params-grid { margin-bottom: 0; }
-    #mapPanel .wx-toolbar { position: absolute; top: 9px; right: 14px; margin: 0; }
+    .params-grid { margin-bottom: 0; gap: 8px 16px; }
+    .params-grid .field label { margin-bottom: 3px; }
+    #mapPanel .wx-toolbar { position: absolute; margin: 0; }
     .list-panel.has-open .back-to-list { display: inline-flex !important; }
     .list-panel.has-open .sort-by { display: none !important; }
     .list-panel.has-open table.itin-list tr.itin-row:not(.expanded) { display: none; }
@@ -559,6 +657,8 @@
 .pirep-form { margin-top:10px; padding:10px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
 .pirep-form label { display:flex; flex-direction:column; gap:2px; font-size:11.5px; }
 .pirep-form input { width:110px; font-family: inherit; }
+.pirep-form label.checkbox-row { flex-direction: row; align-items: flex-start; gap: 8px; flex-basis: 100%; font-size: 12.5px; }
+.pirep-form label.checkbox-row input { width: auto; margin-top: 2px; }
 
 .loadsheet-form { margin-top:10px; padding:10px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); }
 .loadsheet-form .fields-row { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-top:8px; }
@@ -611,9 +711,8 @@
   <nav class="app-nav" aria-label="App sections">
     <button class="app-nav-btn" id="navSearch" type="button" onclick="goHome()">
       <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M4 11.5L12 4L20 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M6 10V20H18V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 20V14H14V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2.2"/>
+        <path d="M15.5 15.5L20.5 20.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
       </svg>
       Flight search
     </button>
@@ -1074,15 +1173,16 @@ async function renderSearchUI() {
   searchStatus = 'idle';
   expandedKey = null; expandedDetailData = null; expandedDetailKey = null;
   hoverKey = null; pinnedKey = null;
+  setPageFit(true);
   const settingsPromise = fetch('/settings').then(r => r.json()).catch(() => null);
   const activeFlight = loadActiveFlight();
   const showGreeting = !(activeFlight && isFlightLive(activeFlight));
 
   document.getElementById('mainContent').innerHTML = `
-    <div class="search-layout">
-    <div class="search-main">
     ${showGreeting ? '<h1 class="greeting" id="greeting"></h1>' : ''}
     ${simbriefNoticeHtml()}
+    <div class="search-layout">
+    <div class="search-main">
     <div class="panel params-panel">
       <div class="panel-header">SEARCH PARAMETERS</div>
       <div class="panel-body">
@@ -1115,7 +1215,7 @@ async function renderSearchUI() {
           </div>
           <div class="field">
             <label for="aircraftFilter">AIRCRAFT</label>
-            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any">
+            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any" title="Feature coming soon">
             <p class="field-note" id="aircraftNote">Feature coming soon</p>
           </div>
         </div>
@@ -1127,12 +1227,12 @@ async function renderSearchUI() {
         </div>
       </div>
     </div>
-    <div class="panel">
+    <div class="panel criteria-panel">
       <div class="criteria-bar" id="criteriaBar"></div>
     </div>
     <div class="panel" id="mapPanel">
       <div class="panel-header">
-        <span>ROUTE MAP</span>
+        <span class="map-title">ROUTE MAP</span>
         <button class="ghost small map-toggle-btn" type="button" id="mapToggleBtn" aria-controls="mapBody" aria-expanded="false" onclick="toggleMapOnMobile()">SHOW MAP</button>
       </div>
       <div class="panel-body map-body" id="mapBody">
@@ -1501,9 +1601,11 @@ function activeCriteria() {
   return list;
 }
 
+// Drawn twice: as its own bar (phones, tablets) and inside the list's box
+// (desktop, where the list sits beside the filters); CSS shows one.
 function renderCriteriaBar(visibleCount) {
-  const bar = document.getElementById('criteriaBar');
-  if (!bar) return;
+  const bars = ['criteriaBar', 'listCriteria'].map(id => document.getElementById(id)).filter(Boolean);
+  if (!bars.length) return;
   let countHtml;
   if (searchStatus === 'idle') countHtml = `<div class="result-count muted">NO AIRPORT SELECTED</div>`;
   else if (searchStatus === 'loading') countHtml = `<div class="result-count muted"><span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;</div>`;
@@ -1515,10 +1617,11 @@ function renderCriteriaBar(visibleCount) {
     ? crit.map((c, i) => `${c.id === 'destination' && searchState.origin ? `<button class="chip-swap" type="button" onclick="swapAirports()" title="Swap departure and destination" aria-label="Swap departure and destination">&#8644;</button>` : ''}<span class="crit-chip ${c.cls || ''}"><span class="k">${c.k}</span>${c.v}<button type="button" onclick="${c.clear}" aria-label="Remove ${c.k.toLowerCase()} ${escAttr(c.v)}" title="Remove">&times;</button></span>`).join('')
     : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map.</span>`;
 
-  bar.innerHTML = `
+  const html = `
     <div aria-live="polite" aria-atomic="true">${countHtml}</div>
     <div class="crit-chips">${chips}</div>
     ${crit.length ? `<button class="ghost small" type="button" onclick="resetSearch()">RESET ALL</button>` : ''}`;
+  bars.forEach(bar => { bar.innerHTML = html; });
 }
 
 // Explains an empty result and offers the single changes that would fix
@@ -1564,8 +1667,8 @@ function networkOriginCount(icao) {
 // Single render pass for everything that depends on the search state.
 function renderSelection({ fit }) {
   const visible = searchStatus === 'ready' ? filteredItineraries() : [];
-  renderCriteriaBar(visible.length);
   renderListPanel(visible);
+  renderCriteriaBar(visible.length);
   sizeSearchLayout();   // the criteria chips can wrap onto more lines
   renderSelectionMap({ fit });
   applyMapPanelOpenState();
@@ -1660,6 +1763,7 @@ function renderListPanel(visible) {
   panel.innerHTML = `
     <div class="panel list-panel" id="listPanelInner">
       <div class="panel-header"><span>MATCHING ITINERARIES</span>${tools}</div>
+      <div class="criteria-bar list-criteria" id="listCriteria"></div>
       <div class="panel-body" id="listScroll">${body}</div>
     </div>`;
   const tbody = document.getElementById('itinTableBody');
@@ -1837,26 +1941,11 @@ function selectionMapFullyInView() {
 // ---- Desktop layout ----
 const WIDE_MQ = window.matchMedia('(min-width: 1200px)');
 
-// Two-column flight search: the list column sticks under the header, and
-// the map panel is sized so that, scrolled into view, all of it fits the
-// screen below the header.
+// Keeps --sticky-top (header height plus a gap) current: desktop pages
+// size themselves to the screen below the header.
 function sizeSearchLayout() {
   const header = document.querySelector('.app-header');
-  const stickyTop = (header ? header.offsetHeight : 0) + 12;
-  document.documentElement.style.setProperty('--sticky-top', stickyTop + 'px');
-  const el = document.getElementById('selectionMap');
-  const panel = document.getElementById('mapPanel');
-  if (!el || !panel) return;
-  let height = '';
-  if (WIDE_MQ.matches) {
-    const mapRect = el.getBoundingClientRect(), panelRect = panel.getBoundingClientRect();
-    const chrome = (mapRect.top - panelRect.top) + (panelRect.bottom - mapRect.bottom);
-    height = Math.max(360, Math.floor(window.innerHeight - stickyTop - 16 - chrome)) + 'px';
-  }
-  if (el.style.height !== height) {
-    el.style.height = height;
-    if (selMap) selMap.invalidateSize();
-  }
+  document.documentElement.style.setProperty('--sticky-top', ((header ? header.offsetHeight : 0) + 12) + 'px');
 }
 
 let layoutRaf = 0;
@@ -2189,6 +2278,12 @@ function ensureSelectionMap() {
   selMap.on('popupopen', () => el.classList.add('popup-open'));
   selMap.on('popupclose', () => el.classList.remove('popup-open'));
   el.classList.toggle('pick-direct', mapPickMode !== 'ask');
+  // On desktop the map's height follows the space left on screen (the
+  // greeting arriving, chips wrapping); Leaflet must be told when it changes.
+  if (window.ResizeObserver) {
+    const map = selMap;
+    new ResizeObserver(() => { if (map === selMap) map.invalidateSize(); }).observe(el);
+  }
   return selMap;
 }
 
@@ -2620,7 +2715,10 @@ function initRouteMap(id, leg) {
   L.marker([a.lat, a.lon]).addTo(map).bindTooltip(a.icao, { permanent: true, direction: 'top', offset: [0, -8] });
   L.marker([b.lat, b.lon]).addTo(map).bindTooltip(b.icao, { permanent: true, direction: 'top', offset: [0, -8] });
   L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#2563EB', weight: 2, dashArray: '5,5' }).addTo(map);
-  map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26] });
+  const fit = () => map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26], animate: false });
+  fit();
+  // Some route maps are sized by the page layout: keep the route framed.
+  if (window.ResizeObserver) new ResizeObserver(() => { if (el.isConnected) { map.invalidateSize(); fit(); } }).observe(el);
 }
 
 function legLmcDgBlock(flight) {
@@ -2633,26 +2731,69 @@ function legLmcDgBlock(flight) {
   return `<p class="placeholder-text" style="margin-top:8px; margin-bottom:0;">${lmc}<br>${dg}</p>`;
 }
 
-function saveAndRender(flight) { saveActiveFlight(flight); renderRecap(flight); }
+// A workflow step changed: show the leg now in progress, on its next step.
+function saveAndRender(flight) {
+  recapLegIndex = null;
+  recapTab = 'next';
+  saveActiveFlight(flight);
+  renderRecap(flight);
+}
 
-function renderRecap(flight) {
-  setAppNav('flight');
-  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, loadsheet:null, pirep:null}));
-  const completedBefore = (index) => flight.leg_status.slice(0, index).every(s => s.status === 'done');
-  const legRows = flight.legs.map((leg, i) => {
-    const state = flight.leg_state[i];
-    const done = flight.leg_status[i].status === 'done';
-    const current = !done && completedBefore(i);
-    const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
-    let action = '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>';
-    if (done) action = '<span class="status-chip status-ok">PIREP FILED — COMPLETE</span>';
-    else if (current && state.simbrief === 'not_sent') action = `<button class="action small" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
-    else if (current && state.simbrief === 'sent') action = `<span class="status-chip status-warn">SENT TO SIMBRIEF — AWAITING OFP</span> <button class="action small" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button> <button class="action small" onclick="prepareLeg(${i})">RE-SEND</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
-    else if (current && !state.loadsheet_signed) action = `<span class="status-chip status-ok">OFP RECEIVED</span> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
-    else if (current) action = `<span class="status-chip status-ok">LOADSHEET SIGNED</span> <button class="action small" onclick="showPirep(${i})">FILE PIREP</button> <button class="action small danger" onclick="skipFlight()">SKIP LEG</button>`;
+// Active flight page: leg tabs, progress and the leg's route + schedule,
+// with the rest in tabs (NEXT STEP, BRIEFING, WEATHER, SIMBRIEF OFP).
+// Which leg and tab are shown survives re-renders of the same flight.
+let recapLegIndex = null;     // null = the leg in progress
+let recapTab = 'next';
+let recapFlightKey = '';
+const RECAP_TABS = [['next', 'NEXT STEP'], ['briefing', 'BRIEFING'], ['weather', 'WEATHER'], ['ofp', 'SIMBRIEF OFP']];
 
-    const ofp = state.ofp || {};
-    const loadsheetForm = current && state.simbrief === 'available' && !state.loadsheet_signed ? `
+function legProgress(flight, i) {
+  const done = flight.leg_status[i].status === 'done';
+  const current = !done && flight.leg_status.slice(0, i).every(s => s.status === 'done');
+  return { done, current };
+}
+
+function legStepsHtml(state, done) {
+  const steps = [
+    ['SIMBRIEF', done || state.simbrief !== 'not_sent'],
+    ['OFP', done || state.simbrief === 'available'],
+    ['LOADSHEET', done || state.loadsheet_signed],
+    ['PIREP', done || !!state.pirep],
+  ];
+  const nowIndex = steps.findIndex(([, ok]) => !ok);
+  return `<ol class="af-steps" aria-label="Leg progress">${steps.map(([label, ok], k) =>
+    `<li class="${ok ? 'done' : k === nowIndex ? 'now' : ''}"${k === nowIndex ? ' aria-current="step"' : ''}><span aria-hidden="true">${ok ? '&#10003;' : k + 1}</span>${label}</li>`).join('')}</ol>`;
+}
+
+function recapNextStepHtml(flight, i, allDone) {
+  const leg = flight.legs[i];
+  const state = flight.leg_state[i];
+  const { done, current } = legProgress(flight, i);
+  const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
+  const ofp = state.ofp || {};
+  const loadsheetLine = state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : '';
+  const pirepLine = state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : '';
+  const mismatch = state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : '';
+
+  if (done) {
+    return `<h3 class="af-step-title">Leg completed</h3><p class="af-step-text">The PIREP for this leg has been filed.</p>${loadsheetLine}${pirepLine}
+      ${allDone ? `<div class="af-step-end"><p class="af-step-text">ALL LEGS COMPLETED THROUGH PIREP. Start a new flight to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button></div>` : ''}`;
+  }
+  if (!current) {
+    return `<h3 class="af-step-title">Waiting for the previous leg</h3><p class="af-step-text">This leg opens once the PIREP for leg ${i} has been filed.</p>`;
+  }
+  if (state.simbrief === 'not_sent') {
+    return `<h3 class="af-step-title">Plan the flight on SimBrief</h3>
+      <p class="af-step-text">Send this leg to SimBrief: the flight number, callsign, aircraft, cost index, passengers and expected off-block time are filled in for you. Generate the OFP there, then come back to fetch it.</p>
+      <button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
+  }
+  if (state.simbrief === 'sent') {
+    return `<h3 class="af-step-title">Waiting for the OFP</h3>
+      <p class="af-step-text">Generate the OFP in the SimBrief tab that opened, then fetch it here.</p>
+      <div class="af-step-actions"><button class="action" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button><button class="ghost" type="button" onclick="prepareLeg(${i})">RE-SEND TO SIMBRIEF</button></div>`;
+  }
+  if (!state.loadsheet_signed) {
+    return `<h3 class="af-step-title">Sign the loadsheet</h3>${mismatch}
       <div class="loadsheet-form" id="loadsheet-${i}">
         <table class="kv" style="margin-bottom:0;">
           <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
@@ -2667,9 +2808,9 @@ function renderRecap(flight) {
           <label>CREW<input id="ls-crew-${i}" type="number" min="0" step="1" required></label>
           <button class="action small" onclick="submitLoadsheet(${i})">SIGN LOADSHEET</button>
         </div>
-      </div>` : '';
-
-    const pirepForm = current && state.loadsheet_signed && !state.pirep ? `
+      </div>`;
+  }
+  return `<h3 class="af-step-title">Fly, then file the PIREP</h3>${loadsheetLine}
       <div class="pirep-form" id="pirep-${i}">
         ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)')}
         ${timeFieldHtml(`atot-${i}`, 'ATOT (ZULU, TAKEOFF)')}
@@ -2678,35 +2819,87 @@ function renderRecap(flight) {
         <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
         <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log.</label>
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
-      </div>` : '';
+      </div>`;
+}
 
-    const mapId = `map-recap-${i}`;
-    return `<div class="leg-status-row ${done ? 'done' : current ? 'current' : ''}" style="display:block;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-        <div>
-          <strong>LEG ${i + 1} — ${leg.flight_number} — ${flight.callsigns ? flight.callsigns[i] : ''}</strong><br>
-          <span class="placeholder-text">${leg.departure_info.icao} → ${leg.arrival_info.icao}</span>
-        </div>
-        <div>${action}</div>
-      </div>
-      ${routeMapDiv(leg, mapId)}
-      ${legScheduleTable(leg)}
-      ${legLoadTable(leg)}
-      ${legWeatherBlock(leg)}
-      ${legOfpTable(state.ofp)}
-      ${state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr((state.ofp||{}).icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : ''}
-      ${legDelayMelBlock(leg)}
-      ${state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : ''}
-      ${loadsheetForm}
-      ${state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : ''}
-      ${pirepForm}
-    </div>`;
-  }).join('');
+function renderRecap(flight) {
+  setAppNav('flight');
+  setPageFit(true);
+  if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, loadsheet:null, pirep:null}));
+  const flightKey = flight.legs.map(l => l.flight_number).join(',');
+  if (flightKey !== recapFlightKey) { recapFlightKey = flightKey; recapLegIndex = null; recapTab = 'next'; }
   const allDone = flight.leg_status.every(s => s.status === 'done');
+  const inProgress = flight.legs.findIndex((_, k) => legProgress(flight, k).current);
+  const shownDefault = inProgress >= 0 ? inProgress : flight.legs.length - 1;
+  const i = recapLegIndex != null && recapLegIndex < flight.legs.length ? recapLegIndex : shownDefault;
+  const leg = flight.legs[i];
+  const state = flight.leg_state[i];
+  const { done, current } = legProgress(flight, i);
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+
+  const legTabs = flight.legs.map((l, k) => {
+    const pr = legProgress(flight, k);
+    const status = pr.done ? 'COMPLETE' : pr.current ? 'IN PROGRESS' : 'NEXT';
+    return `<button type="button" class="af-leg${k === i ? ' on' : ''}${pr.done ? ' done' : ''}" onclick="selectRecapLeg(${k})" aria-pressed="${k === i}">
+      <b>LEG ${k + 1}</b> ${l.flight_number} &middot; ${l.departure_info.icao} &rarr; ${l.arrival_info.icao}<small>${status}</small></button>`;
+  }).join('');
+  const statusChip = done ? '<span class="status-chip status-ok">PIREP FILED &mdash; COMPLETE</span>'
+    : !current ? '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>'
+    : state.simbrief === 'not_sent' ? '<span class="status-chip status-warn">READY TO PLAN</span>'
+    : state.simbrief === 'sent' ? '<span class="status-chip status-warn">SENT TO SIMBRIEF &mdash; AWAITING OFP</span>'
+    : !state.loadsheet_signed ? '<span class="status-chip status-ok">OFP RECEIVED</span>'
+    : '<span class="status-chip status-ok">LOADSHEET SIGNED</span>';
+  const skip = current ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
+
+  const briefing = `${legLoadTable(leg)}${legDelayMelBlock(leg)}${legLmcDgBlock(flight)}`;
+  const ofpBody = state.ofp
+    ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP.</div>` : '')
+    : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief.</div>`;
+  const panes = { next: recapNextStepHtml(flight, i, allDone), briefing, weather: legWeatherBlock(leg), ofp: ofpBody };
+  const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : 'next';
+
   const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
   activeSyncNotice = '';
-  document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
-  flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
+  document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}
+    <div class="panel af-top">
+      <div class="af-legs">${legTabs}</div>
+      ${legStepsHtml(state, done)}
+      <div class="af-status">${statusChip}${skip}</div>
+    </div>
+    <div class="af-cols">
+      <div class="panel af-route">
+        <div class="panel-header"><span>${leg.flight_number}${callsign ? ' &mdash; ' + callsign : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}</span></div>
+        <div class="panel-body">
+          <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
+          ${routeMapDiv(leg, `map-recap-${i}`)}
+          ${legScheduleTable(leg)}
+        </div>
+      </div>
+      <div class="panel af-tabs">
+        <div class="af-tabbar" role="tablist">${RECAP_TABS.map(([k, label]) =>
+          `<button type="button" role="tab" id="af-tab-${k}" aria-controls="af-pane-${k}" aria-selected="${k === tab}" class="${k === tab ? 'on' : ''}" onclick="selectRecapTab('${k}')">${label}</button>`).join('')}</div>
+        ${RECAP_TABS.map(([k]) => `<div class="panel-body af-pane" role="tabpanel" id="af-pane-${k}" aria-labelledby="af-tab-${k}"${k === tab ? '' : ' hidden'}>${panes[k]}</div>`).join('')}
+      </div>
+    </div>`;
+  initRouteMap(`map-recap-${i}`, leg);
+}
+
+function selectRecapLeg(index) {
+  recapLegIndex = index;
+  const flight = loadActiveFlight();
+  if (flight) renderRecap(flight);
+}
+
+// Switching tabs only shows/hides panes, so half-typed forms survive.
+function selectRecapTab(key) {
+  recapTab = key;
+  RECAP_TABS.forEach(([k]) => {
+    const btn = document.getElementById('af-tab-' + k), pane = document.getElementById('af-pane-' + k);
+    if (!btn || !pane) return;
+    btn.classList.toggle('on', k === key);
+    btn.setAttribute('aria-selected', k === key ? 'true' : 'false');
+    pane.hidden = k !== key;
+  });
 }
 
 const SIMBRIEF_NOTICE_DISMISSED_KEY = 'simdispatch_simbrief_aircraft_notice_dismissed';
@@ -2833,9 +3026,6 @@ function readTimeField(id) {
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 
-function showPirep(index) {
-  const el = document.getElementById('pirep-' + index); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
-}
 async function submitPirep(index) {
   const aobt = readTimeField('aobt-' + index);
   const atot = readTimeField('atot-' + index);
@@ -2896,6 +3086,14 @@ function setAppNav(section) {
     if (key === section) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
   document.body.classList.toggle('page-search', section === 'search');
+  setPageFit(false);
+}
+
+// Desktop pages that fit the screen without page scrolling (see the
+// page-fit CSS); each page opts in after setAppNav.
+function setPageFit(on) {
+  document.body.classList.toggle('page-fit', on);
+  if (on) sizeSearchLayout();
 }
 
 function goActiveFlight() {
@@ -2962,8 +3160,11 @@ async function renderUserPage() {
   const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ');
   const dobLine = p.birth_date ? `DoB: ${isoToDisplayDate(p.birth_date)}${age != null ? ` (${age}yrs)` : ''}` : '';
 
+  setPageFit(true);
   document.getElementById('mainContent').innerHTML = `
-    <div class="panel">
+    <div class="profile-layout">
+    <div class="profile-col">
+    <div class="panel profile-panel">
       <div class="panel-header">
         PILOT PROFILE
         <button class="action small" onclick="renderAccountSettings()">ACCOUNT SETTINGS</button>
@@ -2980,7 +3181,17 @@ async function renderUserPage() {
       </div>
     </div>
 
-    <div class="panel" style="margin-top:14px;">
+    <div class="panel destinations-panel">
+      <div class="panel-header">DESTINATIONS REACHED</div>
+      <div class="panel-body">
+        <div id="destinationsMap" class="route-map destinations-map"></div>
+        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="profile-col">
+    <div class="panel stats-panel">
       <div class="panel-header">FLYING STATS</div>
       <div class="panel-body">
         <table class="kv">
@@ -2991,17 +3202,11 @@ async function renderUserPage() {
       </div>
     </div>
 
-    <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">DESTINATIONS REACHED</div>
-      <div class="panel-body">
-        <div id="destinationsMap" class="route-map" style="max-width:none; height:320px;"></div>
-        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-top:14px;">
+    <div class="panel pirep-log-panel">
       <div class="panel-header">PIREP LOG</div>
       <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
+    </div>
+    </div>
     </div>`;
 
   renderMonthlyChart(stats.monthly || []);
