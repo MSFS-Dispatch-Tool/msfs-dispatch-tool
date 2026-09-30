@@ -17,7 +17,7 @@
       <img class="hero-logo for-light" src="{{ url_for('static', filename='img/logo-light.png') }}" alt="VirtualDispatch" width="883" height="386">
       <img class="hero-logo for-dark" src="{{ url_for('static', filename='img/logo-dark.png') }}" alt="" width="883" height="386">
     </h1>
-    <p class="lead">Pick your route. Then answer for it: real weather, an equipment defect to work around, a loadsheet you sign before departure. This is simulation pushed one step further. Not paperwork. Responsibility.</p>
+    <p class="lead">Pick your route, then answer for it: real weather, an equipment defect to work around, last-minute passengers or dangerous cargo, a loadsheet to sign before departure and a PIREP to file at your destination. VirtualDispatch brings these real-life scenarios to your flights to push you one step further.</p>
     <div class="actions">
       {% if signups_open %}<a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>{% else %}<a href="{{ url_for('login') }}" class="btn btn-primary">Sign in</a>{% endif %}
       <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
@@ -49,140 +49,116 @@
   })();
 </script>
 
-{% set shots = {
-  'map': ('map.webp', 'Flight selection: search, filters and the route map'),
-  'weather': ('weather.webp', 'Route map with flight categories and SIGMETs'),
-  'briefing': ('briefing.webp', 'Itinerary briefing: schedule, load, weather, delays and MELs'),
-  'flight': ('flight.webp', 'Active flight: loadsheet, SimBrief and PIREP'),
-  'profile': ('profile.webp', 'Pilot profile: PIREP log, flying stats and destinations'),
-  'settings': ('settings.webp', 'Account settings: the aircraft you fly and your dispatch complications'),
-  'signup': ('signup.webp', 'Create your account'),
+{# Inline icons (24px, stroke). #}
+{% set icons = {
+  'intro': '<circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/>',
+  'routes': '<circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/>',
+  'defects': '<path d="M10.3 3.9 1.8 18.3a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  'simbrief': '<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>',
+  'gate': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+  'paperwork': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/>',
+  'stats': '<path d="M3 3v18h18"/><path d="M7 16V11"/><path d="M12 16V7"/><path d="M17 16v-3"/>',
+  'badge': '<circle cx="12" cy="8" r="6"/><path d="M15.5 13.3 17 22l-5-3-5 3 1.5-8.7"/>',
+  'airlines': '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+  'schedule': '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>',
+  'sim': '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="m7 10 3-3 3 3 4-4"/>',
+  'addons': '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
 } %}
-{# Inline copy of a step's screenshot, shown instead of the pinned frame on
-   narrow screens. The table is passed in: macros don't see block variables. #}
-{% macro step_shot(table, key) -%}
-  <img class="step-shot" src="{{ url_for('static', filename='img/how/' ~ table[key][0]) }}" alt="{{ table[key][1] }}" loading="lazy">
+{% macro icon(name) -%}
+<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ icons[name]|safe }}</svg>
 {%- endmacro %}
 
-<section class="how" id="how-it-works">
-  <div class="container">
-    <div class="how-intro">
-      <span class="eyebrow">How it works</span>
-      <h2>From a blank map to a proper briefing</h2>
-      <p>What VirtualDispatch is, what it does today, where it's going, and how to fly your first leg.</p>
+{# How it works: one continuous scroll. Each step pins a full-screen
+   screenshot of the app behind a translucent card (see public.css .tour). #}
+{% set tour = [
+  {'key': 'intro', 'shot': 'tour-intro.webp', 'eyebrow': 'How it works', 'title': 'Your dispatch desk for the sim',
+   'body': ['VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure.',
+            'The goal is simple: every leg should start with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft.']},
+  {'key': 'routes', 'shot': 'tour-routes.webp', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
+   'points': ['Filter by weather, SIGMETs, departure and arrival times, and one- or multi-leg flights',
+              'Schedules from multiple real-world airlines',
+              'Passenger numbers built on real-world data, not guesswork: real airline load factors applied to each aircraft&rsquo;s actual seat count, full flights included. Cargo and cost index are generated automatically to match',
+              'Smart aircraft assignment based on your installed add-ons and each carrier&rsquo;s fleet']},
+  {'key': 'defects', 'shot': 'tour-defects.webp', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
+   'points': ['Real-world, aircraft-specific MELs and CDLs that limit your flight&rsquo;s performance and add an extra layer of realism and challenge',
+              'A realistic delay system based on real-world delay codes and linked to the flight&rsquo;s conditions, such as a de-icing delay caused by the weather or an airport closure due to thunderstorms',
+              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
+  {'key': 'simbrief', 'shot': 'tour-simbrief.webp', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
+   'points': ['Full SimBrief integration: we compile the flight plan for you, including all the dispatch notes. All you have to do is select your favorite SimBrief aircraft profile and make sure everything is to your liking',
+              'VirtualDispatch fetches all the necessary information from your SimBrief OFP and automatically builds statistics and data on your flights from it']},
+  {'key': 'gate', 'shot': 'tour-gate.webp', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
+   'points': ['No two flights are alike. Every leg is a new challenge: no-shows, extra passengers, overbooking, extra baggage, dangerous goods on board',
+              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
+  {'key': 'paperwork', 'shot': 'tour-paperwork.webp', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
+   'points': ['Your flight, your responsibility. Sign the loadsheet and make sure the fuel quantity is right and the performance is OK for departure',
+              'Try to be on time: every delay is recorded in your logbook',
+              'Once you&rsquo;ve arrived, make sure all the relevant paperwork is signed and get ready for the next flight']},
+  {'key': 'stats', 'shot': 'tour-stats.webp', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
+   'points': ['Review all your flights, PIREPs and saved information',
+              'Deep analytics, highly customizable, with filters on every view',
+              'Get an in-depth understanding of your sim career',
+              'Full control over your data: download everything you&rsquo;ve tracked as a CSV whenever you want, or delete the flights you don&rsquo;t want in your statistics']},
+] %}
+
+<section class="tour" id="how-it-works" aria-label="How it works">
+  <div class="tour-stage">
+    {% for step in tour %}
+    <img class="tour-shot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot) }}" alt="" {% if not loop.first %}loading="lazy"{% endif %} width="1920" height="1080">
+    {% endfor %}
+    <div class="tour-scrim"></div>
+    <nav class="tour-rail" aria-label="Steps">
+      {% for step in tour %}
+      <button type="button" class="tour-dot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" aria-label="{{ step.eyebrow }}"><span class="tour-dot-label">{{ step.eyebrow }}</span></button>
+      {% endfor %}
+    </nav>
+  </div>
+  <div class="tour-steps">
+    {% for step in tour %}
+    <div class="tour-step{% if loop.first %} tour-step-intro{% endif %}" id="tour-{{ step.key }}" data-step="{{ loop.index0 }}">
+      <article class="tour-card">
+        <div class="tour-card-head">
+          <span class="tour-icon">{{ icon(step.key) }}</span>
+          <span class="tour-eyebrow">{% if not loop.first %}<span class="tour-num">{{ '%02d' % loop.index0 }}</span>{% endif %}{{ step.eyebrow }}</span>
+        </div>
+        <h2 class="tour-title">{{ step.title }}</h2>
+        {% for para in step.body or [] %}<p class="tour-lead">{{ para|safe }}</p>{% endfor %}
+        {% if step.points %}<div class="tour-points">{% for point in step.points %}<p>{{ point|safe }}</p>{% endfor %}</div>{% endif %}
+      </article>
     </div>
+    {% endfor %}
+  </div>
+</section>
 
-    <div class="story">
-      <div class="story-steps">
+<section class="cta-band">
+  <div class="container cta-band-inner">
+    <h2>Not convinced yet?</h2>
+    <p>Create an account and try it for free.</p>
+    <a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>
+  </div>
+</section>
 
-        <div class="story-chapter">
-          <div class="story-step" data-shot="map">
-            <span class="eyebrow">What it is</span>
-            <h3>A dispatch desk for your simulator</h3>
-            <p>VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by Ryanair, easyJet or Wizz Air, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure.</p>
-            <p>The goal is simple: every leg should start with decisions to make, not a blank map &mdash; so flying the sim feels like doing the job, not just moving the aircraft.</p>
-            {{ step_shot(shots, 'map') }}
-          </div>
-        </div>
-
-        <div class="story-chapter">
-          <div class="story-step" data-shot="map">
-            <span class="eyebrow">Key features</span>
-            <h3>Real airline networks, on a map</h3>
-            <p>Over 13,000 real scheduled routes from Ryanair, easyJet and Wizz Air. Search by airport or pick one straight on the route map, then narrow by airline, sector legs, or domestic and international flights.</p>
-            {{ step_shot(shots, 'map') }}
-          </div>
-          <div class="story-step" data-shot="weather">
-            <h3>Live aviation weather</h3>
-            <p>Current METARs and TAFs for your departure and destination, plus optional map layers: every airport's flight category (VFR to LIFR) and active SIGMETs for thunderstorms, turbulence, icing and more.</p>
-            {{ step_shot(shots, 'weather') }}
-          </div>
-          <div class="story-step" data-shot="briefing">
-            <h3>A real dispatch briefing</h3>
-            <ul class="story-list">
-              <li>Schedule<span>Off-block, take-off, landing and in-block times, scheduled and expected.</span></li>
-              <li>Aircraft and load<span>An aircraft from the fleet you fly, expected passengers, cargo and cost index.</span></li>
-              <li>Delays and MELs<span>Realistic delay codes and equipment deferrals with real dispatch consequences &mdash; weather delays only when the weather supports them.</span></li>
-            </ul>
-            {{ step_shot(shots, 'briefing') }}
-          </div>
-          <div class="story-step" data-shot="flight">
-            <h3>Loadsheet and SimBrief handoff</h3>
-            <p>Sign the loadsheet, including last-minute changes and dangerous goods, send the flight to SimBrief in one click, and fetch the OFP back &mdash; with a warning if its aircraft doesn't match the one you were assigned.</p>
-            {{ step_shot(shots, 'flight') }}
-          </div>
-          <div class="story-step" data-shot="profile">
-            <h3>PIREP log and flying stats</h3>
-            <p>File a PIREP at the end of each leg. Your log, flight hours, monthly activity and a map of every destination you've reached build up as you fly.</p>
-            {{ step_shot(shots, 'profile') }}
-          </div>
-          <div class="story-step" data-shot="settings">
-            <h3>Make it yours</h3>
-            <p>Set your preferred base and the aircraft you fly, and switch each kind of complication &mdash; delays, last-minute changes, MELs &mdash; on or off to match how much of a challenge you want.</p>
-            {{ step_shot(shots, 'settings') }}
-          </div>
-        </div>
-
-        <div class="story-chapter">
-          <div class="story-step" data-shot="roadmap">
-            <span class="eyebrow">What's next</span>
-            <h3>On the roadmap</h3>
-            <ul class="story-list planned">
-              <li>More airlines and fleets<span>New carriers and aircraft families beyond Ryanair, easyJet and Wizz Air.</span></li>
-              <li>Deeper MEL libraries<span>More equipment items per aircraft family, with more realistic dispatch consequences.</span></li>
-              <li>MSFS companion app<span>Link VirtualDispatch to the simulator to bring block times, fuel and landing data straight into your PIREP.</span></li>
-              <li>Search by aircraft<span>Find routes for the aircraft type you want to fly.</span></li>
-            </ul>
-            <p class="note">Plans, not promises &mdash; the order may change as the project grows.</p>
-          </div>
-        </div>
-
-        <div class="story-chapter setup">
-          <div class="story-step" data-shot="signup">
-            <span class="eyebrow">How to set up</span>
-            <h3>Create your account</h3>
-            <ol class="story-steps-num">
-              <li>Sign up<span>Register with your email and verify it.</span></li>
-              <li>Set up your profile<span>Your preferred base, the aircraft you fly, and your SimBrief username.</span></li>
-            </ol>
-            {{ step_shot(shots, 'signup') }}
-          </div>
-          <div class="story-step" data-shot="briefing">
-            <h3>Pick and review your flight</h3>
-            <ol class="story-steps-num">
-              <li>Pick a route<span>Type an airport or click it on the map, then choose an itinerary.</span></li>
-              <li>Review the briefing<span>Check the weather, delays, MELs and load, then confirm the flight.</span></li>
-            </ol>
-            {{ step_shot(shots, 'briefing') }}
-          </div>
-          <div class="story-step" data-shot="flight">
-            <h3>Send it to SimBrief and fly</h3>
-            <ol class="story-steps-num">
-              <li>Plan and sign<span>Generate the OFP on SimBrief, fetch it back and sign the loadsheet.</span></li>
-              <li>Fly and report<span>Fly the leg in MSFS and file your PIREP when you're on blocks.</span></li>
-            </ol>
-            {{ step_shot(shots, 'flight') }}
-          </div>
-        </div>
-
-      </div>
-
-      <div class="story-visual" aria-hidden="true">
-        <div class="shot-stage">
-          <div class="shot-frame">
-            {% for key, shot in shots.items() %}
-            <img class="shot" data-key="{{ key }}" data-caption="{{ shot[1] }}" src="{{ url_for('static', filename='img/how/' ~ shot[0]) }}" alt="" loading="lazy">
-            {% endfor %}
-            <div class="shot shot-roadmap" data-key="roadmap" data-caption="On the roadmap">
-              <div class="rm-item">More airlines and fleets<span class="rm-tag">Planned</span></div>
-              <div class="rm-item">Deeper MEL libraries<span class="rm-tag">Planned</span></div>
-              <div class="rm-item">MSFS companion app<span class="rm-tag">Planned</span></div>
-              <div class="rm-item">Search by aircraft<span class="rm-tag">Planned</span></div>
-            </div>
-          </div>
-          <div class="shot-caption" id="shotCaption"></div>
-        </div>
-      </div>
+{% set coming = [
+  ('badge', 'Badges and goals', 'Milestones to earn and goals to chase as your virtual career grows'),
+  ('airlines', 'More airlines', 'New carriers and fleets joining the schedule'),
+  ('schedule', 'Automatic schedule updates', 'Schedules that refresh every season, starting with winter'),
+  ('sim', 'Full MSFS 2024 and X-Plane 12 integration', 'Flight tracking straight from the simulator, with a Windows companion app'),
+  ('addons', 'Aircraft and airport add-ons', 'Integration with the aircraft and airport add-ons you have installed'),
+] %}
+<section class="soon" id="coming-soon">
+  <div class="container">
+    <div class="soon-head">
+      <span class="eyebrow">Coming soon</span>
+      <h2>More amazing features are under development</h2>
+    </div>
+    <div class="soon-grid">
+      {% for key, title, text in coming %}
+      <article class="soon-card">
+        <span class="soon-icon">{{ icon(key) }}</span>
+        <h3>{{ title }}</h3>
+        <p>{{ text }}</p>
+        <span class="soon-tag">In development</span>
+      </article>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -194,26 +170,37 @@
   (function () {
     var hasIO = 'IntersectionObserver' in window;
 
-    // Story: the step crossing the middle of the viewport picks the image.
-    var steps = Array.prototype.slice.call(document.querySelectorAll('.story-step'));
-    var shots = Array.prototype.slice.call(document.querySelectorAll('.shot-frame .shot'));
-    var caption = document.getElementById('shotCaption');
-    function activate(step) {
-      steps.forEach(function (s) { s.classList.toggle('active', s === step); });
-      shots.forEach(function (sh) {
-        var on = sh.getAttribute('data-key') === step.getAttribute('data-shot');
-        sh.classList.toggle('active', on);
-        if (on && caption) caption.textContent = sh.getAttribute('data-caption') || '';
+    // Tour: the step crossing the middle of the viewport picks the
+    // full-screen screenshot and the rail dot; the rail jumps to a step.
+    var steps = Array.prototype.slice.call(document.querySelectorAll('.tour-step'));
+    var shots = Array.prototype.slice.call(document.querySelectorAll('.tour-shot'));
+    var dots = Array.prototype.slice.call(document.querySelectorAll('.tour-dot'));
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function activateTour(i) {
+      steps.forEach(function (s) { s.classList.toggle('active', s.getAttribute('data-step') === String(i)); });
+      shots.forEach(function (sh) { sh.classList.toggle('active', sh.getAttribute('data-step') === String(i)); });
+      dots.forEach(function (d) {
+        var on = d.getAttribute('data-step') === String(i);
+        d.classList.toggle('active', on);
+        if (on) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
       });
     }
     if (steps.length) {
-      activate(steps[0]);
+      activateTour(0);
       if (hasIO) {
-        var storyObserver = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+        var tourObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) activateTour(e.target.getAttribute('data-step')); });
         }, { rootMargin: '-45% 0px -45% 0px' });
-        steps.forEach(function (s) { storyObserver.observe(s); });
+        steps.forEach(function (s) { tourObserver.observe(s); });
+      } else {
+        steps.forEach(function (s) { s.classList.add('active'); });
       }
+      dots.forEach(function (d) {
+        d.addEventListener('click', function () {
+          var target = steps[+d.getAttribute('data-step')];
+          target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+        });
+      });
     }
 
     // "Create an account" stays reachable at the top once the hero's own
