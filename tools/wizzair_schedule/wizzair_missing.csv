@@ -1,0 +1,508 @@
+departure_city,departure_iata,departure_icao,arrival_city,arrival_iata,arrival_icao,status
+Agadir,AGA,GMAD,Bratislava,BTS,LZIB,no_flights
+Agadir,AGA,GMAD,Gdansk,GDN,EPGD,no_flights
+Agadir,AGA,GMAD,Katowice,KTW,EPKT,no_flights
+Agadir,AGA,GMAD,Warsaw Chopin,WAW,EPWA,no_flights
+Malaga,AGP,LEMG,Bilbao,BIO,LEBB,no_flights
+Malaga,AGP,LEMG,London Luton,LTN,EGGW,no_flights
+Malaga,AGP,LEMG,Santiago de Compostela,SCQ,LEST,no_flights
+Malaga,AGP,LEMG,Turin,TRN,LIMF,no_flights
+Alicante,ALC,LEAL,Catania (Sicily),CTA,LICC,no_flights
+Alicante,ALC,LEAL,Chisinau,RMO,LUKK,no_flights
+Alicante,ALC,LEAL,Targu Mures,TGM,LRTM,no_flights
+Arad,ARW,LRAR,Barcelona El Prat,BCN,LEBL,no_flights
+Arad,ARW,LRAR,Berlin Brandenburg,BER,EDDB,no_flights
+Arad,ARW,LRAR,Milan Bergamo,BGY,LIME,no_flights
+Arad,ARW,LRAR,Bologna,BLQ,LIPE,no_flights
+Arad,ARW,LRAR,Bari,BRI,LIBD,no_flights
+Arad,ARW,LRAR,Basel-Mulhouse-Freiburg,BSL,LFSB,no_flights
+Arad,ARW,LRAR,Paris Beauvais,BVA,LFOB,no_flights
+Arad,ARW,LRAR,Rome Ciampino,CIA,LIRA,no_flights
+Arad,ARW,LRAR,Brussels Charleroi,CRL,EBCI,no_flights
+Arad,ARW,LRAR,Dortmund,DTM,EDLW,no_flights
+Arad,ARW,LRAR,Rome Fiumicino,FCO,LIRF,no_flights
+Arad,ARW,LRAR,Karlsruhe/Baden-Baden,FKB,EDSB,no_flights
+Arad,ARW,LRAR,Memmingen / Munich West,FMM,EDJA,no_flights
+Arad,ARW,LRAR,Frankfurt Hahn,HHN,EDFH,no_flights
+Arad,ARW,LRAR,Larnaca,LCA,LCLK,no_flights
+Arad,ARW,LRAR,London Luton,LTN,EGGW,no_flights
+Arad,ARW,LRAR,Madrid,MAD,LEMD,no_flights
+Arad,ARW,LRAR,Naples,NAP,LIRN,no_flights
+Arad,ARW,LRAR,Nuremberg,NUE,EDDN,no_flights
+Arad,ARW,LRAR,Prague,PRG,LKPR,no_flights
+Arad,ARW,LRAR,Venice Treviso,TSF,LIPH,no_flights
+Arad,ARW,LRAR,Venice,VCE,LIPZ,no_flights
+Arad,ARW,LRAR,Valencia,VLC,LEVC,no_flights
+Arad,ARW,LRAR,Zakynthos,ZTH,LGZA,no_flights
+Athens,ATH,LGAV,Chisinau,RMO,LUKK,no_flights
+Abu Dhabi,AUH,OMAA,Budapest,BUD,LHBP,no_flights
+Abu Dhabi,AUH,OMAA,Cluj-Napoca,CLJ,LRCL,no_flights
+Abu Dhabi,AUH,OMAA,Kraków,KRK,EPKK,no_flights
+Abu Dhabi,AUH,OMAA,Katowice,KTW,EPKT,no_flights
+Abu Dhabi,AUH,OMAA,Larnaca,LCA,LCLK,no_flights
+Abu Dhabi,AUH,OMAA,Bucharest Otopeni,OTP,LROP,no_flights
+Abu Dhabi,AUH,OMAA,Sofia,SOF,LBSF,no_flights
+Barcelona El Prat,BCN,LEBL,Brasov,GHV,LRBV,no_flights
+Barcelona El Prat,BCN,LEBL,Naples,NAP,LIRN,no_flights
+Belgrade,BEG,LYBE,Bâle / Mulhouse,BSL,LFSB,no_flights
+Belgrade,BEG,LYBE,Rome Ciampino,CIA,LIRA,no_flights
+Belgrade,BEG,LYBE,Grenoble,GNB,LFLS,no_flights
+Berlin Brandenburg,BER,EDDB,Milan Malpensa,MXP,LIMC,no_flights
+Berlin Brandenburg,BER,EDDB,Prishtina,PRN,BKPR,no_flights
+Berlin Brandenburg,BER,EDDB,Suceava,SCV,LRSV,no_flights
+Berlin Brandenburg,BER,EDDB,Sarajevo,SJJ,LQSA,no_flights
+Berlin Brandenburg,BER,EDDB,Vilnius,VNO,EYVI,no_flights
+Milan Bergamo,BGY,LIME,Arad,ARW,LRAR,no_flights
+Milan Bergamo,BGY,LIME,Sibiu,SBZ,LRSB,no_flights
+Milan Bergamo,BGY,LIME,Warsaw Modlin,WMI,EPMO,no_flights
+Bilbao,BIO,LEBB,Malaga,AGP,LEMG,no_flights
+Bilbao,BIO,LEBB,Naples,NAP,LIRN,no_flights
+Bilbao,BIO,LEBB,Santiago de Compostela,SCQ,LEST,no_flights
+Bilbao,BIO,LEBB,Valencia,VLC,LEVC,no_flights
+Bilbao,BIO,LEBB,Wroclaw,WRO,EPWR,no_flights
+Bologna,BLQ,LIPE,Arad,ARW,LRAR,no_flights
+Banja Luka,BNX,LQBK,Bâle / Mulhouse,BSL,LFSB,no_flights
+Bari,BRI,LIBD,Arad,ARW,LRAR,no_flights
+Bâle / Mulhouse,BSL,LFSB,Belgrade,BEG,LYBE,no_flights
+Bâle / Mulhouse,BSL,LFSB,Banja Luka,BNX,LQBK,no_flights
+Bâle / Mulhouse,BSL,LFSB,Yerevan,EVN,UDYZ,no_flights
+Bâle / Mulhouse,BSL,LFSB,Niš,INI,LYNI,no_flights
+Bâle / Mulhouse,BSL,LFSB,Naples,NAP,LIRN,no_flights
+Bâle / Mulhouse,BSL,LFSB,Ohrid,OHD,LWOH,no_flights
+Bâle / Mulhouse,BSL,LFSB,Prishtina,PRN,BKPR,no_flights
+Bâle / Mulhouse,BSL,LFSB,Chisinau,RMO,LUKK,no_flights
+Bâle / Mulhouse,BSL,LFSB,Skopje,SKP,LWSK,no_flights
+Bâle / Mulhouse,BSL,LFSB,Podgorica,TGD,LYPG,no_flights
+Bâle / Mulhouse,BSL,LFSB,Tirana,TIA,LATI,no_flights
+Bâle / Mulhouse,BSL,LFSB,Tuzla,TZL,LQTZ,no_flights
+Bâle / Mulhouse,BSL,LFSB,Varna (Black Sea),VAR,LBWN,no_flights
+Bâle / Mulhouse,BSL,LFSB,Warsaw Chopin,WAW,EPWA,no_flights
+Bratislava,BTS,LZIB,Agadir,AGA,GMAD,no_flights
+Bratislava,BTS,LZIB,Baku,GYD,UBBB,no_flights
+Bratislava,BTS,LZIB,Hurghada,HRG,HEGN,no_flights
+Bratislava,BTS,LZIB,Bucharest Otopeni,OTP,LROP,no_flights
+Bratislava,BTS,LZIB,Sarajevo,SJJ,LQSA,no_flights
+Budapest,BUD,LHBP,Abu Dhabi,AUH,OMAA,no_flights
+Budapest,BUD,LHBP,Rome Ciampino,CIA,LIRA,no_flights
+Budapest,BUD,LHBP,Dubai,DXB,OMDB,no_flights
+Budapest,BUD,LHBP,Jeddah,JED,OEJN,no_flights
+Budapest,BUD,LHBP,Gran Canaria (Canary Islands),LPA,GCLP,no_flights
+Budapest,BUD,LHBP,Oslo Gardermoen,OSL,ENGM,no_flights
+Budapest,BUD,LHBP,Marsa Alam,RMF,HEMA,no_flights
+Budapest,BUD,LHBP,Chisinau,RMO,LUKK,no_flights
+Budapest,BUD,LHBP,Cairo (Sphinx),SPX,HESX,no_flights
+Paris Beauvais,BVA,LFOB,Arad,ARW,LRAR,no_flights
+Paris Beauvais,BVA,LFOB,Tuzla,TZL,LQTZ,no_flights
+Cagliari,CAG,LIEE,Milan Malpensa,MXP,LIMC,no_flights
+Cagliari,CAG,LIEE,Venice,VCE,LIPZ,no_flights
+Castellon (Valencia),CDT,LECH,Arad,ARW,LRAR,no_flights
+Castellon (Valencia),CDT,LECH,Bilbao,BIO,LEBB,no_flights
+Castellon (Valencia),CDT,LECH,Budapest,BUD,LHBP,no_flights
+Castellon (Valencia),CDT,LECH,Catania (Sicily),CTA,LICC,no_flights
+Castellon (Valencia),CDT,LECH,Yerevan,EVN,UDYZ,no_flights
+Castellon (Valencia),CDT,LECH,Rome Fiumicino,FCO,LIRF,no_flights
+Castellon (Valencia),CDT,LECH,Brasov,GHV,LRBV,no_flights
+Castellon (Valencia),CDT,LECH,Iasi,IAS,LRIA,no_flights
+Castellon (Valencia),CDT,LECH,Kraków,KRK,EPKK,no_flights
+Castellon (Valencia),CDT,LECH,London Gatwick,LGW,EGKK,no_flights
+Castellon (Valencia),CDT,LECH,London Luton,LTN,EGGW,no_flights
+Castellon (Valencia),CDT,LECH,Milan Malpensa,MXP,LIMC,no_flights
+Castellon (Valencia),CDT,LECH,Naples,NAP,LIRN,no_flights
+Castellon (Valencia),CDT,LECH,Asturias,OVD,LEAS,no_flights
+Castellon (Valencia),CDT,LECH,Palma de Mallorca,PMI,LEPA,no_flights
+Castellon (Valencia),CDT,LECH,Chisinau,RMO,LUKK,no_flights
+Castellon (Valencia),CDT,LECH,Santiago de Compostela,SCQ,LEST,no_flights
+Castellon (Valencia),CDT,LECH,Santander,SDR,LEXJ,no_flights
+Castellon (Valencia),CDT,LECH,Sofia,SOF,LBSF,no_flights
+Castellon (Valencia),CDT,LECH,Tirana,TIA,LATI,no_flights
+Castellon (Valencia),CDT,LECH,Turin,TRN,LIMF,no_flights
+Castellon (Valencia),CDT,LECH,Timisoara,TSR,LRTR,no_flights
+Castellon (Valencia),CDT,LECH,Venice,VCE,LIPZ,no_flights
+Castellon (Valencia),CDT,LECH,Warsaw Chopin,WAW,EPWA,no_flights
+Cologne,CGN,EDDK,Chisinau,RMO,LUKK,no_flights
+Rome Ciampino,CIA,LIRA,Belgrade,BEG,LYBE,no_flights
+Rome Ciampino,CIA,LIRA,Budapest,BUD,LHBP,no_flights
+Rome Ciampino,CIA,LIRA,Cluj-Napoca,CLJ,LRCL,no_flights
+Rome Ciampino,CIA,LIRA,Craiova,CRA,LRCV,no_flights
+Rome Ciampino,CIA,LIRA,Gdansk,GDN,EPGD,no_flights
+Rome Ciampino,CIA,LIRA,Iasi,IAS,LRIA,no_flights
+Rome Ciampino,CIA,LIRA,Kraków,KRK,EPKK,no_flights
+Rome Ciampino,CIA,LIRA,Katowice,KTW,EPKT,no_flights
+Rome Ciampino,CIA,LIRA,Kutaisi,KUT,UGKO,no_flights
+Rome Ciampino,CIA,LIRA,Larnaca,LCA,LCLK,no_flights
+Rome Ciampino,CIA,LIRA,Bucharest Otopeni,OTP,LROP,no_flights
+Rome Ciampino,CIA,LIRA,Skopje,SKP,LWSK,no_flights
+Rome Ciampino,CIA,LIRA,Sofia,SOF,LBSF,no_flights
+Rome Ciampino,CIA,LIRA,Tirana,TIA,LATI,no_flights
+Rome Ciampino,CIA,LIRA,Timisoara,TSR,LRTR,no_flights
+Rome Ciampino,CIA,LIRA,Warsaw Chopin,WAW,EPWA,no_flights
+Comiso (Sicily),CIY,LICB,Milan Malpensa,MXP,LIMC,no_flights
+Cluj-Napoca,CLJ,LRCL,Abu Dhabi,AUH,OMAA,no_flights
+Cluj-Napoca,CLJ,LRCL,Rome Ciampino,CIA,LIRA,no_flights
+Cluj-Napoca,CLJ,LRCL,Marrakesh,RAK,GMMX,no_flights
+Cluj-Napoca,CLJ,LRCL,Venice,VCE,LIPZ,no_flights
+Craiova,CRA,LRCV,Rome Ciampino,CIA,LIRA,no_flights
+Craiova,CRA,LRCV,Memmingen / Munich West,FMM,EDJA,no_flights
+Craiova,CRA,LRCV,Venice,VCE,LIPZ,no_flights
+Brussels Charleroi,CRL,EBCI,Arad,ARW,LRAR,no_flights
+Brussels Charleroi,CRL,EBCI,Yerevan,EVN,UDYZ,no_flights
+Brussels Charleroi,CRL,EBCI,Prishtina,PRN,BKPR,no_flights
+Catania (Sicily),CTA,LICC,Alicante,ALC,LEAL,no_flights
+Catania (Sicily),CTA,LICC,Rome Fiumicino,FCO,LIRF,no_flights
+Catania (Sicily),CTA,LICC,Porto,OPO,LPPR,no_flights
+Catania (Sicily),CTA,LICC,Sharm El Sheikh,SSH,HESH,no_flights
+Catania (Sicily),CTA,LICC,Valencia,VLC,LEVC,no_flights
+Debrecen,DEB,LHDC,Tel-Aviv,TLV,LLBG,no_flights
+Dortmund,DTM,EDLW,Arad,ARW,LRAR,no_flights
+Dortmund,DTM,EDLW,Rome Fiumicino,FCO,LIRF,no_flights
+Dortmund,DTM,EDLW,Milan Malpensa,MXP,LIMC,no_flights
+Dubai,DXB,OMDB,Budapest,BUD,LHBP,no_flights
+Dubai,DXB,OMDB,Cluj-Napoca,CLJ,LRCL,no_flights
+Dubai,DXB,OMDB,Kraków,KRK,EPKK,no_flights
+Dubai,DXB,OMDB,Katowice,KTW,EPKT,no_flights
+Dubai,DXB,OMDB,Larnaca,LCA,LCLK,no_flights
+Dubai,DXB,OMDB,Bucharest Otopeni,OTP,LROP,no_flights
+Dubai,DXB,OMDB,Sofia,SOF,LBSF,no_flights
+Eindhoven,EIN,EHEH,Yerevan,EVN,UDYZ,no_flights
+Yerevan,EVN,UDYZ,Bâle / Mulhouse,BSL,LFSB,no_flights
+Yerevan,EVN,UDYZ,Brussels Charleroi,CRL,EBCI,no_flights
+Yerevan,EVN,UDYZ,Eindhoven,EIN,EHEH,no_flights
+Yerevan,EVN,UDYZ,Varna (Black Sea),VAR,LBWN,no_flights
+Yerevan,EVN,UDYZ,Valencia,VLC,LEVC,no_flights
+Rome Fiumicino,FCO,LIRF,Arad,ARW,LRAR,no_flights
+Rome Fiumicino,FCO,LIRF,Catania (Sicily),CTA,LICC,no_flights
+Rome Fiumicino,FCO,LIRF,Dortmund,DTM,EDLW,no_flights
+Rome Fiumicino,FCO,LIRF,Marrakesh,RAK,GMMX,no_flights
+Rome Fiumicino,FCO,LIRF,Santiago de Compostela,SCQ,LEST,no_flights
+Rome Fiumicino,FCO,LIRF,Lamezia Terme,SUF,LICA,no_flights
+Karlsruhe/Baden-Baden,FKB,EDSB,Arad,ARW,LRAR,no_flights
+Karlsruhe/Baden-Baden,FKB,EDSB,Brasov,GHV,LRBV,no_flights
+Karlsruhe/Baden-Baden,FKB,EDSB,Prishtina,PRN,BKPR,no_flights
+Memmingen / Munich West,FMM,EDJA,Arad,ARW,LRAR,no_flights
+Memmingen / Munich West,FMM,EDJA,Craiova,CRA,LRCV,no_flights
+Fuerteventura (Canary Islands),FUE,GCFV,Katowice,KTW,EPKT,no_flights
+Fuerteventura (Canary Islands),FUE,GCFV,Santiago de Compostela,SCQ,LEST,no_flights
+Fuerteventura (Canary Islands),FUE,GCFV,Warsaw Chopin,WAW,EPWA,no_flights
+Gdansk,GDN,EPGD,Agadir,AGA,GMAD,no_flights
+Gdansk,GDN,EPGD,Rome Ciampino,CIA,LIRA,no_flights
+Gdansk,GDN,EPGD,Marsa Alam,RMF,HEMA,no_flights
+Gdansk,GDN,EPGD,Sharm El Sheikh,SSH,HESH,no_flights
+Gdansk,GDN,EPGD,Tenerife (Canary Islands),TFS,GCTS,no_flights
+Gdansk,GDN,EPGD,Turin,TRN,LIMF,no_flights
+Gdansk,GDN,EPGD,Verona,VRN,LIPX,no_flights
+Brasov,GHV,LRBV,Barcelona El Prat,BCN,LEBL,no_flights
+Brasov,GHV,LRBV,Karlsruhe/Baden-Baden,FKB,EDSB,no_flights
+Brasov,GHV,LRBV,Madrid,MAD,LEMD,no_flights
+Brasov,GHV,LRBV,Chisinau,RMO,LUKK,no_flights
+Brasov,GHV,LRBV,Valencia,VLC,LEVC,no_flights
+Grenoble,GNB,LFLS,Belgrade,BEG,LYBE,no_flights
+Grenoble,GNB,LFLS,London Gatwick,LGW,EGKK,no_flights
+Grenoble,GNB,LFLS,London Luton,LTN,EGGW,no_flights
+Grenoble,GNB,LFLS,Vilnius,VNO,EYVI,no_flights
+Grenoble,GNB,LFLS,Warsaw Chopin,WAW,EPWA,no_flights
+Genoa,GOA,LIMJ,Naples,NAP,LIRN,no_flights
+Granada,GRX,LEGR,London Luton,LTN,EGGW,no_flights
+Baku,GYD,UBBB,Bratislava,BTS,LZIB,no_flights
+Hamburg,HAM,EDDH,Prishtina,PRN,BKPR,no_flights
+Heraklion (Crete),HER,LGIR,Tel-Aviv,TLV,LLBG,no_flights
+Frankfurt Hahn,HHN,EDFH,Prishtina,PRN,BKPR,no_flights
+Frankfurt Hahn,HHN,EDFH,Chisinau,RMO,LUKK,no_flights
+Hurghada,HRG,HEGN,Bratislava,BTS,LZIB,no_flights
+Hurghada,HRG,HEGN,Katowice,KTW,EPKT,no_flights
+Hurghada,HRG,HEGN,London Gatwick,LGW,EGKK,no_flights
+Hurghada,HRG,HEGN,London Luton,LTN,EGGW,no_flights
+Hurghada,HRG,HEGN,Naples,NAP,LIRN,no_flights
+Hurghada,HRG,HEGN,Sofia,SOF,LBSF,no_flights
+Hurghada,HRG,HEGN,Warsaw Modlin,WMI,EPMO,no_flights
+Hurghada,HRG,HEGN,Wroclaw,WRO,EPWR,no_flights
+Iasi,IAS,LRIA,Rome Ciampino,CIA,LIRA,no_flights
+Iasi,IAS,LRIA,Venice,VCE,LIPZ,no_flights
+Niš,INI,LYNI,Bâle / Mulhouse,BSL,LFSB,no_flights
+Jeddah,JED,OEJN,Budapest,BUD,LHBP,no_flights
+Kraków,KRK,EPKK,Abu Dhabi,AUH,OMAA,no_flights
+Kraków,KRK,EPKK,Rome Ciampino,CIA,LIRA,no_flights
+Kraków,KRK,EPKK,London Luton,LTN,EGGW,no_flights
+Kraków,KRK,EPKK,Marsa Alam,RMF,HEMA,no_flights
+Kraków,KRK,EPKK,Verona,VRN,LIPX,no_flights
+Katowice,KTW,EPKT,Agadir,AGA,GMAD,no_flights
+Katowice,KTW,EPKT,Abu Dhabi,AUH,OMAA,no_flights
+Katowice,KTW,EPKT,Rome Ciampino,CIA,LIRA,no_flights
+Katowice,KTW,EPKT,Fuerteventura (Canary Islands),FUE,GCFV,no_flights
+Katowice,KTW,EPKT,Hurghada,HRG,HEGN,no_flights
+Katowice,KTW,EPKT,Marsa Alam,RMF,HEMA,no_flights
+Katowice,KTW,EPKT,Sharm El Sheikh,SSH,HESH,no_flights
+Katowice,KTW,EPKT,Turin,TRN,LIMF,no_flights
+Kaunas,KUN,EYKA,Malaga,AGP,LEMG,no_flights
+Kaunas,KUN,EYKA,Barcelona El Prat,BCN,LEBL,no_flights
+Kaunas,KUN,EYKA,Berlin Brandenburg,BER,EDDB,no_flights
+Kaunas,KUN,EYKA,Bergen,BGO,ENBR,no_flights
+Kaunas,KUN,EYKA,Billund,BLL,EKBI,no_flights
+Kaunas,KUN,EYKA,Budapest,BUD,LHBP,no_flights
+Kaunas,KUN,EYKA,Catania (Sicily),CTA,LICC,no_flights
+Kaunas,KUN,EYKA,Dortmund,DTM,EDLW,no_flights
+Kaunas,KUN,EYKA,Eindhoven,EIN,EHEH,no_flights
+Kaunas,KUN,EYKA,Gdansk,GDN,EPGD,no_flights
+Kaunas,KUN,EYKA,Grenoble,GNB,LFLS,no_flights
+Kaunas,KUN,EYKA,Reykjavik,KEF,BIKF,no_flights
+Kaunas,KUN,EYKA,Kraków,KRK,EPKK,no_flights
+Kaunas,KUN,EYKA,Kutaisi,KUT,UGKO,no_flights
+Kaunas,KUN,EYKA,Larnaca,LCA,LCLK,no_flights
+Kaunas,KUN,EYKA,Milan Malpensa,MXP,LIMC,no_flights
+Kaunas,KUN,EYKA,Nice,NCE,LFMN,no_flights
+Kaunas,KUN,EYKA,Prague,PRG,LKPR,no_flights
+Kaunas,KUN,EYKA,Podgorica,TGD,LYPG,no_flights
+Kaunas,KUN,EYKA,Tirana,TIA,LATI,no_flights
+Kaunas,KUN,EYKA,Turku,TKU,EFTU,no_flights
+Kaunas,KUN,EYKA,Tallinn,TLL,EETN,no_flights
+Kaunas,KUN,EYKA,Tel-Aviv,TLV,LLBG,no_flights
+Kutaisi,KUT,UGKO,Rome Ciampino,CIA,LIRA,no_flights
+Larnaca,LCA,LCLK,Abu Dhabi,AUH,OMAA,no_flights
+Larnaca,LCA,LCLK,Rome Ciampino,CIA,LIRA,no_flights
+Larnaca,LCA,LCLK,Varna (Black Sea),VAR,LBWN,no_flights
+Almería,LEI,LEAM,Bucharest Otopeni,OTP,LROP,no_flights
+London Gatwick,LGW,EGKK,Grenoble,GNB,LFLS,no_flights
+London Gatwick,LGW,EGKK,Hurghada,HRG,HEGN,no_flights
+London Gatwick,LGW,EGKK,Lyon,LYS,LFLL,no_flights
+London Gatwick,LGW,EGKK,Chisinau,RMO,LUKK,no_flights
+London Gatwick,LGW,EGKK,Sharm El Sheikh,SSH,HESH,no_flights
+Gran Canaria (Canary Islands),LPA,GCLP,Budapest,BUD,LHBP,no_flights
+Gran Canaria (Canary Islands),LPA,GCLP,Santiago de Compostela,SCQ,LEST,no_flights
+Gran Canaria (Canary Islands),LPA,GCLP,Wroclaw,WRO,EPWR,no_flights
+London Luton,LTN,EGGW,Malaga,AGP,LEMG,no_flights
+London Luton,LTN,EGGW,Arad,ARW,LRAR,no_flights
+London Luton,LTN,EGGW,Grenoble,GNB,LFLS,no_flights
+London Luton,LTN,EGGW,Granada,GRX,LEGR,no_flights
+London Luton,LTN,EGGW,Hurghada,HRG,HEGN,no_flights
+London Luton,LTN,EGGW,Kraków,KRK,EPKK,no_flights
+London Luton,LTN,EGGW,Asturias,OVD,LEAS,no_flights
+London Luton,LTN,EGGW,Sharm El Sheikh,SSH,HESH,no_flights
+London Luton,LTN,EGGW,Tromso,TOS,ENTC,no_flights
+Lyon,LYS,LFLL,London Gatwick,LGW,EGKK,no_flights
+Lyon,LYS,LFLL,Warsaw Chopin,WAW,EPWA,no_flights
+Madrid,MAD,LEMD,Arad,ARW,LRAR,no_flights
+Madrid,MAD,LEMD,Brasov,GHV,LRBV,no_flights
+Madrid,MAD,LEMD,Naples,NAP,LIRN,no_flights
+Madrid,MAD,LEMD,Asturias,OVD,LEAS,no_flights
+Madrid,MAD,LEMD,Palma de Mallorca,PMI,LEPA,no_flights
+Madrid,MAD,LEMD,Pisa (Tuscany),PSA,LIRP,no_flights
+Madrid,MAD,LEMD,Santiago de Compostela,SCQ,LEST,no_flights
+Madrid,MAD,LEMD,Turin,TRN,LIMF,no_flights
+Malmo,MMX,ESMS,Prishtina,PRN,BKPR,no_flights
+Milan Malpensa,MXP,LIMC,Berlin Brandenburg,BER,EDDB,no_flights
+Milan Malpensa,MXP,LIMC,Cagliari,CAG,LIEE,no_flights
+Milan Malpensa,MXP,LIMC,Comiso (Sicily),CIY,LICB,no_flights
+Milan Malpensa,MXP,LIMC,Dortmund,DTM,EDLW,no_flights
+Milan Malpensa,MXP,LIMC,Skopje,SKP,LWSK,no_flights
+Milan Malpensa,MXP,LIMC,Lamezia Terme,SUF,LICA,no_flights
+Milan Malpensa,MXP,LIMC,Tenerife (Canary Islands),TFS,GCTS,no_flights
+Milan Malpensa,MXP,LIMC,Tromso,TOS,ENTC,no_flights
+Naples,NAP,LIRN,Barcelona El Prat,BCN,LEBL,no_flights
+Naples,NAP,LIRN,Bilbao,BIO,LEBB,no_flights
+Naples,NAP,LIRN,Basel-Mulhouse-Freiburg,BSL,LFSB,no_flights
+Naples,NAP,LIRN,Genoa,GOA,LIMJ,no_flights
+Naples,NAP,LIRN,Hurghada,HRG,HEGN,no_flights
+Naples,NAP,LIRN,Madrid,MAD,LEMD,no_flights
+Naples,NAP,LIRN,Nice,NCE,LFMN,no_flights
+Naples,NAP,LIRN,Palermo (Sicily),PMO,LICJ,no_flights
+Naples,NAP,LIRN,Turin,TRN,LIMF,no_flights
+Naples,NAP,LIRN,Trieste,TRS,LIPQ,no_flights
+Naples,NAP,LIRN,Valencia,VLC,LEVC,no_flights
+Nice,NCE,LFMN,Naples,NAP,LIRN,no_flights
+Nice,NCE,LFMN,Chisinau,RMO,LUKK,no_flights
+Nuremberg,NUE,EDDN,Targu Mures,TGM,LRTM,no_flights
+Stockholm Skavsta,NYO,ESKN,Bucharest Otopeni,OTP,LROP,no_flights
+Ohrid,OHD,LWOH,Bâle / Mulhouse,BSL,LFSB,no_flights
+Porto,OPO,LPPR,Catania (Sicily),CTA,LICC,no_flights
+Paris Orly,ORY,LFPO,Bucharest Otopeni,OTP,LROP,no_flights
+Oslo Gardermoen,OSL,ENGM,Budapest,BUD,LHBP,no_flights
+Bucharest Otopeni,OTP,LROP,Abu Dhabi,AUH,OMAA,no_flights
+Bucharest Otopeni,OTP,LROP,Bratislava,BTS,LZIB,no_flights
+Bucharest Otopeni,OTP,LROP,Rome Ciampino,CIA,LIRA,no_flights
+Bucharest Otopeni,OTP,LROP,Dubai,DXB,OMDB,no_flights
+Bucharest Otopeni,OTP,LROP,Karlsruhe/Baden-Baden,FKB,EDSB,no_flights
+Bucharest Otopeni,OTP,LROP,Almería,LEI,LEAM,no_flights
+Bucharest Otopeni,OTP,LROP,Stockholm Skavsta,NYO,ESKN,no_flights
+Bucharest Otopeni,OTP,LROP,Paris Orly,ORY,LFPO,no_flights
+Bucharest Otopeni,OTP,LROP,Turku,TKU,EFTU,no_flights
+Bucharest Otopeni,OTP,LROP,Venice,VCE,LIPZ,no_flights
+Asturias,OVD,LEAS,London Luton,LTN,EGGW,no_flights
+Asturias,OVD,LEAS,Madrid,MAD,LEMD,no_flights
+Asturias,OVD,LEAS,Valencia,VLC,LEVC,no_flights
+Palma de Mallorca,PMI,LEPA,Madrid,MAD,LEMD,no_flights
+Palma de Mallorca,PMI,LEPA,Valencia,VLC,LEVC,no_flights
+Palermo (Sicily),PMO,LICJ,Naples,NAP,LIRN,no_flights
+Palermo (Sicily),PMO,LICJ,Pisa (Tuscany),PSA,LIRP,no_flights
+Palermo (Sicily),PMO,LICJ,Tirana,TIA,LATI,no_flights
+Prague,PRG,LKPR,Suceava,SCV,LRSV,no_flights
+Prague,PRG,LKPR,Sarajevo,SJJ,LQSA,no_flights
+Prague,PRG,LKPR,Poprad-Tatry,TAT,LZTT,no_flights
+Prague,PRG,LKPR,Turin,TRN,LIMF,no_flights
+Prishtina,PRN,BKPR,Berlin Brandenburg,BER,EDDB,no_flights
+Prishtina,PRN,BKPR,Bâle / Mulhouse,BSL,LFSB,no_flights
+Prishtina,PRN,BKPR,Brussels Charleroi,CRL,EBCI,no_flights
+Prishtina,PRN,BKPR,Karlsruhe/Baden-Baden,FKB,EDSB,no_flights
+Prishtina,PRN,BKPR,Hamburg,HAM,EDDH,no_flights
+Prishtina,PRN,BKPR,Frankfurt Hahn,HHN,EDFH,no_flights
+Prishtina,PRN,BKPR,Malmo,MMX,ESMS,no_flights
+Prishtina,PRN,BKPR,Trieste,TRS,LIPQ,no_flights
+Pisa (Tuscany),PSA,LIRP,Madrid,MAD,LEMD,no_flights
+Pisa (Tuscany),PSA,LIRP,Palermo (Sicily),PMO,LICJ,no_flights
+Marrakesh,RAK,GMMX,Cluj-Napoca,CLJ,LRCL,no_flights
+Marrakesh,RAK,GMMX,Rome Fiumicino,FCO,LIRF,no_flights
+Marrakesh,RAK,GMMX,Sofia,SOF,LBSF,no_flights
+Marrakesh,RAK,GMMX,Warsaw Chopin,WAW,EPWA,no_flights
+Rhodes,RHO,LGRP,Tel-Aviv,TLV,LLBG,no_flights
+Marsa Alam,RMF,HEMA,Budapest,BUD,LHBP,no_flights
+Marsa Alam,RMF,HEMA,Gdansk,GDN,EPGD,no_flights
+Marsa Alam,RMF,HEMA,Kraków,KRK,EPKK,no_flights
+Marsa Alam,RMF,HEMA,Katowice,KTW,EPKT,no_flights
+Marsa Alam,RMF,HEMA,Warsaw Modlin,WMI,EPMO,no_flights
+Rimini,RMI,LIPR,Chisinau,RMO,LUKK,no_flights
+Chisinau,RMO,LUKK,Alicante,ALC,LEAL,no_flights
+Chisinau,RMO,LUKK,Athens,ATH,LGAV,no_flights
+Chisinau,RMO,LUKK,Bâle / Mulhouse,BSL,LFSB,no_flights
+Chisinau,RMO,LUKK,Budapest,BUD,LHBP,no_flights
+Chisinau,RMO,LUKK,Cologne,CGN,EDDK,no_flights
+Chisinau,RMO,LUKK,Brussels Charleroi,CRL,EBCI,no_flights
+Chisinau,RMO,LUKK,Brasov,GHV,LRBV,no_flights
+Chisinau,RMO,LUKK,Frankfurt Hahn,HHN,EDFH,no_flights
+Chisinau,RMO,LUKK,London Gatwick,LGW,EGKK,no_flights
+Chisinau,RMO,LUKK,Naples,NAP,LIRN,no_flights
+Chisinau,RMO,LUKK,Nice,NCE,LFMN,no_flights
+Chisinau,RMO,LUKK,Rimini,RMI,LIPR,no_flights
+Chisinau,RMO,LUKK,Sofia,SOF,LBSF,no_flights
+Chisinau,RMO,LUKK,Stuttgart,STR,EDDS,no_flights
+Chisinau,RMO,LUKK,Turin,TRN,LIMF,no_flights
+Chisinau,RMO,LUKK,Valencia,VLC,LEVC,no_flights
+Chisinau,RMO,LUKK,Verona,VRN,LIPX,no_flights
+Chisinau,RMO,LUKK,Warsaw Modlin,WMI,EPMO,no_flights
+Sibiu,SBZ,LRSB,Milan Bergamo,BGY,LIME,no_flights
+Santiago de Compostela,SCQ,LEST,Malaga,AGP,LEMG,no_flights
+Santiago de Compostela,SCQ,LEST,Bilbao,BIO,LEBB,no_flights
+Santiago de Compostela,SCQ,LEST,Rome Fiumicino,FCO,LIRF,no_flights
+Santiago de Compostela,SCQ,LEST,Fuerteventura (Canary Islands),FUE,GCFV,no_flights
+Santiago de Compostela,SCQ,LEST,Gran Canaria (Canary Islands),LPA,GCLP,no_flights
+Santiago de Compostela,SCQ,LEST,Madrid,MAD,LEMD,no_flights
+Santiago de Compostela,SCQ,LEST,Tenerife Norte (Canary Islands),TFN,GCXO,no_flights
+Santiago de Compostela,SCQ,LEST,Valencia,VLC,LEVC,no_flights
+Santiago de Compostela,SCQ,LEST,Warsaw Modlin,WMI,EPMO,no_flights
+Santiago de Compostela,SCQ,LEST,Zaragoza,ZAZ,LEZG,no_flights
+Suceava,SCV,LRSV,Berlin Brandenburg,BER,EDDB,no_flights
+Suceava,SCV,LRSV,Prague,PRG,LKPR,no_flights
+Suceava,SCV,LRSV,Turin,TRN,LIMF,no_flights
+Suceava,SCV,LRSV,Venice,VCE,LIPZ,no_flights
+Santander,SDR,LEXJ,Valencia,VLC,LEVC,no_flights
+Sarajevo,SJJ,LQSA,Berlin Brandenburg,BER,EDDB,no_flights
+Sarajevo,SJJ,LQSA,Bratislava,BTS,LZIB,no_flights
+Sarajevo,SJJ,LQSA,Prague,PRG,LKPR,no_flights
+Thessaloniki,SKG,LGTS,Tel-Aviv,TLV,LLBG,no_flights
+Skopje,SKP,LWSK,Bâle / Mulhouse,BSL,LFSB,no_flights
+Skopje,SKP,LWSK,Rome Ciampino,CIA,LIRA,no_flights
+Skopje,SKP,LWSK,Milan Malpensa,MXP,LIMC,no_flights
+Skopje,SKP,LWSK,Venice,VCE,LIPZ,no_flights
+Sofia,SOF,LBSF,Abu Dhabi,AUH,OMAA,no_flights
+Sofia,SOF,LBSF,Rome Ciampino,CIA,LIRA,no_flights
+Sofia,SOF,LBSF,Hurghada,HRG,HEGN,no_flights
+Sofia,SOF,LBSF,Marrakesh,RAK,GMMX,no_flights
+Sofia,SOF,LBSF,Chisinau,RMO,LUKK,no_flights
+Sofia,SOF,LBSF,Sharm El Sheikh,SSH,HESH,no_flights
+Sofia,SOF,LBSF,Warsaw Modlin,WMI,EPMO,no_flights
+Cairo (Sphinx),SPX,HESX,Budapest,BUD,LHBP,no_flights
+Sharm El Sheikh,SSH,HESH,Catania (Sicily),CTA,LICC,no_flights
+Sharm El Sheikh,SSH,HESH,Gdansk,GDN,EPGD,no_flights
+Sharm El Sheikh,SSH,HESH,Katowice,KTW,EPKT,no_flights
+Sharm El Sheikh,SSH,HESH,London Gatwick,LGW,EGKK,no_flights
+Sharm El Sheikh,SSH,HESH,London Luton,LTN,EGGW,no_flights
+Sharm El Sheikh,SSH,HESH,Sofia,SOF,LBSF,no_flights
+Sharm El Sheikh,SSH,HESH,Turin,TRN,LIMF,no_flights
+Sharm El Sheikh,SSH,HESH,Warsaw Modlin,WMI,EPMO,no_flights
+Stuttgart,STR,EDDS,Chisinau,RMO,LUKK,no_flights
+Lamezia Terme,SUF,LICA,Rome Fiumicino,FCO,LIRF,no_flights
+Lamezia Terme,SUF,LICA,Milan Malpensa,MXP,LIMC,no_flights
+Lamezia Terme,SUF,LICA,Turin,TRN,LIMF,no_flights
+Poprad-Tatry,TAT,LZTT,Prague,PRG,LKPR,no_flights
+Tenerife Norte (Canary Islands),TFN,GCXO,Santiago de Compostela,SCQ,LEST,no_flights
+Tenerife (Canary Islands),TFS,GCTS,Gdansk,GDN,EPGD,no_flights
+Tenerife (Canary Islands),TFS,GCTS,Milan Malpensa,MXP,LIMC,no_flights
+Podgorica,TGD,LYPG,Bâle / Mulhouse,BSL,LFSB,no_flights
+Targu Mures,TGM,LRTM,Alicante,ALC,LEAL,no_flights
+Targu Mures,TGM,LRTM,Nuremberg,NUE,EDDN,no_flights
+Tirana,TIA,LATI,Bâle / Mulhouse,BSL,LFSB,no_flights
+Tirana,TIA,LATI,Rome Ciampino,CIA,LIRA,no_flights
+Tirana,TIA,LATI,Palermo (Sicily),PMO,LICJ,no_flights
+Tirana,TIA,LATI,Venice,VCE,LIPZ,no_flights
+Turku,TKU,EFTU,Bucharest Otopeni,OTP,LROP,no_flights
+Tel-Aviv,TLV,LLBG,Debrecen,DEB,LHDC,no_flights
+Tel-Aviv,TLV,LLBG,Heraklion (Crete),HER,LGIR,no_flights
+Tel-Aviv,TLV,LLBG,Rhodes,RHO,LGRP,no_flights
+Tel-Aviv,TLV,LLBG,Thessaloniki,SKG,LGTS,no_flights
+Tromso,TOS,ENTC,London Luton,LTN,EGGW,no_flights
+Tromso,TOS,ENTC,Milan Malpensa,MXP,LIMC,no_flights
+Turin,TRN,LIMF,Malaga,AGP,LEMG,no_flights
+Turin,TRN,LIMF,Gdansk,GDN,EPGD,no_flights
+Turin,TRN,LIMF,Katowice,KTW,EPKT,no_flights
+Turin,TRN,LIMF,Madrid,MAD,LEMD,no_flights
+Turin,TRN,LIMF,Naples,NAP,LIRN,no_flights
+Turin,TRN,LIMF,Prague,PRG,LKPR,no_flights
+Turin,TRN,LIMF,Chisinau,RMO,LUKK,no_flights
+Turin,TRN,LIMF,Suceava,SCV,LRSV,no_flights
+Turin,TRN,LIMF,Sharm El Sheikh,SSH,HESH,no_flights
+Turin,TRN,LIMF,Lamezia Terme,SUF,LICA,no_flights
+Turin,TRN,LIMF,Warsaw Chopin,WAW,EPWA,no_flights
+Turin,TRN,LIMF,Wroclaw,WRO,EPWR,no_flights
+Trieste,TRS,LIPQ,Naples,NAP,LIRN,no_flights
+Trieste,TRS,LIPQ,Prishtina,PRN,BKPR,no_flights
+Timisoara,TSR,LRTR,Rome Ciampino,CIA,LIRA,no_flights
+Timisoara,TSR,LRTR,Venice,VCE,LIPZ,no_flights
+Tuzla,TZL,LQTZ,Bâle / Mulhouse,BSL,LFSB,no_flights
+Tuzla,TZL,LQTZ,Paris Beauvais,BVA,LFOB,no_flights
+Varna (Black Sea),VAR,LBWN,Basel-Mulhouse-Freiburg,BSL,LFSB,no_flights
+Varna (Black Sea),VAR,LBWN,Yerevan,EVN,UDYZ,no_flights
+Varna (Black Sea),VAR,LBWN,Larnaca,LCA,LCLK,no_flights
+Venice,VCE,LIPZ,Cagliari,CAG,LIEE,no_flights
+Venice,VCE,LIPZ,Cluj-Napoca,CLJ,LRCL,no_flights
+Venice,VCE,LIPZ,Craiova,CRA,LRCV,no_flights
+Venice,VCE,LIPZ,Iasi,IAS,LRIA,no_flights
+Venice,VCE,LIPZ,Bucharest Otopeni,OTP,LROP,no_flights
+Venice,VCE,LIPZ,Suceava,SCV,LRSV,no_flights
+Venice,VCE,LIPZ,Skopje,SKP,LWSK,no_flights
+Venice,VCE,LIPZ,Tirana,TIA,LATI,no_flights
+Venice,VCE,LIPZ,Timisoara,TSR,LRTR,no_flights
+Valencia,VLC,LEVC,Arad,ARW,LRAR,no_flights
+Valencia,VLC,LEVC,Bilbao,BIO,LEBB,no_flights
+Valencia,VLC,LEVC,Catania (Sicily),CTA,LICC,no_flights
+Valencia,VLC,LEVC,Yerevan,EVN,UDYZ,no_flights
+Valencia,VLC,LEVC,Brasov,GHV,LRBV,no_flights
+Valencia,VLC,LEVC,Naples,NAP,LIRN,no_flights
+Valencia,VLC,LEVC,Asturias,OVD,LEAS,no_flights
+Valencia,VLC,LEVC,Palma de Mallorca,PMI,LEPA,no_flights
+Valencia,VLC,LEVC,Chisinau,RMO,LUKK,no_flights
+Valencia,VLC,LEVC,Santiago de Compostela,SCQ,LEST,no_flights
+Valencia,VLC,LEVC,Santander,SDR,LEXJ,no_flights
+Vilnius,VNO,EYVI,Berlin Brandenburg,BER,EDDB,no_flights
+Vilnius,VNO,EYVI,Grenoble,GNB,LFLS,no_flights
+Verona,VRN,LIPX,Gdansk,GDN,EPGD,no_flights
+Verona,VRN,LIPX,Kraków,KRK,EPKK,no_flights
+Verona,VRN,LIPX,Chisinau,RMO,LUKK,no_flights
+Verona,VRN,LIPX,Warsaw Chopin,WAW,EPWA,no_flights
+Warsaw Chopin,WAW,EPWA,Agadir,AGA,GMAD,no_flights
+Warsaw Chopin,WAW,EPWA,Basel-Mulhouse-Freiburg,BSL,LFSB,no_flights
+Warsaw Chopin,WAW,EPWA,Rome Ciampino,CIA,LIRA,no_flights
+Warsaw Chopin,WAW,EPWA,Fuerteventura (Canary Islands),FUE,GCFV,no_flights
+Warsaw Chopin,WAW,EPWA,Grenoble,GNB,LFLS,no_flights
+Warsaw Chopin,WAW,EPWA,Lyon,LYS,LFLL,no_flights
+Warsaw Chopin,WAW,EPWA,Marrakesh,RAK,GMMX,no_flights
+Warsaw Chopin,WAW,EPWA,Turin,TRN,LIMF,no_flights
+Warsaw Chopin,WAW,EPWA,Verona,VRN,LIPX,no_flights
+Warsaw Modlin,WMI,EPMO,Milan Bergamo,BGY,LIME,no_flights
+Warsaw Modlin,WMI,EPMO,Hurghada,HRG,HEGN,no_flights
+Warsaw Modlin,WMI,EPMO,Marsa Alam,RMF,HEMA,no_flights
+Warsaw Modlin,WMI,EPMO,Chisinau,RMO,LUKK,no_flights
+Warsaw Modlin,WMI,EPMO,Santiago de Compostela,SCQ,LEST,no_flights
+Warsaw Modlin,WMI,EPMO,Sofia,SOF,LBSF,no_flights
+Warsaw Modlin,WMI,EPMO,Sharm El Sheikh,SSH,HESH,no_flights
+Wroclaw,WRO,EPWR,Bilbao,BIO,LEBB,no_flights
+Wroclaw,WRO,EPWR,Hurghada,HRG,HEGN,no_flights
+Wroclaw,WRO,EPWR,Gran Canaria (Canary Islands),LPA,GCLP,no_flights
+Wroclaw,WRO,EPWR,Turin,TRN,LIMF,no_flights
+Zaragoza,ZAZ,LEZG,Santiago de Compostela,SCQ,LEST,no_flights

@@ -7,7 +7,6 @@ Agadir,AGA,GMAD,Katowice,KTW,EPKT
 Agadir,AGA,GMAD,Milan Malpensa,MXP,LIMC
 Agadir,AGA,GMAD,"Warsaw Chopin
 ",WAW,EPWA
-Malaga,AGP,LEMG,Bucharest Baneasa,BBU,LRBS
 Malaga,AGP,LEMG,Bilbao,BIO,LEBB
 Malaga,AGP,LEMG,Bratislava,BTS,LZIB
 Malaga,AGP,LEMG,Budapest,BUD,LHBP
@@ -42,7 +41,6 @@ Alghero (Sardinia),AHO,LIEA,Tirana,TIA,LATI
 Alghero (Sardinia),AHO,LIEA,Venice,VCE,LIPZ
 Alghero (Sardinia),AHO,LIEA,"Warsaw Modlin
 ",WMI,EPMO
-Alicante,ALC,LEAL,Bucharest Baneasa,BBU,LRBS
 Alicante,ALC,LEAL,Belgrade,BEG,LYBE
 Alicante,ALC,LEAL,Bratislava,BTS,LZIB
 Alicante,ALC,LEAL,Budapest,BUD,LHBP
@@ -63,8 +61,6 @@ Alicante,ALC,LEAL,"Warsaw Chopin
 "Amman
 ",AMM,OJAI,Budapest,BUD,LHBP
 Ancona,AOI,LIPY,Tirana,TIA,LATI
-"Stockholm Arlanda
-",ARN,ESSA,Bucharest Baneasa,BBU,LRBS
 "Stockholm Arlanda
 ",ARN,ESSA,Budapest,BUD,LHBP
 "Stockholm Arlanda
@@ -102,8 +98,6 @@ Arad,ARW,LRAR,Venice,VCE,LIPZ
 Arad,ARW,LRAR,Valencia,VLC,LEVC
 Arad,ARW,LRAR,Zakynthos,ZTH,LGZA
 "Athens
-",ATH,LGAV,Bucharest Baneasa,BBU,LRBS
-"Athens
 ",ATH,LGAV,Bratislava,BTS,LZIB
 "Athens
 ",ATH,LGAV,Budapest,BUD,LHBP
@@ -135,7 +129,6 @@ Arad,ARW,LRAR,Zakynthos,ZTH,LGZA
 "Athens
 ",ATH,LGAV,"Warsaw Modlin
 ",WMI,EPMO
-Abu Dhabi,AUH,OMAA,Bucharest Baneasa,BBU,LRBS
 Abu Dhabi,AUH,OMAA,Budapest,BUD,LHBP
 Abu Dhabi,AUH,OMAA,Cluj-Napoca,CLJ,LRCL
 Abu Dhabi,AUH,OMAA,"Kraków
@@ -151,103 +144,8 @@ Antalya,AYT,LTAI,London Gatwick,LGW,EGKK
 Antalya,AYT,LTAI,London Luton,LTN,EGGW
 Antalya,AYT,LTAI,"Bucharest Otopeni
 ",OTP,LROP
-Bucharest Baneasa,BBU,LRBS,Malaga,AGP,LEMG
-Bucharest Baneasa,BBU,LRBS,Alghero (Sardinia),AHO,LIEA
-Bucharest Baneasa,BBU,LRBS,Alicante,ALC,LEAL
-Bucharest Baneasa,BBU,LRBS,"Stockholm Arlanda
-",ARN,ESSA
-Bucharest Baneasa,BBU,LRBS,"Athens
-",ATH,LGAV
-Bucharest Baneasa,BBU,LRBS,Abu Dhabi,AUH,OMAA
-Bucharest Baneasa,BBU,LRBS,Antalya,AYT,LTAI
-Bucharest Baneasa,BBU,LRBS,Barcelona El Prat,BCN,LEBL
-Bucharest Baneasa,BBU,LRBS,"Brindisi
-",BDS,LIBR
-Bucharest Baneasa,BBU,LRBS,"Berlin Brandenburg
-",BER,EDDB
-Bucharest Baneasa,BBU,LRBS,Milan Bergamo,BGY,LIME
-Bucharest Baneasa,BBU,LRBS,Birmingham,BHX,EGBB
-Bucharest Baneasa,BBU,LRBS,Billund,BLL,EKBI
-Bucharest Baneasa,BBU,LRBS,Bologna,BLQ,LIPE
-Bucharest Baneasa,BBU,LRBS,Bordeaux,BOD,LFBD
-Bucharest Baneasa,BBU,LRBS,Bari,BRI,LIBD
-Bucharest Baneasa,BBU,LRBS,Basel-Mulhouse-Freiburg,BSL,LFSB
-Bucharest Baneasa,BBU,LRBS,Bratislava,BTS,LZIB
-Bucharest Baneasa,BBU,LRBS,Budapest,BUD,LHBP
-Bucharest Baneasa,BBU,LRBS,Paris Beauvais,BVA,LFOB
-Bucharest Baneasa,BBU,LRBS,Castellon (Valencia),CDT,LECH
-Bucharest Baneasa,BBU,LRBS,Corfu,CFU,LGKR
-Bucharest Baneasa,BBU,LRBS,Cologne,CGN,EDDK
-Bucharest Baneasa,BBU,LRBS,Rome Ciampino,CIA,LIRA
-Bucharest Baneasa,BBU,LRBS,Copenhagen,CPH,EKCH
-Bucharest Baneasa,BBU,LRBS,Brussels Charleroi,CRL,EBCI
-Bucharest Baneasa,BBU,LRBS,Catania (Sicily),CTA,LICC
-Bucharest Baneasa,BBU,LRBS,Dubrovnik,DBV,LDDU
-Bucharest Baneasa,BBU,LRBS,Dortmund,DTM,EDLW
-Bucharest Baneasa,BBU,LRBS,"Dubai 
-",DXB,OMDB
-Bucharest Baneasa,BBU,LRBS,Kefalonia,EFL,LGKF
-Bucharest Baneasa,BBU,LRBS,Eindhoven,EIN,EHEH
-Bucharest Baneasa,BBU,LRBS,Yerevan,EVN,UDYZ
-Bucharest Baneasa,BBU,LRBS,Faro (Algarve),FAO,LPFR
-Bucharest Baneasa,BBU,LRBS,Rome Fiumicino,FCO,LIRF
-Bucharest Baneasa,BBU,LRBS,Karlsruhe/Baden-Baden,FKB,EDSB
-Bucharest Baneasa,BBU,LRBS,Memmingen / Munich West,FMM,EDJA
-Bucharest Baneasa,BBU,LRBS,Gdansk,GDN,EPGD
-Bucharest Baneasa,BBU,LRBS,Hamburg,HAM,EDDH
-Bucharest Baneasa,BBU,LRBS,Heraklion (Crete),HER,LGIR
-Bucharest Baneasa,BBU,LRBS,Frankfurt Hahn,HHN,EDFH
-Bucharest Baneasa,BBU,LRBS,Mykonos,JMK,LGMK
-Bucharest Baneasa,BBU,LRBS,Santorini,JTR,LGSR
-Bucharest Baneasa,BBU,LRBS,"Kraków
-",KRK,EPKK
-Bucharest Baneasa,BBU,LRBS,Leeds,LBA,EGNM
-Bucharest Baneasa,BBU,LRBS,Larnaca,LCA,LCLK
-Bucharest Baneasa,BBU,LRBS,"Almería
-",LEI,LEAM
-Bucharest Baneasa,BBU,LRBS,Lisbon,LIS,LPPT
-Bucharest Baneasa,BBU,LRBS,"Gran Canaria (Canary Islands)
-",LPA,GCLP
-Bucharest Baneasa,BBU,LRBS,Liverpool,LPL,EGGP
-Bucharest Baneasa,BBU,LRBS,London Luton,LTN,EGGW
-Bucharest Baneasa,BBU,LRBS,"Lyon
-",LYS,LFLL
-Bucharest Baneasa,BBU,LRBS,Madrid,MAD,LEMD
-Bucharest Baneasa,BBU,LRBS,Malta,MLA,LMML
-Bucharest Baneasa,BBU,LRBS,Milan Malpensa,MXP,LIMC
-Bucharest Baneasa,BBU,LRBS,Naples,NAP,LIRN
-Bucharest Baneasa,BBU,LRBS,Nice,NCE,LFMN
-Bucharest Baneasa,BBU,LRBS,Nuremberg,NUE,EDDN
-Bucharest Baneasa,BBU,LRBS,"Stockholm Skavsta
-",NYO,ESKN
-Bucharest Baneasa,BBU,LRBS,Porto,OPO,LPPR
-Bucharest Baneasa,BBU,LRBS,Paris Orly,ORY,LFPO
-Bucharest Baneasa,BBU,LRBS,Palma de Mallorca,PMI,LEPA
-Bucharest Baneasa,BBU,LRBS,Prague,PRG,LKPR
-Bucharest Baneasa,BBU,LRBS,Pisa (Tuscany),PSA,LIRP
-Bucharest Baneasa,BBU,LRBS,Pescara,PSR,LIBP
-Bucharest Baneasa,BBU,LRBS,"Marrakesh
-",RAK,GMMX
-Bucharest Baneasa,BBU,LRBS,Chisinau,RMO,LUKK
-Bucharest Baneasa,BBU,LRBS,Santander,SDR,LEXJ
-Bucharest Baneasa,BBU,LRBS,Stuttgart,STR,EDDS
-Bucharest Baneasa,BBU,LRBS,Seville,SVQ,LEZL
-Bucharest Baneasa,BBU,LRBS,Tenerife (Canary Islands),TFS,GCTS
-Bucharest Baneasa,BBU,LRBS,Turku,TKU,EFTU
-Bucharest Baneasa,BBU,LRBS,Tel-Aviv,TLV,LLBG
-Bucharest Baneasa,BBU,LRBS,Oslo Sandefjord Torp,TRF,ENTO
-Bucharest Baneasa,BBU,LRBS,Turin,TRN,LIMF
-Bucharest Baneasa,BBU,LRBS,Venice Treviso,TSF,LIPH
-Bucharest Baneasa,BBU,LRBS,Venice,VCE,LIPZ
-Bucharest Baneasa,BBU,LRBS,Valencia,VLC,LEVC
-Bucharest Baneasa,BBU,LRBS,"Warsaw Chopin
-",WAW,EPWA
-Bucharest Baneasa,BBU,LRBS,Wroclaw,WRO,EPWR
-Bucharest Baneasa,BBU,LRBS,Zaragoza,ZAZ,LEZG
-Bucharest Baneasa,BBU,LRBS,Zakynthos,ZTH,LGZA
 Bacau,BCM,LRBC,Rome Fiumicino,FCO,LIRF
 Bacau,BCM,LRBC,London Luton,LTN,EGGW
-Barcelona El Prat,BCN,LEBL,Bucharest Baneasa,BBU,LRBS
 Barcelona El Prat,BCN,LEBL,Belgrade,BEG,LYBE
 Barcelona El Prat,BCN,LEBL,Bratislava,BTS,LZIB
 Barcelona El Prat,BCN,LEBL,Budapest,BUD,LHBP
@@ -368,7 +266,6 @@ Bergen,BGO,ENBR,Vilnius,VNO,EYVI
 Bergen,BGO,ENBR,"Warsaw Modlin
 ",WMI,EPMO
 Milan Bergamo,BGY,LIME,Arad,ARW,LRAR
-Milan Bergamo,BGY,LIME,Bucharest Baneasa,BBU,LRBS
 Milan Bergamo,BGY,LIME,Belgrade,BEG,LYBE
 Milan Bergamo,BGY,LIME,Cluj-Napoca,CLJ,LRCL
 Milan Bergamo,BGY,LIME,Craiova,CRA,LRCV
@@ -453,7 +350,6 @@ Bourgas (Black Sea),BOJ,LBBG,"Warsaw Radom
 Bourgas (Black Sea),BOJ,LBBG,"Warsaw Chopin
 ",WAW,EPWA
 Bari,BRI,LIBD,Arad,ARW,LRAR
-Bari,BRI,LIBD,Bucharest Baneasa,BBU,LRBS
 Bari,BRI,LIBD,Budapest,BUD,LHBP
 Bari,BRI,LIBD,Cluj-Napoca,CLJ,LRCL
 Bari,BRI,LIBD,Craiova,CRA,LRCV
@@ -467,7 +363,6 @@ Bari,BRI,LIBD,Timisoara,TSR,LRTR
 Bari,BRI,LIBD,"Warsaw Chopin
 ",WAW,EPWA
 Bari,BRI,LIBD,Wroclaw,WRO,EPWR
-Bâle / Mulhouse,BSL,LFSB,Bucharest Baneasa,BBU,LRBS
 Bâle / Mulhouse,BSL,LFSB,Belgrade,BEG,LYBE
 Bâle / Mulhouse,BSL,LFSB,Banja Luka,BNX,LQBK
 Bâle / Mulhouse,BSL,LFSB,Bratislava,BTS,LZIB
@@ -549,7 +444,6 @@ Budapest,BUD,LHBP,"Athens
 ",ATH,LGAV
 Budapest,BUD,LHBP,Abu Dhabi,AUH,OMAA
 Budapest,BUD,LHBP,Antalya,AYT,LTAI
-Budapest,BUD,LHBP,Bucharest Baneasa,BBU,LRBS
 Budapest,BUD,LHBP,Barcelona El Prat,BCN,LEBL
 Budapest,BUD,LHBP,"Berlin Brandenburg
 ",BER,EDDB
@@ -641,7 +535,6 @@ Budapest,BUD,LHBP,Wroclaw,WRO,EPWR
 Budapest,BUD,LHBP,Zadar,ZAD,LDZD
 Budapest,BUD,LHBP,Zakynthos,ZTH,LGZA
 Paris Beauvais,BVA,LFOB,Arad,ARW,LRAR
-Paris Beauvais,BVA,LFOB,Bucharest Baneasa,BBU,LRBS
 Paris Beauvais,BVA,LFOB,Belgrade,BEG,LYBE
 Paris Beauvais,BVA,LFOB,Cluj-Napoca,CLJ,LRCL
 Paris Beauvais,BVA,LFOB,Craiova,CRA,LRCV
@@ -662,7 +555,6 @@ Paris Beauvais,BVA,LFOB,Varna (Black Sea),VAR,LBWN
 Cagliari,CAG,LIEE,Milan Malpensa,MXP,LIMC
 Cagliari,CAG,LIEE,Venice,VCE,LIPZ
 Castellon (Valencia),CDT,LECH,Arad,ARW,LRAR
-Castellon (Valencia),CDT,LECH,Bucharest Baneasa,BBU,LRBS
 Castellon (Valencia),CDT,LECH,Bilbao,BIO,LEBB
 Castellon (Valencia),CDT,LECH,Budapest,BUD,LHBP
 Castellon (Valencia),CDT,LECH,Cluj-Napoca,CLJ,LRCL
@@ -817,7 +709,6 @@ Craiova,CRA,LRCV,Naples,NAP,LIRN
 Craiova,CRA,LRCV,Venice Treviso,TSF,LIPH
 Craiova,CRA,LRCV,Venice,VCE,LIPZ
 Brussels Charleroi,CRL,EBCI,Arad,ARW,LRAR
-Brussels Charleroi,CRL,EBCI,Bucharest Baneasa,BBU,LRBS
 Brussels Charleroi,CRL,EBCI,Budapest,BUD,LHBP
 Brussels Charleroi,CRL,EBCI,Cluj-Napoca,CLJ,LRCL
 Brussels Charleroi,CRL,EBCI,Craiova,CRA,LRCV
@@ -838,7 +729,6 @@ Brussels Charleroi,CRL,EBCI,Varna (Black Sea),VAR,LBWN
 Brussels Charleroi,CRL,EBCI,"Warsaw Chopin
 ",WAW,EPWA
 Catania (Sicily),CTA,LICC,Alicante,ALC,LEAL
-Catania (Sicily),CTA,LICC,Bucharest Baneasa,BBU,LRBS
 Catania (Sicily),CTA,LICC,Bologna,BLQ,LIPE
 Catania (Sicily),CTA,LICC,Budapest,BUD,LHBP
 Catania (Sicily),CTA,LICC,Cluj-Napoca,CLJ,LRCL
@@ -881,7 +771,6 @@ Debrecen,DEB,LHDC,Tel-Aviv,TLV,LLBG
 Debrecen,DEB,LHDC,Varna (Black Sea),VAR,LBWN
 Dalaman,DLM,LTBS,London Gatwick,LGW,EGKK
 Dortmund,DTM,EDLW,Arad,ARW,LRAR
-Dortmund,DTM,EDLW,Bucharest Baneasa,BBU,LRBS
 Dortmund,DTM,EDLW,Belgrade,BEG,LYBE
 Dortmund,DTM,EDLW,Banja Luka,BNX,LQBK
 Dortmund,DTM,EDLW,Bratislava,BTS,LZIB
@@ -923,8 +812,6 @@ Dortmund,DTM,EDLW,"Warsaw Chopin
 ",WAW,EPWA
 Dortmund,DTM,EDLW,Wroclaw,WRO,EPWR
 "Dubai 
-",DXB,OMDB,Bucharest Baneasa,BBU,LRBS
-"Dubai 
 ",DXB,OMDB,Budapest,BUD,LHBP
 "Dubai 
 ",DXB,OMDB,Cluj-Napoca,CLJ,LRCL
@@ -944,7 +831,6 @@ Kefalonia,EFL,LGKF,Budapest,BUD,LHBP
 Kefalonia,EFL,LGKF,Rome Fiumicino,FCO,LIRF
 Kefalonia,EFL,LGKF,"Bucharest Otopeni
 ",OTP,LROP
-Eindhoven,EIN,EHEH,Bucharest Baneasa,BBU,LRBS
 Eindhoven,EIN,EHEH,Belgrade,BEG,LYBE
 Eindhoven,EIN,EHEH,Budapest,BUD,LHBP
 Eindhoven,EIN,EHEH,Cluj-Napoca,CLJ,LRCL
@@ -1091,7 +977,6 @@ Rome Fiumicino,FCO,LIRF,Zakynthos,ZTH,LGZA
 Friedrichshafen,FDH,EDNY,Belgrade,BEG,LYBE
 Friedrichshafen,FDH,EDNY,Skopje,SKP,LWSK
 Karlsruhe/Baden-Baden,FKB,EDSB,Arad,ARW,LRAR
-Karlsruhe/Baden-Baden,FKB,EDSB,Bucharest Baneasa,BBU,LRBS
 Karlsruhe/Baden-Baden,FKB,EDSB,Belgrade,BEG,LYBE
 Karlsruhe/Baden-Baden,FKB,EDSB,Brasov,GHV,LRBV
 Karlsruhe/Baden-Baden,FKB,EDSB,Prishtina,PRN,BKPR
@@ -1102,7 +987,6 @@ Karlsruhe/Baden-Baden,FKB,EDSB,Podgorica,TGD,LYPG
 Karlsruhe/Baden-Baden,FKB,EDSB,Tirana,TIA,LATI
 Karlsruhe/Baden-Baden,FKB,EDSB,Timisoara,TSR,LRTR
 Memmingen / Munich West,FMM,EDJA,Arad,ARW,LRAR
-Memmingen / Munich West,FMM,EDJA,Bucharest Baneasa,BBU,LRBS
 Memmingen / Munich West,FMM,EDJA,Belgrade,BEG,LYBE
 Memmingen / Munich West,FMM,EDJA,Budapest,BUD,LHBP
 Memmingen / Munich West,FMM,EDJA,Cluj-Napoca,CLJ,LRCL
@@ -1234,7 +1118,6 @@ Gothenburg Landvetter,GOT,ESGG,Tuzla,TZL,LQTZ
 Baku,GYD,UBBB,Bratislava,BTS,LZIB
 Baku,GYD,UBBB,Budapest,BUD,LHBP
 Baku,GYD,UBBB,Rome Fiumicino,FCO,LIRF
-Hamburg,HAM,EDDH,Bucharest Baneasa,BBU,LRBS
 Hamburg,HAM,EDDH,Belgrade,BEG,LYBE
 Hamburg,HAM,EDDH,Yerevan,EVN,UDYZ
 Hamburg,HAM,EDDH,Gdansk,GDN,EPGD
@@ -1262,7 +1145,6 @@ Heraklion (Crete),HER,LGIR,"Bucharest Otopeni
 Heraklion (Crete),HER,LGIR,Tel-Aviv,TLV,LLBG
 Heraklion (Crete),HER,LGIR,"Warsaw Chopin
 ",WAW,EPWA
-Frankfurt Hahn,HHN,EDFH,Bucharest Baneasa,BBU,LRBS
 Frankfurt Hahn,HHN,EDFH,Kutaisi,KUT,UGKO
 Frankfurt Hahn,HHN,EDFH,"Bucharest Otopeni
 ",OTP,LROP
@@ -1359,8 +1241,6 @@ Kalamata,KLX,LGKL,Budapest,BUD,LHBP
 ",KRK,EPKK,Malaga,AGP,LEMG
 "Kraków
 ",KRK,EPKK,Abu Dhabi,AUH,OMAA
-"Kraków
-",KRK,EPKK,Bucharest Baneasa,BBU,LRBS
 "Kraków
 ",KRK,EPKK,Barcelona El Prat,BCN,LEBL
 "Kraków
@@ -1539,7 +1419,6 @@ Leeds,LBA,EGNM,"Warsaw Chopin
 Larnaca,LCA,LCLK,"Athens
 ",ATH,LGAV
 Larnaca,LCA,LCLK,Abu Dhabi,AUH,OMAA
-Larnaca,LCA,LCLK,Bucharest Baneasa,BBU,LRBS
 Larnaca,LCA,LCLK,Barcelona El Prat,BCN,LEBL
 Larnaca,LCA,LCLK,Belgrade,BEG,LYBE
 Larnaca,LCA,LCLK,Bratislava,BTS,LZIB
@@ -1606,7 +1485,6 @@ London Gatwick,LGW,EGKK,Podgorica,TGD,LYPG
 London Gatwick,LGW,EGKK,Tirana,TIA,LATI
 London Gatwick,LGW,EGKK,Tel-Aviv,TLV,LLBG
 London Gatwick,LGW,EGKK,Valencia,VLC,LEVC
-Lisbon,LIS,LPPT,Bucharest Baneasa,BBU,LRBS
 Lisbon,LIS,LPPT,Budapest,BUD,LHBP
 Lisbon,LIS,LPPT,Cluj-Napoca,CLJ,LRCL
 Lisbon,LIS,LPPT,Rome Fiumicino,FCO,LIRF
@@ -1639,7 +1517,6 @@ London Luton,LTN,EGGW,Arad,ARW,LRAR
 London Luton,LTN,EGGW,"Athens
 ",ATH,LGAV
 London Luton,LTN,EGGW,Antalya,AYT,LTAI
-London Luton,LTN,EGGW,Bucharest Baneasa,BBU,LRBS
 London Luton,LTN,EGGW,Bacau,BCM,LRBC
 London Luton,LTN,EGGW,Barcelona El Prat,BCN,LEBL
 London Luton,LTN,EGGW,Belgrade,BEG,LYBE
@@ -1742,7 +1619,6 @@ Gyumri,LWN,UDSG,Larnaca,LCA,LCLK
 ",LYS,LFLL,"Warsaw Chopin
 ",WAW,EPWA
 Madrid,MAD,LEMD,Arad,ARW,LRAR
-Madrid,MAD,LEMD,Bucharest Baneasa,BBU,LRBS
 Madrid,MAD,LEMD,Belgrade,BEG,LYBE
 Madrid,MAD,LEMD,Budapest,BUD,LHBP
 Madrid,MAD,LEMD,Cluj-Napoca,CLJ,LRCL
@@ -1779,7 +1655,6 @@ Menorca,MAH,LEMH,Budapest,BUD,LHBP
 Menorca,MAH,LEMH,Rome Fiumicino,FCO,LIRF
 Menorca,MAH,LEMH,"Warsaw Chopin
 ",WAW,EPWA
-Malta,MLA,LMML,Bucharest Baneasa,BBU,LRBS
 Malta,MLA,LMML,Belgrade,BEG,LYBE
 Malta,MLA,LMML,Budapest,BUD,LHBP
 Malta,MLA,LMML,Cluj-Napoca,CLJ,LRCL
@@ -1872,7 +1747,6 @@ Milan Malpensa,MXP,LIMC,"Warsaw Chopin
 ",WAW,EPWA
 Milan Malpensa,MXP,LIMC,Zaragoza,ZAZ,LEZG
 Milan Malpensa,MXP,LIMC,Zakynthos,ZTH,LGZA
-Naples,NAP,LIRN,Bucharest Baneasa,BBU,LRBS
 Naples,NAP,LIRN,Barcelona El Prat,BCN,LEBL
 Naples,NAP,LIRN,Bilbao,BIO,LEBB
 Naples,NAP,LIRN,Basel-Mulhouse-Freiburg,BSL,LFSB
@@ -1908,7 +1782,6 @@ Naples,NAP,LIRN,Venice,VCE,LIPZ
 Naples,NAP,LIRN,Valencia,VLC,LEVC
 Naples,NAP,LIRN,"Warsaw Chopin
 ",WAW,EPWA
-Nice,NCE,LFMN,Bucharest Baneasa,BBU,LRBS
 Nice,NCE,LFMN,Belgrade,BEG,LYBE
 Nice,NCE,LFMN,Bratislava,BTS,LZIB
 Nice,NCE,LFMN,Budapest,BUD,LHBP
@@ -1937,8 +1810,6 @@ Nuremberg,NUE,EDDN,Targu Mures,TGM,LRTM
 Nuremberg,NUE,EDDN,Tirana,TIA,LATI
 Nuremberg,NUE,EDDN,Timisoara,TSR,LRTR
 Nuremberg,NUE,EDDN,Varna (Black Sea),VAR,LBWN
-"Stockholm Skavsta
-",NYO,ESKN,Bucharest Baneasa,BBU,LRBS
 "Stockholm Skavsta
 ",NYO,ESKN,Belgrade,BEG,LYBE
 "Stockholm Skavsta
@@ -2176,7 +2047,6 @@ Perugia,PEG,LIRZ,Tirana,TIA,LATI
 Paphos,PFO,LCPH,"Warsaw Modlin
 ",WMI,EPMO
 Palanga – Klaipeda,PLQ,EYPA,Oslo Gardermoen,OSL,ENGM
-Palma de Mallorca,PMI,LEPA,Bucharest Baneasa,BBU,LRBS
 Palma de Mallorca,PMI,LEPA,Budapest,BUD,LHBP
 Palma de Mallorca,PMI,LEPA,Cluj-Napoca,CLJ,LRCL
 Palma de Mallorca,PMI,LEPA,Rome Fiumicino,FCO,LIRF
@@ -2276,7 +2146,6 @@ Prishtina,PRN,BKPR,Malmo,MMX,ESMS
 Prishtina,PRN,BKPR,Milan Malpensa,MXP,LIMC
 Prishtina,PRN,BKPR,"Trieste
 ",TRS,LIPQ
-Pisa (Tuscany),PSA,LIRP,Bucharest Baneasa,BBU,LRBS
 Pisa (Tuscany),PSA,LIRP,Belgrade,BEG,LYBE
 Pisa (Tuscany),PSA,LIRP,Iasi,IAS,LRIA
 Pisa (Tuscany),PSA,LIRP,Madrid,MAD,LEMD
@@ -2623,7 +2492,6 @@ Satu Mare,SUJ,LRSM,London Luton,LTN,EGGW
 Stavanger,SVG,ENZV,Gdansk,GDN,EPGD
 Stavanger,SVG,ENZV,"Kraków
 ",KRK,EPKK
-Seville,SVQ,LEZL,Bucharest Baneasa,BBU,LRBS
 Seville,SVQ,LEZL,Rome Fiumicino,FCO,LIRF
 Seville,SVQ,LEZL,London Luton,LTN,EGGW
 Seville,SVQ,LEZL,Milan Malpensa,MXP,LIMC
@@ -2822,7 +2690,6 @@ Oslo Sandefjord Torp,TRF,ENTO,Tirana,TIA,LATI
 Oslo Sandefjord Torp,TRF,ENTO,"Warsaw Chopin
 ",WAW,EPWA
 Turin,TRN,LIMF,Malaga,AGP,LEMG
-Turin,TRN,LIMF,Bucharest Baneasa,BBU,LRBS
 Turin,TRN,LIMF,Barcelona El Prat,BCN,LEBL
 Turin,TRN,LIMF,Bilbao,BIO,LEBB
 Turin,TRN,LIMF,Budapest,BUD,LHBP
@@ -2855,7 +2722,6 @@ Turin,TRN,LIMF,Wroclaw,WRO,EPWR
 ",TRS,LIPQ,Prishtina,PRN,BKPR
 "Trieste
 ",TRS,LIPQ,Tirana,TIA,LATI
-Venice Treviso,TSF,LIPH,Bucharest Baneasa,BBU,LRBS
 Venice Treviso,TSF,LIPH,Cluj-Napoca,CLJ,LRCL
 Venice Treviso,TSF,LIPH,Craiova,CRA,LRCV
 Venice Treviso,TSF,LIPH,Iasi,IAS,LRIA
@@ -2937,7 +2803,6 @@ Venice,VCE,LIPZ,Alghero (Sardinia),AHO,LIEA
 Venice,VCE,LIPZ,Alicante,ALC,LEAL
 Venice,VCE,LIPZ,"Athens
 ",ATH,LGAV
-Venice,VCE,LIPZ,Bucharest Baneasa,BBU,LRBS
 Venice,VCE,LIPZ,Barcelona El Prat,BCN,LEBL
 Venice,VCE,LIPZ,Bilbao,BIO,LEBB
 Venice,VCE,LIPZ,Bordeaux,BOD,LFBD
@@ -2973,7 +2838,6 @@ Venice,VCE,LIPZ,Valencia,VLC,LEVC
 Venice,VCE,LIPZ,"Warsaw Chopin
 ",WAW,EPWA
 Valencia,VLC,LEVC,Arad,ARW,LRAR
-Valencia,VLC,LEVC,Bucharest Baneasa,BBU,LRBS
 Valencia,VLC,LEVC,Bilbao,BIO,LEBB
 Valencia,VLC,LEVC,Budapest,BUD,LHBP
 Valencia,VLC,LEVC,Cluj-Napoca,CLJ,LRCL
@@ -3044,8 +2908,6 @@ Verona,VRN,LIPX,"Warsaw Chopin
 ",WAW,EPWA,Malaga,AGP,LEMG
 "Warsaw Chopin
 ",WAW,EPWA,Alicante,ALC,LEAL
-"Warsaw Chopin
-",WAW,EPWA,Bucharest Baneasa,BBU,LRBS
 "Warsaw Chopin
 ",WAW,EPWA,Barcelona El Prat,BCN,LEBL
 "Warsaw Chopin
@@ -3226,7 +3088,6 @@ Verona,VRN,LIPX,"Warsaw Chopin
 "Warsaw Modlin
 ",WMI,EPMO,Varna (Black Sea),VAR,LBWN
 Wroclaw,WRO,EPWR,Malaga,AGP,LEMG
-Wroclaw,WRO,EPWR,Bucharest Baneasa,BBU,LRBS
 Wroclaw,WRO,EPWR,Barcelona El Prat,BCN,LEBL
 Wroclaw,WRO,EPWR,Bilbao,BIO,LEBB
 Wroclaw,WRO,EPWR,Bari,BRI,LIBD
@@ -3256,7 +3117,6 @@ Wroclaw,WRO,EPWR,Varna (Black Sea),VAR,LBWN
 Zadar,ZAD,LDZD,Budapest,BUD,LHBP
 Zadar,ZAD,LDZD,"Warsaw Chopin
 ",WAW,EPWA
-Zaragoza,ZAZ,LEZG,Bucharest Baneasa,BBU,LRBS
 Zaragoza,ZAZ,LEZG,Cluj-Napoca,CLJ,LRCL
 Zaragoza,ZAZ,LEZG,Rome Fiumicino,FCO,LIRF
 Zaragoza,ZAZ,LEZG,Milan Malpensa,MXP,LIMC
