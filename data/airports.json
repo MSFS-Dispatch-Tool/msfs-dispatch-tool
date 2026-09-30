@@ -150,6 +150,16 @@
     "lon": 7.10951
   },
   {
+    "icao": "EDDS",
+    "iata": "STR",
+    "name": "Stuttgart Airport",
+    "city": "Stuttgart",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 48.689899,
+    "lon": 9.22196
+  },
+  {
     "icao": "EDDW",
     "iata": "BRE",
     "name": "Bremen Airport",
@@ -210,6 +220,16 @@
     "lon": 6.1421699524
   },
   {
+    "icao": "EDLW",
+    "iata": "DTM",
+    "name": "Dortmund Airport",
+    "city": "Dortmund",
+    "country": "DE",
+    "tz": "Europe/Berlin",
+    "lat": 51.518299,
+    "lon": 7.61224
+  },
+  {
     "icao": "EDNY",
     "iata": "FDH",
     "name": "Friedrichshafen Airport",
@@ -258,6 +278,16 @@
     "tz": "Europe/Helsinki",
     "lat": 66.5648,
     "lon": 25.8304
+  },
+  {
+    "icao": "EFTU",
+    "iata": "TKU",
+    "name": "Turku Airport",
+    "city": "Turku",
+    "country": "FI",
+    "tz": "Europe/Helsinki",
+    "lat": 60.514099,
+    "lon": 22.2628
   },
   {
     "icao": "EGAA",
@@ -550,6 +580,16 @@
     "lon": 4.7638897896
   },
   {
+    "icao": "EHBK",
+    "iata": "MST",
+    "name": "Maastricht Aachen Airport",
+    "city": "Maastricht",
+    "country": "NL",
+    "tz": "Europe/Amsterdam",
+    "lat": 50.911087,
+    "lon": 5.769401
+  },
+  {
     "icao": "EHEH",
     "iata": "EIN",
     "name": "Eindhoven Airport",
@@ -620,6 +660,16 @@
     "lon": 10.619
   },
   {
+    "icao": "EKBI",
+    "iata": "BLL",
+    "name": "Billund Airport",
+    "city": "Billund",
+    "country": "DK",
+    "tz": "Europe/Copenhagen",
+    "lat": 55.740335,
+    "lon": 9.157019
+  },
+  {
     "icao": "EKCH",
     "iata": "CPH",
     "name": "Copenhagen Kastrup Airport",
@@ -638,6 +688,26 @@
     "tz": "Europe/Luxembourg",
     "lat": 49.6265983582,
     "lon": 6.211520195
+  },
+  {
+    "icao": "ENAL",
+    "iata": "AES",
+    "name": "Ålesund Airport",
+    "city": "Ålesund",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 62.560443,
+    "lon": 6.110845
+  },
+  {
+    "icao": "ENBR",
+    "iata": "BGO",
+    "name": "Bergen Airport, Flesland",
+    "city": "Bergen",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 60.2934,
+    "lon": 5.21814
   },
   {
     "icao": "ENEV",
@@ -660,6 +730,26 @@
     "lon": 11.100399971
   },
   {
+    "icao": "ENHD",
+    "iata": "HAU",
+    "name": "Haugesund Airport, Karmøy",
+    "city": "Haugesund",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 59.345299,
+    "lon": 5.20836
+  },
+  {
+    "icao": "ENTC",
+    "iata": "TOS",
+    "name": "Tromsø Airport",
+    "city": "Tromsø",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 69.683296,
+    "lon": 18.9189
+  },
+  {
     "icao": "ENTO",
     "iata": "TRF",
     "name": "Sandefjord Airport Torp",
@@ -668,6 +758,26 @@
     "tz": "Europe/Oslo",
     "lat": 59.1866989136,
     "lon": 10.258600235
+  },
+  {
+    "icao": "ENVA",
+    "iata": "TRD",
+    "name": "Trondheim Airport, Værnes",
+    "city": "Trondheim",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 63.457802,
+    "lon": 10.924
+  },
+  {
+    "icao": "ENZV",
+    "iata": "SVG",
+    "name": "Stavanger Airport, Sola",
+    "city": "Stavanger",
+    "country": "NO",
+    "tz": "Europe/Oslo",
+    "lat": 58.876701,
+    "lon": 5.63778
   },
   {
     "icao": "EPBY",
@@ -750,6 +860,16 @@
     "lon": 16.8262996674
   },
   {
+    "icao": "EPRA",
+    "iata": "RDO",
+    "name": "Warsaw Radom Airport",
+    "city": "Radom",
+    "country": "PL",
+    "tz": "Europe/Warsaw",
+    "lat": 51.38937,
+    "lon": 21.214742
+  },
+  {
     "icao": "EPRZ",
     "iata": "RZE",
     "name": "Rzeszow-Jasionka Airport",
@@ -808,6 +928,16 @@
     "tz": "Europe/Stockholm",
     "lat": 57.6627998352,
     "lon": 12.279800415
+  },
+  {
+    "icao": "ESKN",
+    "iata": "NYO",
+    "name": "Stockholm Skavsta Airport",
+    "city": "Nyköping",
+    "country": "SE",
+    "tz": "Europe/Stockholm",
+    "lat": 58.789656,
+    "lon": 16.911479
   },
   {
     "icao": "ESMS",
@@ -1980,6 +2110,16 @@
     "lon": 19.2555999756
   },
   {
+    "icao": "LHDC",
+    "iata": "DEB",
+    "name": "Debrecen International Airport",
+    "city": "Debrecen",
+    "country": "HU",
+    "tz": "Europe/Budapest",
+    "lat": 47.489469,
+    "lon": 21.616278
+  },
+  {
     "icao": "LIBC",
     "iata": "CRV",
     "name": "Crotone Airport",
@@ -2028,6 +2168,16 @@
     "tz": "Europe/Rome",
     "lat": 38.9053993225,
     "lon": 16.2423000336
+  },
+  {
+    "icao": "LICB",
+    "iata": "CIY",
+    "name": "Comiso Airport",
+    "city": "Comiso",
+    "country": "IT",
+    "tz": "Europe/Rome",
+    "lat": 36.99583,
+    "lon": 14.60889
   },
   {
     "icao": "LICC",
@@ -2370,6 +2520,16 @@
     "lon": 16.6944
   },
   {
+    "icao": "LLBG",
+    "iata": "TLV",
+    "name": "Ben Gurion International Airport",
+    "city": "Tel Aviv",
+    "country": "IL",
+    "tz": "Asia/Jerusalem",
+    "lat": 32.011398,
+    "lon": 34.8867
+  },
+  {
     "icao": "LMML",
     "iata": "MLA",
     "name": "Luqa Airport",
@@ -2500,6 +2660,26 @@
     "lon": 18.3315
   },
   {
+    "icao": "LQTZ",
+    "iata": "TZL",
+    "name": "Tuzla International Airport",
+    "city": "Tuzla",
+    "country": "BA",
+    "tz": "Europe/Sarajevo",
+    "lat": 44.459858,
+    "lon": 18.723627
+  },
+  {
+    "icao": "LRBC",
+    "iata": "BCM",
+    "name": "Bacău George Enescu International Airport",
+    "city": "Bacău",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 46.5219,
+    "lon": 26.910299
+  },
+  {
     "icao": "LRBS",
     "iata": "BBU",
     "name": "Baneasa International Airport",
@@ -2508,6 +2688,26 @@
     "tz": "Europe/Bucharest",
     "lat": 44.5032,
     "lon": 26.1021
+  },
+  {
+    "icao": "LRBV",
+    "iata": "GHV",
+    "name": "Brașov-Ghimbav International Airport",
+    "city": "Brașov",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 45.70558,
+    "lon": 25.522871
+  },
+  {
+    "icao": "LRCK",
+    "iata": "CND",
+    "name": "Mihail Kogălniceanu International Airport",
+    "city": "Constanța",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 44.362202,
+    "lon": 28.4883
   },
   {
     "icao": "LRCL",
@@ -2520,6 +2720,16 @@
     "lon": 23.6861991882
   },
   {
+    "icao": "LRCV",
+    "iata": "CRA",
+    "name": "Craiova International Airport",
+    "city": "Craiova",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 44.3181,
+    "lon": 23.888599
+  },
+  {
     "icao": "LRIA",
     "iata": "IAS",
     "name": "Iasi Airport",
@@ -2530,6 +2740,16 @@
     "lon": 27.6206
   },
   {
+    "icao": "LROD",
+    "iata": "OMR",
+    "name": "Oradea International Airport",
+    "city": "Oradea",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 47.025299,
+    "lon": 21.9025
+  },
+  {
     "icao": "LROP",
     "iata": "OTP",
     "name": "Henri Coanda International Airport",
@@ -2538,6 +2758,56 @@
     "tz": "Europe/Bucharest",
     "lat": 44.5722007751,
     "lon": 26.1021995544
+  },
+  {
+    "icao": "LRSB",
+    "iata": "SBZ",
+    "name": "Sibiu International Airport",
+    "city": "Sibiu",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 45.785841,
+    "lon": 24.086666
+  },
+  {
+    "icao": "LRSM",
+    "iata": "SUJ",
+    "name": "Satu Mare International Airport",
+    "city": "Satu Mare",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 47.7033,
+    "lon": 22.8857
+  },
+  {
+    "icao": "LRSV",
+    "iata": "SCV",
+    "name": "Suceava Ștefan cel Mare International Airport",
+    "city": "Suceava",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 47.6875,
+    "lon": 26.354099
+  },
+  {
+    "icao": "LRTM",
+    "iata": "TGM",
+    "name": "Târgu Mureş Transilvania International Airport",
+    "city": "Târgu Mureș",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 46.467701,
+    "lon": 24.4125
+  },
+  {
+    "icao": "LRTR",
+    "iata": "TSR",
+    "name": "Timișoara Traian Vuia International Airport",
+    "city": "Timişoara",
+    "country": "RO",
+    "tz": "Europe/Bucharest",
+    "lat": 45.809898,
+    "lon": 21.3379
   },
   {
     "icao": "LSGG",
@@ -2558,6 +2828,16 @@
     "tz": "Europe/Zurich",
     "lat": 47.458056,
     "lon": 8.548056
+  },
+  {
+    "icao": "LTAC",
+    "iata": "ESB",
+    "name": "Esenboğa International Airport",
+    "city": "Ankara",
+    "country": "TR",
+    "tz": "Europe/Istanbul",
+    "lat": 40.128101,
+    "lon": 32.995098
   },
   {
     "icao": "LTAI",
@@ -2598,6 +2878,36 @@
     "tz": "Europe/Istanbul",
     "lat": 37.2506,
     "lon": 27.6643
+  },
+  {
+    "icao": "LTFM",
+    "iata": "IST",
+    "name": "İstanbul Airport",
+    "city": "Istanbul",
+    "country": "TR",
+    "tz": "Europe/Istanbul",
+    "lat": 41.274874,
+    "lon": 28.732136
+  },
+  {
+    "icao": "LUKK",
+    "iata": "RMO",
+    "name": "Chişinău International Airport",
+    "city": "Chişinău",
+    "country": "MD",
+    "tz": "Europe/Chisinau",
+    "lat": 46.92774,
+    "lon": 28.931704
+  },
+  {
+    "icao": "LWOH",
+    "iata": "OHD",
+    "name": "Ohrid St. Paul the Apostle Airport",
+    "city": "Ohrid",
+    "country": "MK",
+    "tz": "Europe/Skopje",
+    "lat": 41.18,
+    "lon": 20.7423
   },
   {
     "icao": "LWSK",
@@ -2678,6 +2988,76 @@
     "tz": "Europe/Bratislava",
     "lat": 48.6631011963,
     "lon": 21.2411003113
+  },
+  {
+    "icao": "LZTT",
+    "iata": "TAT",
+    "name": "Poprad-Tatry Airport",
+    "city": "Poprad",
+    "country": "SK",
+    "tz": "Europe/Bratislava",
+    "lat": 49.070994,
+    "lon": 20.241394
+  },
+  {
+    "icao": "OEJN",
+    "iata": "JED",
+    "name": "King Abdulaziz International Airport",
+    "city": "Jeddah",
+    "country": "SA",
+    "tz": "Asia/Riyadh",
+    "lat": 21.680241,
+    "lon": 39.157436
+  },
+  {
+    "icao": "OJAI",
+    "iata": "AMM",
+    "name": "Queen Alia International Airport",
+    "city": "Amman",
+    "country": "JO",
+    "tz": "Asia/Amman",
+    "lat": 31.722601,
+    "lon": 35.993198
+  },
+  {
+    "icao": "UBBB",
+    "iata": "GYD",
+    "name": "Heydar Aliyev International Airport",
+    "city": "Baku",
+    "country": "AZ",
+    "tz": "Asia/Baku",
+    "lat": 40.47278,
+    "lon": 50.050931
+  },
+  {
+    "icao": "UDSG",
+    "iata": "LWN",
+    "name": "Shirak International Airport",
+    "city": "Gyumri",
+    "country": "AM",
+    "tz": "Asia/Yerevan",
+    "lat": 40.750401,
+    "lon": 43.859299
+  },
+  {
+    "icao": "UDYZ",
+    "iata": "EVN",
+    "name": "Zvartnots International Airport",
+    "city": "Yerevan",
+    "country": "AM",
+    "tz": "Asia/Yerevan",
+    "lat": 40.148941,
+    "lon": 44.397887
+  },
+  {
+    "icao": "UGKO",
+    "iata": "KUT",
+    "name": "David the Builder Kutaisi International Airport",
+    "city": "Kutaisi",
+    "country": "GE",
+    "tz": "Asia/Tbilisi",
+    "lat": 42.177448,
+    "lon": 42.485353
   },
   {
     "icao": "UGTB",
