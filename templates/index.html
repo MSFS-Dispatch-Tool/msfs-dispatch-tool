@@ -523,6 +523,20 @@
   .st-list { list-style: none; padding: 0; margin: 0; font-size: 12.5px; }
   .st-list li { padding: 5px 0; border-bottom: 1px solid var(--shadow-md); }
   .st-map { height: 340px; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); }
+  .st-minis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 4px; }
+  .st-mini { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; }
+  .st-mini span { font-size: 11.5px; color: var(--text-muted); } .st-mini b { font-size: 18px; } .st-mini em { font-size: 11px; color: var(--text-muted); font-style: normal; }
+  .st-cols { display: flex; align-items: stretch; gap: 3px; height: 130px; padding-top: 16px; }
+  .st-colwrap { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+  .st-colbar { width: 100%; max-width: 24px; background: #2a78d6; border-radius: 4px 4px 0 0; }
+  .st-colval { position: absolute; top: -14px; font-size: 10.5px; color: var(--text-muted); white-space: nowrap; }
+  .st-cols + .st-hint { margin-top: 10px; }
+  .st-collabel { font-size: 10px; color: #898781; margin-top: 4px; height: 12px; white-space: nowrap; border-top: 1px solid #C3C2B7; width: 100%; text-align: center; padding-top: 2px; }
+  .st-records { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .st-record { border: 1px solid var(--shadow-md); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .st-record span { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+  .st-record b { font-size: 20px; }
+  .st-record em { font-size: 12px; color: var(--text-muted); font-style: normal; }
   .profile-stats-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; margin-bottom: 8px; }
   .profile-stats-kpis div { display: flex; flex-direction: column; }
   .profile-stats-kpis span { font-size: 11.5px; color: var(--text-muted); }
@@ -615,6 +629,8 @@
     .st-card-scroll > .st-scroll { flex: 1 1 auto; min-height: 60px; }
     .st-card-scroll > .st-scroll.st-scroll-short { flex: 0 1 auto; }
     .st-card-grow { min-height: 0; }
+    .st-card-stack { min-height: 0; overflow-y: auto; padding-right: 4px; }
+    .st-card-stack > * { flex: none; }
     .st-card-grow .st-timeline, .st-card-grow .st-map { flex: 1 1 auto; min-height: 160px; height: auto; }
     .st-grid-overview > .st-card:last-child { overflow-y: auto; }
 
@@ -3898,7 +3914,7 @@ const OPERATOR_NAMES = {
   WZZ: 'Wizz Air', WMT: 'Wizz Air Malta', WUK: 'Wizz Air UK',
 };
 const STATS_PRESETS = [['7d', '7 DAYS'], ['30d', '30 DAYS'], ['90d', '90 DAYS'], ['ytd', 'YEAR TO DATE'], ['12m', '12 MONTHS'], ['all', 'ALL TIME']];
-const STATS_TABS = [['overview', 'OVERVIEW'], ['fleet', 'FLEET & AIRLINES'], ['geo', 'GEOGRAPHY'], ['airports', 'AIRPORTS & ROUTES'], ['logbook', 'LOGBOOK']];
+const STATS_TABS = [['overview', 'OVERVIEW'], ['fleet', 'FLEET & AIRLINES'], ['geo', 'GEOGRAPHY'], ['airports', 'AIRPORTS & ROUTES'], ['ops', 'OPERATIONS'], ['load', 'LOAD & FUEL'], ['records', 'RECORDS'], ['logbook', 'LOGBOOK']];
 const STATS_METRICS = {
   flights: { label: 'FLIGHTS', value: rows => rows.length, fmt: v => fmtNum(v) },
   ft: { label: 'FLIGHT TIME', value: rows => sumOf(rows, 'ft'), fmt: v => fmtHours(v) },
@@ -4136,7 +4152,7 @@ function renderStatsBody() {
     content.innerHTML = `<div class="empty-state">No flights match this date range and these filters.</div>`;
     return;
   }
-  const views = { overview: statsOverview, fleet: statsFleet, geo: statsGeo, airports: statsAirports, logbook: statsLogbook };
+  const views = { overview: statsOverview, fleet: statsFleet, geo: statsGeo, airports: statsAirports, ops: statsOperations, load: statsLoadFuel, records: statsRecords, logbook: statsLogbook };
   views[s.tab](content, rows, range, group);
 }
 
@@ -4386,13 +4402,160 @@ function statsAirports(el, rows, range) {
       <section class="st-card st-card-scroll"><h3>ROUTES <span class="st-muted">${routes.length}</span></h3><div class="st-scroll"><table class="st-table"><thead><tr><th>CITY PAIR</th><th class="num">FLIGHTS</th><th class="num">DISTANCE</th></tr></thead><tbody>
         ${routes.sort((a, b) => b.rs.length - a.rs.length || (b.dist || 0) - (a.dist || 0)).map(x => { const [a, b] = x.k.split('-'); return `<tr><td>${apLabel(a)} &ndash; ${apLabel(b)}</td><td class="num">${x.rs.length}</td><td class="num">${x.dist != null ? fmtNum(x.dist) + ' NM' : '&mdash;'}</td></tr>`; }).join('')}
       </tbody></table></div></section>
-      <section class="st-card st-card-scroll">
+      <section class="st-card st-card-stack">
         <h3>NEW AIRPORTS IN THIS PERIOD <span class="st-muted">${newOnes.length}</span></h3>
         ${newOnes.length ? `<ul class="st-list">${newOnes.map(a => `<li>${apLabel(a)} <span class="st-muted">${fmtDay(firstSeen[a])}</span></li>`).join('')}</ul>` : '<p class="st-hint">No first visits in this period.</p>'}
         <h3>LONGEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(0, 5).map(flightLine).join('')}</tbody></table></div>
         <h3>SHORTEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(-5).reverse().map(flightLine).join('')}</tbody></table></div>
       </section>
     </div>`;
+}
+
+// -- Operations: punctuality, delays, MEL, when you fly --
+const DELAY_BANDS = [['Early', -Infinity, 0], ['1–5 min', 1, 5], ['6–15 min', 6, 15], ['16–30 min', 16, 30], ['31–60 min', 31, 60], ['Over 60 min', 61, Infinity]];
+const DOW_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+function statsMiniCols(items, fmt) {
+  // Small single-series column chart in HTML: label under each column,
+  // value in the hover title and in the visible label above the tallest.
+  const max = Math.max(...items.map(i => i.v), 1);
+  const peak = items.reduce((b, i) => (i.v > b.v ? i : b), items[0]);
+  return `<div class="st-cols" role="img" aria-label="${escAttr(items.map(i => `${i.label}: ${fmt(i.v)}`).join(', '))}">${items.map(i => `
+    <div class="st-colwrap" title="${escAttr(i.label)}: ${escAttr(fmt(i.v))}">
+      <span class="st-colval">${i === peak && i.v ? fmt(i.v) : ''}</span>
+      <span class="st-colbar" style="height:${i.v ? Math.max(2, (i.v / max) * 100) : 0}%"></span>
+      <span class="st-collabel">${i.short != null ? i.short : i.label}</span>
+    </div>`).join('')}</div>`;
+}
+
+function statsOperations(el, rows) {
+  const dep = rows.filter(r => r.dep_delay != null), arr = rows.filter(r => r.arr_delay != null);
+  const avg = (xs, k) => xs.length ? Math.round(sumOf(xs, k) / xs.length) : null;
+  const otp = (xs, k) => xs.length ? pct(xs.filter(r => r[k] <= 15).length, xs.length) : null;
+  const bands = DELAY_BANDS.map(([label, lo, hi]) => ({ label, short: label.replace(' min', ''), v: dep.filter(r => r.dep_delay >= lo && r.dep_delay <= hi).length }));
+  const codes = [...groupRows(rows.filter(r => r.delay_code), r => r.delay_code)].sort((a, b) => b[1].length - a[1].length);
+  const mels = [...groupRows(rows.filter(r => r.mel), r => r.mel)].sort((a, b) => b[1].length - a[1].length);
+  const hours = Array.from({ length: 24 }, (_, h) => ({ label: `${String(h).padStart(2, '0')}:00Z`, short: h % 3 === 0 ? String(h).padStart(2, '0') : '', v: rows.filter(r => r.sobt != null && Math.floor(r.sobt / 60) === h).length }));
+  const dows = DOW_NAMES.map((d, i) => ({ label: d, short: d.slice(0, 3), v: rows.filter(r => r.date && (new Date(dayMs(r.date)).getUTCDay() + 6) % 7 === i).length }));
+  const byAirport = [...groupRows(dep, r => r.dep)].filter(([, rs]) => rs.length >= 2)
+    .map(([a, rs]) => ({ a, n: rs.length, otp: otp(rs, 'dep_delay'), avg: avg(rs, 'dep_delay') })).sort((x, y) => y.avg - x.avg);
+  const stat = (label, value, note) => `<div class="st-mini"><span>${label}</span><b>${value}</b>${note ? `<em>${note}</em>` : ''}</div>`;
+  el.innerHTML = `
+    <div class="st-grid st-grid-3">
+      <section class="st-card st-card-stack">
+        <h3>PUNCTUALITY</h3>
+        <div class="st-minis">
+          ${stat('On-time departures', otp(dep, 'dep_delay') == null ? '&mdash;' : otp(dep, 'dep_delay') + '%', 'off-block within 15 min')}
+          ${stat('On-time arrivals', otp(arr, 'arr_delay') == null ? '&mdash;' : otp(arr, 'arr_delay') + '%', 'in-block within 15 min')}
+          ${stat('Average departure delay', avg(dep, 'dep_delay') == null ? '&mdash;' : fmtSigned(avg(dep, 'dep_delay')), `${dep.length} flights with times`)}
+          ${stat('Average arrival delay', avg(arr, 'arr_delay') == null ? '&mdash;' : fmtSigned(avg(arr, 'arr_delay')), 'vs scheduled in-block')}
+        </div>
+        <h3>DEPARTURE DELAY VS SCHEDULE</h3>
+        ${dep.length ? statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`) : '<p class="st-hint">No flights with actual off-block times in this selection.</p>'}
+      </section>
+      <section class="st-card st-card-stack">
+        <h3>DISPATCHED DELAYS <span class="st-muted">${rows.filter(r => r.delay_code).length} of ${rows.length} flights</span></h3>
+        ${codes.length ? `<div class="st-scroll st-scroll-short"><table class="st-table"><thead><tr><th>CODE</th><th>REASON</th><th class="num">FLIGHTS</th></tr></thead><tbody>
+          ${codes.map(([c, rs]) => `<tr><td><b>${escText(c)}</b></td><td>${escText(rs.find(r => r.delay_desc)?.delay_desc || '')}</td><td class="num">${rs.length}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">No delays were dispatched on these flights.</p>'}
+        <h3>MEL ITEMS <span class="st-muted">${rows.filter(r => r.mel).length} of ${rows.length} flights</span></h3>
+        ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'flight' : 'flights'}` }) : '<p class="st-hint">No MEL items on these flights.</p>'}
+        <h3>DEPARTURE PUNCTUALITY BY AIRPORT <span class="st-muted">2+ departures, worst first</span></h3>
+        ${byAirport.length ? `<div class="st-scroll st-scroll-short"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEPARTURES</th><th class="num">ON TIME</th><th class="num">AVG DELAY</th></tr></thead><tbody>
+          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet.</p>'}
+      </section>
+      <section class="st-card st-card-stack">
+        <h3>SCHEDULED DEPARTURE TIME (UTC)</h3>
+        ${statsMiniCols(hours, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+        <h3>DAY OF THE WEEK</h3>
+        ${statsMiniCols(dows, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+      </section>
+    </div>`;
+}
+
+// -- Load & fuel --
+function statsLoadFuel(el, rows) {
+  const withLf = rows.filter(r => Number.isFinite(r.lf));
+  const avgLf = withLf.length ? Math.round((sumOf(withLf, 'lf') / withLf.length) * 100) : null;
+  const byType = [...groupRows(rows, r => r.type)].map(([t, rs]) => {
+    const lf = rs.filter(r => Number.isFinite(r.lf));
+    const burn = rs.filter(r => r.block_fuel != null && r.afad != null && r.block && r.block_fuel > r.afad);
+    const burnSum = burn.reduce((s, r) => s + (r.block_fuel - r.afad), 0);
+    return { t, rs, lf: lf.length ? Math.round((sumOf(lf, 'lf') / lf.length) * 100) : null, pax: sumOf(rs, 'pax'),
+      burnN: burn.length, perFlight: burn.length ? Math.round(burnSum / burn.length) : null,
+      perHour: burn.length ? Math.round(burnSum / (sumOf(burn, 'block') / 60)) : null };
+  }).sort((a, b) => b.rs.length - a.rs.length);
+  const fuel = rows.filter(r => r.plan_landing_fuel != null && r.afad != null);
+  const diffs = fuel.map(r => r.afad - r.plan_landing_fuel);
+  const bands = [['Under −500 kg', -Infinity, -501], ['−500 to −201', -500, -201], ['−200 to −1', -200, -1], ['0 to +200', 0, 200], ['+201 to +500', 201, 500], ['Over +500 kg', 501, Infinity]]
+    .map(([label, lo, hi]) => ({ label, short: label.replace(' kg', ''), v: diffs.filter(d => d >= lo && d <= hi).length }));
+  const avgDiff = diffs.length ? Math.round(diffs.reduce((s, d) => s + d, 0) / diffs.length) : null;
+  const within = diffs.length ? pct(diffs.filter(d => Math.abs(d) <= 200).length, diffs.length) : null;
+  const stat = (label, value, note) => `<div class="st-mini"><span>${label}</span><b>${value}</b>${note ? `<em>${note}</em>` : ''}</div>`;
+  el.innerHTML = `
+    <div class="st-grid st-grid-2">
+      <section class="st-card st-card-scroll">
+        <h3>LOAD</h3>
+        <div class="st-minis">
+          ${stat('Passengers carried', fmtNum(sumOf(rows, 'pax')))}
+          ${stat('Average load factor', avgLf == null ? '&mdash;' : avgLf + '%', `${withLf.length} flights`)}
+          ${stat('Average passengers', withLf.length ? fmtNum(Math.round(sumOf(rows, 'pax') / rows.filter(r => r.pax != null).length)) : '&mdash;', 'per flight')}
+          ${stat('Cargo and bags', fmtNum(Math.round(sumOf(rows, 'cargo') / 1000)) + ' t')}
+        </div>
+        <h3>BY AIRCRAFT TYPE</h3>
+        <div class="st-scroll"><table class="st-table st-clickable"><thead><tr><th>TYPE</th><th class="num">FLIGHTS</th><th class="num">PASSENGERS</th><th class="num">LOAD FACTOR</th><th class="num">BURN / FLIGHT</th><th class="num">BURN / HOUR</th></tr></thead><tbody>
+          ${byType.map(x => `<tr onclick="setStatsFilter('type', '${escAttr(x.t)}')" tabindex="0" title="Filter by this"><td>${escText(typeName(x.t))}</td><td class="num">${x.rs.length}</td><td class="num">${fmtNum(x.pax)}</td><td class="num">${x.lf == null ? '&mdash;' : x.lf + '%'}</td>
+            <td class="num">${x.perFlight == null ? '&mdash;' : fmtNum(x.perFlight) + ' kg'}</td><td class="num">${x.perHour == null ? '&mdash;' : fmtNum(x.perHour) + ' kg/h'}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="st-hint">Burn is OFP block fuel minus your actual fuel at destination, over the flight time (off-block to in-block). It needs an OFP and a PIREP with AFAD.</p>
+      </section>
+      <section class="st-card st-card-stack">
+        <h3>FUEL AT DESTINATION: ACTUAL VS PLANNED</h3>
+        ${fuel.length ? `
+          <div class="st-minis">
+            ${stat('Average difference', (avgDiff > 0 ? '+' : '') + fmtNum(avgDiff) + ' kg', avgDiff >= 0 ? 'landing with more than planned' : 'landing with less than planned')}
+            ${stat('Within ±200 kg', within + '%', `${fuel.length} flights`)}
+          </div>
+          ${statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+          <p class="st-hint">Your AFAD against the OFP's planned landing fuel. Negative means you landed with less fuel than planned.</p>`
+          : `<p class="st-hint">No flights with a planned landing fuel yet. The app started saving it from SimBrief with this release, so flights whose OFP you fetch from now on will appear here.</p>`}
+      </section>
+    </div>`;
+}
+
+// -- Records --
+function statsRecords(el, rows) {
+  const by = (k, dir = -1) => rows.filter(r => r[k] != null).sort((a, b) => dir * (a[k] - b[k]))[0];
+  const flightNote = r => r ? `${escText(r.fn)} &middot; ${r.dep} &rarr; ${r.arr} &middot; ${fmtDay(r.date)}` : '';
+  const days = [...groupRows(rows, r => r.date)];
+  const busiest = days.sort((a, b) => b[1].length - a[1].length || sumOf(b[1], 'ft') - sumOf(a[1], 'ft'))[0];
+  const longestDay = [...days].sort((a, b) => sumOf(b[1], 'ft') - sumOf(a[1], 'ft'))[0];
+  const dates = [...new Set(rows.map(r => r.date).filter(Boolean))].sort();
+  let best = { n: 0 }, cur = { n: 0 };
+  dates.forEach((d, i) => {
+    cur = i && daysBetween(dates[i - 1], d) === 1 ? { n: cur.n + 1, from: cur.from, to: d } : { n: 1, from: d, to: d };
+    if (cur.n > best.n) best = Object.assign({}, cur);
+  });
+  const top = (m) => [...m].sort((a, b) => b[1].length - a[1].length)[0];
+  const route = top(groupRows(rows, r => [r.dep, r.arr].sort().join('-')));
+  const moves = new Map(); rows.forEach(r => [r.dep, r.arr].forEach(a => moves.set(a, (moves.get(a) || 0) + 1)));
+  const ap = [...moves].sort((a, b) => b[1] - a[1])[0];
+  const type = top(groupRows(rows, r => r.type));
+  const lateR = by('dep_delay'), fullR = rows.filter(r => r.pax != null).sort((a, b) => (b.lf || 0) - (a.lf || 0))[0];
+  const card = (label, value, note) => value == null ? '' : `<div class="st-record"><span>${label}</span><b>${value}</b><em>${note || ''}</em></div>`;
+  el.innerHTML = `<section class="st-card st-card-scroll"><div class="st-scroll"><div class="st-records">
+    ${card('Longest flight', by('dist') ? fmtNum(by('dist').dist) + ' NM' : null, flightNote(by('dist')))}
+    ${card('Longest flight time', by('ft') ? fmtHours(by('ft').ft) : null, flightNote(by('ft')))}
+    ${card('Shortest flight', by('dist', 1) ? fmtNum(by('dist', 1).dist) + ' NM' : null, flightNote(by('dist', 1)))}
+    ${card('Busiest day', busiest ? `${busiest[1].length} ${busiest[1].length === 1 ? 'flight' : 'flights'}` : null, busiest ? `${fmtDay(busiest[0], { weekday: 'short' })} &middot; ${fmtHours(sumOf(busiest[1], 'ft'))}` : '')}
+    ${card('Most flying in a day', longestDay ? fmtHours(sumOf(longestDay[1], 'ft')) : null, longestDay ? fmtDay(longestDay[0], { weekday: 'short' }) : '')}
+    ${card('Longest streak', best.n ? `${best.n} ${best.n === 1 ? 'day' : 'days'} in a row` : null, best.n ? `${fmtDay(best.from)} &ndash; ${fmtDay(best.to)}` : '')}
+    ${card('Most flown route', route ? `${route[0].replace('-', ' &ndash; ')}` : null, route ? `${route[1].length} ${route[1].length === 1 ? 'flight' : 'flights'}` : '')}
+    ${card('Most visited airport', ap ? `${ap[0]}` : null, ap ? `${escText(statsAirport(ap[0]).name || '')} &middot; ${ap[1]} movements` : '')}
+    ${card('Most flown aircraft', type ? escText(typeName(type[0])) : null, type ? `${type[1].length} flights &middot; ${fmtHours(sumOf(type[1], 'ft'))}` : '')}
+    ${card('Biggest departure delay', lateR ? fmtSigned(lateR.dep_delay) : null, flightNote(lateR))}
+    ${card('Fullest flight', fullR && fullR.lf != null ? Math.round(fullR.lf * 100) + '%' : null, fullR ? `${fmtNum(fullR.pax)} of ${fmtNum(fullR.seats)} seats &middot; ${flightNote(fullR)}` : '')}
+    ${card('First flight in range', rows.length ? fmtDay(rows[0].date) : null, flightNote(rows[0]))}
+  </div></div></section>`;
 }
 
 // -- Logbook --
@@ -4442,8 +4605,8 @@ function exportStatsCsv() {
   const cols = [['date', 'Date'], ['fn', 'Flight'], ['cs', 'Callsign'], ['carrier', 'Airline'], ['op', 'Operator'], ['type', 'Aircraft type'],
     ['dep', 'From'], ['arr', 'To'], ['dist', 'Distance (nm)'], ['ft', 'Flight time (min)'], ['ft_est', 'Flight time estimated'], ['air', 'Air time (min)'],
     ['sched_block', 'Scheduled block (min)'], ['dep_delay', 'Departure delay (min)'], ['arr_delay', 'Arrival delay (min)'], ['pax', 'Passengers'], ['seats', 'Seats'],
-    ['lf', 'Load factor'], ['cargo', 'Cargo (kg)'], ['ci', 'Cost index'], ['delay_code', 'Delay code'], ['mel', 'MEL'],
-    ['fuel_unit', 'Fuel unit'], ['block_fuel', 'Block fuel'], ['plan_trip_fuel', 'Planned trip fuel'], ['plan_landing_fuel', 'Planned landing fuel'], ['afad', 'Actual fuel at destination']];
+    ['lf', 'Load factor'], ['cargo', 'Cargo (kg)'], ['ci', 'Cost index'], ['delay_code', 'Delay code'], ['delay_desc', 'Delay reason'], ['mel', 'MEL'],
+    ['block_fuel', 'Block fuel (kg)'], ['plan_trip_fuel', 'Planned trip fuel (kg)'], ['plan_landing_fuel', 'Planned landing fuel (kg)'], ['afad', 'Actual fuel at destination (kg)']];
   const cell = v => { if (v == null) return ''; const t = String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
   const csv = [cols.map(c => c[1]).join(','), ...rows.map(r => cols.map(([k]) => cell(r[k])).join(','))].join('\n');
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));

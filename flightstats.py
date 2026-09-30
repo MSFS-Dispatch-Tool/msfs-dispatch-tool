@@ -12,6 +12,8 @@ Definitions:
 - air time: actual take-off to landing (ATOT -> ALDT).
 - departure/arrival delay: AOBT - SOBT and ABIT - SIBT, in minutes.
 - distance: great-circle between the two airports, in nautical miles.
+- fuel: converted to kilograms whatever unit the pilot's SimBrief profile
+  uses, so flights planned in kg and lb can be compared and summed.
 """
 
 import math
@@ -24,6 +26,7 @@ DESIGNATOR_CARRIER = {"FR": "RYR", "RK": "RYR", "U2": "EZY", "W6": "WZZ", "W4": 
 _TIME_RE = re.compile(r"^\s*(\d{1,2}):(\d{2})")
 EARTH_RADIUS_NM = 3440.065
 MAX_BLOCK_MINUTES = 20 * 60   # anything longer is a typo, not a flight
+LB_TO_KG = 0.45359237
 
 
 def minutes_of_day(value):
@@ -75,6 +78,16 @@ def _num(value):
     return n if math.isfinite(n) else None
 
 
+def fuel_kg(value, unit):
+    """A SimBrief/PIREP fuel figure in the OFP's unit ("kgs"/"lbs") -> kg."""
+    n = _num(value)
+    if n is None:
+        return None
+    if isinstance(unit, str) and unit.strip().lower().startswith("lb"):
+        n *= LB_TO_KG
+    return round(n)
+
+
 def logbook_row(record, airport):
     """One PIREP record (db._row_to_record shape) -> a compact flat row.
     `airport(icao)` returns {"lat", "lon", ...} or None."""
@@ -97,6 +110,7 @@ def logbook_row(record, airport):
     date = record.get("flight_date") or (record.get("submitted_at") or "")[:10] or None
     delay_info = leg.get("delay") or {}
     mel = leg.get("mel") or {}
+    unit = ofp.get("weight_unit")
     seats = _num(leg.get("seat_capacity"))
     pax = _num(leg.get("pax_count"))
 
@@ -116,6 +130,7 @@ def logbook_row(record, airport):
         "block": block,
         "air": air,
         "sched_block": sched_block,
+        "sobt": sobt,
         "dep_delay": delay(sobt, aobt),
         "arr_delay": delay(sibt, abit),
         "pax": int(pax) if pax is not None else None,
@@ -124,12 +139,13 @@ def logbook_row(record, airport):
         "cargo": _num(leg.get("cargo_weight_kg")),
         "ci": _num(leg.get("cost_index")),
         "delay_code": str(delay_info.get("iata_code") or "") or None,
+        "delay_desc": str(delay_info.get("description") or "")[:120] or None,
         "mel": (str(mel.get("system") or mel.get("id") or "") or None) if mel else None,
-        "fuel_unit": ofp.get("weight_unit") or None,
-        "block_fuel": _num(ofp.get("block_fuel")),
-        "plan_trip_fuel": _num(ofp.get("plan_trip_fuel")),
-        "plan_landing_fuel": _num(ofp.get("plan_landing_fuel")),
-        "afad": _num(pirep.get("afad")),
+        # All fuel in kg (see fuel_kg). AFAD is entered in the OFP's unit.
+        "block_fuel": fuel_kg(ofp.get("block_fuel"), unit),
+        "plan_trip_fuel": fuel_kg(ofp.get("plan_trip_fuel"), unit),
+        "plan_landing_fuel": fuel_kg(ofp.get("plan_landing_fuel"), unit),
+        "afad": fuel_kg(pirep.get("afad"), unit),
     }
 
 
