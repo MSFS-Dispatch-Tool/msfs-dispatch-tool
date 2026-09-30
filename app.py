@@ -39,7 +39,7 @@ app.permanent_session_lifetime = timedelta(days=30)
 # vars unset), the gate is off entirely - matches the old APP_PASSWORD-
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
-PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session",
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted",
                     "resend_verification_route", "request_password_reset_route", "static",
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
@@ -49,6 +49,7 @@ def inject_template_globals():
     today = date.today()
     return {
         "current_year": today.year,
+        "signups_open": auth.signups_open(),
         "legal_updated": today.strftime("%B %-d, %Y") if os.name != "nt" else today.strftime("%B %d, %Y"),
     }
 
@@ -82,6 +83,12 @@ def require_login():
             return redirect(url_for("login", next=request.path))
     if session.get("must_reset_password") and request.endpoint not in ("reset_password", "logout"):
         return redirect(url_for("reset_password"))
+    # Access lock (see auth.email_allowed): a signed-in account that isn't
+    # on the allowlist sees only the restricted page (and can sign out).
+    if not auth.email_allowed(user.get("email")) and request.endpoint != "logout":
+        if request.accept_mimetypes.best == "application/json" or request.method != "GET":
+            return jsonify({"error": "This account doesn't have access to VirtualDispatch yet."}), 403
+        return redirect(url_for("access_restricted"))
 
 
 def _now_ts():
@@ -171,9 +178,23 @@ def _post_login_redirect(user_id, next_url=None):
     return next_url or url_for("dispatch_app")
 
 
+@app.route("/access-restricted")
+def access_restricted():
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+    if auth.email_allowed(user.get("email")):
+        return redirect(url_for("dispatch_app"))
+    return render_template("login.html", mode="restricted", signup_email=user.get("email")), 403
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     error = None
+    if not auth.signups_open():
+        # Closed while access is locked (auth.OPEN_ACCESS): no form, and a
+        # POST sent anyway creates nothing.
+        return render_template("login.html", mode="signup_closed"), (403 if request.method == "POST" else 200)
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""

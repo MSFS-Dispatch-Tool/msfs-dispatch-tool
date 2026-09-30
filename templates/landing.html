@@ -19,14 +19,14 @@
     </h1>
     <p class="lead">Pick your route. Then answer for it: real weather, an equipment defect to work around, a loadsheet you sign before departure. This is simulation pushed one step further. Not paperwork. Responsibility.</p>
     <div class="actions">
-      <a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>
+      {% if signups_open %}<a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>{% else %}<a href="{{ url_for('login') }}" class="btn btn-primary">Sign in</a>{% endif %}
       <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
     </div>
   </div>
 </section>
 
 <div class="sticky-cta" id="stickyCta" aria-hidden="true">
-  <a href="{{ url_for('signup') }}" class="btn btn-primary" tabindex="-1">Create an account</a>
+  {% if signups_open %}<a href="{{ url_for('signup') }}" class="btn btn-primary" tabindex="-1">Create an account</a>{% else %}<a href="{{ url_for('login') }}" class="btn btn-primary" tabindex="-1">Sign in</a>{% endif %}
 </div>
 
 <script>
