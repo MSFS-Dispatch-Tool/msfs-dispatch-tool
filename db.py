@@ -90,6 +90,17 @@ def init_db():
                     data JSONB NOT NULL
                 )
             """)
+            # One row per account: the flight currently being flown (NULL
+            # once finished/discarded). rev increments on every write so a
+            # device can only overwrite the version it last saw.
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS active_flights (
+                    user_id TEXT PRIMARY KEY,
+                    data JSONB,
+                    rev INTEGER NOT NULL DEFAULT 0,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
         conn.commit()
 
 
@@ -189,7 +200,38 @@ def delete_user_data(user_id):
         with conn.cursor() as cur:
             cur.execute("DELETE FROM pireps WHERE user_id = %s", (user_id,))
             cur.execute("DELETE FROM app_settings WHERE id = %s", (user_id,))
+            cur.execute("DELETE FROM active_flights WHERE user_id = %s", (user_id,))
         conn.commit()
+
+
+def get_active_flight(user_id):
+    """{"flight": <dict or None>, "rev": int} - rev 0 means never saved."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data, rev FROM active_flights WHERE user_id = %s", (user_id,))
+            row = cur.fetchone()
+    return {"flight": row[0], "rev": row[1]} if row else {"flight": None, "rev": 0}
+
+
+def save_active_flight(user_id, flight, base_rev):
+    """Stores `flight` (None clears it) only if the caller's copy was based
+    on the latest revision. Returns (saved, current) - on a conflict nothing
+    is written and `current` is the newer copy another device saved."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO active_flights (user_id, data, rev, updated_at)
+                VALUES (%s, %s, 1, now())
+                ON CONFLICT (user_id) DO UPDATE
+                    SET data = EXCLUDED.data, rev = active_flights.rev + 1, updated_at = now()
+                    WHERE active_flights.rev = %s
+                RETURNING rev
+            """, (user_id, Json(flight) if flight is not None else None, base_rev))
+            row = cur.fetchone()
+        conn.commit()
+    if row:
+        return True, {"flight": flight, "rev": row[0]}
+    return False, get_active_flight(user_id)
 
 
 def get_settings(user_id):

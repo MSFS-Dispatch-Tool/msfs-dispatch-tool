@@ -189,6 +189,10 @@
     padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
   }
   .notice-banner a { color: var(--red); font-weight: 600; text-decoration: underline; }
+  .sync-notice {
+    background: var(--accent-bg); color: #1D4ED8; border: 1px solid #B2CCFF; border-radius: var(--radius-sm);
+    padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
+  }
   .field-error.show { display: block; }
 
   .checkbox-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -414,6 +418,74 @@
       display: inline-block; min-width: 110px; color: var(--text-muted); font-size: 10.5px; font-weight: 700;
     }
     table.itin-list td.detail-cell { display: block; }
+    .list-tools .sort-by { display: inline-flex; }
+  }
+
+  /* ---- Flight search: greeting, list tools ---- */
+  .greeting { margin: 4px 2px 16px; min-height: 1.3em; font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--text); }
+  @media (max-width: 720px) { .greeting { font-size: 18px; margin-bottom: 12px; } }
+  .list-panel > .panel-header { gap: 8px; flex-wrap: wrap; }
+  .list-tools { display: flex; align-items: center; gap: 6px; }
+  .sort-by { display: none; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+  .sort-by select {
+    font-family: inherit; font-size: 12px; font-weight: 600; padding: 3px 6px;
+    background: var(--white); color: var(--text); border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm);
+  }
+  button.sort-dir { width: 26px; justify-content: center; padding: 3px 0; font-size: 13px; }
+  .back-to-list { display: none !important; }
+  #listPanel { container: itinlist / inline-size; }
+
+  /* ---- Desktop (1200px+): every page gets wider; flight search becomes
+     two columns - filters and a map sized to the viewport on the left, the
+     flight list scrolling on its own on the right. Where the right column
+     is too narrow for the full table, each flight becomes a two-line row. */
+  @media (min-width: 1200px) {
+    main, footer { max-width: 1320px; }
+    body.page-search main, body.page-search footer { max-width: 1840px; }
+    body.page-search main { padding-bottom: 16px; }
+    .search-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(480px, 40%); gap: 16px; align-items: start; }
+    .search-side { position: sticky; top: var(--sticky-top, 88px); }
+    .search-side .list-panel { display: flex; flex-direction: column; max-height: calc(100vh - var(--sticky-top, 88px) - 16px); margin-bottom: 0; }
+    .search-side .list-panel > .panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    /* Compact left column: the search buttons and the weather switches move
+       up into their panel headers, leaving the height to the map. */
+    .params-panel, #mapPanel { position: relative; }
+    .params-panel .params-actions { position: absolute; top: 5px; right: 12px; margin: 0; }
+    .params-panel .params-actions button { padding: 5px 12px; font-size: 12px; }
+    #searchRequirementNote { display: none; }
+    .params-grid { margin-bottom: 0; }
+    #mapPanel .wx-toolbar { position: absolute; top: 9px; right: 14px; margin: 0; }
+    .list-panel.has-open .back-to-list { display: inline-flex !important; }
+    .list-panel.has-open .sort-by { display: none !important; }
+    .list-panel.has-open table.itin-list tr.itin-row:not(.expanded) { display: none; }
+
+    @container itinlist (max-width: 899px) {
+      .list-tools .sort-by { display: inline-flex; }
+      table.itin-list thead { display: none; }
+      table.itin-list, table.itin-list > tbody, table.itin-list > tbody > tr { display: block; width: 100%; }
+      /* Line 1: airline, type, flights, route. Line 2: times and distance.
+         The ::after element is the line break; the buttons sit on the right
+         across both lines. */
+      table.itin-list > tbody > tr.itin-row {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
+        position: relative; padding: 9px 122px 9px 12px; border-bottom: 1px solid var(--shadow-md);
+      }
+      table.itin-list > tbody > tr.itin-row::after { content: ''; order: 2; flex-basis: 100%; height: 0; }
+      table.itin-list tr.itin-row > td { order: 3; display: block; padding: 0; border: none; white-space: nowrap; font-size: 12px; color: var(--text-muted); }
+      table.itin-list tr.itin-row > td:nth-child(-n+6) { order: 1; font-size: 13.5px; color: var(--text); }
+      table.itin-list tr.itin-row > td:nth-child(3) { font-weight: 700; margin-right: 4px; }
+      table.itin-list tr.itin-row > td.matched-cell { color: var(--orange); }
+      table.itin-list tr.itin-row .type-cell { flex-direction: row; gap: 4px; }
+      table.itin-list tr.itin-row > td.via-cell.no-via { display: none; }
+      table.itin-list tr.itin-row > td.no-turn { display: none; }
+      table.itin-list tr.itin-row > td.via-cell::before,
+      table.itin-list tr.itin-row > td:nth-child(6)::before { content: '\2192'; margin-right: 6px; color: var(--text-muted); font-weight: 400; font-size: 15px; line-height: 1; }
+      table.itin-list tr.itin-row > td[data-short]::before { content: attr(data-short); margin-right: 4px; font-size: 10.5px; font-weight: 700; }
+      table.itin-list tr.itin-row > td:nth-child(n+7):nth-child(-n+10)::after { content: '\00b7'; margin-left: 8px; }
+      table.itin-list tr.itin-row > td.select-cell { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); padding: 0; width: auto; }
+      table.itin-list > tbody > tr:not(.itin-row) { display: block; }
+      table.itin-list > tbody > tr:not(.itin-row) > td.detail-cell { display: block; }
+    }
   }
 
   .detail-inner { padding: 16px; border-top: 1px solid var(--shadow-md); }
@@ -712,14 +784,20 @@ function escAttr(value) {
   return String(value || '').replace(/"/g, '&quot;');
 }
 
-function boot() {
+// Opens on the active flight while it still has legs to fly, otherwise on
+// flight search. The shared copy is fetched first (briefly), so a flight
+// confirmed on another device opens here too.
+async function boot() {
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING&hellip;</div></div></div>`;
+  await Promise.race([pullActiveFlight(), new Promise(resolve => setTimeout(resolve, 4000))]);
   updateActiveFlightButtonState();
   const active = loadActiveFlight();
-  if (active) {
-    renderRecap(active);
-  } else {
-    renderSearchUI();
-  }
+  if (active && isFlightLive(active)) renderRecap(active);
+  else renderSearchUI();
+}
+
+function isFlightLive(flight) {
+  return Array.isArray(flight.leg_status) && flight.leg_status.some(s => s.status !== 'done');
 }
 
 function updateActiveFlightButtonState() {
@@ -728,20 +806,121 @@ function updateActiveFlightButtonState() {
   btn.classList.toggle('is-empty', !loadActiveFlight());
 }
 
+// ---- Active flight: a working copy in this browser (instant, works
+// offline) kept in sync with the account's copy on the server, so a flight
+// confirmed on one device continues on any other. Every write carries the
+// server revision it was based on; if another device saved in between, the
+// server keeps its newer copy and this browser adopts it. ----
+const ACTIVE_REV_KEY = 'simdispatch_active_flight_rev';     // server revision the local copy matches
+const ACTIVE_DIRTY_KEY = 'simdispatch_active_flight_dirty'; // local change not yet on the server
+const ACTIVE_OWNER_KEY = 'simdispatch_active_flight_owner'; // account the local copy belongs to
+let activeChangeSeq = 0;
+let activePushTimer = null;
+let activePushing = false;
+let activeSyncNotice = '';
+
 function loadActiveFlight() {
   try {
+    const owner = localStorage.getItem(ACTIVE_OWNER_KEY);
+    // A copy left behind by a different account in this browser is not ours.
+    if (owner && CURRENT_USER_EMAIL && owner !== CURRENT_USER_EMAIL) return null;
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) { return null; }
 }
+function writeLocalActiveFlight(flight) {
+  if (flight) localStorage.setItem(STORAGE_KEY, JSON.stringify(flight));
+  else localStorage.removeItem(STORAGE_KEY);
+  if (CURRENT_USER_EMAIL) localStorage.setItem(ACTIVE_OWNER_KEY, CURRENT_USER_EMAIL);
+}
 function saveActiveFlight(flight) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(flight));
+  writeLocalActiveFlight(flight);
+  markActiveFlightChanged();
   updateActiveFlightButtonState();
 }
 function clearActiveFlight() {
-  localStorage.removeItem(STORAGE_KEY);
+  writeLocalActiveFlight(null);
+  markActiveFlightChanged();
   updateActiveFlightButtonState();
 }
+
+function localActiveRev() { return Number(localStorage.getItem(ACTIVE_REV_KEY) || 0); }
+
+function markActiveFlightChanged() {
+  activeChangeSeq++;
+  localStorage.setItem(ACTIVE_DIRTY_KEY, '1');
+  clearTimeout(activePushTimer);
+  activePushTimer = setTimeout(pushActiveFlight, 300);
+}
+
+function adoptServerActiveFlight(data) {
+  writeLocalActiveFlight(data.flight || null);
+  localStorage.setItem(ACTIVE_REV_KEY, String(data.rev));
+  localStorage.removeItem(ACTIVE_DIRTY_KEY);
+  updateActiveFlightButtonState();
+}
+
+async function pushActiveFlight(keepalive) {
+  if (!localStorage.getItem(ACTIVE_DIRTY_KEY)) return;
+  if (activePushing) { clearTimeout(activePushTimer); activePushTimer = setTimeout(pushActiveFlight, 500); return; }
+  activePushing = true;
+  const seq = activeChangeSeq;
+  try {
+    const resp = await fetch('/active-flight', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, keepalive: !!keepalive,
+      body: JSON.stringify({ flight: loadActiveFlight(), base_rev: localActiveRev() }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      localStorage.setItem(ACTIVE_REV_KEY, String(data.rev));
+      if (seq === activeChangeSeq) localStorage.removeItem(ACTIVE_DIRTY_KEY);
+    } else if (resp.status === 409) {
+      // Another device saved first: its copy wins; show it.
+      adoptServerActiveFlight(data);
+      activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+      refreshActiveFlightView();
+    }
+  } catch (e) {
+    // Offline or server unavailable: the change stays marked and is sent
+    // with the next save or when the app is next opened/focused.
+  } finally {
+    activePushing = false;
+    if (localStorage.getItem(ACTIVE_DIRTY_KEY) && seq !== activeChangeSeq) pushActiveFlight();
+  }
+}
+
+// Returns true when the local copy was replaced by a newer server copy.
+async function pullActiveFlight() {
+  try {
+    const resp = await fetch('/active-flight');
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    const dirty = !!localStorage.getItem(ACTIVE_DIRTY_KEY);
+    const local = loadActiveFlight();
+    if (data.rev === localActiveRev()) {
+      // Nothing new on the server. Send any unsent local change, including
+      // a flight started before syncing existed (nothing saved server-side).
+      if (dirty || (data.rev === 0 && local)) { localStorage.setItem(ACTIVE_DIRTY_KEY, '1'); await pushActiveFlight(); }
+      return false;
+    }
+    adoptServerActiveFlight(data);
+    return true;
+  } catch (e) { return false; }
+}
+
+function refreshActiveFlightView() {
+  if (currentAppSection !== 'flight') return;
+  const flight = loadActiveFlight();
+  if (flight) renderRecap(flight); else renderSearchUI();
+}
+
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'hidden') { pushActiveFlight(true); return; }
+  if (await pullActiveFlight()) {
+    activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+    refreshActiveFlightView();
+  }
+});
 
 function getSimbriefUsername(forcePrompt) {
   let username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
@@ -842,6 +1021,46 @@ let mapOpenOnMobile = false;
 let networkData = null;
 let networkPromise = null;
 
+// Greeting on top of Flight search while no flight is live. {part} is the
+// pilot's local time of day; {name} their first name (left out if unset).
+const GREETINGS = [
+  'Good {part}, Captain {name}. Where are we headed today?',
+  'Good {part}, Captain. Where to today?',
+  'Welcome back, Captain {name}. Which way are we flying today?',
+  'Good {part}, Captain {name}. The aircraft is waiting: where are we taking her?',
+  "Good {part}, Captain. What does today's roster look like?",
+  "Welcome aboard, Captain {name}. Pick a route and we'll get the briefing ready.",
+  'Good {part}, Captain {name}. Ready to plan your next departure?',
+  'Good {part}, Captain {name}. Dispatch is standing by. Where are we headed?',
+  'Good {part}, Captain. Which city are we visiting today?',
+  'Nice to see you, Captain {name}. Short hop or a long sector today?',
+  "Good {part}, Captain {name}. Coffee's on. Where are we flying?",
+  'Good {part}, Captain. The briefing room is open. Where to?',
+  "Welcome back, Captain {name}. Let's find you a flight.",
+  'Good {part}, Captain {name}. Your crew is ready. Where are we going today?',
+  "Good {part}, Captain. What's the destination today?",
+  'Ready when you are, Captain {name}. Where are we headed?',
+  "Good {part}, Captain {name}. Let's get you off blocks. Where to?",
+];
+const LATE_NIGHT_GREETINGS = [   // 22:00-05:00 only
+  'Burning the midnight oil, Captain {name}? Where are we headed tonight?',
+  'A late one tonight, Captain. Where to?',
+];
+const GREETING_LAST_KEY = 'vd_last_greeting';
+
+function pickGreeting(firstName, now = new Date()) {
+  const hour = now.getHours();
+  const part = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+  const pool = (hour >= 22 || hour < 5) ? GREETINGS.concat(LATE_NIGHT_GREETINGS) : GREETINGS;
+  let last = null;
+  try { last = localStorage.getItem(GREETING_LAST_KEY); } catch (e) { /* storage blocked */ }
+  const choices = pool.filter(t => t !== last);   // never the same one twice in a row
+  const template = choices[Math.floor(Math.random() * choices.length)];
+  try { localStorage.setItem(GREETING_LAST_KEY, template); } catch (e) { /* storage blocked */ }
+  const name = (firstName || '').trim();
+  return template.replace('{part}', part).replace(' {name}', name ? ' ' + name : '');
+}
+
 function selectOptionsHtml(labels, current) {
   return Object.entries(labels).map(([v, l]) => `<option value="${v}"${v === current ? ' selected' : ''}>${l}</option>`).join('');
 }
@@ -855,10 +1074,16 @@ async function renderSearchUI() {
   searchStatus = 'idle';
   expandedKey = null; expandedDetailData = null; expandedDetailKey = null;
   hoverKey = null; pinnedKey = null;
+  const settingsPromise = fetch('/settings').then(r => r.json()).catch(() => null);
+  const activeFlight = loadActiveFlight();
+  const showGreeting = !(activeFlight && isFlightLive(activeFlight));
 
   document.getElementById('mainContent').innerHTML = `
+    <div class="search-layout">
+    <div class="search-main">
+    ${showGreeting ? '<h1 class="greeting" id="greeting"></h1>' : ''}
     ${simbriefNoticeHtml()}
-    <div class="panel">
+    <div class="panel params-panel">
       <div class="panel-header">SEARCH PARAMETERS</div>
       <div class="panel-body">
         <div class="params-grid cols-3">
@@ -891,7 +1116,7 @@ async function renderSearchUI() {
           <div class="field">
             <label for="aircraftFilter">AIRCRAFT</label>
             <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any">
-            <p class="field-note">Feature coming soon</p>
+            <p class="field-note" id="aircraftNote">Feature coming soon</p>
           </div>
         </div>
         <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline and flight country apply instantly.</p>
@@ -927,7 +1152,7 @@ async function renderSearchUI() {
           <span class="wx-status" id="wxStatus" aria-live="polite"></span>
         </div>
         <div class="selection-map-wrap">
-          <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the table below."></div>
+          <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the flight list."></div>
           <div class="map-overlay" id="mapOverlay" hidden></div>
         </div>
         <div class="map-legend" aria-hidden="true">
@@ -939,11 +1164,28 @@ async function renderSearchUI() {
           <span><i class="sw sw-line hl"></i>ROW YOU'RE POINTING AT</span>
         </div>
         <div class="map-legend wx-legend" id="wxLegend" aria-hidden="true" hidden></div>
-        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the table.</p>
+        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the list.</p>
       </div>
     </div>
-    <div id="listPanel"></div>
+    </div>
+    <div class="search-side" id="listPanel"></div>
+    </div>
   `;
+  sizeSearchLayout();
+  // The mouse wheel zooms the map only while all of it is on screen;
+  // otherwise it keeps scrolling the page, so scrolling down to the map
+  // never gets caught zooming it halfway.
+  document.querySelector('.selection-map-wrap').addEventListener('wheel', (e) => {
+    if (!selectionMapFullyInView()) e.stopPropagation();
+  }, { capture: true });
+  if (showGreeting) {
+    settingsPromise.then(settings => {
+      const el = document.getElementById('greeting');
+      if (!el) return;
+      el.textContent = pickGreeting(settings && settings.profile && settings.profile.first_name);
+      sizeSearchLayout();
+    });
+  }
   attachAirportDropdown('origin', 'originDropdown');
   attachAirportDropdown('destination', 'destinationDropdown');
   ['origin', 'destination'].forEach(role => {
@@ -966,7 +1208,7 @@ async function renderSearchUI() {
   // account settings) unless the URL already carries a search.
   if (!fromUrl) {
     try {
-      const settings = await (await fetch('/settings')).json();
+      const settings = await settingsPromise;
       const base = settings.profile && settings.profile.preferred_base;
       if (base) {
         const icao = await resolveAirportCode(base);
@@ -1324,6 +1566,7 @@ function renderSelection({ fit }) {
   const visible = searchStatus === 'ready' ? filteredItineraries() : [];
   renderCriteriaBar(visible.length);
   renderListPanel(visible);
+  sizeSearchLayout();   // the criteria chips can wrap onto more lines
   renderSelectionMap({ fit });
   applyMapPanelOpenState();
 }
@@ -1356,8 +1599,11 @@ function sortItineraries(list) {
   if (sortState.dir === 'desc') sorted.reverse();
   return sorted;
 }
-function setSort(key) {
-  if (sortState.key === key) {
+function setSort(key, dir) {
+  if (dir) {
+    sortState.key = key;
+    sortState.dir = dir;
+  } else if (sortState.key === key) {
     sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
   } else {
     sortState.key = key;
@@ -1400,10 +1646,21 @@ function renderListPanel(visible) {
   } else {
     body = `<table class="itin-list" id="itinTable"><thead id="itinTableHead"></thead><tbody id="itinTableBody"></tbody></table>`;
   }
+  // The sort menu stands in for the column headers wherever flights are
+  // shown as cards or two-line rows; BACK TO LIST shows (desktop only)
+  // while one flight's briefing replaces the list.
+  const tools = tableVisibleItineraries.length && searchStatus === 'ready' ? `
+    <div class="list-tools">
+      <label class="sort-by">SORT BY
+        <select id="sortBySelect" onchange="setSort(this.value, 'asc')">${Object.entries(SORT_COLUMNS).map(([k, c]) => `<option value="${k}">${c.label}</option>`).join('')}</select>
+      </label>
+      <button class="ghost small sort-by sort-dir" type="button" id="sortDirBtn" onclick="setSort(sortState.key)"></button>
+      <button class="ghost small back-to-list" type="button" onclick="toggleItinerary(expandedKey)">&larr; BACK TO LIST</button>
+    </div>` : '';
   panel.innerHTML = `
-    <div class="panel">
-      <div class="panel-header">MATCHING ITINERARIES</div>
-      <div class="panel-body">${body}</div>
+    <div class="panel list-panel" id="listPanelInner">
+      <div class="panel-header"><span>MATCHING ITINERARIES</span>${tools}</div>
+      <div class="panel-body" id="listScroll">${body}</div>
     </div>`;
   const tbody = document.getElementById('itinTableBody');
   if (!tbody) return;
@@ -1446,6 +1703,18 @@ function renderTable() {
       <th><span class="sr-only">Actions</span></th>
     </tr>`;
 
+  const sortSelect = document.getElementById('sortBySelect');
+  if (sortSelect) sortSelect.value = sortState.key;
+  const dirBtn = document.getElementById('sortDirBtn');
+  if (dirBtn) {
+    const asc = sortState.dir === 'asc';
+    dirBtn.innerHTML = asc ? '&uarr;' : '&darr;';
+    dirBtn.title = asc ? 'Ascending: click to reverse' : 'Descending: click to reverse';
+    dirBtn.setAttribute('aria-label', asc ? 'Sorted ascending. Reverse the order' : 'Sorted descending. Reverse the order');
+  }
+  const listPanel = document.getElementById('listPanelInner');
+  if (listPanel) listPanel.classList.toggle('has-open', !!expandedKey);
+
   const sorted = sortItineraries(tableVisibleItineraries);
   const colCount = head.querySelectorAll('th').length;
   const highlighted = currentHighlightKey();
@@ -1463,13 +1732,13 @@ function renderTable() {
         <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${flights}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
-        <td data-label="VIA"${itin.via_icao && itin.via_icao === searchState.destination ? ' class="matched-cell" title="Matches your destination: the turnaround airport of this multi-leg rotation"' : ''}>${itin.via_icao || '&mdash;'}</td>
+        <td data-label="VIA" class="via-cell${itin.via_icao ? '' : ' no-via'}${itin.via_icao && itin.via_icao === searchState.destination ? ' matched-cell" title="Matches your destination: the turnaround airport of this multi-leg rotation' : ''}">${itin.via_icao || '&mdash;'}</td>
         <td data-label="ARRIVAL">${itin.arrival_icao}</td>
-        <td data-label="ETD (Z)">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
-        <td data-label="ETA (Z)">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
-        <td data-label="TURNAROUND">${turnaround}</td>
+        <td data-label="ETD (Z)" data-short="ETD">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
+        <td data-label="ETA (Z)" data-short="ETA">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
+        <td data-label="TURNAROUND" data-short="TURN"${itin.leg_details.length > 1 ? '' : ' class="no-turn"'}>${turnaround}</td>
         <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' NM' : 'N/A'}</td>
-        <td data-label="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
+        <td data-label="EBT" data-short="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
         <td class="select-cell" data-label=""><button class="ghost row-map-btn" type="button" onclick="event.stopPropagation(); showItineraryOnMap('${key}', event)" title="Show on map" aria-label="Show ${flights} on the map">${MAP_PIN_SVG}</button><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')" aria-expanded="${isExpanded}">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
@@ -1487,12 +1756,21 @@ function renderTable() {
   }
 }
 
+let listScrollBeforeOpen = 0;
+
 function toggleItinerary(key) {
-  expandedKey = (expandedKey === key) ? null : key;
+  const opening = expandedKey !== key;
+  // On desktop the briefing replaces the list in the right column: open it
+  // at the top, and come back to the same place in the list on close.
+  const scroller = document.getElementById('listScroll');
+  if (opening && !expandedKey && scroller) listScrollBeforeOpen = scroller.scrollTop;
+  expandedKey = opening ? key : null;
   expandedDetailData = null;
   expandedDetailKey = null;
   renderTable();
-  refreshMapHighlight();
+  // Beside the list on desktop, the map follows the flight being opened.
+  refreshMapHighlight({ pan: opening && WIDE_MQ.matches });
+  if (scroller && WIDE_MQ.matches) scroller.scrollTop = opening ? 0 : listScrollBeforeOpen;
 }
 
 async function loadDetail(key) {
@@ -1541,8 +1819,51 @@ function showItineraryOnMap(key, event) {
   if (window.matchMedia('(max-width: 720px)').matches && !mapOpenOnMobile) toggleMapOnMobile();
   refreshMapHighlight({ pan: true });
   const panel = document.getElementById('mapPanel');
-  if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // On desktop the map sits beside the list and its panel fits the screen:
+  // scroll only if part of it is hidden, bringing all of it into view.
+  if (panel && !WIDE_MQ.matches) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else if (panel && !selectionMapFullyInView()) panel.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
+
+function selectionMapFullyInView() {
+  const el = document.getElementById('selectionMap');
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  const header = document.querySelector('.app-header');
+  const top = header ? header.getBoundingClientRect().bottom : 0;
+  return r.top >= top - 2 && r.bottom <= window.innerHeight + 2;
+}
+
+// ---- Desktop layout ----
+const WIDE_MQ = window.matchMedia('(min-width: 1200px)');
+
+// Two-column flight search: the list column sticks under the header, and
+// the map panel is sized so that, scrolled into view, all of it fits the
+// screen below the header.
+function sizeSearchLayout() {
+  const header = document.querySelector('.app-header');
+  const stickyTop = (header ? header.offsetHeight : 0) + 12;
+  document.documentElement.style.setProperty('--sticky-top', stickyTop + 'px');
+  const el = document.getElementById('selectionMap');
+  const panel = document.getElementById('mapPanel');
+  if (!el || !panel) return;
+  let height = '';
+  if (WIDE_MQ.matches) {
+    const mapRect = el.getBoundingClientRect(), panelRect = panel.getBoundingClientRect();
+    const chrome = (mapRect.top - panelRect.top) + (panelRect.bottom - mapRect.bottom);
+    height = Math.max(360, Math.floor(window.innerHeight - stickyTop - 16 - chrome)) + 'px';
+  }
+  if (el.style.height !== height) {
+    el.style.height = height;
+    if (selMap) selMap.invalidateSize();
+  }
+}
+
+let layoutRaf = 0;
+window.addEventListener('resize', () => {
+  if (layoutRaf) return;
+  layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; sizeSearchLayout(); });
+});
 
 function syncRowHighlightClass() {
   const key = currentHighlightKey();
@@ -1851,7 +2172,9 @@ function ensureSelectionMap() {
   // table are the complete keyboard path; the map is a visual aid.
   selMap = L.map(el, {
     renderer: L.canvas({ padding: 0.5, tolerance: 5 }),
-    zoomControl: true, scrollWheelZoom: false, keyboard: false,
+    // Mouse-wheel zoom where there's a mouse/trackpad; touch keeps pinch.
+    zoomControl: true, scrollWheelZoom: window.matchMedia('(hover: hover) and (pointer: fine)').matches,
+    wheelPxPerZoomLevel: 120, keyboard: false,
     minZoom: 3, maxZoom: BASEMAP_MAX_ZOOM, worldCopyJump: true,
   });
   addBasemap(selMap);
@@ -2380,7 +2703,9 @@ function renderRecap(flight) {
     </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  document.getElementById('mainContent').innerHTML = `${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
+  activeSyncNotice = '';
+  document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
@@ -2561,13 +2886,16 @@ function goHome() {
 
 // Marks which header button matches the page on screen: 'search',
 // 'flight' or 'profile' (profile covers account settings too).
+let currentAppSection = '';
 function setAppNav(section) {
+  currentAppSection = section;
   [['search', 'navSearch'], ['flight', 'activeFlightBtn'], ['profile', 'navProfile']].forEach(([key, id]) => {
     const btn = document.getElementById(id);
     if (!btn) return;
     btn.classList.toggle('is-current', key === section);
     if (key === section) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
+  document.body.classList.toggle('page-search', section === 'search');
 }
 
 function goActiveFlight() {

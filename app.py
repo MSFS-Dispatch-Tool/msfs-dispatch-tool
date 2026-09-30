@@ -1162,6 +1162,38 @@ def delete_pirep(pirep_id):
     return jsonify({"deleted": pirep_id})
 
 
+ACTIVE_FLIGHT_MAX_BYTES = 1_000_000
+
+
+@app.route("/active-flight", methods=["GET"])
+def get_active_flight():
+    """The flight this account is currently flying, so it can be picked up
+    on any device. The browser keeps a working copy; this is the shared one."""
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    return jsonify(db.get_active_flight(current_user_id()))
+
+
+@app.route("/active-flight", methods=["PUT"])
+def put_active_flight():
+    """Body: {"flight": <object or null>, "base_rev": <rev the device last
+    saw>}. A stale base_rev means another device saved in the meantime:
+    409 with that newer copy, which the client adopts."""
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    if (request.content_length or 0) > ACTIVE_FLIGHT_MAX_BYTES:
+        return jsonify({"error": "Active flight is too large."}), 413
+    payload = request.get_json(silent=True) or {}
+    flight = payload.get("flight")
+    base_rev = payload.get("base_rev")
+    if (flight is not None and not isinstance(flight, dict)) or not isinstance(base_rev, int) or base_rev < 0:
+        return jsonify({"error": "Expected {flight: object|null, base_rev: int}."}), 400
+    saved, current = db.save_active_flight(current_user_id(), flight, base_rev)
+    return jsonify(current), (200 if saved else 409)
+
+
 # ---------------------------------------------------------------------
 # Pilot profile + generation settings (delay/LMC/MEL enable and
 # per-item toggles), and flying stats derived from the PIREP log.
