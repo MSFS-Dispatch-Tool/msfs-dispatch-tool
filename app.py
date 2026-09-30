@@ -1448,6 +1448,42 @@ def simbrief_redirect_url():
     return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
 
 
+def ofp_route_fixes(navlog):
+    """The OFP's route as a compact list of fixes for drawing it on a map:
+    [{"ident", "type", "lat", "lon", "via"}], in flight order. SimBrief's
+    navlog.fix is a list (a single fix can arrive as a bare object), with
+    every value a string; fixes without usable coordinates are skipped.
+    TOC/TOD come through as their own entries (ident "TOC"/"TOD"), and
+    SID/STAR fixes only when the pilot's SimBrief settings include
+    procedures. The origin airport isn't in the list; the destination
+    usually is, as the last entry."""
+    fixes = (navlog or {}).get("fix") if isinstance(navlog, dict) else None
+    if isinstance(fixes, dict):
+        fixes = [fixes]
+    if not isinstance(fixes, list):
+        return []
+    out = []
+    for f in fixes:
+        if not isinstance(f, dict):
+            continue
+        try:
+            lat, lon = float(f.get("pos_lat")), float(f.get("pos_long"))
+        except (TypeError, ValueError):
+            continue
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            continue
+        out.append({
+            "ident": str(f.get("ident") or "")[:12],
+            "type": str(f.get("type") or "")[:8],
+            "lat": round(lat, 4),
+            "lon": round(lon, 4),
+            "via": str(f.get("via_airway") or "")[:12],
+        })
+        if len(out) >= 400:   # a sanity cap - real OFPs have far fewer
+            break
+    return out
+
+
 @app.route("/simbrief/ofp")
 def simbrief_ofp():
     """
@@ -1512,6 +1548,7 @@ def simbrief_ofp():
         # which the pilot enters themselves at PIREP time.
         "efob": fuel.get("plan_ramp", ""),
         "epax": weights.get("pax_count", ""),
+        "navlog": ofp_route_fixes(data.get("navlog")),
     })
 
 

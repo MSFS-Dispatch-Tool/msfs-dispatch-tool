@@ -448,8 +448,10 @@
   .af-leg.done small { color: var(--green); }
   .af-leg.on { border-color: var(--titlebar); background: var(--accent-bg); box-shadow: inset 0 0 0 1px var(--titlebar); }
   .af-leg.on small { color: var(--titlebar); }
-  .af-steps { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
-  .af-steps li { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 20px; background: var(--face-dark); }
+  /* Four equal pills, sized for the longest label (LOADSHEET). */
+  .af-steps { display: grid; grid-template-columns: repeat(4, 118px); gap: 4px; list-style: none; margin: 0; padding: 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+  @media (max-width: 560px) { .af-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }
+  .af-steps li { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 20px; background: var(--face-dark); box-sizing: border-box; min-width: 0; }
   .af-steps li span { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--white); border: 1px solid var(--shadow-dk); }
   .af-steps li.done { color: var(--green); }
   .af-steps li.done span { background: var(--green); border-color: var(--green); color: #fff; }
@@ -457,6 +459,8 @@
   .af-steps li.now span { background: var(--titlebar); border-color: var(--titlebar); color: #fff; }
   .af-status { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .af-route-names { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
+  .af-map-note { margin: 6px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4; overflow-wrap: anywhere; }
+  .leaflet-tooltip.route-fix-tip { font-family: inherit; font-size: 11px; font-weight: 700; padding: 1px 6px; }
   .af-route .route-map { max-width: none; height: 240px; margin-top: 0; }
   .af-tabbar { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--shadow-md); background: var(--face-dark); }
   .af-tabbar button {
@@ -512,6 +516,7 @@
     .af-route > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
     .af-route .route-map { flex: 1 1 auto; min-height: 160px; height: auto; }
     .af-route .kv { flex: none; margin: 8px 0 0 !important; }
+    .af-map-note { flex: none; max-height: 3em; overflow: hidden; }
     .af-route .kv td { padding: 4px 0; }
     .af-tabbar { flex: none; }
     .af-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
@@ -2704,18 +2709,51 @@ function routeMapDiv(leg, id) {
   return `<div class="route-map" id="${id}"></div>`;
 }
 
-function initRouteMap(id, leg) {
+// The fixes of an OFP's planned route, when that OFP belongs to this leg
+// (same airports) and carries them; null means draw a straight line.
+function ofpRouteFixes(leg, ofp) {
+  if (!ofp || !Array.isArray(ofp.navlog) || !ofp.navlog.length) return null;
+  const a = leg.departure_info.icao, b = leg.arrival_info.icao;
+  if ((ofp.origin_icao && ofp.origin_icao !== a) || (ofp.destination_icao && ofp.destination_icao !== b)) return null;
+  // The airports themselves are drawn separately, at both ends.
+  return ofp.navlog.filter(f => Number.isFinite(f.lat) && Number.isFinite(f.lon) && f.ident !== a && f.ident !== b);
+}
+
+// Leg route map: the OFP's planned route through its fixes once an OFP is
+// loaded (top of climb/descent marked, fix names on hover), otherwise a
+// straight dashed line between the airports. opts.interactive adds zoom
+// controls (and wheel zoom with a mouse) for the larger maps.
+function initRouteMap(id, leg, ofp, opts = {}) {
   const el = document.getElementById(id);
   if (!el || el.dataset.mapInit || typeof L === 'undefined') return;
   const a = leg.departure_info, b = leg.arrival_info;
   if (a.lat == null || a.lon == null || b.lat == null || b.lon == null) return;
   el.dataset.mapInit = '1';
-  const map = L.map(id, { zoomControl: false, scrollWheelZoom: false, maxZoom: BASEMAP_MAX_ZOOM });
+  const interactive = !!opts.interactive;
+  const map = L.map(id, {
+    zoomControl: interactive, maxZoom: BASEMAP_MAX_ZOOM,
+    scrollWheelZoom: interactive && window.matchMedia('(hover: hover) and (pointer: fine)').matches, wheelPxPerZoomLevel: 120,
+  });
   addBasemap(map);
+  const fixes = ofpRouteFixes(leg, ofp);
+  const points = [[a.lat, a.lon], ...(fixes || []).map(f => [f.lat, f.lon]), [b.lat, b.lon]];
+  if (fixes) {
+    L.polyline(points, { color: '#2563EB', weight: 3, opacity: 0.9 }).addTo(map);
+    fixes.forEach(f => {
+      const phase = f.ident === 'TOC' || f.ident === 'TOD';
+      const m = L.circleMarker([f.lat, f.lon], phase
+        ? { radius: 5, color: '#FFFFFF', weight: 2, fillColor: '#DC6803', fillOpacity: 1 }
+        : { radius: 3.5, color: '#2563EB', weight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }).addTo(map);
+      const label = phase ? (f.ident === 'TOC' ? 'TOC · top of climb' : 'TOD · top of descent') : escText(f.ident) + (f.via && f.via !== 'DCT' ? ` · ${escText(f.via)}` : '');
+      m.bindTooltip(label, { direction: 'top', offset: [0, -4], className: 'route-fix-tip' });
+    });
+  } else {
+    L.polyline(points, { color: '#2563EB', weight: 2, dashArray: '5,5' }).addTo(map);
+  }
   L.marker([a.lat, a.lon]).addTo(map).bindTooltip(a.icao, { permanent: true, direction: 'top', offset: [0, -8] });
   L.marker([b.lat, b.lon]).addTo(map).bindTooltip(b.icao, { permanent: true, direction: 'top', offset: [0, -8] });
-  L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#2563EB', weight: 2, dashArray: '5,5' }).addTo(map);
-  const fit = () => map.fitBounds(L.latLngBounds([[a.lat, a.lon], [b.lat, b.lon]]), { padding: [26, 26], animate: false });
+  const bounds = L.latLngBounds(points);
+  const fit = () => map.fitBounds(bounds, { padding: [26, 26], animate: false });
   fit();
   // Some route maps are sized by the page layout: keep the route framed.
   if (window.ResizeObserver) new ResizeObserver(() => { if (el.isConnected) { map.invalidateSize(); fit(); } }).observe(el);
@@ -2872,6 +2910,7 @@ function renderRecap(flight) {
         <div class="panel-body">
           <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
           ${routeMapDiv(leg, `map-recap-${i}`)}
+          <p class="af-map-note">${ofpRouteFixes(leg, state.ofp) ? `Planned route from the SimBrief OFP: ${escText(state.ofp.route || '')}` : 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief.'}</p>
           ${legScheduleTable(leg)}
         </div>
       </div>
@@ -2881,7 +2920,7 @@ function renderRecap(flight) {
         ${RECAP_TABS.map(([k]) => `<div class="panel-body af-pane" role="tabpanel" id="af-pane-${k}" aria-labelledby="af-tab-${k}"${k === tab ? '' : ' hidden'}>${panes[k]}</div>`).join('')}
       </div>
     </div>`;
-  initRouteMap(`map-recap-${i}`, leg);
+  initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
 }
 
 function selectRecapLeg(index) {
@@ -3630,7 +3669,7 @@ function renderPirepLog() {
   }).join('');
   if (expandedPirepId) {
     const rec = pirepLogRecords.find(r => r.id === expandedPirepId);
-    if (rec && rec.leg && rec.leg.departure_info) initRouteMap(`map-pirep-${rec.id}`, rec.leg);
+    if (rec && rec.leg && rec.leg.departure_info) initRouteMap(`map-pirep-${rec.id}`, rec.leg, rec.ofp);
   }
 }
 
