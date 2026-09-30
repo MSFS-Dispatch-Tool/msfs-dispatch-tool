@@ -1457,27 +1457,34 @@ def ofp_route_fixes(navlog):
     SID/STAR fixes only when the pilot's SimBrief settings include
     procedures. The origin airport isn't in the list; the destination
     usually is, as the last entry."""
-    fixes = (navlog or {}).get("fix") if isinstance(navlog, dict) else None
+    # Accept the navlog as {"fix": [...]}, {"fix": {...}} or a bare list;
+    # SimBrief's older json=1 format also sends empty values as {}.
+    fixes = navlog.get("fix") if isinstance(navlog, dict) else navlog
     if isinstance(fixes, dict):
         fixes = [fixes]
     if not isinstance(fixes, list):
         return []
+
+    def text(value, limit):
+        return str(value)[:limit] if isinstance(value, (str, int, float)) else ""
+
     out = []
     for f in fixes:
         if not isinstance(f, dict):
             continue
         try:
-            lat, lon = float(f.get("pos_lat")), float(f.get("pos_long"))
+            lat = float(f.get("pos_lat", f.get("lat")))
+            lon = float(f.get("pos_long", f.get("lon")))
         except (TypeError, ValueError):
             continue
         if not (-90 <= lat <= 90 and -180 <= lon <= 180):
             continue
         out.append({
-            "ident": str(f.get("ident") or "")[:12],
-            "type": str(f.get("type") or "")[:8],
+            "ident": text(f.get("ident"), 12),
+            "type": text(f.get("type"), 8),
             "lat": round(lat, 4),
             "lon": round(lon, 4),
-            "via": str(f.get("via_airway") or "")[:12],
+            "via": text(f.get("via_airway"), 12),
         })
         if len(out) >= 400:   # a sanity cap - real OFPs have far fewer
             break
