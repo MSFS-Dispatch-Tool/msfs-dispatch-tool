@@ -189,6 +189,10 @@
     padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
   }
   .notice-banner a { color: var(--red); font-weight: 600; text-decoration: underline; }
+  .sync-notice {
+    background: var(--accent-bg); color: #1D4ED8; border: 1px solid #B2CCFF; border-radius: var(--radius-sm);
+    padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
+  }
   .field-error.show { display: block; }
 
   .checkbox-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -712,14 +716,20 @@ function escAttr(value) {
   return String(value || '').replace(/"/g, '&quot;');
 }
 
-function boot() {
+// Opens on the active flight while it still has legs to fly, otherwise on
+// flight search. The shared copy is fetched first (briefly), so a flight
+// confirmed on another device opens here too.
+async function boot() {
+  document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING&hellip;</div></div></div>`;
+  await Promise.race([pullActiveFlight(), new Promise(resolve => setTimeout(resolve, 4000))]);
   updateActiveFlightButtonState();
   const active = loadActiveFlight();
-  if (active) {
-    renderRecap(active);
-  } else {
-    renderSearchUI();
-  }
+  if (active && isFlightLive(active)) renderRecap(active);
+  else renderSearchUI();
+}
+
+function isFlightLive(flight) {
+  return Array.isArray(flight.leg_status) && flight.leg_status.some(s => s.status !== 'done');
 }
 
 function updateActiveFlightButtonState() {
@@ -728,20 +738,121 @@ function updateActiveFlightButtonState() {
   btn.classList.toggle('is-empty', !loadActiveFlight());
 }
 
+// ---- Active flight: a working copy in this browser (instant, works
+// offline) kept in sync with the account's copy on the server, so a flight
+// confirmed on one device continues on any other. Every write carries the
+// server revision it was based on; if another device saved in between, the
+// server keeps its newer copy and this browser adopts it. ----
+const ACTIVE_REV_KEY = 'simdispatch_active_flight_rev';     // server revision the local copy matches
+const ACTIVE_DIRTY_KEY = 'simdispatch_active_flight_dirty'; // local change not yet on the server
+const ACTIVE_OWNER_KEY = 'simdispatch_active_flight_owner'; // account the local copy belongs to
+let activeChangeSeq = 0;
+let activePushTimer = null;
+let activePushing = false;
+let activeSyncNotice = '';
+
 function loadActiveFlight() {
   try {
+    const owner = localStorage.getItem(ACTIVE_OWNER_KEY);
+    // A copy left behind by a different account in this browser is not ours.
+    if (owner && CURRENT_USER_EMAIL && owner !== CURRENT_USER_EMAIL) return null;
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) { return null; }
 }
+function writeLocalActiveFlight(flight) {
+  if (flight) localStorage.setItem(STORAGE_KEY, JSON.stringify(flight));
+  else localStorage.removeItem(STORAGE_KEY);
+  if (CURRENT_USER_EMAIL) localStorage.setItem(ACTIVE_OWNER_KEY, CURRENT_USER_EMAIL);
+}
 function saveActiveFlight(flight) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(flight));
+  writeLocalActiveFlight(flight);
+  markActiveFlightChanged();
   updateActiveFlightButtonState();
 }
 function clearActiveFlight() {
-  localStorage.removeItem(STORAGE_KEY);
+  writeLocalActiveFlight(null);
+  markActiveFlightChanged();
   updateActiveFlightButtonState();
 }
+
+function localActiveRev() { return Number(localStorage.getItem(ACTIVE_REV_KEY) || 0); }
+
+function markActiveFlightChanged() {
+  activeChangeSeq++;
+  localStorage.setItem(ACTIVE_DIRTY_KEY, '1');
+  clearTimeout(activePushTimer);
+  activePushTimer = setTimeout(pushActiveFlight, 300);
+}
+
+function adoptServerActiveFlight(data) {
+  writeLocalActiveFlight(data.flight || null);
+  localStorage.setItem(ACTIVE_REV_KEY, String(data.rev));
+  localStorage.removeItem(ACTIVE_DIRTY_KEY);
+  updateActiveFlightButtonState();
+}
+
+async function pushActiveFlight(keepalive) {
+  if (!localStorage.getItem(ACTIVE_DIRTY_KEY)) return;
+  if (activePushing) { clearTimeout(activePushTimer); activePushTimer = setTimeout(pushActiveFlight, 500); return; }
+  activePushing = true;
+  const seq = activeChangeSeq;
+  try {
+    const resp = await fetch('/active-flight', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, keepalive: !!keepalive,
+      body: JSON.stringify({ flight: loadActiveFlight(), base_rev: localActiveRev() }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      localStorage.setItem(ACTIVE_REV_KEY, String(data.rev));
+      if (seq === activeChangeSeq) localStorage.removeItem(ACTIVE_DIRTY_KEY);
+    } else if (resp.status === 409) {
+      // Another device saved first: its copy wins; show it.
+      adoptServerActiveFlight(data);
+      activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+      refreshActiveFlightView();
+    }
+  } catch (e) {
+    // Offline or server unavailable: the change stays marked and is sent
+    // with the next save or when the app is next opened/focused.
+  } finally {
+    activePushing = false;
+    if (localStorage.getItem(ACTIVE_DIRTY_KEY) && seq !== activeChangeSeq) pushActiveFlight();
+  }
+}
+
+// Returns true when the local copy was replaced by a newer server copy.
+async function pullActiveFlight() {
+  try {
+    const resp = await fetch('/active-flight');
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    const dirty = !!localStorage.getItem(ACTIVE_DIRTY_KEY);
+    const local = loadActiveFlight();
+    if (data.rev === localActiveRev()) {
+      // Nothing new on the server. Send any unsent local change, including
+      // a flight started before syncing existed (nothing saved server-side).
+      if (dirty || (data.rev === 0 && local)) { localStorage.setItem(ACTIVE_DIRTY_KEY, '1'); await pushActiveFlight(); }
+      return false;
+    }
+    adoptServerActiveFlight(data);
+    return true;
+  } catch (e) { return false; }
+}
+
+function refreshActiveFlightView() {
+  if (currentAppSection !== 'flight') return;
+  const flight = loadActiveFlight();
+  if (flight) renderRecap(flight); else renderSearchUI();
+}
+
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'hidden') { pushActiveFlight(true); return; }
+  if (await pullActiveFlight()) {
+    activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version.';
+    refreshActiveFlightView();
+  }
+});
 
 function getSimbriefUsername(forcePrompt) {
   let username = localStorage.getItem(SIMBRIEF_USERNAME_KEY) || '';
@@ -1851,7 +1962,9 @@ function ensureSelectionMap() {
   // table are the complete keyboard path; the map is a visual aid.
   selMap = L.map(el, {
     renderer: L.canvas({ padding: 0.5, tolerance: 5 }),
-    zoomControl: true, scrollWheelZoom: false, keyboard: false,
+    // Mouse-wheel zoom where there's a mouse/trackpad; touch keeps pinch.
+    zoomControl: true, scrollWheelZoom: window.matchMedia('(hover: hover) and (pointer: fine)').matches,
+    wheelPxPerZoomLevel: 120, keyboard: false,
     minZoom: 3, maxZoom: BASEMAP_MAX_ZOOM, worldCopyJump: true,
   });
   addBasemap(selMap);
@@ -2380,7 +2493,9 @@ function renderRecap(flight) {
     </div>`;
   }).join('');
   const allDone = flight.leg_status.every(s => s.status === 'done');
-  document.getElementById('mainContent').innerHTML = `${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
+  const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
+  activeSyncNotice = '';
+  document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}<div class="panel"><div class="panel-header"><span>ACTIVE FLIGHT</span></div><div class="panel-body">${legRows}${allDone ? '<p class="placeholder-text">ALL LEGS COMPLETED THROUGH PIREP. Use NEW FLIGHT to begin another dispatch.</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button>' : ''}</div></div>`;
   flight.legs.forEach((leg, i) => initRouteMap(`map-recap-${i}`, leg));
 }
 
@@ -2561,7 +2676,9 @@ function goHome() {
 
 // Marks which header button matches the page on screen: 'search',
 // 'flight' or 'profile' (profile covers account settings too).
+let currentAppSection = '';
 function setAppNav(section) {
+  currentAppSection = section;
   [['search', 'navSearch'], ['flight', 'activeFlightBtn'], ['profile', 'navProfile']].forEach(([key, id]) => {
     const btn = document.getElementById(id);
     if (!btn) return;
