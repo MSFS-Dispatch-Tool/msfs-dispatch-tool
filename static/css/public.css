@@ -215,7 +215,7 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
    holds a screenshot per step (crossfading); the steps scroll over it,
    each a translucent card. The rail on the right shows and jumps to the
    current step. ---- */
-.tour { position: relative; scroll-margin-top: 0; }
+.tour { position: relative; padding: 0; scroll-margin-top: 0; }
 .tour-stage {
   position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; z-index: 0;
   background: #E9EDF3;
@@ -242,15 +242,29 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 }
 :root[data-theme="dark"] .tour-scrim { background: linear-gradient(180deg, rgba(11,14,21,0.5) 0%, rgba(11,14,21,0) 18%); }
 :root[data-theme="dark"] .tour-glass { background: linear-gradient(90deg, rgba(12,15,22,0.8) 0%, rgba(12,15,22,0.64) 70%, rgba(12,15,22,0.38) 100%); }
-.tour-steps { position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; pointer-events: none; }
+/* Text: without JS the steps simply stack over the stage. Pinned (JS):
+   the section is one screen of scroll per step, the stage sticks, and
+   all steps share one spot - the active one shows, the others wait just
+   below (upcoming) or above (past), faded out. */
+.tour-texts { position: relative; z-index: 1; }
 .tour-step { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: 110px 0; }
 .tour-card {
-  pointer-events: auto;
   width: min(580px, calc(100vw - 48px));
   margin-left: max(24px, calc((100vw - var(--max-width)) / 2 + 24px));
-  opacity: 0.18; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease;
 }
-.tour-step.active .tour-card { opacity: 1; transform: none; }
+.tour.is-pinned { height: calc((var(--tour-count) + 0.5) * 100vh); height: calc((var(--tour-count) + 0.5) * 100svh); }
+.tour.is-pinned .tour-texts { position: absolute; inset: 0; pointer-events: none; }
+.tour.is-pinned .tour-step {
+  position: absolute; inset: 0; min-height: 0;
+  opacity: 0; visibility: hidden; transform: translateY(36px);
+  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.55s;
+}
+.tour.is-pinned .tour-step.is-past { transform: translateY(-36px); }
+.tour.is-pinned .tour-step.active {
+  opacity: 1; visibility: visible; transform: none; pointer-events: auto;
+  transition: opacity 0.5s ease 0.1s, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s, visibility 0s;
+}
+.tour:not(.is-pinned) .tour-stage { position: absolute; inset: 0; height: auto; }
 .tour-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
 .tour-icon {
   width: 44px; height: 44px; flex: none; border-radius: 13px; display: inline-flex; align-items: center; justify-content: center;
@@ -298,6 +312,7 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   :root[data-theme="dark"] .tour-glass { background: rgba(12,15,22,0.74); }
   .tour-step { padding: 96px 0 72px; }
   .tour-card { width: auto; margin: 0 20px; }
+  .tour.is-pinned .tour-step { align-items: flex-start; padding-top: 104px; }
   .tour-title { font-size: 28px; }
   .tour-step-intro .tour-title { font-size: 32px; }
   .tour-lead { font-size: 17px; }
@@ -347,7 +362,8 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tour-shot, .tour-card, .tour-dot, .soon-card { transition: none; }
+  .tour-shot, .tour-card, .tour-dot, .soon-card, .tour.is-pinned .tour-step, .tour.is-pinned .tour-step.active { transition: none; }
+  .tour.is-pinned .tour-step, .tour.is-pinned .tour-step.is-past { transform: none; }
   .tour-shot, .tour-shot.active { transform: none; }
 }
 

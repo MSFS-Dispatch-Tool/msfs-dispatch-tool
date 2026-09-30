@@ -100,20 +100,14 @@
               'Full control over your data: download everything you&rsquo;ve tracked as a CSV whenever you want, or delete the flights you don&rsquo;t want in your statistics']},
 ] %}
 
-<section class="tour" id="how-it-works" aria-label="How it works">
+<section class="tour" id="how-it-works" aria-label="How it works" style="--tour-count: {{ tour|length }}">
   <div class="tour-stage">
     {% for step in tour %}
     <img class="tour-shot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot) }}" alt="" {% if not loop.first %}loading="lazy"{% endif %} width="1920" height="1080">
     {% endfor %}
     <div class="tour-glass"></div>
     <div class="tour-scrim"></div>
-    <nav class="tour-rail" aria-label="Steps">
-      {% for step in tour %}
-      <button type="button" class="tour-dot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" aria-label="{{ step.eyebrow }}"><span class="tour-dot-label">{{ step.eyebrow }}</span></button>
-      {% endfor %}
-    </nav>
-  </div>
-  <div class="tour-steps">
+  <div class="tour-texts">
     {% for step in tour %}
     <div class="tour-step{% if loop.first %} tour-step-intro{% endif %}" id="tour-{{ step.key }}" data-step="{{ loop.index0 }}">
       <article class="tour-card">
@@ -127,6 +121,12 @@
       </article>
     </div>
     {% endfor %}
+  </div>
+    <nav class="tour-rail" aria-label="Steps">
+      {% for step in tour %}
+      <button type="button" class="tour-dot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" aria-label="{{ step.eyebrow }}"><span class="tour-dot-label">{{ step.eyebrow }}</span></button>
+      {% endfor %}
+    </nav>
   </div>
 </section>
 
@@ -171,35 +171,46 @@
   (function () {
     var hasIO = 'IntersectionObserver' in window;
 
-    // Tour: the step crossing the middle of the viewport picks the
-    // full-screen screenshot and the rail dot; the rail jumps to a step.
+    // Tour: the section stays pinned while you scroll through it (one
+    // screen of scroll per step). Crossing a step's point swaps the
+    // screenshot and the text in place; the rail shows and jumps to steps.
+    var tour = document.getElementById('how-it-works');
     var steps = Array.prototype.slice.call(document.querySelectorAll('.tour-step'));
     var shots = Array.prototype.slice.call(document.querySelectorAll('.tour-shot'));
     var dots = Array.prototype.slice.call(document.querySelectorAll('.tour-dot'));
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var currentStep = -1;
     function activateTour(i) {
-      steps.forEach(function (s) { s.classList.toggle('active', s.getAttribute('data-step') === String(i)); });
-      shots.forEach(function (sh) { sh.classList.toggle('active', sh.getAttribute('data-step') === String(i)); });
-      dots.forEach(function (d) {
-        var on = d.getAttribute('data-step') === String(i);
-        d.classList.toggle('active', on);
-        if (on) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
+      if (i === currentStep) return;
+      currentStep = i;
+      steps.forEach(function (s, k) {
+        s.classList.toggle('active', k === i);
+        s.classList.toggle('is-past', k < i);
+      });
+      shots.forEach(function (sh, k) { sh.classList.toggle('active', k === i); });
+      dots.forEach(function (d, k) {
+        d.classList.toggle('active', k === i);
+        if (k === i) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
       });
     }
-    if (steps.length) {
-      activateTour(0);
-      if (hasIO) {
-        var tourObserver = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) { if (e.isIntersecting) activateTour(e.target.getAttribute('data-step')); });
-        }, { rootMargin: '-45% 0px -45% 0px' });
-        steps.forEach(function (s) { tourObserver.observe(s); });
-      } else {
-        steps.forEach(function (s) { s.classList.add('active'); });
-      }
-      dots.forEach(function (d) {
+    function tourStepFromScroll() {
+      var scrolled = -tour.getBoundingClientRect().top / window.innerHeight;
+      return Math.max(0, Math.min(steps.length - 1, Math.floor(scrolled + 0.35)));
+    }
+    if (tour && steps.length) {
+      tour.classList.add('is-pinned');
+      activateTour(tourStepFromScroll());
+      var tourRaf = 0;
+      var onTourScroll = function () {
+        if (tourRaf) return;
+        tourRaf = requestAnimationFrame(function () { tourRaf = 0; activateTour(tourStepFromScroll()); });
+      };
+      window.addEventListener('scroll', onTourScroll, { passive: true });
+      window.addEventListener('resize', onTourScroll);
+      dots.forEach(function (d, k) {
         d.addEventListener('click', function () {
-          var target = steps[+d.getAttribute('data-step')];
-          target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+          var top = tour.getBoundingClientRect().top + window.scrollY + k * window.innerHeight;
+          window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
         });
       });
     }
