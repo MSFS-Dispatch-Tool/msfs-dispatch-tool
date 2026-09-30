@@ -1,0 +1,11 @@
+{
+  "icao": "WZZ",
+  "iata": "W6",
+  "name": "Wizz Air",
+  "callsign_prefix": "WZZ",
+  "fleet": [
+    {"type": "32Q", "simbrief_type": "A21N", "seats": 239},
+    {"type": "321", "simbrief_type": "A321", "seats": 230},
+    {"type": "320", "simbrief_type": "A320", "seats": 180}
+  ]
+}
