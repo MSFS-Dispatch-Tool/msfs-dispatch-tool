@@ -434,27 +434,79 @@
   button.sort-dir { width: 26px; justify-content: center; padding: 3px 0; font-size: 13px; }
   .back-to-list { display: none !important; }
   #listPanel { container: itinlist / inline-size; }
+  .route-map.destinations-map { max-width: none; height: 320px; }
+  .list-criteria { display: none; }
+  @media (max-width: 1199px) {
+    .profile-layout { display: flex; flex-direction: column; }
+    .profile-col { display: contents; }
+    .profile-panel { order: 1; } .stats-panel { order: 2; } .destinations-panel { order: 3; } .pirep-log-panel { order: 4; }
+  }
 
-  /* ---- Desktop (1200px+): every page gets wider; flight search becomes
-     two columns - filters and a map sized to the viewport on the left, the
-     flight list scrolling on its own on the right. Where the right column
-     is too narrow for the full table, each flight becomes a two-line row. */
+  /* ---- Desktop (1200px+): every page is wider, and the app pages fit the
+     screen with no page scrolling - boxes with long content (the flight
+     list, the PIREP log) scroll inside themselves instead. The page height
+     never goes below 560px, so a very short window still scrolls. ---- */
   @media (min-width: 1200px) {
     main, footer { max-width: 1320px; }
-    body.page-search main, body.page-search footer { max-width: 1840px; }
-    body.page-search main { padding-bottom: 16px; }
-    .search-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(480px, 40%); gap: 16px; align-items: start; }
-    .search-side { position: sticky; top: var(--sticky-top, 88px); }
-    .search-side .list-panel { display: flex; flex-direction: column; max-height: calc(100vh - var(--sticky-top, 88px) - 16px); margin-bottom: 0; }
+    body.page-search main { max-width: 1840px; }
+    body.page-fit footer { display: none; }
+    body.page-fit main {
+      display: flex; flex-direction: column; margin-top: 12px; margin-bottom: 0; padding-bottom: 16px;
+      height: max(560px, calc(100vh - var(--sticky-top, 76px))); box-sizing: border-box;
+    }
+    body.page-fit main > * { flex: none; }
+    body.page-fit .greeting { font-size: 20px; margin: 0 2px 10px; }
+    body.page-fit .notice-banner { padding: 7px 12px; margin-bottom: 10px; }
+    body.page-fit .panel { margin-bottom: 12px; }
+
+    /* Pilot profile: profile and map on the left; stats and the PIREP log
+       (scrolling in its box) on the right. */
+    .profile-layout { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    .profile-col { min-height: 0; display: flex; flex-direction: column; }
+    .profile-col > .panel { flex: none; }
+    .profile-col > .panel:last-child { margin-bottom: 0; }
+    .destinations-panel, .pirep-log-panel { flex: 1 1 auto !important; min-height: 0; display: flex; flex-direction: column; }
+    .destinations-panel > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .destinations-panel .route-map.destinations-map { flex: 1 1 auto; min-height: 200px; height: auto; }
+    .pirep-log-panel > .panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+    /* Flight search: filters, result count and map on the left; the list on
+       the right, its top level with the filters. The map takes whatever
+       height is left. */
+    .search-layout { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(480px, 40%); gap: 16px; }
+    .search-main, .search-side { min-height: 0; display: flex; flex-direction: column; }
+    .search-main > .panel { flex: none; }
+    .search-main > #mapPanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; }
+    #mapPanel > .map-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding-top: 10px; padding-bottom: 10px; }
+    #mapPanel .selection-map-wrap { flex: 1 1 auto; min-height: 200px; }
+    #mapPanel .selection-map { height: 100%; }
+    #mapPanel .map-legend { flex: none; margin-top: 8px; gap: 4px 14px; font-size: 10.5px; }
+    #mapPanel .map-hint { display: none; }
+    /* The result count and criteria chips join the list's box; the map's
+       click-mode buttons move into its header and the weather switches
+       float over the map. */
+    .criteria-panel { display: none; }
+    .list-criteria { display: flex; flex: none; padding: 8px 16px; border-bottom: 1px solid var(--shadow-md); }
+    .result-count strong { font-size: 20px; }
+    #aircraftNote { display: none; }
+    #mapPanel .map-title { visibility: hidden; }
+    #mapPanel .map-toolbar { position: absolute; top: 6px; left: 14px; right: 14px; margin: 0; }
+    #mapPanel .wx-toolbar {
+      top: 60px; right: 24px; z-index: 800; max-width: 480px; padding: 6px 10px; gap: 4px 12px;
+      background: rgba(255,255,255,0.94); border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); box-shadow: 0 2px 6px rgba(16,24,40,0.12);
+    }
+    .search-side .list-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; height: 100%; box-sizing: border-box; }
     .search-side .list-panel > .panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-    /* Compact left column: the search buttons and the weather switches move
-       up into their panel headers, leaving the height to the map. */
+    /* Compact filters: the search buttons and the weather switches move up
+       into their panel headers. */
     .params-panel, #mapPanel { position: relative; }
     .params-panel .params-actions { position: absolute; top: 5px; right: 12px; margin: 0; }
     .params-panel .params-actions button { padding: 5px 12px; font-size: 12px; }
+    .params-panel .panel-body { padding-top: 10px; padding-bottom: 10px; }
     #searchRequirementNote { display: none; }
-    .params-grid { margin-bottom: 0; }
-    #mapPanel .wx-toolbar { position: absolute; top: 9px; right: 14px; margin: 0; }
+    .params-grid { margin-bottom: 0; gap: 8px 16px; }
+    .params-grid .field label { margin-bottom: 3px; }
+    #mapPanel .wx-toolbar { position: absolute; margin: 0; }
     .list-panel.has-open .back-to-list { display: inline-flex !important; }
     .list-panel.has-open .sort-by { display: none !important; }
     .list-panel.has-open table.itin-list tr.itin-row:not(.expanded) { display: none; }
@@ -611,9 +663,8 @@
   <nav class="app-nav" aria-label="App sections">
     <button class="app-nav-btn" id="navSearch" type="button" onclick="goHome()">
       <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M4 11.5L12 4L20 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M6 10V20H18V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 20V14H14V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2.2"/>
+        <path d="M15.5 15.5L20.5 20.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
       </svg>
       Flight search
     </button>
@@ -1074,15 +1125,16 @@ async function renderSearchUI() {
   searchStatus = 'idle';
   expandedKey = null; expandedDetailData = null; expandedDetailKey = null;
   hoverKey = null; pinnedKey = null;
+  setPageFit(true);
   const settingsPromise = fetch('/settings').then(r => r.json()).catch(() => null);
   const activeFlight = loadActiveFlight();
   const showGreeting = !(activeFlight && isFlightLive(activeFlight));
 
   document.getElementById('mainContent').innerHTML = `
-    <div class="search-layout">
-    <div class="search-main">
     ${showGreeting ? '<h1 class="greeting" id="greeting"></h1>' : ''}
     ${simbriefNoticeHtml()}
+    <div class="search-layout">
+    <div class="search-main">
     <div class="panel params-panel">
       <div class="panel-header">SEARCH PARAMETERS</div>
       <div class="panel-body">
@@ -1115,7 +1167,7 @@ async function renderSearchUI() {
           </div>
           <div class="field">
             <label for="aircraftFilter">AIRCRAFT</label>
-            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any">
+            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any" title="Feature coming soon">
             <p class="field-note" id="aircraftNote">Feature coming soon</p>
           </div>
         </div>
@@ -1127,12 +1179,12 @@ async function renderSearchUI() {
         </div>
       </div>
     </div>
-    <div class="panel">
+    <div class="panel criteria-panel">
       <div class="criteria-bar" id="criteriaBar"></div>
     </div>
     <div class="panel" id="mapPanel">
       <div class="panel-header">
-        <span>ROUTE MAP</span>
+        <span class="map-title">ROUTE MAP</span>
         <button class="ghost small map-toggle-btn" type="button" id="mapToggleBtn" aria-controls="mapBody" aria-expanded="false" onclick="toggleMapOnMobile()">SHOW MAP</button>
       </div>
       <div class="panel-body map-body" id="mapBody">
@@ -1501,9 +1553,11 @@ function activeCriteria() {
   return list;
 }
 
+// Drawn twice: as its own bar (phones, tablets) and inside the list's box
+// (desktop, where the list sits beside the filters); CSS shows one.
 function renderCriteriaBar(visibleCount) {
-  const bar = document.getElementById('criteriaBar');
-  if (!bar) return;
+  const bars = ['criteriaBar', 'listCriteria'].map(id => document.getElementById(id)).filter(Boolean);
+  if (!bars.length) return;
   let countHtml;
   if (searchStatus === 'idle') countHtml = `<div class="result-count muted">NO AIRPORT SELECTED</div>`;
   else if (searchStatus === 'loading') countHtml = `<div class="result-count muted"><span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;</div>`;
@@ -1515,10 +1569,11 @@ function renderCriteriaBar(visibleCount) {
     ? crit.map((c, i) => `${c.id === 'destination' && searchState.origin ? `<button class="chip-swap" type="button" onclick="swapAirports()" title="Swap departure and destination" aria-label="Swap departure and destination">&#8644;</button>` : ''}<span class="crit-chip ${c.cls || ''}"><span class="k">${c.k}</span>${c.v}<button type="button" onclick="${c.clear}" aria-label="Remove ${c.k.toLowerCase()} ${escAttr(c.v)}" title="Remove">&times;</button></span>`).join('')
     : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map.</span>`;
 
-  bar.innerHTML = `
+  const html = `
     <div aria-live="polite" aria-atomic="true">${countHtml}</div>
     <div class="crit-chips">${chips}</div>
     ${crit.length ? `<button class="ghost small" type="button" onclick="resetSearch()">RESET ALL</button>` : ''}`;
+  bars.forEach(bar => { bar.innerHTML = html; });
 }
 
 // Explains an empty result and offers the single changes that would fix
@@ -1564,8 +1619,8 @@ function networkOriginCount(icao) {
 // Single render pass for everything that depends on the search state.
 function renderSelection({ fit }) {
   const visible = searchStatus === 'ready' ? filteredItineraries() : [];
-  renderCriteriaBar(visible.length);
   renderListPanel(visible);
+  renderCriteriaBar(visible.length);
   sizeSearchLayout();   // the criteria chips can wrap onto more lines
   renderSelectionMap({ fit });
   applyMapPanelOpenState();
@@ -1660,6 +1715,7 @@ function renderListPanel(visible) {
   panel.innerHTML = `
     <div class="panel list-panel" id="listPanelInner">
       <div class="panel-header"><span>MATCHING ITINERARIES</span>${tools}</div>
+      <div class="criteria-bar list-criteria" id="listCriteria"></div>
       <div class="panel-body" id="listScroll">${body}</div>
     </div>`;
   const tbody = document.getElementById('itinTableBody');
@@ -1837,26 +1893,11 @@ function selectionMapFullyInView() {
 // ---- Desktop layout ----
 const WIDE_MQ = window.matchMedia('(min-width: 1200px)');
 
-// Two-column flight search: the list column sticks under the header, and
-// the map panel is sized so that, scrolled into view, all of it fits the
-// screen below the header.
+// Keeps --sticky-top (header height plus a gap) current: desktop pages
+// size themselves to the screen below the header.
 function sizeSearchLayout() {
   const header = document.querySelector('.app-header');
-  const stickyTop = (header ? header.offsetHeight : 0) + 12;
-  document.documentElement.style.setProperty('--sticky-top', stickyTop + 'px');
-  const el = document.getElementById('selectionMap');
-  const panel = document.getElementById('mapPanel');
-  if (!el || !panel) return;
-  let height = '';
-  if (WIDE_MQ.matches) {
-    const mapRect = el.getBoundingClientRect(), panelRect = panel.getBoundingClientRect();
-    const chrome = (mapRect.top - panelRect.top) + (panelRect.bottom - mapRect.bottom);
-    height = Math.max(360, Math.floor(window.innerHeight - stickyTop - 16 - chrome)) + 'px';
-  }
-  if (el.style.height !== height) {
-    el.style.height = height;
-    if (selMap) selMap.invalidateSize();
-  }
+  document.documentElement.style.setProperty('--sticky-top', ((header ? header.offsetHeight : 0) + 12) + 'px');
 }
 
 let layoutRaf = 0;
@@ -2189,6 +2230,12 @@ function ensureSelectionMap() {
   selMap.on('popupopen', () => el.classList.add('popup-open'));
   selMap.on('popupclose', () => el.classList.remove('popup-open'));
   el.classList.toggle('pick-direct', mapPickMode !== 'ask');
+  // On desktop the map's height follows the space left on screen (the
+  // greeting arriving, chips wrapping); Leaflet must be told when it changes.
+  if (window.ResizeObserver) {
+    const map = selMap;
+    new ResizeObserver(() => { if (map === selMap) map.invalidateSize(); }).observe(el);
+  }
   return selMap;
 }
 
@@ -2896,6 +2943,14 @@ function setAppNav(section) {
     if (key === section) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
   document.body.classList.toggle('page-search', section === 'search');
+  setPageFit(false);
+}
+
+// Desktop pages that fit the screen without page scrolling (see the
+// page-fit CSS); each page opts in after setAppNav.
+function setPageFit(on) {
+  document.body.classList.toggle('page-fit', on);
+  if (on) sizeSearchLayout();
 }
 
 function goActiveFlight() {
@@ -2962,8 +3017,11 @@ async function renderUserPage() {
   const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ');
   const dobLine = p.birth_date ? `DoB: ${isoToDisplayDate(p.birth_date)}${age != null ? ` (${age}yrs)` : ''}` : '';
 
+  setPageFit(true);
   document.getElementById('mainContent').innerHTML = `
-    <div class="panel">
+    <div class="profile-layout">
+    <div class="profile-col">
+    <div class="panel profile-panel">
       <div class="panel-header">
         PILOT PROFILE
         <button class="action small" onclick="renderAccountSettings()">ACCOUNT SETTINGS</button>
@@ -2980,7 +3038,17 @@ async function renderUserPage() {
       </div>
     </div>
 
-    <div class="panel" style="margin-top:14px;">
+    <div class="panel destinations-panel">
+      <div class="panel-header">DESTINATIONS REACHED</div>
+      <div class="panel-body">
+        <div id="destinationsMap" class="route-map destinations-map"></div>
+        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="profile-col">
+    <div class="panel stats-panel">
       <div class="panel-header">FLYING STATS</div>
       <div class="panel-body">
         <table class="kv">
@@ -2991,17 +3059,11 @@ async function renderUserPage() {
       </div>
     </div>
 
-    <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">DESTINATIONS REACHED</div>
-      <div class="panel-body">
-        <div id="destinationsMap" class="route-map" style="max-width:none; height:320px;"></div>
-        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red.</p>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-top:14px;">
+    <div class="panel pirep-log-panel">
       <div class="panel-header">PIREP LOG</div>
       <div class="panel-body" id="pirepLogBody"><div class="empty-state">LOADING...</div></div>
+    </div>
+    </div>
     </div>`;
 
   renderMonthlyChart(stats.monthly || []);
