@@ -46,6 +46,35 @@ ADMIN_EMAILS = {
     if e.strip()
 }
 
+# Access lock. Until OPEN_ACCESS is set ("1"/"true"/"yes"/"on"), new
+# sign-ups are closed and the app is limited to ADMIN_EMAILS plus
+# ALLOWED_EMAILS (comma-separated, case-insensitive). The landing page,
+# blog and legal pages stay public either way. If neither list is set,
+# existing accounts keep access (only sign-ups close), so turning the
+# lock on can never shut the owner out; set ALLOWED_EMAILS to lock those
+# down too.
+OPEN_ACCESS = (os.environ.get("OPEN_ACCESS") or "").strip().lower() in ("1", "true", "yes", "on")
+ALLOWED_EMAILS = {
+    e.strip().lower()
+    for e in (os.environ.get("ALLOWED_EMAILS") or "").split(",")
+    if e.strip()
+}
+
+
+def signups_open():
+    return OPEN_ACCESS
+
+
+def email_allowed(email):
+    """Whether this account may use the app while access is locked."""
+    if OPEN_ACCESS:
+        return True
+    allowed = ADMIN_EMAILS | ALLOWED_EMAILS
+    if not allowed:
+        return True
+    return (email or "").strip().lower() in allowed
+
+
 # Cloudflare Turnstile - shown on login/signup. Unset TURNSTILE_SECRET_KEY
 # means verification is skipped entirely (matches this app's long-standing
 # "missing config = feature off, not broken" pattern for local dev).
