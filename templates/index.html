@@ -460,6 +460,7 @@
   .af-status { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .af-route-names { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
   .af-map-note { margin: 6px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4; overflow-wrap: anywhere; }
+  .af-map-note button { margin-left: 6px; vertical-align: baseline; }
   .leaflet-tooltip.route-fix-tip { font-family: inherit; font-size: 11px; font-weight: 700; padding: 1px 6px; }
   .af-route .route-map { max-width: none; height: 240px; margin-top: 0; }
   .af-tabbar { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--shadow-md); background: var(--face-dark); }
@@ -516,7 +517,7 @@
     .af-route > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
     .af-route .route-map { flex: 1 1 auto; min-height: 160px; height: auto; }
     .af-route .kv { flex: none; margin: 8px 0 0 !important; }
-    .af-map-note { flex: none; max-height: 3em; overflow: hidden; }
+    .af-map-note { flex: none; max-height: 4.2em; overflow: hidden; }
     .af-route .kv td { padding: 4px 0; }
     .af-tabbar { flex: none; }
     .af-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
@@ -2719,6 +2720,22 @@ function ofpRouteFixes(leg, ofp) {
   return ofp.navlog.filter(f => Number.isFinite(f.lat) && Number.isFinite(f.lon) && f.ident !== a && f.ident !== b);
 }
 
+// What the leg map is showing, and why when it's still a straight line:
+// no OFP yet, an OFP saved before route drawing existed (offer to fetch
+// it again), SimBrief sending no coordinates, or an OFP for other airports.
+function routeMapNote(leg, state, refetchIndex) {
+  const ofp = state.ofp;
+  if (ofpRouteFixes(leg, ofp)) return `Planned route from the SimBrief OFP: ${escText(ofp.route || '')}`;
+  const refetch = refetchIndex != null
+    ? ` <button class="ghost small" type="button" onclick="fetchOfp(${refetchIndex})">FETCH OFP AGAIN</button>` : '';
+  if (!ofp) return 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief.';
+  if (ofp.origin_icao && ofp.destination_icao && (ofp.origin_icao !== leg.departure_info.icao || ofp.destination_icao !== leg.arrival_info.icao)) {
+    return `Straight line: the saved OFP is for ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, not this leg.${refetch}`;
+  }
+  if (!Array.isArray(ofp.navlog)) return `Straight line: this OFP was saved before routes could be drawn. Fetch it again to draw its route.${refetch}`;
+  return `Straight line: SimBrief didn't include route coordinates in this OFP.${refetch}`;
+}
+
 // Leg route map: the OFP's planned route through its fixes once an OFP is
 // loaded (top of climb/descent marked, fix names on hover), otherwise a
 // straight dashed line between the airports. opts.interactive adds zoom
@@ -2910,7 +2927,7 @@ function renderRecap(flight) {
         <div class="panel-body">
           <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
           ${routeMapDiv(leg, `map-recap-${i}`)}
-          <p class="af-map-note">${ofpRouteFixes(leg, state.ofp) ? `Planned route from the SimBrief OFP: ${escText(state.ofp.route || '')}` : 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief.'}</p>
+          <p class="af-map-note">${routeMapNote(leg, state, current ? i : null)}</p>
           ${legScheduleTable(leg)}
         </div>
       </div>
