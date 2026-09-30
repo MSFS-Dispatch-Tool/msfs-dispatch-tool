@@ -49,6 +49,12 @@ def find_round_trip_pairs(routes):
     to fly the same city pair with nearby flight numbers would get
     paired into a single "rotation", which is nonsense (you can't fly
     out on one airline and have it come back as a different one).
+
+    Within a carrier the airline designator must match too: Wizz Air
+    files flights under W6, W4 (Wizz Air Malta) and W9 (Wizz Air UK), and
+    two of them can fly the same city pair with the same numbers (W62341
+    and W42341), so without this a W4 outbound could pair with a W6
+    return on a tie.
     """
     by_airport_pair = defaultdict(list)
     for r in routes:
@@ -66,7 +72,8 @@ def find_round_trip_pairs(routes):
                 if r2["flight_number"] in used or r2 is r1:
                     continue
                 if r2["departure_icao"] == r1["arrival_icao"] and r2["arrival_icao"] == r1["departure_icao"] \
-                        and r2.get("carrier") == r1.get("carrier"):
+                        and r2.get("carrier") == r1.get("carrier") \
+                        and r2["flight_number"][:2] == r1["flight_number"][:2]:
                     diff = abs(_numeric_part(r1["flight_number"]) - _numeric_part(r2["flight_number"]))
                     if diff <= 3 and (best_diff is None or diff < best_diff):
                         best, best_diff = r2, diff

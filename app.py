@@ -512,7 +512,7 @@ def load_carrier(code):
 # "carrier" field) rather than assuming a single global carrier, so
 # adding one here is a data change, not a rewrite of /search, /select,
 # /confirm etc.
-ACTIVE_CARRIER_CODES = ("RYR", "EZY")
+ACTIVE_CARRIER_CODES = ("RYR", "EZY", "WZZ")
 CARRIERS = {code: load_carrier(code) for code in ACTIVE_CARRIER_CODES}
 
 routes = [r for code in ACTIVE_CARRIER_CODES for r in CARRIERS[code]["routes"]]
