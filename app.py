@@ -14,6 +14,7 @@ import db
 import auth
 import wxmap
 import blog
+import flightstats
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras,
@@ -1323,6 +1324,20 @@ def stats_route():
     return jsonify(result)
 
 
+@app.route("/stats/flights")
+def stats_flights_route():
+    """The account's whole logbook as compact rows (see flightstats) - the
+    Stats page filters and aggregates them in the browser."""
+    empty = {"flights": [], "airports": {}}
+    if not db.db_available():
+        return jsonify(empty)
+    try:
+        records = db.list_pireps(current_user_id())
+    except Exception:
+        return jsonify(empty)
+    return jsonify(flightstats.logbook(records, lambda icao: airports_by_icao.get(icao) or airports_world_by_icao.get(icao)))
+
+
 @app.route("/simbrief/redirect-url")
 def simbrief_redirect_url():
     """
@@ -1554,6 +1569,10 @@ def simbrief_ofp():
         # Not to be confused with AFAD (Actual Fuel At Destination),
         # which the pilot enters themselves at PIREP time.
         "efob": fuel.get("plan_ramp", ""),
+        # Planned trip burn and fuel at destination, kept so the Stats page
+        # can compare them with the pilot's actual fuel at destination (AFAD).
+        "plan_trip_fuel": fuel.get("est_burn", ""),
+        "plan_landing_fuel": fuel.get("plan_landing", ""),
         "epax": weights.get("pax_count", ""),
         "navlog": ofp_route_fixes(data.get("navlog")),
     })
