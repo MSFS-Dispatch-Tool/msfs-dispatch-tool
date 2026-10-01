@@ -338,6 +338,10 @@ _METAR_SIG_WX_RE = re.compile(
     r'(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)\b'
 )
 
+# Thunderstorm at or near the station: TS, VCTS, +TSRA, TSGR...
+_METAR_TS_RE = re.compile(r'\s[-+]?(?:VC)?TS(?:[A-Z]{2})*(?=\s)')
+_METAR_TREND_RE = re.compile(r'\s(?:TEMPO|BECMG|NOSIG|RMK)\s')
+
 _DEICING_TEMP_THRESHOLD_C = 5
 _LOW_VIS_THRESHOLD_M = 5000
 _STRONG_WIND_THRESHOLD_KT = 25
@@ -345,7 +349,17 @@ _EXTREME_COLD_THRESHOLD_C = -10
 # Weather-gated delay codes, and which station's METAR each one checks -
 # keyed by IATA delay code since there are only three of these and each
 # has genuinely different semantics, not worth a data-file schema for.
-WEATHER_GATED_CODES = {"71": "departure", "72": "arrival", "75": "departure"}
+WEATHER_GATED_CODES = {"71": "departure", "72": "arrival", "75": "departure", "77": "departure"}
+
+# A thunderstorm reported at an airport closes its ramp (lightning) or cuts
+# its arrival rate, and that usually costs the departure time. When the
+# METAR shows one, the delay comes from it with this chance (or the
+# pilot's own delay chance), and only if the code is enabled.
+TS_DELAY_PROBABILITY = 0.6
+TS_DELAYS = (
+    ("departure", "77", (15, 60), "Thunderstorm at the departure airport: ramp closed for lightning"),
+    ("arrival", "83", (20, 75), "Thunderstorms at the destination: arrival rate cut, slot issued"),
+)
 
 
 def parse_metar(metar_text):
@@ -354,10 +368,14 @@ def parse_metar(metar_text):
     an empty set) when not confidently found, including when metar_text
     itself is empty/unavailable - callers treat "unknown" as "can't
     confirm this weather code is warranted", not as "assume the worst"."""
-    result = {"temp_c": None, "visibility_m": None, "wind_kt": None, "phenomena": set(), "cavok": False}
+    result = {"temp_c": None, "visibility_m": None, "wind_kt": None, "phenomena": set(), "cavok": False,
+              "thunderstorm": False}
     if not metar_text:
         return result
     text = f' {metar_text.upper()} '
+    # Trend groups and remarks forecast or comment; they aren't the weather
+    # observed now
+    observed = _METAR_TREND_RE.split(text, maxsplit=1)[0] + ' '
 
     if re.search(r'\bCAVOK\b', text):
         result["cavok"] = True
@@ -377,8 +395,9 @@ def parse_metar(metar_text):
         elif sm_match:
             result["visibility_m"] = round(int(sm_match.group(1)) * 1609.34)
 
-        for m in _METAR_SIG_WX_RE.finditer(text):
+        for m in _METAR_SIG_WX_RE.finditer(observed):
             result["phenomena"].add(m.group(1))
+        result["thunderstorm"] = bool(_METAR_TS_RE.search(observed))
 
     temp_match = _METAR_TEMP_RE.search(text)
     if temp_match:
@@ -402,6 +421,8 @@ def _weather_supports_delay(iata_code, dep_metar, arr_metar):
 
     if iata_code == "75":  # De-icing - cold-triggered, departure conditions
         return station["temp_c"] is not None and station["temp_c"] <= _DEICING_TEMP_THRESHOLD_C
+    if iata_code == "77":  # Ramp closed for lightning
+        return station["thunderstorm"]
 
     # 71/72 - weather at departure/destination station
     if station["cavok"]:
@@ -410,6 +431,7 @@ def _weather_supports_delay(iata_code, dep_metar, arr_metar):
         (station["visibility_m"] is not None and station["visibility_m"] < _LOW_VIS_THRESHOLD_M)
         or (station["wind_kt"] is not None and station["wind_kt"] >= _STRONG_WIND_THRESHOLD_KT)
         or bool(station["phenomena"] & _SIGNIFICANT_WX_PHENOMENA)
+        or station["thunderstorm"]
         or (station["temp_c"] is not None and station["temp_c"] <= _EXTREME_COLD_THRESHOLD_C)
     )
 
@@ -504,8 +526,14 @@ def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None,
             and _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
     if not pool:
         return None
-    weights, probability = delay_odds(pool, month)
     custom = custom_probability(delay_settings)
+    storm = _thunderstorm_delay(pool, dep_metar, arr_metar, custom)
+    if storm:
+        return storm
+    pool = [d for d in pool if d["weight"] > 0]
+    if not pool:
+        return None
+    weights, probability = delay_odds(pool, month)
     if custom is not None:
         probability = custom
     if random.random() >= probability:
@@ -515,6 +543,21 @@ def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None,
     return delay
 
 
+
+
+def _thunderstorm_delay(pool, dep_metar, arr_metar, custom=None):
+    by_code = {d["iata_code"]: d for d in pool}
+    metars = {"departure": dep_metar, "arrival": arr_metar}
+    chance = TS_DELAY_PROBABILITY if custom is None else custom
+    for station, code, duration, plain in TS_DELAYS:
+        if code in by_code and parse_metar(metars[station])["thunderstorm"]:
+            if random.random() >= chance:
+                return None
+            delay = dict(by_code[code])
+            delay.update(duration_range_minutes=list(duration), plain=plain, thunderstorm=station)
+            delay["minutes"] = sample_delay_minutes(duration)
+            return delay
+    return None
 
 
 def generate_callsign(prefix="RYR"):
@@ -527,13 +570,18 @@ def generate_callsign(prefix="RYR"):
     return f"{prefix}{digits}{letters}"
 
 
-def generate_loadsheet_extras(dangerous_goods, lmc_events, lmc_settings=None):
+def generate_loadsheet_extras(dangerous_goods, lmc_events, lmc_settings=None, full_flight=None):
     """Dangerous goods + last-minute change, rolled together at loadsheet
     sign-off (CONFIRM), not during route browsing - see app.py /confirm.
     Dangerous goods isn't user-toggleable (out of scope of the LMC/MEL/
     delay settings) - only LMC is filtered by lmc_settings."""
     dg = resolve_component(weighted_pick(dangerous_goods))
     pool = _filter_enabled(lmc_events, lmc_settings, "id", "disabled_ids")
+    # A full cabin can't take late joiners but can be oversold; a cabin
+    # with free seats (or an unknown load) can't be oversold
+    pool = [e for e in pool
+            if not (e.get("needs_free_seats") and full_flight)
+            and not (e.get("needs_full_flight") and not full_flight)]
     custom = custom_probability(lmc_settings)
     chance = LMC_PROBABILITY if custom is None else custom
     lmc = resolve_lmc(weighted_pick(pool)) if pool and random.random() < chance else None

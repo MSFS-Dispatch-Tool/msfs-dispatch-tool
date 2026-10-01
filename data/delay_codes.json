@@ -150,6 +150,16 @@
   "plain": "The aircraft needs de-icing"
  },
  {
+  "iata_code": "77",
+  "description": "Ground handling impaired by adverse weather (ramp closed for lightning)",
+  "duration_range_minutes": [
+   15,
+   60
+  ],
+  "weight": 0,
+  "plain": "Thunderstorm at the departure airport: ramp closed for lightning"
+ },
+ {
   "iata_code": "81",
   "description": "ATFM due to ATC en-route demand/capacity",
   "duration_range_minutes": [

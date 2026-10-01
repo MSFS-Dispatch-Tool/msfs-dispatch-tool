@@ -663,8 +663,7 @@
     .criteria-panel { display: none; }
     .list-criteria { display: flex; flex: none; padding: 8px 16px; border-bottom: 1px solid var(--shadow-md); }
     .result-count strong { font-size: 20px; }
-    #aircraftNote { display: none; }
-    #mapPanel .map-title { visibility: hidden; }
+      #mapPanel .map-title { visibility: hidden; }
     #mapPanel .map-toolbar { position: absolute; top: 6px; left: 14px; right: 14px; margin: 0; }
     #mapPanel .wx-toolbar {
       top: 60px; right: 24px; z-index: 800; max-width: 480px; padding: 6px 10px; gap: 4px 12px;
@@ -892,3 +891,7 @@
 .glossary-modal dt:first-child { margin-top: 0; }
 .glossary-modal dd { margin: 2px 0 0 0; color: var(--text-muted); }
 .glossary-modal .glossary-entry.hidden { display: none; }
+
+/* Flight search: departure and arrival time windows side by side */
+.time-filters { display: flex; gap: 6px; }
+.time-filters select { flex: 1 1 0; min-width: 0; }
