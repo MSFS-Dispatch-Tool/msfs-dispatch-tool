@@ -12,7 +12,6 @@ import functools
 import random
 import re
 import string
-import uuid
 from collections import defaultdict
 
 # Delay calibration - Eurocontrol CODA, all-causes delay to air transport
@@ -27,8 +26,6 @@ DELAYED_OVER_15_SHARE = 0.338
 MONTH_FACTOR = {1: 0.79, 2: 0.76, 3: 0.80, 4: 0.90, 5: 1.00, 6: 1.35,
                 7: 1.61, 8: 1.45, 9: 1.05, 10: 0.90, 11: 0.76, 12: 0.92}
 LMC_PROBABILITY = 0.50
-DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
-                             # LMC at loadsheet-confirm time - see app.py
 
 
 # ---------------------------------------------------------------------

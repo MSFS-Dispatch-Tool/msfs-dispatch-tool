@@ -42,6 +42,12 @@ webperf.init_app(app)  # gzip + fingerprinted, long-cached static files
 # invalidated the next time the process restarts.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 app.permanent_session_lifetime = timedelta(days=30)
+# The session cookie never rides along on cross-site POSTs, and on Render
+# (always HTTPS; Render sets RENDER) it's never sent over plain HTTP.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("RENDER"))
+# Largest accepted request body: a 2 MB profile photo plus form overhead
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 
 # Per-user accounts via Supabase Auth (see auth.py) instead of the old
 # single shared-password gate. If Supabase isn't configured (auth env
@@ -92,7 +98,9 @@ def require_login():
         return redirect(url_for("login", next=request.path))
     if session.get("expires_at", 0) <= _now_ts():
         refreshed = _try_refresh()
-        if not refreshed:
+        # None (Supabase unreachable) keeps the session and retries on the
+        # next request, rather than signing the pilot out over a network blip
+        if refreshed is False:
             session.clear()
             return redirect(url_for("login", next=request.path))
     if session.get("must_reset_password") and request.endpoint not in ("reset_password", "logout"):
@@ -128,6 +136,8 @@ def _store_session(token_response):
 
 
 def _try_refresh():
+    """True when refreshed, False when the session is no longer valid, None
+    when Supabase couldn't be reached to tell."""
     refresh_token = session.get("refresh_token")
     if not refresh_token:
         return False
@@ -135,8 +145,8 @@ def _try_refresh():
         token_response = auth.refresh_session(refresh_token)
         _store_session(token_response)
         return True
-    except auth.AuthError:
-        return False
+    except auth.AuthError as exc:
+        return None if exc.message == auth.UNREACHABLE else False
 
 
 def _auth_redirect_to():
@@ -192,10 +202,18 @@ def _needs_onboarding(user_id):
         return False
 
 
+def _safe_next(next_url):
+    """Only a path on this site: "/app" yes, "https://elsewhere" or
+    "//elsewhere" no, so a crafted login link can't send the pilot away."""
+    if next_url and next_url.startswith("/") and not next_url.startswith(("//", "/\\")):
+        return next_url
+    return None
+
+
 def _post_login_redirect(user_id, next_url=None):
     if _needs_onboarding(user_id):
         return url_for("onboarding")
-    return next_url or url_for("dispatch_app")
+    return _safe_next(next_url) or url_for("dispatch_app")
 
 
 @app.route("/access-restricted")
@@ -305,13 +323,20 @@ def auth_session():
     refresh_token = payload.get("refresh_token")
     if not access_token or not refresh_token:
         return jsonify({"error": "Missing tokens."}), 400
-    user = auth.get_user(access_token)
+    try:
+        user = auth.get_user(access_token)
+    except auth.AuthError as exc:
+        return jsonify({"error": exc.message}), 503
     if not user:
         return jsonify({"error": "Invalid or expired link."}), 400
     session.clear()
     session["access_token"] = access_token
     session["refresh_token"] = refresh_token
-    session["expires_at"] = _now_ts() + int(payload.get("expires_in", 3600)) - 30
+    try:
+        expires_in = int(payload.get("expires_in", 3600))
+    except (TypeError, ValueError):
+        expires_in = 3600
+    session["expires_at"] = _now_ts() + expires_in - 30
     session["user"] = {"id": user["id"], "email": user["email"]}
     session.permanent = True
     if payload.get("type") == "recovery":
@@ -451,7 +476,10 @@ def admin_list_users_route():
         return jsonify({"error": "Forbidden."}), 403
     if not auth.admin_available():
         return jsonify({"error": "SUPABASE_SERVICE_ROLE_KEY is not configured."}), 502
-    users = auth.admin_list_users()
+    try:
+        users = auth.admin_list_users()
+    except auth.AuthError as exc:
+        return jsonify({"error": exc.message}), 502
     return jsonify([{
         "id": u["id"],
         "email": u.get("email"),
@@ -467,7 +495,10 @@ def admin_ban_user_route(user_id):
     if not auth.auth_available() or not _is_admin():
         return jsonify({"error": "Forbidden."}), 403
     payload = request.get_json(silent=True) or {}
-    auth.admin_set_banned(user_id, bool(payload.get("banned")))
+    try:
+        auth.admin_set_banned(user_id, bool(payload.get("banned")))
+    except auth.AuthError as exc:
+        return jsonify({"error": exc.message}), 502
     return jsonify({"ok": True})
 
 
@@ -477,7 +508,10 @@ def admin_delete_user_route(user_id):
         return jsonify({"error": "Forbidden."}), 403
     if current_user() and current_user()["id"] == user_id:
         return jsonify({"error": "Can't delete your own account from here."}), 400
-    auth.admin_delete_user(user_id)
+    try:
+        auth.admin_delete_user(user_id)
+    except auth.AuthError as exc:
+        return jsonify({"error": exc.message}), 502
     if db.db_available():
         db.delete_user_data(user_id)
     return jsonify({"ok": True})
@@ -1046,16 +1080,20 @@ def select():
     # (round-trip pairing never crosses carriers - see generator.py), so
     # the first leg's fleet is the whole itinerary's fleet.
     owned_types = owned_aircraft_for(settings, itinerary[0]["carrier"])
+    # One airframe flies the whole rotation: its type is picked once, so a
+    # route without a type of its own doesn't get a different random one on
+    # each leg.
+    aircraft = fleet_entry_for(itinerary[0], owned_types)
     # Several deferred items at once are possible, plus a CDL deviation -
     # see techlog.roll_tech_status. Only items for the aircraft family
     # this itinerary is flown on.
-    tech_status = roll_itinerary_tech(itinerary, owned_types, settings)
+    tech_status = roll_itinerary_tech(itinerary, aircraft, settings)
 
     legs_out = []
     leg_times = []
     prev_eibt_dt = None
     for route_leg in itinerary:
-        fleet_entry = fleet_entry_for(route_leg, owned_types)
+        fleet_entry = leg_aircraft(route_leg, aircraft)
         conditions = generate_leg_conditions(
             duration_minutes=route_leg["duration_minutes"],
             seat_capacity=fleet_entry["seats"],
@@ -1181,12 +1219,18 @@ def select():
     return jsonify({"itinerary": itinerary, "legs": legs_out})
 
 
-def roll_itinerary_tech(itinerary, owned_types, settings, exclude_ids=()):
+def leg_aircraft(route_leg, aircraft):
+    """The fleet entry flying one leg of a rotation: the route's own type
+    when the schedule data gives one, otherwise the rotation's aircraft."""
+    fleet = carrier_for(route_leg)["fleet_by_type"]
+    return fleet.get(route_leg.get("aircraft_type")) or aircraft
+
+
+def roll_itinerary_tech(itinerary, aircraft, settings, exclude_ids=()):
     """MEL and CDL items for an itinerary's aircraft (one airframe flies
     the whole rotation, so they're rolled once, not per leg)."""
     carrier = carrier_for(itinerary[0])
-    family = fleet_entry_for(itinerary[0], owned_types)
-    group = family.get("mel_group", family["type"])
+    group = aircraft.get("mel_group", aircraft["type"])
     mels = [m for m in carrier["mels"] if m.get("fleet") == group]
     cdls = [c for c in carrier["cdls"] if c.get("fleet") == group]
     return techlog.roll_tech_status(mels, cdls, settings["generation"]["mel"], settings["generation"].get("cdl"),
@@ -1212,7 +1256,9 @@ def select_swap_aircraft():
     eets = request.args.get("eet", default="", type=str).split(",")
     weather = fetch_weather_batch([icao for leg in itinerary for icao in (leg["departure_icao"], leg["arrival_icao"])])
     settings = get_settings_safe()
-    owned_types = owned_aircraft_for(settings, itinerary[0]["carrier"])
+    fleet = carrier_for(itinerary[0])["fleet_by_type"]
+    aircraft = fleet.get(request.args.get("aircraft_type", default="", type=str)) \
+        or fleet_entry_for(itinerary[0], owned_aircraft_for(settings, itinerary[0]["carrier"]))
 
     def eet(i):
         try:
@@ -1222,7 +1268,7 @@ def select_swap_aircraft():
 
     status, legs_tech = None, None
     for _ in range(25):
-        status = roll_itinerary_tech(itinerary, owned_types, settings, exclude_ids=exclude)
+        status = roll_itinerary_tech(itinerary, aircraft, settings, exclude_ids=exclude)
         legs_tech = [techlog.leg_tech(status, leg["departure_icao"], leg["arrival_icao"],
                                       weather.get(leg["departure_icao"]), weather.get(leg["arrival_icao"]), eet(i))
                      for i, leg in enumerate(itinerary)]
@@ -1465,7 +1511,9 @@ def save_settings_route():
         incoming_profile["aircraft_owned"] = [
             t for t in (incoming_profile["aircraft_owned"] or []) if t in all_fleet_types
         ]
-    payload["profile"] = incoming_profile
+    # Only the two known sections are stored, whatever else a client sends
+    payload = {"profile": incoming_profile,
+               "generation": payload.get("generation") if isinstance(payload.get("generation"), dict) else {}}
     # Probability sliders: a whole percentage 0-100, or None (realistic)
     for category in (payload.get("generation") or {}).values():
         if isinstance(category, dict) and "probability" in category:
@@ -1513,7 +1561,9 @@ def account_delete_route():
         return jsonify({"error": "Enter your password to confirm."}), 400
     try:
         auth.sign_in(user["email"], password)
-    except auth.AuthError:
+    except auth.AuthError as exc:
+        if exc.message == auth.UNREACHABLE:
+            return jsonify({"error": exc.message}), 503
         return jsonify({"error": "Incorrect password."}), 400
     try:
         auth.admin_delete_user(user["id"])
@@ -1758,17 +1808,23 @@ def simbrief_ofp():
 
     if not isinstance(data, dict):
         return jsonify({"error": "Unexpected response from SimBrief."}), 502
-    if str(data.get("fetch", {}).get("status", "")).lower().startswith("error"):
+
+    def section(name):
+        # SimBrief sends an empty value as {} or "", never as a missing key
+        value = data.get(name)
+        return value if isinstance(value, dict) else {}
+
+    if str(section("fetch").get("status", "")).lower().startswith("error"):
         return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
 
-    origin = data.get("origin", {})
-    destination = data.get("destination", {})
-    general = data.get("general", {})
-    aircraft = data.get("aircraft", {})
-    params_block = data.get("params", {})
-    fuel = data.get("fuel", {})
-    times = data.get("times", {})
-    weights = data.get("weights", {})
+    origin = section("origin")
+    destination = section("destination")
+    general = section("general")
+    aircraft = section("aircraft")
+    params_block = section("params")
+    fuel = section("fuel")
+    times = section("times")
+    weights = section("weights")
     # Unit for every weight/fuel figure below - SimBrief reports these in
     # whichever unit the pilot's own profile is set to (not something
     # this app controls), so it's surfaced rather than assumed.

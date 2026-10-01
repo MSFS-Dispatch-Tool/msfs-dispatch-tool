@@ -14,7 +14,10 @@ fields themselves - the PIREP log is meant to reopen exactly what the
 active-flight page showed for that leg, not just ALDT/ABIT/AFAD.
 """
 
+import contextlib
 import os
+import threading
+import time
 import uuid
 from datetime import date, datetime, timezone
 
@@ -57,8 +60,67 @@ def db_available():
     return bool(DATABASE_URL)
 
 
-def get_connection():
+# Connections are reused instead of opened per query: against a hosted
+# Postgres every new connection costs a TLS and auth handshake. Each worker
+# process keeps a few; one idle longer than POOL_IDLE_SECONDS is replaced
+# (the server or its pooler may have dropped it), and one that errored is
+# thrown away rather than handed out again.
+POOL_SIZE = 4
+POOL_IDLE_SECONDS = 60
+_pool = []
+_pool_pid = None
+_pool_lock = threading.Lock()
+
+
+def _take_connection():
+    global _pool, _pool_pid
+    now = time.monotonic()
+    with _pool_lock:
+        if _pool_pid != os.getpid():   # a forked worker never reuses its parent's sockets
+            _pool, _pool_pid = [], os.getpid()
+        while _pool:
+            conn, last_used = _pool.pop()
+            if not conn.closed and now - last_used < POOL_IDLE_SECONDS:
+                return conn
+            _close_quietly(conn)
     return psycopg2.connect(DATABASE_URL)
+
+
+def _return_connection(conn):
+    with _pool_lock:
+        if _pool_pid == os.getpid() and len(_pool) < POOL_SIZE and not conn.closed:
+            _pool.append((conn, time.monotonic()))
+            return
+    _close_quietly(conn)
+
+
+def _close_quietly(conn):
+    try:
+        conn.close()
+    except Exception:
+        pass
+
+
+@contextlib.contextmanager
+def get_connection():
+    """A connection for one unit of work: committed when the block ends,
+    rolled back if it raises, then returned to the pool."""
+    conn = _take_connection()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        try:
+            conn.rollback()
+            healthy = True
+        except Exception:
+            healthy = False
+        if healthy and conn.closed == 0:
+            _return_connection(conn)
+        else:
+            _close_quietly(conn)
+        raise
+    _return_connection(conn)
 
 
 def init_db():

@@ -1,0 +1,5 @@
+# For running the tests (the app itself needs only ../requirements.txt)
+-r ../requirements.txt
+pytest
+pyflakes
+playwright
