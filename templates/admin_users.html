@@ -35,6 +35,21 @@
   button:hover { background: var(--face-dark); }
   .empty-state, .error-state { padding: 14px 0; }
   .error-state { color: var(--red); }
+  .panel + .panel { margin-top: 18px; }
+  .demo-intro { margin: 0 0 14px; color: var(--text-muted); line-height: 1.5; }
+  .demo-form { display: grid; grid-template-columns: 2fr 1.5fr 0.8fr 0.8fr auto; gap: 10px; align-items: end; }
+  .demo-form label { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 600;
+                     color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .demo-form input { font-family: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid var(--shadow-dk);
+                     border-radius: 6px; text-transform: none; letter-spacing: 0; color: var(--text); }
+  .demo-form button { padding: 8px 14px; font-size: 13px; background: var(--titlebar); color: #fff;
+                      border-color: var(--titlebar); margin: 0; }
+  .demo-form button:hover { background: var(--titlebar-2); }
+  .demo-form button:disabled { opacity: 0.6; cursor: wait; }
+  #demoResult { margin-top: 12px; }
+  #demoResult.ok { color: var(--green); }
+  #demoResult.error-state { padding: 0; }
+  @media (max-width: 720px) { .demo-form { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -44,6 +59,20 @@
       <a href="/app">&larr; Back to app</a>
     </div>
     <div class="panel-body" id="body">Loading&hellip;</div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><span>Demo account</span></div>
+    <div class="panel-body">
+      <p class="demo-intro">Creates a confirmed pilot (Alex Morgan) with a filled-in profile and a logbook of real routes spread over the last 20 months, for testing. It gets access without being added to ALLOWED_EMAILS. Running it again for the same email resets the password and replaces the logbook. An existing real account with its own flights is never touched</p>
+      <form class="demo-form" id="demoForm">
+        <label>Email <input type="email" name="email" required placeholder="you+demo@gmail.com"></label>
+        <label>Password <input type="text" name="password" required minlength="8" autocomplete="off"></label>
+        <label>Flights <input type="number" name="flights" value="170" min="1" max="1000"></label>
+        <label>Base <input type="text" name="base" value="EGKK" maxlength="4"></label>
+        <button type="submit">Create / reset</button>
+      </form>
+      <div id="demoResult"></div>
+    </div>
   </div>
 <script>
 async function load() {
@@ -88,6 +117,24 @@ async function del(id, email) {
   await fetch(`/admin/api/users/${id}`, { method: 'DELETE' });
   load();
 }
+document.getElementById('demoForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target, btn = form.querySelector('button'), out = document.getElementById('demoResult');
+  const data = Object.fromEntries(new FormData(form));
+  btn.disabled = true; out.className = ''; out.textContent = 'Working…';
+  try {
+    const resp = await fetch('/admin/api/demo-account', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+    });
+    const res = await resp.json();
+    if (!resp.ok) throw new Error(res.error || 'Failed');
+    out.className = 'ok';
+    out.textContent = `${res.created ? 'Created' : 'Reset'} ${res.email} with ${res.flights} flights. Sign in with that email and the password above`;
+    load();
+  } catch (err) {
+    out.className = 'error-state'; out.textContent = err.message;
+  } finally { btn.disabled = false; }
+});
 load();
 </script>
 </body>
