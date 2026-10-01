@@ -23,12 +23,12 @@ async def main():
             if "FR" in await rows.nth(k).inner_text(): idx = k; break
         await rows.nth(idx).locator("button:has-text('SELECT')").click(); await page.wait_for_timeout(2500)
         detail = await page.inner_text("#detailCell")
-        check("preview: FAA item numbers and fuel minimum", "Main tank fuel pump (rear)" in detail and "take off with at least 6,804 kg of fuel" in detail and "Centre fuel tank can't be used" in detail, "")
+        check("preview: FAA item numbers and fuel minimum", "Main tank fuel pump, aft" in detail and "minimum 6,804 kg at take-off" in detail and "Centre tank unusable" in detail, "")
         check("preview: pack FL250 sent to SimBrief", "cruise no higher than FL250" in detail)
         await page.locator(".confirm-row button").click(); await page.wait_for_timeout(2000)
         await page.evaluate("selectRecapTab('tech')"); await page.wait_for_timeout(400)
         tech = await page.inner_text("#af-pane-tech")
-        check("MEL tab: installed/required, FAA source, MMEL provisos", "Official MEL wording" in tech and "each wing tank needs at least 3,402 kg" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
+        check("MEL tab: installed/required, FAA source, MMEL provisos", "Official MEL wording" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
         await page.screenshot(path=shot("mel738_tab.png"))
         await page.evaluate("""() => { const f = loadActiveFlight(); const st = f.leg_state[0];
           st.simbrief = 'received'; st.ofp = {weight_unit: 'kgs'}; saveAndRender(f); }""")

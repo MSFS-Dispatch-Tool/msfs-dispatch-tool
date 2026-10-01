@@ -26,11 +26,11 @@
    "A",
    "B"
   ],
-  "name": "Autopilot (one of two)",
-  "plain": "One of the two autopilots is broken. You can still use the other one",
+  "name": "Autopilot (one of the two channels)",
+  "plain": "One of the two autopilot channels is inoperative, while the other remains available",
   "steps": [
-   "Fly approaches that don't need autoland",
-   "No fog landings: if the destination is foggy, the flight can't go"
+   "Use the serviceable autopilot channel",
+   "Autoland and low-visibility approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -57,10 +57,10 @@
   "group": "at",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "Autothrottle",
-  "plain": "The automatic thrust control is broken",
+  "plain": "The autothrottle is inoperative",
   "steps": [
-   "Set the thrust by hand for the whole flight",
-   "No fog landings: autoland needs the autothrottle"
+   "Fly with manual thrust throughout",
+   "Autoland and low-visibility approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -88,9 +88,9 @@
   "group": "apugen",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "APU generator",
-  "plain": "The small engine in the tail can't make electricity",
+  "plain": "The APU runs but cannot supply electrical power; APU bleed air remains available for engine start",
   "steps": [
-   "Ask for a ground power cart at the gate"
+   "Request a ground power unit (GPU) on stand"
   ]
  },
  {
@@ -119,11 +119,11 @@
    "1",
    "2"
   ],
-  "name": "Engine generator",
-  "plain": "One engine's electrical generator is broken",
+  "name": "Engine generator (IDG)",
+  "plain": "One engine-driven generator is inoperative",
   "steps": [
-   "Run the tail engine (APU) for the whole flight to replace it",
-   "It burns a little extra fuel, already added to your plan"
+   "Keep the APU running with its generator online for the whole flight",
+   "Extra fuel for the APU burn is already included in the flight plan"
   ]
  },
  {
@@ -318,11 +318,12 @@
    "Left",
    "Right"
   ],
-  "name": "Main tank fuel pump (rear)",
-  "plain": "One of the rear fuel pumps in a wing tank is broken",
+  "name": "Main tank fuel pump, aft",
+  "plain": "One aft boost pump in a main tank is inoperative and switched off",
   "steps": [
-   "Engineers switch the pump off before the flight",
-   "Carry enough fuel: each wing tank needs at least 3,402 kg for take-off and 1,134 kg left for landing"
+   "Switch off the affected fuel pump and keep it off for the whole flight",
+   "Load at least 3,402 kg in each main tank for take-off",
+   "Keep at least 1,134 kg in each main tank for landing"
   ]
  },
  {
@@ -342,7 +343,7 @@
    "(M) Fuel quantity indication for both main tanks operates normally"
   ],
   "effects": {},
-  "weight": 1,
+  "weight": 0,
   "group": "xfeed",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "Crossfeed light",
@@ -377,10 +378,10 @@
   "group": "wxr",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "Weather radar",
-  "plain": "The weather radar is broken, so storms ahead can't be seen",
+  "plain": "The weather radar is inoperative",
   "steps": [
-   "Don't fly into areas with thunderstorms",
-   "Review windshear procedures before departure"
+   "Do not plan the flight through forecast thunderstorm activity. Amend your route and planning accordingly",
+   "Brief the windshear escape procedure before departure"
   ]
  },
  {
@@ -401,7 +402,7 @@
    "European airspace requires ACAS II: in practice only a short repair window applies"
   ],
   "effects": {},
-  "weight": 1,
+  "weight": 0,
   "group": "tcas",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "Collision avoidance (TCAS)",
@@ -435,9 +436,9 @@
    "2"
   ],
   "name": "Transponder (one of two)",
-  "plain": "One of the two transponders is broken",
+  "plain": "One of the two transponders is inoperative",
   "steps": [
-   "Use the other transponder"
+   "Select the serviceable transponder"
   ]
  },
  {
@@ -484,10 +485,10 @@
    "Left",
    "Right"
   ],
-  "name": "Clock",
-  "plain": "One of the cockpit clocks doesn't work",
+  "name": "Cockpit clock",
+  "plain": "One of the two cockpit clocks is inoperative or unreliable",
   "steps": [
-   "Use the other clock or the FMC time"
+   "Use the remaining clock or the FMC time"
   ]
  },
  {
@@ -513,10 +514,10 @@
    "Left",
    "Right"
   ],
-  "name": "DME",
-  "plain": "One of the distance-measuring radios is broken",
+  "name": "DME (one of two)",
+  "plain": "One of the two DME receivers is inoperative",
   "steps": [
-   "Use the other one; nothing else changes"
+   "Use the remaining DME; no operational impact on most routes"
   ]
  },
  {
@@ -538,10 +539,10 @@
   "weight": 2,
   "group": "vor",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
-  "name": "VOR radio",
-  "plain": "The second VOR navigation radio is broken",
+  "name": "VOR receiver 2",
+  "plain": "The second VOR receiver is inoperative or unreliable",
   "steps": [
-   "Navigate with the first one"
+   "Navigate on VOR 1"
   ]
  },
  {
@@ -568,10 +569,10 @@
   "weight": 3,
   "group": "mmr",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
-  "name": "ILS receiver",
-  "plain": "The second landing-guidance receiver is broken",
+  "name": "ILS receiver 2",
+  "plain": "The second ILS receiver is inoperative or unreliable",
   "steps": [
-   "No fog landings: low-visibility approaches need both receivers"
+   "Plan CAT I approaches only: CAT II/III needs both receivers. Check the destination and alternate weather accordingly"
   ]
  },
  {
@@ -595,10 +596,10 @@
   "group": "gps",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "GPS",
-  "plain": "The GPS is broken",
+  "plain": "The GPS is inoperative or unreliable",
   "steps": [
-   "Navigate with radio beacons and the inertial system",
-   "Plan ILS or VOR approaches instead of GPS approaches"
+   "Navigate on IRS and radio updating",
+   "Plan ILS or VOR approaches rather than RNP approaches. Amend your route and planning accordingly"
   ]
  },
  {
@@ -625,9 +626,9 @@
    "Right"
   ],
   "name": "Flight management computer",
-  "plain": "One of the flight management computers is broken",
+  "plain": "One flight management computer is inoperative or unreliable",
   "steps": [
-   "Use the other one for the flight plan"
+   "Operate on the serviceable FMC"
   ]
  },
  {
@@ -650,10 +651,10 @@
   "weight": 2,
   "group": "du",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
-  "name": "Lower display screen",
-  "plain": "The lower centre display screen is broken",
+  "name": "Lower display unit",
+  "plain": "The lower centre display unit is inoperative or unreliable",
   "steps": [
-   "Check the engine display can be moved to another screen"
+   "Select the engine display to another display unit"
   ]
  },
  {
@@ -682,11 +683,10 @@
    "Inboard",
    "Outboard"
   ],
-  "name": "Anti-skid brakes",
-  "plain": "Part of the anti-skid braking system is switched off",
+  "name": "Anti-skid",
+  "plain": "One anti-skid channel is inoperative and deactivated",
   "steps": [
-   "Engineers switch the affected part off",
-   "Take-off and landing need more runway: use the reduced-braking performance figures"
+   "Apply the anti-skid inoperative take-off and landing performance: longer runways are needed"
   ]
  },
  {
@@ -715,10 +715,9 @@
    "Right"
   ],
   "name": "Air conditioning pack",
-  "plain": "One of the two air conditioning units is broken",
+  "plain": "One of the two air conditioning packs is inoperative",
   "steps": [
-   "Fly no higher than FL250",
-   "Already set in your SimBrief plan"
+   "Cruise above FL250 not allowed. Limitation already reflected in the flight plan"
   ]
  },
  {
@@ -746,11 +745,14 @@
   "weight": 3,
   "group": "apu",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
-  "name": "APU (tail engine)",
-  "plain": "The small engine in the tail doesn't work",
+  "name": "APU",
+  "plain": "The APU is inoperative",
   "steps": [
-   "Ask for a ground power cart and an air starter at every gate",
-   "Or start the second engine using air from the first"
+   "Ground operations: external electrical power and pneumatic air are needed for aircraft preparation and engine start",
+   "Engine start: start the first engine with ground air; use ground air or a cross-bleed start for the second",
+   "Cabin systems: before and after flight, air conditioning depends on external air or engine bleed air",
+   "In-flight effect: with both engines and generators operating, the aircraft is normally unaffected in routine flight",
+   "Main limitation: electrical and pneumatic backup is lost, so a subsequent engine, generator or bleed-air failure has greater operational impact"
   ]
  },
  {
@@ -784,10 +786,11 @@
    "2"
   ],
   "name": "Engine bleed valve",
-  "plain": "One engine can't supply air to the aircraft systems",
+  "plain": "One engine bleed valve is closed and secured",
   "steps": [
-   "Fly no higher than FL250",
-   "Don't fly into icing conditions"
+   "Keep the affected engine bleed switched off for the whole flight",
+   "Cruise above FL250 not allowed. Limitation already reflected in the flight plan",
+   "Do not plan the flight into known or forecast icing"
   ]
  },
  {
@@ -818,10 +821,10 @@
    "Left",
    "Right"
   ],
-  "name": "Wing anti-ice",
-  "plain": "One wing's anti-ice system doesn't work",
+  "name": "Wing anti-ice valve",
+  "plain": "One wing anti-ice valve is inoperative in the closed position",
   "steps": [
-   "Don't fly into icing conditions"
+   "Do not plan the flight into known or forecast icing. Amend your route and planning accordingly"
   ]
  },
  {
@@ -854,12 +857,12 @@
    "1",
    "2"
   ],
-  "name": "Engine anti-ice",
-  "plain": "One engine's anti-ice is stuck on",
+  "name": "Engine anti-ice valve",
+  "plain": "One engine anti-ice valve is locked open",
   "steps": [
-   "Keep that engine at 60% N1 or more in icing",
-   "Only if it's cooler than 38 °C outside",
-   "Take-off and climb performance is lower; a little extra fuel is added"
+   "Keep at least 60% N1 on that engine in icing conditions",
+   "Outside air temperature must be below 38 °C",
+   "Take-off and climb performance is reduced; extra fuel is already included in the flight plan"
   ]
  },
  {
@@ -915,9 +918,9 @@
    "2"
   ],
   "name": "Thrust reverser",
-  "plain": "One engine's reverse thrust is locked out",
+  "plain": "One thrust reverser is locked out",
   "steps": [
-   "Plan the landing without reverse on that engine: you need more runway"
+   "Calculate landing distance without reverse thrust on that engine"
   ]
  },
  {
@@ -939,7 +942,7 @@
    "(M) Fuel quantity in the tank is verified by an acceptable procedure"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
   "group": "fqi",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
@@ -975,7 +978,7 @@
     "LVP"
    ]
   },
-  "weight": 2,
+  "weight": 0,
   "group": "wiper",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
@@ -1015,9 +1018,9 @@
    "Right outboard"
   ],
   "name": "Landing light",
-  "plain": "One landing light doesn't work",
+  "plain": "One landing light is inoperative",
   "steps": [
-   "Use the others; nothing else changes"
+   "No operational impact; the other landing lights remain available"
   ]
  },
  {
@@ -1036,7 +1039,7 @@
    "(O) Alternate procedures are established and used: voice reports for times, load figures and clearances"
   ],
   "effects": {},
-  "weight": 3,
+  "weight": 0,
   "group": "acars",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "name": "ACARS datalink",
@@ -1071,10 +1074,10 @@
    "Aft right"
   ],
   "name": "Lavatory",
-  "plain": "One toilet is out of order",
+  "plain": "One lavatory is inoperative and closed",
   "steps": [
-   "The door is locked and marked out of order",
-   "Let the cabin crew know"
+   "The door is locked and placarded",
+   "Brief the cabin crew"
   ]
  },
  {
@@ -1132,11 +1135,12 @@
    "Left",
    "Right"
   ],
-  "name": "Main tank fuel pump (front)",
-  "plain": "One of the front fuel pumps in a wing tank is broken",
+  "name": "Main tank fuel pump, forward",
+  "plain": "One forward boost pump in a main tank is inoperative and switched off",
   "steps": [
-   "Engineers switch the pump off before the flight",
-   "Carry enough fuel: each wing tank needs at least 2,177 kg for take-off and 817 kg left for landing"
+   "Switch off the affected fuel pump and keep it off for the whole flight",
+   "Load at least 2,177 kg in each main tank for take-off",
+   "Keep at least 817 kg in each main tank for landing"
   ]
  },
  {
@@ -1168,10 +1172,12 @@
    "Right"
   ],
   "name": "Centre tank fuel pump",
-  "plain": "One of the centre tank fuel pumps is broken",
+  "plain": "One centre tank boost pump is inoperative and switched off",
   "steps": [
-   "The centre tank stays empty",
-   "You can carry about 7,830 kg of fuel at most, in the wing tanks"
+   "Switch off the affected fuel pump and keep it off for the whole flight",
+   "The centre tank must remain empty",
+   "Maximum fuel is limited to the main tanks, about 7,830 kg",
+   "Review and amend the flight plan accordingly"
   ]
  },
  {
@@ -1192,7 +1198,7 @@
    "Repairs are made within 1 flight-day"
   ],
   "effects": {},
-  "weight": 1,
+  "weight": 0,
   "group": "du",
   "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [

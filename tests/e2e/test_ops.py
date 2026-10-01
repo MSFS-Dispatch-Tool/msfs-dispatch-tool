@@ -29,7 +29,7 @@ async def main():
         d1 = await page.evaluate("expandedDetailData.legs[1]")
         d0 = await page.evaluate("expandedDetailData.legs[0]")
         check("leg 2: no own delay or slot, expected knock-on = leg 1 delay (30-min turnaround)", d1["delay"] is None and d1["atfm"] is None and d1["reactionary"]["expected"] and d1["reactionary"]["minutes"] == d0["expected_delay_minutes"], str(d1.get("reactionary")))
-        check("preview labels the expected knock-on", "is expected to arrive late from the previous flight" in detail)
+        check("preview labels the expected knock-on", "Late inbound aircraft expected from the previous sector" in detail)
         check("preview shows crew duty", "Crew duty: report 14:30 local" in detail and "maximum FDP 12h 15m for 2 sectors" in detail)
         if await page.locator(".nogo-banner").count():
             await page.click("#swapAircraftBtn"); await page.wait_for_timeout(1500)
@@ -60,7 +60,7 @@ async def main():
         await page.evaluate("selectRecapLeg(1); selectRecapTab('briefing')"); await page.wait_for_timeout(400)
         brief = await page.inner_text("#af-pane-briefing")
         check("leg 2 take-off after Belfast City curfew is flagged as a cancellation", "after the Belfast City take-off limit 23:00 local" in brief and "would be cancelled" in brief)
-        check("briefing shows the actual (not expected) knock-on", "DELAY 370 MIN" in brief and "arrived late from the previous flight" in brief)
+        check("briefing shows the actual (not expected) knock-on", "DELAY 370 MIN" in brief and "Late inbound aircraft from the previous sector" in brief)
         check("duty check still shown with expected FDP", "Expected FDP" in brief)
         nogo_red = await page.evaluate("[...document.querySelectorAll('#af-pane-briefing .tech-checks li.nogo')].length")
         check("curfew breach rendered as red", nogo_red >= 1)
