@@ -2787,6 +2787,66 @@ function legOwnDelayMinutes(leg) {
 function legExpectedDelayMinutes(leg) {
   return Number.isFinite(leg.expected_delay_minutes) ? leg.expected_delay_minutes : legOwnDelayMinutes(leg);
 }
+// ---- Operational constraints: ATFM slot, curfews, crew duty (see ops.py) ----
+function slotWindowText(atfm) {
+  const [lo, hi] = atfm.window || [-5, 10];
+  return `${shiftZulu(atfm.ctot, lo)} and ${shiftZulu(atfm.ctot, hi)}`;
+}
+// A slot only holds while the expected take-off stays inside its window;
+// a later take-off means a new, later slot (Eurocontrol re-slots the flight).
+function revalidateSlot(leg) {
+  if (!leg.atfm || !leg.etot) return;
+  const ctot = zuluMinutes(leg.atfm.ctot), etot = zuluMinutes(leg.etot);
+  if (ctot == null || etot == null) return;
+  if (clockDiff(ctot, etot) > (leg.atfm.window || [-5, 10])[1]) {
+    leg.atfm = { ...leg.atfm, ctot: leg.etot.slice(0, 6), revised: true };
+  }
+}
+// Is a Zulu minute-of-day inside the closed period [until, opens)?
+function curfewState(t, c) {
+  const until = zuluMinutes(c.until_utc), opens = zuluMinutes(c.opens_utc);
+  if (t == null || until == null || opens == null) return null;
+  const sinceClose = ((t - until) % 1440 + 1440) % 1440, closedSpan = ((opens - until) % 1440 + 1440) % 1440;
+  if (sinceClose > 0 && sinceClose < closedSpan) return { closed: true, late: sinceClose };
+  return { closed: false, margin: ((until - t) % 1440 + 1440) % 1440 };
+}
+function legCurfewChecks(leg) {
+  return (leg.curfews || []).map(c => {
+    const timeText = c.check === 'landing' ? leg.eldt : c.check === 'offblock' ? leg.eobt : leg.etot;
+    const what = c.check === 'landing' ? 'landing' : c.check === 'offblock' ? 'off-block' : 'take-off';
+    const st = curfewState(zuluMinutes(timeText), c);
+    if (!st) return null;
+    const limit = `${escText(c.name)} ${what} limit ${c.until_local} local (${c.until_utc})`;
+    const outcome = c.kind === 'arrival' ? 'the flight would have to divert' : 'the flight would be cancelled';
+    if (st.closed) return { level: 'nogo', text: `Expected ${what} ${timeText} is ${st.late} min after the ${limit}: ${outcome}. ${escText(c.note)}` };
+    if (st.margin < 30) return { level: 'caution', text: `${limit}: only ${st.margin} min of margin on the expected ${what}` };
+    return { level: 'ok', text: `${limit}: ${fmtMinutes(st.margin)} margin` };
+  }).filter(Boolean);
+}
+// Flight duty period: report time to the last on-blocks (actual when the
+// last PIREP is in, expected before), against EASA ORO.FTL.205.
+function dutyCheck(legs, legStates) {
+  const duty = legs[0] && legs[0].duty;
+  if (!duty) return null;
+  const last = legs.length - 1;
+  const lastIn = (legStates && legStates[last] && legStates[last].pirep && legStates[last].pirep.abit) || legs[last].eibt;
+  const start = zuluMinutes(legs[0].sobt), end = zuluMinutes(lastIn);
+  if (start == null || end == null) return null;
+  const fdp = duty.report_before_sobt + (((end - start) % 1440) + 1440) % 1440;
+  const head = `Crew duty: report ${duty.report_local} local (${duty.report_utc}), maximum FDP ${fmtMinutes(duty.max_fdp_minutes)} for ${duty.sectors} sector${duty.sectors > 1 ? 's' : ''}`;
+  const over = fdp - duty.max_fdp_minutes;
+  if (over > duty.discretion_minutes) return { level: 'nogo', text: `${head}. Expected FDP ${fmtMinutes(fdp)} is beyond even the 2-hour commander's discretion: the crew runs out of hours` };
+  if (over > 0) return { level: 'caution', text: `${head}. Expected FDP ${fmtMinutes(fdp)}: ${fmtMinutes(over)} into commander's discretion (up to 2 hours)` };
+  return { level: 'ok', text: `${head}. Expected FDP ${fmtMinutes(fdp)}, ${fmtMinutes(-over)} to spare` };
+}
+function opsConstraintsHtml(legs, i, legStates) {
+  const checks = legCurfewChecks(legs[i]);
+  const duty = dutyCheck(legs, legStates);
+  if (duty) checks.push(duty);
+  if (!checks.length) return '';
+  return `<ul class="tech-checks">${checks.map(c => `<li class="${c.level}">${c.text}</li>`).join('')}</ul>`;
+}
+
 function legDelayMelBlock(leg) {
   const own = legOwnDelayMinutes(leg), r = leg.reactionary ? leg.reactionary.minutes : 0;
   const total = legExpectedDelayMinutes(leg);
@@ -2795,6 +2855,7 @@ function legDelayMelBlock(leg) {
   if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} min)`);
   if (leg.aircraft_change) lines.push(`<span class="status-chip status-warn">DELAY 46</span> ${leg.aircraft_change.description} (${leg.aircraft_change.minutes} min)`);
   if (leg.reactionary && own) lines.push(`<span class="placeholder-text">Expected off-block delay ${total} min: the other delays run alongside the late turnaround, not after it</span>`);
+  if (leg.atfm) lines.push(`<span class="status-chip status-warn">SLOT ${escText(leg.atfm.ctot)}</span> ATFM regulation, ${escText(leg.atfm.reason)}: ${escText(leg.atfm.where)}. Take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? ' (new slot: the first one was missed)' : ''}`);
   return `
         <p class="placeholder-text" style="margin-top:10px;">
           ${lines.length ? lines.join('<br>') : `<span class="status-chip status-ok">ON TIME</span>`}
@@ -2885,6 +2946,7 @@ async function swapAircraft(key) {
       ? { ...first.aircraft_change, minutes: first.aircraft_change.minutes + res.aircraft_change.minutes } : res.aircraft_change;
     first.expected_delay_minutes = before + res.aircraft_change.minutes;
     ['eobt', 'etot', 'eldt', 'eibt'].forEach(f => { if (first[f]) first[f] = shiftZulu(first[f], res.aircraft_change.minutes); });
+    revalidateSlot(first);
     await paintDetail();
   } catch (err) {
     alert('Could not swap the aircraft. Check the connection and retry');
@@ -2921,6 +2983,7 @@ function buildDetailHtml(data, key, carriers, ownedAircraft) {
         ${legLoadTable(leg, i, fleetOptionsFor(leg, carriers, ownedAircraft))}
         ${legWeatherBlock(leg)}
         ${legDelayMelBlock(leg)}
+        ${opsConstraintsHtml(data.legs, i)}
       </div>
     </div>`).join('');
 
@@ -3178,7 +3241,7 @@ function renderRecap(flight) {
     : '<span class="status-chip status-ok">LOADSHEET SIGNED</span>';
   const skip = current ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
 
-  const briefing = `${legLoadTable(leg)}${legDelayMelBlock(leg)}${legLmcDgBlock(flight)}`;
+  const briefing = `${legLoadTable(leg)}${legDelayMelBlock(leg)}${opsConstraintsHtml(flight.legs, i, flight.leg_state)}${legLmcDgBlock(flight)}`;
   const ofpBody = state.ofp
     ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '')
     : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief</div>`;
@@ -3383,6 +3446,7 @@ function applyReactionaryDelay(leg, prevAbit) {
   leg.expected_delay_minutes = Math.max(r, legOwnDelayMinutes(leg));
   const delta = leg.expected_delay_minutes - before;
   ['eobt', 'etot', 'eldt', 'eibt'].forEach(f => { if (leg[f]) leg[f] = shiftZulu(leg[f], delta); });
+  revalidateSlot(leg);
 }
 
 // PIREP delay coding: like a real crew, the pilot codes a late departure
@@ -3447,7 +3511,9 @@ function readDelayCoding(i, leg, aobt) {
 
 function pirepDelayCodesText(pirep) {
   const codes = pirep && pirep.delay_codes;
-  return codes && codes.length ? ' &middot; DELAY ' + codes.map(c => `${escText(c.code)}/${c.minutes}`).join(' ') : '';
+  const slot = pirep && pirep.slot
+    ? ` &middot; SLOT ${pirep.slot.met ? 'MET' : 'MISSED'} (${pirep.slot.delta >= 0 ? '+' : ''}${pirep.slot.delta} min)` : '';
+  return (codes && codes.length ? ' &middot; DELAY ' + codes.map(c => `${escText(c.code)}/${c.minutes}`).join(' ') : '') + slot;
 }
 function readTimeField(id) {
   const hh = document.getElementById(id + '-hh').value;
@@ -3476,6 +3542,11 @@ async function submitPirep(index) {
   if (coded.error) { alert(coded.error); return; }
   const pirep = {aobt, atot, aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
   if (coded.codes.length) pirep.delay_codes = coded.codes;
+  if (leg.atfm) {
+    const delta = clockDiff(zuluMinutes(leg.atfm.ctot), zuluMinutes(atot));
+    const [lo, hi] = leg.atfm.window || [-5, 10];
+    pirep.slot = { ctot: leg.atfm.ctot, delta, met: delta >= lo && delta <= hi };
+  }
   state.pirep = pirep;
   flight.leg_status[index].status = 'done';
   if (index + 1 < flight.legs.length) applyReactionaryDelay(flight.legs[index + 1], abit);

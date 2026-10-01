@@ -17,6 +17,7 @@ import blog
 import flightstats
 import demo
 import techlog
+import ops
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras,
@@ -1045,7 +1046,7 @@ def select():
         conditions["delay"] = roll_delay(
             delay_codes, settings["generation"]["delay"],
             dep_metar=dep_weather.get("metar"), arr_metar=arr_weather.get("metar"),
-            exclude_codes=("93",) if legs_out else (),
+            exclude_codes=("93",) if legs_out else (), month=today.month,
         )
         taxi_out = conditions["taxi_out_minutes"]
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, today, taxi_out)
@@ -1112,11 +1113,20 @@ def select():
         else:
             conditions["eobt"] = conditions["etot"] = conditions["eldt"] = conditions["eibt"] = None
 
+        # An ATFM delay comes with a slot (CTOT); curfews at either end are
+        # checked in the browser against the leg's current expected times.
+        conditions["atfm"] = ops.atfm_slot(conditions["delay"], conditions["departure_info"],
+                                           conditions["arrival_info"], conditions["etot"])
+        conditions["curfews"] = ops.leg_curfews(route_leg["departure_icao"], route_leg["arrival_icao"], tz_by_icao,
+                                                sobt_dt.date() if sobt_dt else today)
+
         leg_times.append((sobt_dt, sibt_dt))
         legs_out.append(conditions)
 
     for i in range(1, len(legs_out)):
         legs_out[i]["turnaround_minutes"] = turnaround_minutes(leg_times[i - 1][1], leg_times[i][0])
+    # Crew duty for the whole rotation, kept on the first leg (see ops.crew_duty).
+    legs_out[0]["duty"] = ops.crew_duty(leg_times[0][0], tz_by_icao.get(itinerary[0]["departure_icao"]), len(legs_out))
 
     return jsonify({"itinerary": itinerary, "legs": legs_out})
 
