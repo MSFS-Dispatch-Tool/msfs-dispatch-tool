@@ -804,6 +804,16 @@
 .pirep-form input { width:110px; font-family: inherit; }
 .pirep-form label.checkbox-row { flex-direction: row; align-items: flex-start; gap: 8px; flex-basis: 100%; font-size: 12.5px; }
 .pirep-form label.checkbox-row input { width: auto; margin-top: 2px; }
+.delay-coding { flex-basis: 100%; display: none; padding: 10px 12px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm); background: var(--face); }
+.delay-coding.open { display: block; }
+.delay-coding p { margin: 0 0 8px; font-size: 12.5px; color: var(--text-muted); }
+.delay-coding p strong { color: var(--text); }
+.delay-code-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 6px; }
+.delay-code-row select { font-family: inherit; font-size: 12.5px; max-width: 460px; width: 100%; padding: 5px 6px; }
+.delay-code-row label:first-child { flex: 1 1 300px; }
+.delay-code-row input { width: 80px; }
+.delay-coding .delay-sum { margin: 8px 0 0; font-size: 12px; }
+.delay-coding .delay-sum.bad { color: var(--red, #B42318); font-weight: 600; }
 
 .loadsheet-form { margin-top:10px; padding:10px; border:1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face-dark); }
 .loadsheet-form .fields-row { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-top:8px; }
@@ -974,6 +984,11 @@ const STORAGE_KEY = 'simdispatch_active_flight';
 const SIMBRIEF_USERNAME_KEY = 'simdispatch_simbrief_username';
 const CURRENT_USER_EMAIL = {{ current_user_email|tojson }};
 const COUNTRIES = {{ countries|tojson }};
+// Full IATA delay-code list (AHM 730), for coding the pilot's own delays
+const IATA_DELAY_CODES = {{ iata_delay_codes|tojson }};
+const MIN_TURNAROUND_MINUTES = {{ min_turnaround_minutes }};
+// Departure delays of this many minutes or more must be coded in the PIREP
+const DELAY_CODE_THRESHOLD_MINUTES = 3;
 const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
 function simbriefNoticeHtml() {
@@ -2734,12 +2749,27 @@ function legWeatherBlock(leg) {
         </div>`;
 }
 
+// Expected departure delay of a leg, in minutes: its own rolled delay
+// (sampled length; older flights stored only a range, whose top was used)
+// or, once the previous leg's PIREP is in, the larger of that and the
+// knock-on delay from the late inbound aircraft (see applyReactionaryDelay).
+function legOwnDelayMinutes(leg) {
+  if (!leg.delay) return 0;
+  return Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes);
+}
+function legExpectedDelayMinutes(leg) {
+  return Number.isFinite(leg.expected_delay_minutes) ? leg.expected_delay_minutes : legOwnDelayMinutes(leg);
+}
 function legDelayMelBlock(leg) {
+  const own = legOwnDelayMinutes(leg), r = leg.reactionary ? leg.reactionary.minutes : 0;
+  const total = legExpectedDelayMinutes(leg);
+  const lines = [];
+  if (leg.reactionary) lines.push(`<span class="status-chip status-warn">DELAY 93</span> Aircraft rotation: late arrival from the previous leg (${r} min)`);
+  if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${own} min)`);
+  if (leg.reactionary && leg.delay) lines.push(`<span class="placeholder-text">Expected off-block delay ${total} min: the ${leg.delay.iata_code} delay runs alongside the late turnaround, not after it</span>`);
   return `
         <p class="placeholder-text" style="margin-top:10px;">
-          ${leg.delay
-            ? `<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${leg.delay.duration_range_minutes[0]}&ndash;${leg.delay.duration_range_minutes[1]} min)`
-            : `<span class="status-chip status-ok">ON TIME</span>`}
+          ${lines.length ? lines.join('<br>') : `<span class="status-chip status-ok">ON TIME</span>`}
         </p>
         <p class="placeholder-text">
           ${leg.mel
@@ -2947,7 +2977,7 @@ function recapNextStepHtml(flight, i, allDone) {
   const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
   const ofp = state.ofp || {};
   const loadsheetLine = state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : '';
-  const pirepLine = state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}</div>` : '';
+  const pirepLine = state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}${pirepDelayCodesText(state.pirep)}</div>` : '';
   const mismatch = state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '';
 
   if (done) {
@@ -2987,11 +3017,12 @@ function recapNextStepHtml(flight, i, allDone) {
   }
   return `<h3 class="af-step-title">Fly, then file the PIREP</h3>${loadsheetLine}
       <div class="pirep-form" id="pirep-${i}">
-        ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)')}
+        ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)', `updateDelayCoding(${i})`)}
         ${timeFieldHtml(`atot-${i}`, 'ATOT (ZULU, TAKEOFF)')}
         ${timeFieldHtml(`aldt-${i}`, 'ALDT (ZULU, LANDING)')}
         ${timeFieldHtml(`abit-${i}`, 'ABIT (ZULU, BLOCK IN)')}
         <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
+        <div class="delay-coding" id="delaycoding-${i}"></div>
         <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log</label>
         <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
       </div>`;
@@ -3109,7 +3140,7 @@ async function doPrepareLeg(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
   const staticId = `simdispatch-${Date.now()}-${index}`;
-  const delayMinutes = leg.delay ? Math.max(...leg.delay.duration_range_minutes) : 0;
+  const delayMinutes = legExpectedDelayMinutes(leg);
   const qs = new URLSearchParams({
     flights: leg.flight_number,
     civalue: leg.cost_index,
@@ -3188,10 +3219,109 @@ function submitLoadsheet(index) {
 // which doesn't match how a Zulu time is ever written in dispatch.
 // Two side-by-side number inputs (HH/MM) sidestep locale formatting
 // entirely - what's typed is exactly what's stored.
-function timeFieldHtml(id, label) {
+function timeFieldHtml(id, label, onInput) {
+  const handler = onInput ? ` oninput="${onInput}"` : '';
   return `<label>${label}<span style="display:flex; align-items:center; gap:3px;">
-    <input id="${id}-hh" type="number" min="0" max="23" placeholder="HH" style="width:46px;" required>:<input id="${id}-mm" type="number" min="0" max="59" placeholder="MM" style="width:46px;" required>
+    <input id="${id}-hh" type="number" min="0" max="23" placeholder="HH" style="width:46px;" required${handler}>:<input id="${id}-mm" type="number" min="0" max="59" placeholder="MM" style="width:46px;" required${handler}>
   </span></label>`;
+}
+// "HH:MM" / "HH:MMZ" / "HH:MMZ (+1d)" -> minutes of day, or null.
+function zuluMinutes(text) {
+  const m = /^(\d{2}):(\d{2})/.exec(text || '');
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+// A clock difference folded into -12h..+12h, so 23:50 -> 00:10 is +20.
+function clockDiff(from, to) {
+  return ((to - from + 720) % 1440 + 1440) % 1440 - 720;
+}
+// Shifts a "HH:MMZ (+Nd)" time by delta minutes, keeping the day suffix right.
+function shiftZulu(text, delta) {
+  const m = /^(\d{2}):(\d{2})Z?(?:\s*\(([+-]?\d+)d\))?/.exec(text || '');
+  if (!m || !delta) return text;
+  const total = Number(m[1]) * 60 + Number(m[2]) + (m[3] ? Number(m[3]) * 1440 : 0) + delta;
+  const day = Math.floor(total / 1440), mins = total - day * 1440;
+  const hhmm = String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+  return `${hhmm}Z${day ? ` (${day > 0 ? '+' : ''}${day}d)` : ''}`;
+}
+
+// Knock-on (reactionary, code 93) delay: once the previous leg is in, this
+// leg can't leave before its actual in-block time plus the minimum
+// turnaround. The leg's own delay runs in parallel with that wait, so the
+// expected delay is the larger of the two, not their sum.
+function applyReactionaryDelay(leg, prevAbit) {
+  const sobt = zuluMinutes(leg.sobt), abit = zuluMinutes(prevAbit);
+  if (sobt == null || abit == null) return;
+  const r = Math.max(0, clockDiff(sobt, abit + MIN_TURNAROUND_MINUTES));
+  const before = legExpectedDelayMinutes(leg);
+  leg.reactionary = r > 0 ? { iata_code: '93', description: 'Aircraft rotation: late arrival of aircraft from the previous sector', minutes: r } : null;
+  leg.expected_delay_minutes = Math.max(r, legOwnDelayMinutes(leg));
+  const delta = leg.expected_delay_minutes - before;
+  ['eobt', 'etot', 'eldt', 'eibt'].forEach(f => { if (leg[f]) leg[f] = shiftZulu(leg[f], delta); });
+}
+
+// PIREP delay coding: like a real crew, the pilot codes a late departure
+// (AOBT vs SOBT) with up to two IATA delay codes whose minutes add up to
+// the delay. Prefilled from what the dispatch predicted.
+function delayCodeOptions(selected) {
+  let group = '', html = '<option value="">Choose a delay code</option>';
+  IATA_DELAY_CODES.forEach(c => {
+    if (c.group !== group) { html += `${group ? '</optgroup>' : ''}<optgroup label="${escAttr(c.group)}">`; group = c.group; }
+    html += `<option value="${c.code}"${c.code === selected ? ' selected' : ''}>${c.code} ${escText(c.description)}</option>`;
+  });
+  return html + '</optgroup>';
+}
+function departureDelayMinutes(leg, aobt) {
+  const sobt = zuluMinutes(leg.sobt), a = zuluMinutes(aobt);
+  return sobt == null || a == null ? null : clockDiff(sobt, a);
+}
+function updateDelayCoding(i) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const leg = flight.legs[i];
+  const box = document.getElementById('delaycoding-' + i);
+  if (!box) return;
+  const d = departureDelayMinutes(leg, readTimeField('aobt-' + i));
+  if (d == null || d < DELAY_CODE_THRESHOLD_MINUTES) { box.classList.remove('open'); box.innerHTML = ''; box.dataset.delay = ''; return; }
+  if (box.dataset.delay === String(d)) return;
+  box.dataset.delay = String(d);
+  const r = leg.reactionary ? Math.min(leg.reactionary.minutes, d) : 0;
+  const rows = [];
+  if (r) rows.push(['93', r]);
+  if (d - r > 0) rows.push([leg.delay ? leg.delay.iata_code : '', d - r]);
+  while (rows.length < 2) rows.push(['', '']);
+  box.innerHTML = `<p>You left the gate <strong>${d} min</strong> after the scheduled off-block time. Code the delay like a real crew: up to two IATA codes whose minutes add up to ${d}</p>
+    ${rows.map(([code, mins], k) => `<div class="delay-code-row">
+      <label>${k ? 'SECOND CODE (OPTIONAL)' : 'MAIN CODE'}<select id="dc-code-${i}-${k}" onchange="checkDelaySum(${i})">${delayCodeOptions(code)}</select></label>
+      <label>MINUTES<input id="dc-min-${i}-${k}" type="number" min="1" step="1" value="${mins}" oninput="checkDelaySum(${i})"></label>
+    </div>`).join('')}
+    <p class="delay-sum" id="dc-sum-${i}"></p>`;
+  box.classList.add('open');
+  checkDelaySum(i);
+}
+function delayCodingRows(i) {
+  return [0, 1].map(k => ({ code: (document.getElementById(`dc-code-${i}-${k}`) || {}).value || '',
+    minutes: Number((document.getElementById(`dc-min-${i}-${k}`) || {}).value) })).filter(row => row.code);
+}
+function checkDelaySum(i) {
+  const box = document.getElementById('delaycoding-' + i), out = document.getElementById('dc-sum-' + i);
+  if (!box || !out) return;
+  const d = Number(box.dataset.delay), sum = delayCodingRows(i).reduce((a, row) => a + (row.minutes || 0), 0);
+  out.textContent = sum === d ? `Coded ${sum} of ${d} minutes` : `Coded ${sum} of ${d} minutes: the minutes must add up to the delay`;
+  out.classList.toggle('bad', sum !== d);
+}
+function readDelayCoding(i, leg, aobt) {
+  const d = departureDelayMinutes(leg, aobt);
+  if (d == null || d < DELAY_CODE_THRESHOLD_MINUTES) return { codes: [] };
+  const rows = delayCodingRows(i);
+  if (!rows.length) return { error: `Code the ${d}-minute departure delay with at least one IATA delay code` };
+  if (rows.some(row => !Number.isInteger(row.minutes) || row.minutes < 1)) return { error: 'Each delay code needs a whole number of minutes' };
+  if (rows.reduce((a, row) => a + row.minutes, 0) !== d) return { error: `The delay-code minutes must add up to the ${d}-minute delay` };
+  return { codes: rows.map(row => ({ code: row.code, minutes: row.minutes,
+    description: (IATA_DELAY_CODES.find(c => c.code === row.code) || {}).description || '' })) };
+}
+
+function pirepDelayCodesText(pirep) {
+  const codes = pirep && pirep.delay_codes;
+  return codes && codes.length ? ' &middot; DELAY ' + codes.map(c => `${escText(c.code)}/${c.minutes}`).join(' ') : '';
 }
 function readTimeField(id) {
   const hh = document.getElementById(id + '-hh').value;
@@ -3216,9 +3346,13 @@ async function submitPirep(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const leg = flight.legs[index];
   const state = flight.leg_state[index];
+  const coded = readDelayCoding(index, leg, aobt);
+  if (coded.error) { alert(coded.error); return; }
   const pirep = {aobt, atot, aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  if (coded.codes.length) pirep.delay_codes = coded.codes;
   state.pirep = pirep;
   flight.leg_status[index].status = 'done';
+  if (index + 1 < flight.legs.length) applyReactionaryDelay(flight.legs[index + 1], abit);
   saveAndRender(flight);
 
   try {
@@ -3838,7 +3972,7 @@ function buildPirepDetailHtml(r) {
     ${legOfpTable(r.ofp)}
     ${legDelayMelBlock(leg)}
     ${r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
-    ${r.pirep ? `<div class="placeholder-text">PIREP: AOBT ${r.pirep.aobt || 'N/A'}Z &middot; ATOT ${r.pirep.atot || 'N/A'}Z &middot; ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}</div>` : ''}`;
+    ${r.pirep ? `<div class="placeholder-text">PIREP: AOBT ${r.pirep.aobt || 'N/A'}Z &middot; ATOT ${r.pirep.atot || 'N/A'}Z &middot; ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}${pirepDelayCodesText(r.pirep)}</div>` : ''}`;
 }
 
 function togglePirepRecord(id) {

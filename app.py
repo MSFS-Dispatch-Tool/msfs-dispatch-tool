@@ -23,7 +23,7 @@ from generator import (
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
-    turnaround_shift, simbrief_date_str, TAXI_IN_MINUTES
+    turnaround_shift, simbrief_date_str, TAXI_IN_MINUTES, MIN_TURNAROUND_MINUTES
 )
 
 app = Flask(__name__)
@@ -579,6 +579,10 @@ lmc_events = load_json("lmc_events.json")
 dangerous_goods = load_json("dangerous_goods.json")
 airports = load_json("airports.json")
 countries = load_json("countries.json")
+# The full IATA standard delay-code list (AHM 730), for the pilot to code
+# their own delays in the PIREP - delay_codes.json is only the subset the
+# generator rolls.
+iata_delay_codes = load_json("iata_delay_codes.json")
 # Worldwide airport reference (OurAirports, public domain), separate from
 # the route-network `airports` above - used only for the preferred base
 # picker and destinations map, never for route search, since a pilot's
@@ -743,7 +747,8 @@ def dispatch_app():
     }
     user = current_user()
     return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin(),
-                            current_user_email=(user["email"] if user else ""), countries=countries)
+                            current_user_email=(user["email"] if user else ""), countries=countries,
+                           iata_delay_codes=iata_delay_codes, min_turnaround_minutes=MIN_TURNAROUND_MINUTES)
 
 
 @app.route("/blog")
@@ -1025,6 +1030,7 @@ def select():
         conditions["delay"] = roll_delay(
             delay_codes, settings["generation"]["delay"],
             dep_metar=dep_weather.get("metar"), arr_metar=arr_weather.get("metar"),
+            exclude_codes=("93",) if legs_out else (),
         )
         taxi_out = conditions["taxi_out_minutes"]
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, today, taxi_out)
@@ -1067,13 +1073,16 @@ def select():
         conditions["eet_minutes"] = schedule["eet_minutes"]
 
         # Expected (E-) times = scheduled (S-) times shifted by the leg's
-        # own delay, if any - the higher end of the range if it's a
-        # range. No delay means expected == scheduled. This is also what
+        # own delay, if any (its sampled length - see
+        # generator.sample_delay_minutes). No delay means expected ==
+        # scheduled. Later legs can slip further once the previous leg's
+        # actual in-block time is known (reactionary delay, applied in
+        # the browser when that PIREP is filed). This is also what
         # /simbrief/redirect-url sends as deph/depm, not the raw SOBT.
         # Same day-suffix anchoring as above: EOBT vs today (it's the
         # same kind of figure as SOBT), ETOT/ELDT/EIBT vs this leg's own
         # SOBT date.
-        delay_minutes = max(conditions["delay"]["duration_range_minutes"]) if conditions["delay"] else 0
+        delay_minutes = conditions["delay"]["minutes"] if conditions["delay"] else 0
         conditions["expected_delay_minutes"] = delay_minutes
         if sobt_dt is not None:
             delay_delta = timedelta(minutes=delay_minutes)

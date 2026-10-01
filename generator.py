@@ -404,12 +404,29 @@ def _weather_supports_delay(iata_code, dep_metar, arr_metar):
     )
 
 
-def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None):
+def sample_delay_minutes(duration_range):
+    """A delay length within the code's range, skewed towards the short
+    end: most delays of a given cause are short and a few run long, so
+    always taking the top of the range (as this app used to) made every
+    delay its worst case. Beta(1.4, 2.8) puts the mean about a third of
+    the way into the range and the mode near its low end."""
+    lo, hi = duration_range
+    return round(lo + (hi - lo) * random.betavariate(1.4, 2.8))
+
+
+def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None, exclude_codes=()):
+    """exclude_codes keeps codes out of the random pool - /select passes
+    "93" (late inbound aircraft) for every leg after the first, since on
+    those legs the inbound aircraft is the pilot's own previous leg and
+    any knock-on delay comes from its actual arrival, not a dice roll."""
     pool = _filter_enabled(delay_codes, delay_settings, "iata_code", "disabled_codes")
-    pool = [d for d in pool if _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
-    if not pool:
+    pool = [d for d in pool if d["iata_code"] not in exclude_codes
+            and _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
+    if not pool or random.random() >= DELAY_PROBABILITY:
         return None
-    return weighted_pick(pool) if random.random() < DELAY_PROBABILITY else None
+    delay = dict(weighted_pick(pool))
+    delay["minutes"] = sample_delay_minutes(delay["duration_range_minutes"])
+    return delay
 
 
 def roll_mel(mels, mel_settings=None):
