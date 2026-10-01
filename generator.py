@@ -488,11 +488,10 @@ def delay_odds(pool, month=None):
 
 
 def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None, exclude_codes=(), month=None):
-    """exclude_codes keeps codes out of the random pool - /select passes
-    "93" (late inbound aircraft) for every leg after the first, since on
-    those legs the inbound aircraft is the pilot's own previous leg and
-    any knock-on delay comes from its actual arrival, not a dice roll.
-    How likely a delay is, and which cause, follows delay_odds."""
+    """Rolled for the first leg of an itinerary only (later legs get just
+    the knock-on from the previous leg - see /select). exclude_codes keeps
+    codes out of the random pool. How likely a delay is, and which cause,
+    follows delay_odds."""
     pool = _filter_enabled(delay_codes, delay_settings, "iata_code", "disabled_codes")
     pool = [d for d in pool if d["iata_code"] not in exclude_codes
             and _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
