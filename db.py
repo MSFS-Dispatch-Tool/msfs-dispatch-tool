@@ -42,11 +42,13 @@ DEFAULT_SETTINGS = {
         # real-world prevalence, rather than refusing to assign anything.
         "aircraft_owned": [],
     },
+    # probability: the pilot's own chance per trip, 0-100 (%), or None for
+    # the realistic default (see generator.py and techlog.py).
     "generation": {
-        "delay": {"enabled": True, "disabled_codes": []},
-        "lmc": {"enabled": True, "disabled_ids": []},
-        "mel": {"enabled": True, "disabled_ids": []},
-        "cdl": {"enabled": True, "disabled_ids": []},
+        "delay": {"enabled": True, "disabled_codes": [], "probability": None},
+        "lmc": {"enabled": True, "disabled_ids": [], "probability": None},
+        "mel": {"enabled": True, "disabled_ids": [], "probability": None},
+        "cdl": {"enabled": True, "disabled_ids": [], "probability": None},
     },
 }
 
