@@ -41,14 +41,15 @@ CATEGORY_INTERVAL_DAYS = {"B": 3, "C": 10, "D": 120}
 MEL_COUNT_WEIGHTS = ((0, 55), (1, 30), (2, 11), (3, 4))
 CDL_PROBABILITY = 0.12
 
-GROUND_SUPPORT_NAMES = {"GPU": "a ground power unit (GPU)", "ASU": "an air start unit (ASU)"}
+GROUND_SUPPORT_NAMES = {"GPU": "a ground power cart", "ASU": "an air starter"}
 GROUND_SUPPORT_ORDER = ("GPU", "ASU")
+# Plain wording: these lines are read by pilots of all levels, not dispatchers
 CONDITION_TEXT = {
-    "TS": "thunderstorms reported or forecast",
-    "ICING": "icing conditions likely (cloud or precipitation at +10°C or below)",
-    "LVP": "low-visibility conditions below CAT 1 minima",
-    "CONTAM": "snow, freezing precipitation or heavy rain on the runway",
-    "PRECIP": "precipitation",
+    "TS": "thunderstorms",
+    "ICING": "icing (cloud, rain or snow near freezing)",
+    "LVP": "fog or very low cloud",
+    "CONTAM": "snow, ice or heavy rain on the runway",
+    "PRECIP": "rain or snow",
 }
 # Which airports each condition is checked at: thunderstorms, icing and
 # precipitation matter at both ends; CAT 1 minima and a contaminated runway
@@ -201,37 +202,37 @@ def leg_tech(status, dep_icao, arr_icao, dep_wx, arr_wx, eet_minutes):
 
     checks = []
     for m, e in zip(mels, effects):
-        label = f"MEL {m['ata']} {m['system']}"
+        label = m.get("name") or m["system"]
         for cond in e.get("no_wx") or []:
             scopes = CONDITION_SCOPE.get(cond, ("dep", "arr"))
             hit = [names[s] for s in scopes if cond in present[s]]
             unknown = [names[s] for s in scopes if s in missing]
             if hit:
                 checks.append({"level": "nogo", "item": m["id"],
-                               "text": f"{label}: not dispatchable with {CONDITION_TEXT[cond]} at {' and '.join(hit)}"})
+                               "text": f"{label} broken and {CONDITION_TEXT[cond]} at {' and '.join(hit)}: this aircraft can't fly the trip"})
             elif unknown:
                 checks.append({"level": "caution", "item": m["id"],
-                               "text": f"{label}: no weather report for {' and '.join(unknown)}; check for {CONDITION_TEXT[cond]} before departure"})
+                               "text": f"{label}: no weather report for {' and '.join(unknown)}, so check for {CONDITION_TEXT[cond]} before you go"})
             else:
                 checks.append({"level": "ok", "item": m["id"],
-                               "text": f"{label}: no {CONDITION_TEXT[cond]} in the {' or '.join('departure' if s == 'dep' else 'destination' for s in scopes)} weather"})
+                               "text": f"{label}: no {CONDITION_TEXT[cond]} expected at the {' or '.join('departure' if s == 'dep' else 'destination' for s in scopes)}, good to go"})
         if e.get("performance"):
-            checks.append({"level": "caution", "item": m["id"], "text": f"{label}: apply the take-off and landing performance corrections"})
+            checks.append({"level": "caution", "item": m["id"], "text": f"{label}: take-off and landing need more runway than usual"})
         if e.get("cargo_hold_empty"):
-            checks.append({"level": "caution", "item": m["id"], "text": f"{label}: {m.get('chosen_component') or 'affected'} hold stays empty; load bags in the other hold"})
+            checks.append({"level": "caution", "item": m["id"], "text": f"{label}: keep the {(m.get('chosen_component') or 'affected').lower()} cargo hold empty and put the bags in the other one"})
     if min_takeoff_fuel:
         checks.append({"level": "caution", "item": None,
-                       "text": f"MEL fuel minimum: at least {min_takeoff_fuel:,} kg on board for take-off "
-                               f"({min_takeoff_fuel // 2:,} kg in each main tank) and {min_landing_fuel:,} kg kept for landing"})
+                       "text": f"Fuel pump out: take off with at least {min_takeoff_fuel:,} kg of fuel "
+                               f"({min_takeoff_fuel // 2:,} kg in each wing) and land with at least {min_landing_fuel:,} kg"})
     if fuel_caps:
         checks.append({"level": "caution", "item": None,
-                       "text": f"Centre tank stays empty: block fuel limited to about {min(fuel_caps):,} kg in the main tanks"})
+                       "text": f"Centre fuel tank can't be used: you can carry about {min(fuel_caps):,} kg of fuel at most"})
     if ground:
         checks.append({"level": "caution", "item": None,
-                       "text": f"Needs {' and '.join(GROUND_SUPPORT_NAMES[g] for g in ground)} at {dep_icao} and {arr_icao}"})
+                       "text": f"You'll need {' and '.join(GROUND_SUPPORT_NAMES[g] for g in ground)} at {dep_icao} and {arr_icao}"})
     if weight_penalty:
         checks.append({"level": "caution", "item": None,
-                       "text": f"CDL: performance-limited take-off and landing weights reduced by {weight_penalty} kg"})
+                       "text": f"Missing panel: the aircraft's maximum take-off and landing weights are {weight_penalty} kg lower"})
 
     remarks = [f"MEL {m['ata']} {m['system'].upper()}" + (f" {m['chosen_component']}".upper() if m.get("chosen_component") else "") for m in mels]
     if caps:

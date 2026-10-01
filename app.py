@@ -1384,16 +1384,19 @@ def generation_options():
     # each category's realistic chance for the probability sliders.
     _, delay_chance = generator.delay_odds(delay_codes, date.today().month)
     mel_keys = ("id", "system", "description", "fleet", "ata", "mel_category", "interval_days", "installed", "required",
-                "maintenance", "operations", "procedures", "effects", "dispatch_consequence", "component_options", "source")
+                "maintenance", "operations", "procedures", "effects", "dispatch_consequence", "component_options", "source",
+                "name", "plain", "steps")
     return jsonify({
-        "delay": [{"code": d["iata_code"], "description": d["description"], "duration_range_minutes": d["duration_range_minutes"],
+        "delay": [{"code": d["iata_code"], "description": d["description"], "plain": d.get("plain"),
+                   "duration_range_minutes": d["duration_range_minutes"],
                    "weather_gated": d["iata_code"] in generator.WEATHER_GATED_CODES, "atfm": d["iata_code"] in ops.ATFM_CODES}
                   for d in delay_codes],
         "lmc": [{"id": l["id"], "description": l["description"], "type": l["type"], "delta_range": l["delta_range"],
                  "unit": l["unit"]} for l in lmc_events],
         "mel": [{k: m.get(k) for k in mel_keys} for m in all_mels if m.get("weight", 1) > 0],
         "cdl": [{"id": c["id"], "part": c["part"], "description": c["description"], "fleet": c["fleet"], "ata": c.get("ata"),
-                 "effects": c.get("effects"), "note": c.get("note")} for c in all_cdls],
+                 "effects": c.get("effects"), "note": c.get("note"), "name": c.get("name"), "plain": c.get("plain"),
+                 "steps": c.get("steps")} for c in all_cdls],
         "default_probability": {
             "delay": round(delay_chance * 100), "lmc": round(generator.LMC_PROBABILITY * 100),
             "mel": techlog.mel_default_percent(), "cdl": round(techlog.CDL_PROBABILITY * 100),

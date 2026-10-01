@@ -10,7 +10,12 @@
   },
   "note": "No performance penalty within the CDL limit",
   "weight": 4,
-  "group": "cdl1"
+  "group": "cdl1",
+  "name": "Static wicks",
+  "plain": "Up to three of the small rods that discharge static from the wings are missing",
+  "steps": [
+   "Nothing to do: no effect on the flight"
+  ]
  },
  {
   "id": "cdl-02",
@@ -23,7 +28,13 @@
   },
   "note": "",
   "weight": 2,
-  "group": "cdl2"
+  "group": "cdl2",
+  "name": "Flap track cover",
+  "plain": "One of the covers under the wing flaps is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan",
+   "Maximum weights are slightly lower"
+  ]
  },
  {
   "id": "cdl-03",
@@ -36,7 +47,12 @@
   },
   "note": "",
   "weight": 2,
-  "group": "cdl3"
+  "group": "cdl3",
+  "name": "Belly panel",
+  "plain": "One panel under the fuselage is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan"
+  ]
  },
  {
   "id": "cdl-04",
@@ -49,7 +65,13 @@
   },
   "note": "",
   "weight": 1,
-  "group": "cdl4"
+  "group": "cdl4",
+  "name": "Engine pylon panel",
+  "plain": "One panel behind an engine mount is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan",
+   "Maximum weights are slightly lower"
+  ]
  },
  {
   "id": "cdl-05",
@@ -62,7 +84,12 @@
   },
   "note": "",
   "weight": 2,
-  "group": "cdl5"
+  "group": "cdl5",
+  "name": "Landing gear door seal",
+  "plain": "A seal on a main landing gear door is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan"
+  ]
  },
  {
   "id": "cdl-06",
@@ -75,7 +102,13 @@
   },
   "note": "",
   "weight": 1,
-  "group": "cdl6"
+  "group": "cdl6",
+  "name": "Wing tip panel",
+  "plain": "A panel on a wing tip is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan",
+   "Maximum weights are slightly lower"
+  ]
  },
  {
   "id": "cdl-07",
@@ -88,7 +121,12 @@
   },
   "note": "",
   "weight": 2,
-  "group": "cdl7"
+  "group": "cdl7",
+  "name": "Flap seal",
+  "plain": "A piece of rubber seal on a flap is missing",
+  "steps": [
+   "A small fuel penalty is added to your plan"
+  ]
  },
  {
   "id": "cdl-08",
@@ -101,6 +139,11 @@
   },
   "note": "",
   "weight": 2,
-  "group": "cdl8"
+  "group": "cdl8",
+  "name": "Door seal cover",
+  "plain": "A cover around a passenger door seal is missing",
+  "steps": [
+   "A tiny fuel penalty is added to your plan"
+  ]
  }
 ]

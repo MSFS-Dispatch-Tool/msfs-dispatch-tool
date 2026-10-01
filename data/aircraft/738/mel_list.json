@@ -25,6 +25,12 @@
   "component_options": [
    "A",
    "B"
+  ],
+  "name": "Autopilot (one of two)",
+  "plain": "One of the two autopilots is broken. You can still use the other one",
+  "steps": [
+   "Fly approaches that don't need autoland",
+   "No fog landings: if the destination is foggy, the flight can't go"
   ]
  },
  {
@@ -49,7 +55,13 @@
   },
   "weight": 3,
   "group": "at",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "Autothrottle",
+  "plain": "The automatic thrust control is broken",
+  "steps": [
+   "Set the thrust by hand for the whole flight",
+   "No fog landings: autoland needs the autothrottle"
+  ]
  },
  {
   "id": "mel-03",
@@ -74,7 +86,12 @@
   },
   "weight": 3,
   "group": "apugen",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "APU generator",
+  "plain": "The small engine in the tail can't make electricity",
+  "steps": [
+   "Ask for a ground power cart at the gate"
+  ]
  },
  {
   "id": "mel-04",
@@ -101,6 +118,12 @@
   "component_options": [
    "1",
    "2"
+  ],
+  "name": "Engine generator",
+  "plain": "One engine's electrical generator is broken",
+  "steps": [
+   "Run the tail engine (APU) for the whole flight to replace it",
+   "It burns a little extra fuel, already added to your plan"
   ]
  },
  {
@@ -294,6 +317,12 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Main tank fuel pump (rear)",
+  "plain": "One of the rear fuel pumps in a wing tank is broken",
+  "steps": [
+   "Engineers switch the pump off before the flight",
+   "Carry enough fuel: each wing tank needs at least 3,402 kg for take-off and 1,134 kg left for landing"
   ]
  },
  {
@@ -315,7 +344,12 @@
   "effects": {},
   "weight": 1,
   "group": "xfeed",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "Crossfeed light",
+  "plain": "The light that shows the fuel crossfeed valve is open doesn't work",
+  "steps": [
+   "Engineers check the valve works before the flight"
+  ]
  },
  {
   "id": "mel-14",
@@ -341,7 +375,13 @@
   },
   "weight": 3,
   "group": "wxr",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "Weather radar",
+  "plain": "The weather radar is broken, so storms ahead can't be seen",
+  "steps": [
+   "Don't fly into areas with thunderstorms",
+   "Review windshear procedures before departure"
+  ]
  },
  {
   "id": "mel-15",
@@ -363,7 +403,13 @@
   "effects": {},
   "weight": 1,
   "group": "tcas",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "Collision avoidance (TCAS)",
+  "plain": "The traffic collision warning system is switched off",
+  "steps": [
+   "Engineers switch it off and secure it",
+   "Only allowed where it isn't required: in Europe it must be fixed quickly"
+  ]
  },
  {
   "id": "mel-16",
@@ -387,6 +433,11 @@
   "component_options": [
    "1",
    "2"
+  ],
+  "name": "Transponder (one of two)",
+  "plain": "One of the two transponders is broken",
+  "steps": [
+   "Use the other transponder"
   ]
  },
  {
@@ -432,6 +483,11 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Clock",
+  "plain": "One of the cockpit clocks doesn't work",
+  "steps": [
+   "Use the other clock or the FMC time"
   ]
  },
  {
@@ -456,6 +512,11 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "DME",
+  "plain": "One of the distance-measuring radios is broken",
+  "steps": [
+   "Use the other one; nothing else changes"
   ]
  },
  {
@@ -476,7 +537,12 @@
   "effects": {},
   "weight": 2,
   "group": "vor",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "VOR radio",
+  "plain": "The second VOR navigation radio is broken",
+  "steps": [
+   "Navigate with the first one"
+  ]
  },
  {
   "id": "mel-21",
@@ -501,7 +567,12 @@
   },
   "weight": 3,
   "group": "mmr",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "ILS receiver",
+  "plain": "The second landing-guidance receiver is broken",
+  "steps": [
+   "No fog landings: low-visibility approaches need both receivers"
+  ]
  },
  {
   "id": "mel-22",
@@ -522,7 +593,13 @@
   "effects": {},
   "weight": 2,
   "group": "gps",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "GPS",
+  "plain": "The GPS is broken",
+  "steps": [
+   "Navigate with radio beacons and the inertial system",
+   "Plan ILS or VOR approaches instead of GPS approaches"
+  ]
  },
  {
   "id": "mel-23",
@@ -546,6 +623,11 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Flight management computer",
+  "plain": "One of the flight management computers is broken",
+  "steps": [
+   "Use the other one for the flight plan"
   ]
  },
  {
@@ -567,7 +649,12 @@
   "effects": {},
   "weight": 2,
   "group": "du",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "Lower display screen",
+  "plain": "The lower centre display screen is broken",
+  "steps": [
+   "Check the engine display can be moved to another screen"
+  ]
  },
  {
   "id": "mel-25",
@@ -594,6 +681,12 @@
   "component_options": [
    "Inboard",
    "Outboard"
+  ],
+  "name": "Anti-skid brakes",
+  "plain": "Part of the anti-skid braking system is switched off",
+  "steps": [
+   "Engineers switch the affected part off",
+   "Take-off and landing need more runway: use the reduced-braking performance figures"
   ]
  },
  {
@@ -620,6 +713,12 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Air conditioning pack",
+  "plain": "One of the two air conditioning units is broken",
+  "steps": [
+   "Fly no higher than FL250",
+   "Already set in your SimBrief plan"
   ]
  },
  {
@@ -646,7 +745,13 @@
   },
   "weight": 3,
   "group": "apu",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "APU (tail engine)",
+  "plain": "The small engine in the tail doesn't work",
+  "steps": [
+   "Ask for a ground power cart and an air starter at every gate",
+   "Or start the second engine using air from the first"
+  ]
  },
  {
   "id": "mel-28",
@@ -677,6 +782,12 @@
   "component_options": [
    "1",
    "2"
+  ],
+  "name": "Engine bleed valve",
+  "plain": "One engine can't supply air to the aircraft systems",
+  "steps": [
+   "Fly no higher than FL250",
+   "Don't fly into icing conditions"
   ]
  },
  {
@@ -706,6 +817,11 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Wing anti-ice",
+  "plain": "One wing's anti-ice system doesn't work",
+  "steps": [
+   "Don't fly into icing conditions"
   ]
  },
  {
@@ -737,6 +853,13 @@
   "component_options": [
    "1",
    "2"
+  ],
+  "name": "Engine anti-ice",
+  "plain": "One engine's anti-ice is stuck on",
+  "steps": [
+   "Keep that engine at 60% N1 or more in icing",
+   "Only if it's cooler than 38 °C outside",
+   "Take-off and climb performance is lower; a little extra fuel is added"
   ]
  },
  {
@@ -790,6 +913,11 @@
   "component_options": [
    "1",
    "2"
+  ],
+  "name": "Thrust reverser",
+  "plain": "One engine's reverse thrust is locked out",
+  "steps": [
+   "Plan the landing without reverse on that engine: you need more runway"
   ]
  },
  {
@@ -817,6 +945,12 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Fuel gauge",
+  "plain": "One wing tank's fuel gauge doesn't work",
+  "steps": [
+   "Engineers measure the fuel by hand before the flight",
+   "Check fuel used against your plan regularly in flight"
   ]
  },
  {
@@ -847,6 +981,12 @@
   "component_options": [
    "Captain",
    "First officer"
+  ],
+  "name": "Windshield wiper",
+  "plain": "One windshield wiper doesn't work",
+  "steps": [
+   "Don't fly if it's raining or snowing at either airport",
+   "No fog landings"
   ]
  },
  {
@@ -873,6 +1013,11 @@
    "Right inboard",
    "Left outboard",
    "Right outboard"
+  ],
+  "name": "Landing light",
+  "plain": "One landing light doesn't work",
+  "steps": [
+   "Use the others; nothing else changes"
   ]
  },
  {
@@ -893,7 +1038,12 @@
   "effects": {},
   "weight": 3,
   "group": "acars",
-  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "name": "ACARS datalink",
+  "plain": "The cockpit datalink to the airline doesn't work",
+  "steps": [
+   "Send times and figures to the airline by radio instead"
+  ]
  },
  {
   "id": "mel-37",
@@ -919,6 +1069,12 @@
    "Forward",
    "Aft left",
    "Aft right"
+  ],
+  "name": "Lavatory",
+  "plain": "One toilet is out of order",
+  "steps": [
+   "The door is locked and marked out of order",
+   "Let the cabin crew know"
   ]
  },
  {
@@ -975,6 +1131,12 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Main tank fuel pump (front)",
+  "plain": "One of the front fuel pumps in a wing tank is broken",
+  "steps": [
+   "Engineers switch the pump off before the flight",
+   "Carry enough fuel: each wing tank needs at least 2,177 kg for take-off and 817 kg left for landing"
   ]
  },
  {
@@ -1004,6 +1166,12 @@
   "component_options": [
    "Left",
    "Right"
+  ],
+  "name": "Centre tank fuel pump",
+  "plain": "One of the centre tank fuel pumps is broken",
+  "steps": [
+   "The centre tank stays empty",
+   "You can carry about 7,830 kg of fuel at most, in the wing tanks"
   ]
  },
  {
@@ -1031,6 +1199,12 @@
    "Captain",
    "First officer"
   ],
-  "interval_days": 1
+  "interval_days": 1,
+  "name": "Pilot display screen",
+  "plain": "One of the pilots' main navigation screens is broken",
+  "steps": [
+   "Navigate with radio beacons (ILS, VOR, DME) only",
+   "Must be fixed by the end of the day"
+  ]
  }
 ]
