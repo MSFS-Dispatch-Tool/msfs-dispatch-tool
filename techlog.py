@@ -142,6 +142,15 @@ def _enabled(items, category_settings, key="id"):
     return [i for i in items if i[key] not in disabled]
 
 
+def _custom(category_settings):
+    value = (category_settings or {}).get("probability")
+    return None if value is None else max(0.0, min(1.0, float(value) / 100))
+
+
+def mel_default_percent():
+    return round(100 * sum(w for n, w in MEL_COUNT_WEIGHTS if n) / sum(w for _, w in MEL_COUNT_WEIGHTS))
+
+
 def roll_tech_status(mels, cdls, mel_settings=None, cdl_settings=None, exclude_ids=(), rng=random):
     """The aircraft's deferred items for one itinerary: {"mels": [...],
     "cdl": [...]}. exclude_ids keeps items out (used when dispatch swaps
@@ -149,9 +158,17 @@ def roll_tech_status(mels, cdls, mel_settings=None, cdl_settings=None, exclude_i
     mel_pool = [m for m in _enabled(mels, mel_settings) if m["id"] not in exclude_ids]
     cdl_pool = [c for c in _enabled(cdls, cdl_settings) if c["id"] not in exclude_ids]
     counts, weights = zip(*MEL_COUNT_WEIGHTS)
+    mel_chance = _custom(mel_settings)
+    if mel_chance is not None:
+        # The pilot's chance of at least one item; how many follows the
+        # realistic 1/2/3 split.
+        busy = sum(weights[1:])
+        weights = (1 - mel_chance,) + tuple(mel_chance * w / busy for w in weights[1:])
     n = rng.choices(counts, weights=weights, k=1)[0]
     chosen_mels = [_resolve(m, rng) for m in _pick_distinct(mel_pool, n, rng)]
-    chosen_cdl = [_resolve(c, rng) for c in _pick_distinct(cdl_pool, 1, rng)] if rng.random() < CDL_PROBABILITY else []
+    cdl_chance = _custom(cdl_settings)
+    cdl_chance = CDL_PROBABILITY if cdl_chance is None else cdl_chance
+    chosen_cdl = [_resolve(c, rng) for c in _pick_distinct(cdl_pool, 1, rng)] if rng.random() < cdl_chance else []
     return {"mels": chosen_mels, "cdl": chosen_cdl}
 
 

@@ -487,6 +487,13 @@ def delay_odds(pool, month=None):
     return weights, min(0.85, max(0.05, target / over15)) if over15 else 0.0
 
 
+def custom_probability(category_settings):
+    """The pilot's own chance (0-1) from a settings category, or None for
+    the realistic default."""
+    value = (category_settings or {}).get("probability")
+    return None if value is None else max(0.0, min(1.0, float(value) / 100))
+
+
 def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None, exclude_codes=(), month=None):
     """Rolled for the first leg of an itinerary only (later legs get just
     the knock-on from the previous leg - see /select). exclude_codes keeps
@@ -498,6 +505,9 @@ def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None,
     if not pool:
         return None
     weights, probability = delay_odds(pool, month)
+    custom = custom_probability(delay_settings)
+    if custom is not None:
+        probability = custom
     if random.random() >= probability:
         return None
     delay = dict(random.choices(pool, weights=weights, k=1)[0])
@@ -524,5 +534,7 @@ def generate_loadsheet_extras(dangerous_goods, lmc_events, lmc_settings=None):
     delay settings) - only LMC is filtered by lmc_settings."""
     dg = resolve_component(weighted_pick(dangerous_goods))
     pool = _filter_enabled(lmc_events, lmc_settings, "id", "disabled_ids")
-    lmc = resolve_lmc(weighted_pick(pool)) if pool and random.random() < LMC_PROBABILITY else None
+    custom = custom_probability(lmc_settings)
+    chance = LMC_PROBABILITY if custom is None else custom
+    lmc = resolve_lmc(weighted_pick(pool)) if pool and random.random() < chance else None
     return dg, lmc

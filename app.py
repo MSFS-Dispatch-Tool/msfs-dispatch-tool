@@ -18,6 +18,7 @@ import flightstats
 import demo
 import techlog
 import ops
+import generator
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras,
@@ -1379,13 +1380,24 @@ def generation_options():
         return list({i["id"]: i for i in items}.values())
     all_mels = unique([m for code in ACTIVE_CARRIER_CODES for m in CARRIERS[code]["mels"]])
     all_cdls = unique([c for code in ACTIVE_CARRIER_CODES for c in CARRIERS[code]["cdls"]])
+    # Everything the settings tables show per item (effect, actions), plus
+    # each category's realistic chance for the probability sliders.
+    _, delay_chance = generator.delay_odds(delay_codes, date.today().month)
+    mel_keys = ("id", "system", "description", "fleet", "ata", "mel_category", "interval_days", "installed", "required",
+                "maintenance", "operations", "procedures", "effects", "dispatch_consequence", "component_options", "source")
     return jsonify({
-        "delay": [{"code": d["iata_code"], "description": d["description"]} for d in delay_codes],
-        "lmc": [{"id": l["id"], "description": l["description"]} for l in lmc_events],
-        "mel": [{"id": m["id"], "system": m["system"], "description": m["description"], "fleet": m["fleet"],
-                 "ata": m.get("ata")} for m in all_mels if m.get("weight", 1) > 0],
-        "cdl": [{"id": c["id"], "part": c["part"], "description": c["description"], "fleet": c["fleet"], "ata": c.get("ata")}
-                for c in all_cdls],
+        "delay": [{"code": d["iata_code"], "description": d["description"], "duration_range_minutes": d["duration_range_minutes"],
+                   "weather_gated": d["iata_code"] in generator.WEATHER_GATED_CODES, "atfm": d["iata_code"] in ops.ATFM_CODES}
+                  for d in delay_codes],
+        "lmc": [{"id": l["id"], "description": l["description"], "type": l["type"], "delta_range": l["delta_range"],
+                 "unit": l["unit"]} for l in lmc_events],
+        "mel": [{k: m.get(k) for k in mel_keys} for m in all_mels if m.get("weight", 1) > 0],
+        "cdl": [{"id": c["id"], "part": c["part"], "description": c["description"], "fleet": c["fleet"], "ata": c.get("ata"),
+                 "effects": c.get("effects"), "note": c.get("note")} for c in all_cdls],
+        "default_probability": {
+            "delay": round(delay_chance * 100), "lmc": round(generator.LMC_PROBABILITY * 100),
+            "mel": techlog.mel_default_percent(), "cdl": round(techlog.CDL_PROBABILITY * 100),
+        },
     })
 
 
@@ -1416,6 +1428,14 @@ def save_settings_route():
             t for t in (incoming_profile["aircraft_owned"] or []) if t in all_fleet_types
         ]
     payload["profile"] = incoming_profile
+    # Probability sliders: a whole percentage 0-100, or None (realistic)
+    for category in (payload.get("generation") or {}).values():
+        if isinstance(category, dict) and "probability" in category:
+            try:
+                value = category["probability"]
+                category["probability"] = None if value is None else max(0, min(100, int(round(float(value)))))
+            except (TypeError, ValueError):
+                category["probability"] = None
     return jsonify(db.save_settings(payload, current_user_id()))
 
 

@@ -748,6 +748,36 @@
     margin-top: 10px; padding-top: 6px; border-top: 1px solid var(--shadow-md);
   }
   .gen-items-group-label:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  /* Settings: per-item tables and probability sliders */
+  .prob-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; font-size: 12.5px; }
+  .prob-row label { font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; font-size: 11.5px; text-transform: uppercase; }
+  .prob-row input[type=range] { flex: 1 1 220px; max-width: 360px; accent-color: var(--titlebar); }
+  .prob-row output { min-width: 120px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .prob-row output small { font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+  .gen-table-wrap { margin-top: 6px; max-height: 460px; overflow: auto; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); }
+  .gen-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--white); }
+  .gen-table th { position: sticky; top: 0; z-index: 1; background: var(--face-dark); text-align: left; font-size: 10.5px;
+                  font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); padding: 7px 8px; border-bottom: 1px solid var(--shadow-md); }
+  .gen-table td { padding: 7px 8px; border-bottom: 1px solid var(--shadow-md); vertical-align: top; line-height: 1.4; }
+  .gen-table td:first-child, .gen-table th:first-child { width: 28px; text-align: center; }
+  .gen-table td.item { width: 150px; }
+  .gen-table td.item b { display: block; }
+  .gen-table td.effect { width: 26%; }
+  .gen-table td.actions { width: 30%; }
+  .gen-table ul { margin: 0; padding-left: 16px; }
+  .gen-table li + li { margin-top: 2px; }
+  .gen-table tr.gen-group td { background: var(--face-dark); font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); padding: 5px 8px; }
+  .gen-table tr.off td:not(:first-child) { opacity: 0.45; }
+  .gen-table .tech-tag { display: inline-block; margin-top: 3px; }
+  @media (max-width: 720px) {
+    .gen-table thead { display: none; }
+    .gen-table, .gen-table tbody, .gen-table tr, .gen-table td { display: block; width: auto !important; }
+    .gen-table tr { display: grid; grid-template-columns: 28px 1fr; border-bottom: 1px solid var(--shadow-md); padding: 6px 0; }
+    .gen-table td { border: none; padding: 3px 8px; }
+    .gen-table td:first-child { grid-row: span 4; }
+    .gen-table td[data-label]::before { content: attr(data-label); display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.04em; }
+    .gen-table tr.gen-group { display: block; }
+  }
 
   .kv { width: 100%; border-collapse: collapse; }
   .kv td { padding: 6px 0; border-bottom: 1px solid var(--shadow-md); vertical-align: top; word-break: break-word; }
@@ -3891,10 +3921,10 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">DISPATCH COMPLICATIONS</div>
       <div class="panel-body">
-        ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
-        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
-        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'Deferred equipment defects on the aircraft, rolled once per trip at SELECT time: none, or up to three. Each can cap the flight level, add fuel, need ground equipment or rule out some weather', genOptions.mel, settings.generation.mel, m => `${m.ata ? m.ata + ' ' : ''}${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
-        ${renderComplicationCategory('cdl', 'CDL (CONFIGURATION DEVIATION LIST)', 'A missing panel or fairing on the aircraft, rolled on some trips: adds a fuel-burn penalty and can reduce the weight limits', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, c => `${c.ata ? c.ata + ' ' : ''}${c.part}: ${c.description}`, c => c.id, c => c.fleet)}
+        ${renderComplicationCategory('delay', 'DELAYS', "Departure delays rolled for leg 1 of a trip at SELECT time; later legs only get the knock-on from leg 1. They move EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief", genOptions.delay, settings.generation.delay, delaySettingsRow, d => d.code, null, genOptions.default_probability.delay, 'Chance of a delay on leg 1')}
+        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or hold figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods', genOptions.lmc, settings.generation.lmc, lmcSettingsRow, l => l.id, null, genOptions.default_probability.lmc, 'Chance per trip')}
+        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'Deferred equipment defects on the aircraft, rolled once per trip at SELECT time: none, or up to three. Each can cap the flight level, add fuel, need ground equipment or rule out some weather', genOptions.mel, settings.generation.mel, melSettingsRow, m => m.id, m => m.fleet, genOptions.default_probability.mel, 'Chance of at least one item')}
+        ${renderComplicationCategory('cdl', 'CDL (CONFIGURATION DEVIATION LIST)', 'A missing panel or fairing on the aircraft, rolled on some trips: adds a fuel-burn penalty and can reduce the weight limits', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, cdlSettingsRow, c => c.id, c => c.fleet, genOptions.default_probability.cdl, 'Chance per trip')}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -4009,32 +4039,36 @@ async function sendPasswordReset() {
 
 const FLEET_LABELS = { '738': '737-800', 'a320fam': 'A320 FAMILY' };
 
-function renderComplicationCategory(key, title, explanation, items, categorySettings, labelFn, idFn, groupFn) {
+// One settings block per category: on/off switch, a probability slider
+// (realistic default or the pilot's own chance), and a table of every item
+// with what it does and what it asks of the crew, each switchable.
+// rowFn(item) -> {item, description, effect, actions: []} (HTML-escaped).
+function renderComplicationCategory(key, title, explanation, items, categorySettings, rowFn, idFn, groupFn, realisticPct, chanceLabel) {
   const disabledIds = new Set(categorySettings.disabled_codes || categorySettings.disabled_ids || []);
   const masterOn = categorySettings.enabled !== false;
-  const itemCheckbox = item => {
-    const id = idFn(item);
-    const checked = disabledIds.has(id) ? '' : 'checked';
-    return `<label class="checkbox-row"><input type="checkbox" class="gen-item" data-id="${escAttr(id)}" ${checked} ${masterOn ? '' : 'disabled'}> ${labelFn(item)}</label>`;
+  const custom = categorySettings.probability != null;
+  const pct = custom ? categorySettings.probability : realisticPct;
+  const row = item => {
+    const id = idFn(item), on = !disabledIds.has(id), r = rowFn(item);
+    return `<tr class="${on ? '' : 'off'}">
+      <td><input type="checkbox" class="gen-item" data-id="${escAttr(id)}" ${on ? 'checked' : ''} ${masterOn ? '' : 'disabled'}
+        onchange="this.closest('tr').classList.toggle('off', !this.checked)" aria-label="Include ${escAttr(id)}"></td>
+      <td class="item" data-label="ITEM">${r.item}</td>
+      <td data-label="DESCRIPTION">${r.description}</td>
+      <td class="effect" data-label="EFFECT">${r.effect}</td>
+      <td class="actions" data-label="ACTIONS REQUIRED">${r.actions.length ? `<ul>${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>` : '&mdash;'}</td>
+    </tr>`;
   };
-  let itemsHtml;
+  let rows;
   if (groupFn) {
-    // Items sharing a fleet (e.g. every A320-family MEL) get grouped
-    // under their own sub-heading instead of one flat, unlabeled list -
-    // with two carriers active, "Autopilot 1" with no fleet context
-    // reads as ambiguous between a 737 and an A320 item.
+    // Items sharing a fleet get their own sub-heading: with two families
+    // active, "Autopilot" alone is ambiguous between a 737 and an A320 item.
     const groups = new Map();
-    items.forEach(item => {
-      const g = groupFn(item);
-      if (!groups.has(g)) groups.set(g, []);
-      groups.get(g).push(item);
-    });
-    itemsHtml = Array.from(groups.entries()).map(([g, groupItems]) => `
-      <div class="gen-items-group-label">${FLEET_LABELS[g] || g}</div>
-      ${groupItems.map(itemCheckbox).join('')}
-    `).join('');
+    items.forEach(item => { const g = groupFn(item); if (!groups.has(g)) groups.set(g, []); groups.get(g).push(item); });
+    rows = Array.from(groups.entries()).map(([g, list]) =>
+      `<tr class="gen-group"><td colspan="5">${FLEET_LABELS[g] || escText(g)}</td></tr>${list.map(row).join('')}`).join('');
   } else {
-    itemsHtml = items.map(itemCheckbox).join('');
+    rows = items.map(row).join('');
   }
   return `
     <div class="leg-block" style="margin-bottom:12px;">
@@ -4049,17 +4083,106 @@ function renderComplicationCategory(key, title, explanation, items, categorySett
       </div>
       <div class="leg-block-body">
         <p class="placeholder-text">${explanation}</p>
+        <div class="prob-row">
+          <label for="gen-${key}-prob">${chanceLabel}</label>
+          <input type="range" id="gen-${key}-prob" min="0" max="100" step="1" value="${pct}" data-custom="${custom ? 1 : 0}"
+            data-realistic="${realisticPct}" oninput="onProbabilityInput('${key}')" ${masterOn ? '' : 'disabled'}>
+          <output id="gen-${key}-prob-val">${probabilityLabel(pct, custom)}</output>
+          <button class="ghost small" type="button" onclick="resetProbability('${key}')" ${masterOn ? '' : 'disabled'}>REALISTIC</button>
+        </div>
         <details>
-          <summary>ADDITIONAL SETTINGS (${items.length} ITEMS)</summary>
-          <div class="gen-items-list" id="gen-${key}-items">${itemsHtml}</div>
+          <summary>ITEMS, EFFECTS AND ACTIONS (${items.length})</summary>
+          <div class="gen-table-wrap"><table class="gen-table" id="gen-${key}-items">
+            <thead><tr><th></th><th>ITEM</th><th>DESCRIPTION</th><th>EFFECT</th><th>ACTIONS REQUIRED</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>
         </details>
       </div>
     </div>`;
 }
 
+function probabilityLabel(pct, custom) {
+  return `${pct}%<small>${custom ? 'your setting' : 'realistic'}</small>`;
+}
+function onProbabilityInput(key) {
+  const input = document.getElementById(`gen-${key}-prob`);
+  input.dataset.custom = '1';
+  document.getElementById(`gen-${key}-prob-val`).innerHTML = probabilityLabel(input.value, true);
+}
+function resetProbability(key) {
+  const input = document.getElementById(`gen-${key}-prob`);
+  input.value = input.dataset.realistic;
+  input.dataset.custom = '0';
+  document.getElementById(`gen-${key}-prob-val`).innerHTML = probabilityLabel(input.value, false);
+}
+
+// ---- Settings table rows ----
+const NO_WX_LABELS = { TS: 'thunderstorms', ICING: 'icing conditions', LVP: 'low visibility (below CAT 1)', CONTAM: 'contaminated runways', PRECIP: 'rain or snow at either airport' };
+function sideText(text, options) {
+  return escText(String(text || '').replace('{side}', options && options.length ? options.join('/') : '').replace(/^\s+/, ''));
+}
+function delaySettingsRow(d) {
+  const [lo, hi] = d.duration_range_minutes || [0, 0];
+  const typical = Math.round(lo + (hi - lo) / 3);
+  const effect = [`${lo}&ndash;${hi} min later off-block, typically about ${typical} min`];
+  if (d.atfm) effect.push('Comes with an ATFM slot (CTOT)');
+  if (d.weather_gated) effect.push('Only rolled when the weather report supports it');
+  if (d.code === '93') effect.push('Leg 1 only: the aircraft arrives late from its previous rotation');
+  const actions = ['Expected times and the SimBrief plan move later automatically', 'Code the delay in the PIREP if you leave late'];
+  if (d.atfm) actions.unshift('Take off within &minus;5/+10 min of the CTOT');
+  if (d.code === '75') actions.unshift('Plan de-icing before departure and check holdover times');
+  if (d.code === '71' || d.code === '72') actions.unshift(`Review the ${d.code === '71' ? 'departure' : 'destination'} weather before planning`);
+  return { item: `<b>${escText(d.code)}</b>`, description: escText(d.description), effect: effect.join('<br>'), actions };
+}
+function lmcSettingsRow(l) {
+  const [a, b] = l.delta_range || [0, 0];
+  const fmt = n => (n > 0 ? '+' : n < 0 ? '&minus;' : '') + Math.abs(n);
+  const range = a === b ? fmt(a) : `${fmt(a)} to ${fmt(b)}`;
+  const pax = l.type === 'pax_change';
+  return {
+    item: `<b>${pax ? 'PASSENGERS' : 'HOLD LOAD'}</b>`, description: escText(l.description),
+    effect: `${range} ${escText(l.unit)} after the loadsheet is prepared`,
+    actions: pax ? ['Amend the passenger figures before signing the loadsheet', 'Re-check ZFW against the OFP']
+                 : ['Amend the hold load before signing the loadsheet', 'Re-check ZFW and trim'],
+  };
+}
+function melSettingsRow(m) {
+  const e = m.effects || {}, out = [];
+  if (e.max_fl) out.push(`Maximum FL${e.max_fl}, sent to SimBrief`);
+  if (e.extra_fuel_min) out.push(`${e.extra_fuel_min} min extra fuel, sent to SimBrief`);
+  if (e.min_main_tank_fuel_kg) out.push(`Affected tank at least ${fmtNum(e.min_main_tank_fuel_kg.takeoff)} kg at take-off and ${fmtNum(e.min_main_tank_fuel_kg.landing)} kg at landing`);
+  if (e.centre_tank_empty) out.push(`Centre tank empty${e.max_fuel_kg ? `: fuel limited to about ${fmtNum(e.max_fuel_kg)} kg` : ''}`);
+  if (e.ground_support && e.ground_support.length) out.push(`Needs ${e.ground_support.join(' and ')} on every stand`);
+  if (e.no_wx && e.no_wx.length) out.push(`Not dispatchable into ${e.no_wx.map(c => NO_WX_LABELS[c] || c).join(', ')}`);
+  if (e.performance) out.push('Take-off and landing performance corrections');
+  if (e.cargo_hold_empty) out.push('One cargo hold stays empty');
+  if (!out.length) out.push(escText(m.dispatch_consequence || 'No operational limit'));
+  const tags = [m.mel_category && m.mel_category !== '-' ? `<span class="tech-tag cat">CAT ${escText(m.mel_category)}</span>` : '',
+    m.interval_days ? `<span class="tech-tag">${m.interval_days === 1 ? '1 FLIGHT-DAY' : m.interval_days + ' DAYS'}</span>` : ''].join(' ');
+  return {
+    item: `<b>MEL ${escText(m.ata || '')}</b>${escText(m.system)}<br>${tags}`,
+    description: sideText(m.description, m.component_options),
+    effect: out.join('<br>'),
+    actions: (m.procedures || []).map(escText),
+  };
+}
+function cdlSettingsRow(c) {
+  const e = c.effects || {}, out = [];
+  if (e.fuel_burn_pct) out.push(`Fuel burn +${e.fuel_burn_pct}%`);
+  if (e.weight_penalty_kg) out.push(`Take-off and landing weight limits &minus;${e.weight_penalty_kg} kg`);
+  if (!out.length) out.push('No performance penalty');
+  const actions = [];
+  if (e.fuel_burn_pct) actions.push('Extra fuel for the penalty is added to the SimBrief plan automatically');
+  if (e.weight_penalty_kg) actions.push('Check the loadsheet weights against the reduced limits');
+  if (c.note) actions.push(escText(c.note));
+  return { item: `<b>CDL ${escText(c.ata || '')}</b>${escText(c.part)}`, description: escText(c.description), effect: out.join('<br>'), actions };
+}
+
 function onCategoryMasterToggle(key) {
   const masterOn = document.getElementById(`gen-${key}-master`).checked;
   document.querySelectorAll(`#gen-${key}-items input[type=checkbox]`).forEach(cb => { cb.disabled = !masterOn; });
+  const prob = document.getElementById(`gen-${key}-prob`);
+  if (prob) { prob.disabled = !masterOn; prob.parentElement.querySelector('button').disabled = !masterOn; }
 }
 
 function readCategorySettings(key, disabledFieldName) {
@@ -4067,7 +4190,9 @@ function readCategorySettings(key, disabledFieldName) {
   const disabled = Array.from(document.querySelectorAll(`#gen-${key}-items input[type=checkbox]`))
     .filter(cb => !cb.checked)
     .map(cb => cb.dataset.id);
-  return { enabled, [disabledFieldName]: disabled };
+  const prob = document.getElementById(`gen-${key}-prob`);
+  const probability = prob && prob.dataset.custom === '1' ? Number(prob.value) : null;
+  return { enabled, [disabledFieldName]: disabled, probability };
 }
 
 async function saveGenerationSettings() {
