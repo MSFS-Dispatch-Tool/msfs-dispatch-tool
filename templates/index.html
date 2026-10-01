@@ -62,65 +62,79 @@
       <input type="text" id="glossaryFilter" placeholder="Search terms&hellip;" autocomplete="off" oninput="filterGlossary(this.value)">
 
       <div class="glossary-cat">
-        <h4>FLIGHT TYPE &amp; ROUTE</h4>
+        <h4>FLIGHT SEARCH</h4>
         <dl>
-          <div class="glossary-entry"><dt><span class="type-badge type-1W">1L</span> 1L</dt><dd>One-Leg &mdash; a single, direct itinerary with no connection</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-DOM">DOM</span> DOM</dt><dd>Domestic &mdash; departure and arrival airports are in the same country</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-INT">INT</span> INT</dt><dd>International &mdash; departure and arrival airports are in different countries</dd></div>
-          <div class="glossary-entry"><dt><span class="type-badge type-RT">ML</span> ML</dt><dd>Multi-Leg &mdash; an itinerary of two connecting sectors flown back to back</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-1W">1L</span> 1L</dt><dd>One-leg trip: a single sector from departure to destination</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-RT">ML</span> ML</dt><dd>Multi-leg trip: two sectors flown back to back on the same aircraft, out and back</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-DOM">DOM</span> DOM</dt><dd>Domestic: both airports are in the same country</dd></div>
+          <div class="glossary-entry"><dt><span class="type-badge type-INT">INT</span> INT</dt><dd>International: the airports are in different countries</dd></div>
+          <div class="glossary-entry"><dt>EBT</dt><dd>Expected block time of a trip: from the first off-block to the last in-block, ground time between legs included</dd></div>
+          <div class="glossary-entry"><dt>TURNAROUND</dt><dd>Time on the ground between two legs. The minimum is 30 minutes: a late arrival that eats into it delays the next leg</dd></div>
+          <div class="glossary-entry"><dt>FLIGHT CATEGORY</dt><dd>Weather at an airport by ceiling and visibility: VFR (good), MVFR (marginal), IFR and LIFR (low cloud or poor visibility)</dd></div>
+          <div class="glossary-entry"><dt>SIGMET</dt><dd>Warning of significant weather for an area: thunderstorms, severe turbulence or icing, volcanic ash</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
-        <h4>SCHEDULED TIMES</h4>
+        <h4>SCHEDULE AND TIMES</h4>
         <dl>
-          <div class="glossary-entry"><dt>SIBT</dt><dd>Scheduled In-Block Time &mdash; scheduled gate arrival</dd></div>
-          <div class="glossary-entry"><dt>SLDT</dt><dd>Scheduled Landing Time &mdash; SIBT minus taxi-in</dd></div>
-          <div class="glossary-entry"><dt>SOBT</dt><dd>Scheduled Off-Block Time &mdash; scheduled gate departure</dd></div>
-          <div class="glossary-entry"><dt>STOT</dt><dd>Scheduled Take-Off Time &mdash; SOBT plus taxi-out</dd></div>
+          <div class="glossary-entry"><dt>SOBT / SIBT</dt><dd>Scheduled off-block and in-block times: when the aircraft is due to leave and reach the gate</dd></div>
+          <div class="glossary-entry"><dt>STOT / SLDT</dt><dd>Scheduled take-off and landing times: SOBT plus taxi-out, SIBT minus taxi-in</dd></div>
+          <div class="glossary-entry"><dt>EOBT / ETOT / ELDT / EIBT</dt><dd>Expected times: the scheduled ones moved by any delay. These are the times sent to SimBrief</dd></div>
+          <div class="glossary-entry"><dt>AOBT / ATOT / ALDT / ABIT</dt><dd>Actual times you enter in the flight report: off-block, take-off, landing and in-block</dd></div>
+          <div class="glossary-entry"><dt>EET</dt><dd>Estimated elapsed time: airborne time only, from take-off to landing</dd></div>
+          <div class="glossary-entry"><dt>Z (ZULU)</dt><dd>Coordinated Universal Time (UTC). All times in the app are Zulu unless marked local</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
-        <h4>EXPECTED / PLANNED FIGURES</h4>
+        <h4>LOADS AND FUEL</h4>
         <dl>
-          <div class="glossary-entry"><dt>EBT</dt><dd>Expected Block Time, shown in the itinerary list &mdash; the span from the first leg's departure to the last leg's arrival, including any ground time between legs</dd></div>
-          <div class="glossary-entry"><dt>EET</dt><dd>Estimated Elapsed Time &mdash; airborne time only (SLDT minus STOT)</dd></div>
-          <div class="glossary-entry"><dt>EFOB</dt><dd>Estimated Fuel On Board at block-off (i.e. block/ramp fuel), from the SimBrief OFP</dd></div>
-          <div class="glossary-entry"><dt>EOBT / ETOT / ELDT / EIBT</dt><dd>Expected Off-Block/Take-Off/Landing/In-Block Time &mdash; the SOBT/STOT/SLDT/SIBT figures shifted by the leg's delay, if any. Equal to the scheduled figure when there's no delay. This is what's sent to SimBrief, not the raw scheduled time</dd></div>
-          <div class="glossary-entry"><dt>EPAX</dt><dd>Estimated passenger count used in the SimBrief OFP. See PAX below for how it's set</dd></div>
-          <div class="glossary-entry"><dt>ETOW</dt><dd>Estimated Take-Off Weight, from the SimBrief OFP</dd></div>
-          <div class="glossary-entry"><dt>EZFW</dt><dd>Estimated Zero Fuel Weight, from the SimBrief OFP</dd></div>
+          <div class="glossary-entry"><dt>PAX</dt><dd>Passengers: the seats on the assigned aircraft times a realistic load factor (about 82 to 99%, sometimes a full flight)</dd></div>
+          <div class="glossary-entry"><dt>CARGO</dt><dd>Hold load from checked bags, based on the passenger count and sector length, with the occasional heavy-baggage flight</dd></div>
+          <div class="glossary-entry"><dt>COST INDEX</dt><dd>How the flight management computer trades fuel against time: low is economical, high is fast. Set per leg and sent to SimBrief</dd></div>
+          <div class="glossary-entry"><dt>ZFW / EZFW</dt><dd>Zero fuel weight: the aircraft with passengers, bags and cargo but no fuel. EZFW is the OFP estimate</dd></div>
+          <div class="glossary-entry"><dt>TOW / ETOW</dt><dd>Take-off weight. ETOW is the OFP estimate</dd></div>
+          <div class="glossary-entry"><dt>FOB / EFOB</dt><dd>Fuel on board. EFOB is the block fuel planned in the OFP</dd></div>
+          <div class="glossary-entry"><dt>AFAD</dt><dd>Actual fuel at destination, entered in the flight report</dd></div>
+          <div class="glossary-entry"><dt>LOADSHEET</dt><dd>The final weights you sign before departure: ZFW, fuel, passengers and crew</dd></div>
+          <div class="glossary-entry"><dt>LMC</dt><dd>Last-minute change: a change to passengers or bags after the loadsheet is prepared, to amend before signing</dd></div>
+          <div class="glossary-entry"><dt>OVERSOLD</dt><dd>More passengers booked than seats, as airlines plan on some not showing up. When everyone does, volunteers are moved to a later flight and offloaded with their bags</dd></div>
+          <div class="glossary-entry"><dt>DG</dt><dd>Dangerous goods carried in the hold, declared on the loadsheet</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
-        <h4>LOAD &amp; PERFORMANCE &mdash; HOW THEY'RE SET</h4>
+        <h4>AIRCRAFT DEFECTS</h4>
         <dl>
-          <div class="glossary-entry"><dt>CARGO</dt><dd>Expected checked/hold baggage weight (this tool doesn't model belly freight). Scaled off the leg's passenger count and sector length &mdash; longer sectors see a higher share of passengers checking a bag &mdash; with some built-in randomness, plus an occasional high-cargo "surge" leg</dd></div>
-          <div class="glossary-entry"><dt>COST INDEX</dt><dd>Randomly rolled per leg between 2 and 16 (centered around 6). In real dispatch this balances fuel cost against time cost for the FMC's speed/altitude optimization; it's sent to SimBrief to generate the OFP</dd></div>
-          <div class="glossary-entry"><dt>PAX</dt><dd>The aircraft's seat capacity (189 on Ryanair's 737-800, 156&ndash;235 across easyJet's A320 family and 180&ndash;239 across Wizz Air's, depending on type) times a randomized load factor (roughly 82&ndash;99%, with a 30% chance of a completely full house) gives the expected passenger count used to build the OFP (EPAX) and, ultimately, the loadsheet</dd></div>
+          <div class="glossary-entry"><dt>MEL</dt><dd>Minimum equipment list: the official list of equipment an aircraft may fly without, and the conditions that apply. Each deferred defect has a deadline to be fixed</dd></div>
+          <div class="glossary-entry"><dt>CDL</dt><dd>Configuration deviation list: external parts that may be missing, such as a panel or seal, usually with a small fuel or weight penalty</dd></div>
+          <div class="glossary-entry"><dt>NOT DISPATCHABLE</dt><dd>The aircraft cannot operate the trip with its defects in today&rsquo;s weather. Swap the aircraft or choose another flight</dd></div>
+          <div class="glossary-entry"><dt>APU</dt><dd>Auxiliary power unit: the small turbine in the tail that supplies power and air on the ground and starts the engines</dd></div>
+          <div class="glossary-entry"><dt>GPU / ASU</dt><dd>Ground power unit and air start unit: ground equipment that replaces the APU at the gate</dd></div>
+          <div class="glossary-entry"><dt>FL</dt><dd>Flight level: altitude in hundreds of feet on the standard pressure setting. FL250 is 25,000 ft</dd></div>
+          <div class="glossary-entry"><dt>CAT I / II / III</dt><dd>Approach categories: CAT I needs reasonable visibility; CAT II and III allow landings in fog and need more equipment working</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
-        <h4>ACTUALS &amp; PIREP</h4>
+        <h4>DELAYS AND AIR TRAFFIC</h4>
         <dl>
-          <div class="glossary-entry"><dt>ABIT</dt><dd>Actual In-Block Time (block in), entered when filing the PIREP</dd></div>
-          <div class="glossary-entry"><dt>AFAD</dt><dd>Actual Fuel At Destination, entered when filing the PIREP &mdash; not to be confused with EFOB, which is the block fuel planned before departure</dd></div>
-          <div class="glossary-entry"><dt>ALDT</dt><dd>Actual Landing Time, entered when filing the PIREP</dd></div>
-          <div class="glossary-entry"><dt>AOBT</dt><dd>Actual Off-Block Time (block off), entered when filing the PIREP</dd></div>
-          <div class="glossary-entry"><dt>ATOT</dt><dd>Actual Take-Off Time, entered when filing the PIREP</dd></div>
-          <div class="glossary-entry"><dt>PIREP</dt><dd>Pilot Report &mdash; filed after block-in to close out the leg</dd></div>
-          <div class="glossary-entry"><dt>ZFW / FOB / PAX / CREW</dt><dd>Actual figures you enter at loadsheet sign-off &mdash; Zero Fuel Weight, Fuel On Board, passenger count, crew count</dd></div>
+          <div class="glossary-entry"><dt>DELAY CODE</dt><dd>The standard two-digit code airlines use to record why a flight left late (IATA codes). You choose one in the flight report</dd></div>
+          <div class="glossary-entry"><dt>KNOCK-ON DELAY</dt><dd>A late inbound aircraft delaying the next leg (code 93). Expected from dispatch, then recalculated from your actual arrival</dd></div>
+          <div class="glossary-entry"><dt>ATFM</dt><dd>Air traffic flow management: limits on how many flights can use an airspace or airport at once, which cause slot delays</dd></div>
+          <div class="glossary-entry"><dt>SLOT (CTOT)</dt><dd>Calculated take-off time given by air traffic flow management. Take off between 5 minutes before and 10 minutes after it, or a new slot is issued</dd></div>
+          <div class="glossary-entry"><dt>CURFEW</dt><dd>Hours when an airport is closed to departures or arrivals, usually at night. A delay that pushes a flight past it means a cancellation or a diversion</dd></div>
+          <div class="glossary-entry"><dt>OTP</dt><dd>On-time performance: the share of flights that left (or arrived) within 15 minutes of schedule</dd></div>
         </dl>
       </div>
 
       <div class="glossary-cat">
-        <h4>OPERATIONAL EVENTS</h4>
+        <h4>CREW AND PAPERWORK</h4>
         <dl>
-          <div class="glossary-entry"><dt>LMC</dt><dd>Last-Minute Change &mdash; a late change to pax/cargo figures after the loadsheet was prepared</dd></div>
-          <div class="glossary-entry"><dt>MEL</dt><dd>Minimum Equipment List &mdash; a defect the aircraft is dispatched with under an MEL relief, with an associated operational consequence</dd></div>
+          <div class="glossary-entry"><dt>FDP</dt><dd>Flight duty period: from crew report, 45 minutes before the first departure, to the last in-block. Its maximum depends on report time and the number of sectors (EASA rules); the captain can extend it by up to 2 hours</dd></div>
+          <div class="glossary-entry"><dt>OFP</dt><dd>Operational flight plan from SimBrief: route, fuel and weights for the leg</dd></div>
+          <div class="glossary-entry"><dt>PIREP</dt><dd>Pilot report filed after landing with your actual times and fuel; it closes the leg and goes into your logbook</dd></div>
         </dl>
       </div>
 

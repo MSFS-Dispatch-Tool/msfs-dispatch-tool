@@ -19,7 +19,8 @@
       4
     ],
     "unit": "passengers",
-    "weight": 3
+    "weight": 3,
+    "needs_free_seats": true
   },
   {
     "id": "lmc-03",
@@ -75,5 +76,17 @@
     ],
     "unit": "kg",
     "weight": 1
+  },
+  {
+    "id": "lmc-08",
+    "type": "pax_change",
+    "description": "Flight oversold: passengers who volunteered for a later flight are offloaded with their bags",
+    "delta_range": [
+      -3,
+      -1
+    ],
+    "unit": "passengers",
+    "weight": 3,
+    "needs_full_flight": true
   }
 ]

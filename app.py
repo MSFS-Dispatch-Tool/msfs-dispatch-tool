@@ -53,13 +53,18 @@ PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
 
+# The date the privacy, cookie and terms pages last changed. Update it
+# whenever one of them does.
+LEGAL_UPDATED = "October 1, 2026"
+
+
 @app.context_processor
 def inject_template_globals():
     today = date.today()
     return {
         "current_year": today.year,
         "signups_open": auth.signups_open(),
-        "legal_updated": today.strftime("%B %-d, %Y") if os.name != "nt" else today.strftime("%B %d, %Y"),
+        "legal_updated": LEGAL_UPDATED,
     }
 
 
@@ -1290,7 +1295,9 @@ def confirm():
         for route_leg in itinerary
     ]
     settings = get_settings_safe()
-    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"])
+    full_flight = request.args.get("full", type=int)
+    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"],
+                                        full_flight=None if full_flight is None else bool(full_flight))
 
     return jsonify({
         "confirmation_id": callsigns[0],  # unique enough for this tool's purposes
@@ -1409,7 +1416,7 @@ def generation_options():
     all_cdls = unique([c for code in ACTIVE_CARRIER_CODES for c in CARRIERS[code]["cdls"]])
     # Everything the settings tables show per item (effect, actions), plus
     # each category's realistic chance for the probability sliders.
-    _, delay_chance = generator.delay_odds(delay_codes, date.today().month)
+    _, delay_chance = generator.delay_odds([d for d in delay_codes if d["weight"] > 0], date.today().month)
     mel_keys = ("id", "system", "description", "fleet", "ata", "mel_category", "interval_days", "installed", "required",
                 "maintenance", "operations", "procedures", "effects", "dispatch_consequence", "component_options", "source",
                 "name", "plain", "steps")
@@ -1419,7 +1426,8 @@ def generation_options():
                    "weather_gated": d["iata_code"] in generator.WEATHER_GATED_CODES, "atfm": d["iata_code"] in ops.ATFM_CODES}
                   for d in delay_codes],
         "lmc": [{"id": l["id"], "description": l["description"], "type": l["type"], "delta_range": l["delta_range"],
-                 "unit": l["unit"]} for l in lmc_events],
+                 "unit": l["unit"], "needs_full_flight": l.get("needs_full_flight", False),
+                 "needs_free_seats": l.get("needs_free_seats", False)} for l in lmc_events],
         "mel": [{k: m.get(k) for k in mel_keys} for m in all_mels if m.get("weight", 1) > 0],
         "cdl": [{"id": c["id"], "part": c["part"], "description": c["description"], "fleet": c["fleet"], "ata": c.get("ata"),
                  "effects": c.get("effects"), "note": c.get("note"), "name": c.get("name"), "plain": c.get("plain"),

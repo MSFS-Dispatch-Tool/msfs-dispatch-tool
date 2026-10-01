@@ -256,10 +256,19 @@ function attachAirportDropdown(inputId, dropdownId, endpoint) {
 // ---------------------------------------------------------------------
 const LEG_FILTER_LABELS = { all: 'ALL', '1W': 'ONE-LEG ONLY', RT: 'MULTI-LEG ONLY' };
 const COUNTRY_FILTER_LABELS = { all: 'ALL', domestic: 'DOMESTIC ONLY', international: 'INTERNATIONAL ONLY' };
+// Time-of-day windows (UTC) for the first departure and the last arrival
+const TIME_FILTER_LABELS = { all: 'ANY TIME', night: '00–06 NIGHT', morning: '06–12 MORNING', afternoon: '12–18 AFTERNOON', evening: '18–24 EVENING' };
+const TIME_WINDOWS = { night: [0, 6], morning: [6, 12], afternoon: [12, 18], evening: [18, 24] };
+function inTimeWindow(zulu, windowKey) {
+  if (windowKey === 'all') return true;
+  const h = parseInt(String(zulu || '').slice(0, 2), 10);
+  const [lo, hi] = TIME_WINDOWS[windowKey] || [0, 24];
+  return Number.isFinite(h) && h >= lo && h < hi;
+}
 const ROUTE_KEY_RE = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 function defaultSearchState() {
-  return { origin: '', destination: '', airline: '', legs: 'all', country: 'all', route: '' };
+  return { origin: '', destination: '', airline: '', legs: 'all', country: 'all', depTime: 'all', arrTime: 'all', route: '' };
 }
 let searchState = defaultSearchState();
 let searchStatus = 'idle';   // idle (no airport) | loading | ready | error
@@ -364,12 +373,14 @@ async function renderSearchUI() {
             <select id="countryFilter" onchange="setSearchFilter('country', this.value)">${selectOptionsHtml(COUNTRY_FILTER_LABELS, searchState.country)}</select>
           </div>
           <div class="field">
-            <label for="aircraftFilter">AIRCRAFT</label>
-            <input type="text" id="aircraftFilter" autocomplete="off" disabled placeholder="Any" title="Feature coming soon">
-            <p class="field-note" id="aircraftNote">Feature coming soon</p>
+            <label for="depTimeFilter">DEPARTS / ARRIVES <span class="hint">(UTC)</span></label>
+            <div class="time-filters">
+              <select id="depTimeFilter" aria-label="Departure time (UTC)" onchange="setSearchFilter('depTime', this.value)">${selectOptionsHtml(TIME_FILTER_LABELS, searchState.depTime)}</select>
+              <select id="arrTimeFilter" aria-label="Arrival time (UTC)" onchange="setSearchFilter('arrTime', this.value)">${selectOptionsHtml(TIME_FILTER_LABELS, searchState.arrTime)}</select>
+            </div>
           </div>
         </div>
-        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline and flight country apply instantly</p>
+        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline, flight country and times apply instantly</p>
         <div class="params-actions">
           <button class="action" id="searchBtn" onclick="applyTypedAirports()">SEARCH</button>
           <button class="ghost" type="button" id="swapBtn" onclick="swapAirports()" title="Swap departure and destination">&#8644; SWAP</button>
@@ -496,6 +507,8 @@ function syncSearchUrl() {
   if (s.airline) p.set('airline', s.airline);
   if (s.legs !== 'all') p.set('legs', s.legs);
   if (s.country !== 'all') p.set('country', s.country);
+  if (s.depTime !== 'all') p.set('dep', s.depTime);
+  if (s.arrTime !== 'all') p.set('arr', s.arrTime);
   if (s.route) p.set('route', s.route);
   const qs = p.toString();
   history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
@@ -503,7 +516,7 @@ function syncSearchUrl() {
 
 function readSearchUrl() {
   const p = new URLSearchParams(location.search);
-  if (![...p.keys()].some(k => ['from', 'to', 'airline', 'legs', 'country', 'route'].includes(k))) return null;
+  if (![...p.keys()].some(k => ['from', 'to', 'airline', 'legs', 'country', 'dep', 'arr', 'route'].includes(k))) return null;
   const code = v => (v || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
   const s = defaultSearchState();
   s.origin = code(p.get('from'));
@@ -511,6 +524,8 @@ function readSearchUrl() {
   s.airline = code(p.get('airline'));
   if (p.get('legs') in LEG_FILTER_LABELS) s.legs = p.get('legs');
   if (p.get('country') in COUNTRY_FILTER_LABELS) s.country = p.get('country');
+  if (p.get('dep') in TIME_WINDOWS) s.depTime = p.get('dep');
+  if (p.get('arr') in TIME_WINDOWS) s.arrTime = p.get('arr');
   const route = (p.get('route') || '').toUpperCase();
   if (ROUTE_KEY_RE.test(route)) s.route = route;
   return s;
@@ -590,7 +605,7 @@ function swapAirports() {
 function setSearchFilter(name, value) {
   if (searchState[name] === value) return;
   searchState[name] = value;
-  const ids = { legs: 'legsFilter', airline: 'airlineFilter', country: 'countryFilter' };
+  const ids = { legs: 'legsFilter', airline: 'airlineFilter', country: 'countryFilter', depTime: 'depTimeFilter', arrTime: 'arrTimeFilter' };
   if (ids[name]) { const el = document.getElementById(ids[name]); if (el && el.value !== value) el.value = value; }
   syncSearchUrl();
   renderSelection({ fit: false });
@@ -609,14 +624,19 @@ function resetSearch() {
   document.getElementById('legsFilter').value = 'all';
   document.getElementById('airlineFilter').value = '';
   document.getElementById('countryFilter').value = 'all';
+  document.getElementById('depTimeFilter').value = 'all';
+  document.getElementById('arrTimeFilter').value = 'all';
   runSearch();
 }
 
 function resetResultFilters() {
   searchState.airline = ''; searchState.legs = 'all'; searchState.country = 'all'; searchState.route = '';
+  searchState.depTime = 'all'; searchState.arrTime = 'all';
   document.getElementById('legsFilter').value = 'all';
   document.getElementById('airlineFilter').value = '';
   document.getElementById('countryFilter').value = 'all';
+  document.getElementById('depTimeFilter').value = 'all';
+  document.getElementById('arrTimeFilter').value = 'all';
   syncSearchUrl();
   renderSelection({ fit: false });
 }
@@ -720,6 +740,8 @@ function passesFilters(itin, skip) {
   if (skip !== 'country' && s.country === 'domestic' && !itin.domestic) return false;
   if (skip !== 'country' && s.country === 'international' && itin.domestic) return false;
   if (skip !== 'route' && s.route && itinRouteKey(itin) !== s.route) return false;
+  if (skip !== 'depTime' && !inTimeWindow(itin.first_departure_zulu, s.depTime)) return false;
+  if (skip !== 'arrTime' && !inTimeWindow(itin.last_arrival_zulu, s.arrTime)) return false;
   return true;
 }
 
@@ -747,6 +769,8 @@ function activeCriteria() {
   if (s.airline) list.push({ id: 'airline', k: 'AIRLINE', v: carrierName(s.airline), clear: "setSearchFilter('airline','')" });
   if (s.legs !== 'all') list.push({ id: 'legs', k: 'LEGS', v: LEG_FILTER_LABELS[s.legs], clear: "setSearchFilter('legs','all')" });
   if (s.country !== 'all') list.push({ id: 'country', k: 'COUNTRY', v: COUNTRY_FILTER_LABELS[s.country], clear: "setSearchFilter('country','all')" });
+  if (s.depTime !== 'all') list.push({ id: 'depTime', k: 'DEPARTS', v: TIME_FILTER_LABELS[s.depTime] + ' UTC', clear: "setSearchFilter('depTime','all')" });
+  if (s.arrTime !== 'all') list.push({ id: 'arrTime', k: 'ARRIVES', v: TIME_FILTER_LABELS[s.arrTime] + ' UTC', clear: "setSearchFilter('arrTime','all')" });
   if (s.route) list.push({ id: 'route', k: 'ROUTE', v: s.route.replace('-', ' – '), clear: "toggleRouteFocus(searchState.route)" });
   return list;
 }
@@ -2001,11 +2025,13 @@ async function confirmFlight(key) {
     // call) instead of calling /select again, which would silently
     // confirm a different roll than the one the pilot just looked at.
     let selectData = expandedKey === key ? expandedDetailData : null;
-    const confirmResp = await fetch('/confirm?flights=' + encodeURIComponent(key));
     if (!selectData) {
       selectData = await (await fetch('/select?flights=' + encodeURIComponent(key))).json();
     }
-    const confirmData = await confirmResp.json();
+    // The first leg's load decides which last-minute changes are possible
+    const first = (selectData.legs || [])[0];
+    const full = first && first.pax_count >= first.seat_capacity ? 1 : 0;
+    const confirmData = await (await fetch('/confirm?flights=' + encodeURIComponent(key) + '&full=' + full)).json();
     if (selectData.error || confirmData.error) throw new Error(selectData.error || confirmData.error);
     const activeFlight = {
       callsigns: confirmData.callsigns,
@@ -3097,7 +3123,9 @@ function delaySettingsRow(d) {
   const typical = Math.round(lo + (hi - lo) / 3);
   const effect = [`Leaves ${lo} to ${hi} min late, usually about ${typical} min`];
   if (d.atfm) effect.push('Comes with a take-off slot from air traffic control');
-  if (d.weather_gated) effect.push('Only happens when the weather is actually bad');
+  if (d.code === '77') effect.push('Only when a thunderstorm is reported at the departure airport, and then more likely than not');
+  else if (d.weather_gated) effect.push('Only happens when the weather is actually bad');
+  if (d.code === '83') effect.push('More likely when thunderstorms are reported at the destination');
   if (d.code === '93') effect.push('First flight of a trip only');
   const actions = ['Your times and SimBrief plan update automatically', 'If you leave late, pick the reason in your flight report'];
   if (d.atfm) actions.unshift('Take off between 5 min before and 10 min after your slot');
@@ -3112,9 +3140,10 @@ function lmcSettingsRow(l) {
   const fmt = n => (n > 0 ? '+' : n < 0 ? '&minus;' : '') + Math.abs(n);
   const range = a === b ? fmt(a) : `${fmt(a)} to ${fmt(b)}`;
   const pax = l.type === 'pax_change';
+  const when = l.needs_full_flight ? '<br>Only on a full flight' : l.needs_free_seats ? '<br>Only when seats are free' : '';
   return {
     item: `<b>${pax ? 'Passengers' : 'Bags and cargo'}</b>`, description: escText(l.description),
-    effect: `${range} ${escText(l.unit)} after the loadsheet is ready`,
+    effect: `${range} ${escText(l.unit)} after the loadsheet is ready${when}`,
     actions: pax ? ['Update the passenger numbers before you sign the loadsheet', 'Check the weights against your flight plan']
                  : ['Update the hold load before you sign the loadsheet', 'Check the weights against your flight plan'],
   };

@@ -14,8 +14,8 @@
     <h2>2. What data we collect</h2>
     <ul>
       <li><strong>Account data:</strong> the email address and password you provide when creating an account. Passwords are never stored by us in readable form &mdash; account authentication is handled by our identity provider, Supabase Auth, which stores only a salted hash.</li>
-      <li><strong>Profile data:</strong> optional profile fields you choose to fill in (first name, last name, birth date, nationality, SimBrief username).</li>
-      <li><strong>Service usage data:</strong> the PIREPs you file, your generation settings (which delay/MEL/LMC categories are enabled), and derived flying statistics &mdash; all tied to your account and visible only to you.</li>
+      <li><strong>Profile data:</strong> optional profile fields you choose to fill in (first name, last name, birth date, nationality, preferred base, SimBrief username, the aircraft you own in the simulator) and, if you upload one, a profile photo.</li>
+      <li><strong>Service usage data:</strong> the PIREPs you file (times, fuel, delay codes and the dispatch data of each flight), the flight you are currently working on (kept on our servers so you can continue it on another device), your generation settings (which delays, defects and last-minute changes are enabled, and their chances), and the flying statistics derived from your PIREPs &mdash; all tied to your account and visible only to you. Profile photos are stored in a storage bucket whose files can be opened by anyone who has the link.</li>
       <li><strong>Technical data:</strong> standard web server logs (IP address, browser user agent, request timestamps) collected automatically by our hosting provider for security and reliability purposes.</li>
       <li><strong>Cookies:</strong> see our <a href="/cookies">Cookie Policy</a> for details.</li>
     </ul>
@@ -34,7 +34,15 @@
       <li><strong>Supabase</strong> &mdash; hosts our database and provides account authentication/email verification.</li>
       <li><strong>Render</strong> &mdash; hosts the application itself.</li>
       <li><strong>Resend</strong> &mdash; delivers transactional account emails (verification, password reset).</li>
+      <li><strong>Cloudflare Turnstile</strong> &mdash; checks that sign-in and sign-up requests come from a person, not a bot, where enabled.</li>
     </ul>
+    <p>Some features also contact third-party services that act independently of us:</p>
+    <ul>
+      <li><strong>SimBrief (Navigraph)</strong> &mdash; when you send a flight to SimBrief, your browser opens simbrief.com with the flight's details, and we fetch your latest flight plan from SimBrief using the SimBrief username in your profile.</li>
+      <li><strong>Google Fonts</strong> and <strong>cdnjs (Cloudflare)</strong> &mdash; serve the typeface and the map library our pages load, so your browser sends them its IP address and user agent.</li>
+      <li><strong>OpenStreetMap</strong> &mdash; serves map tiles only if our own built-in map can't be loaded.</li>
+    </ul>
+    <p>Weather is fetched by our server from the US National Weather Service (aviationweather.gov) by airport code only; no personal data is sent.</p>
     <p>These providers may process data on infrastructure located outside the European Economic Area. Where this is the case, they provide appropriate safeguards (such as Standard Contractual Clauses) for the transfer. We do not sell your personal data to third parties, and we do not share it for third-party advertising purposes.</p>
 
     <h2>5. How long we keep your data</h2>
