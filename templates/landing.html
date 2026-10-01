@@ -8,7 +8,7 @@
 
 <section class="hero">
   <div class="hero-media">
-    <video id="heroVideo" class="hero-media-asset" autoplay muted loop playsinline
+    <video id="heroVideo" class="hero-media-asset" autoplay muted loop playsinline preload="none"
            poster="{{ url_for('static', filename='img/hero-flight.jpg') }}"></video>
     <div class="hero-media-overlay"></div>
   </div>
@@ -30,10 +30,20 @@
 </div>
 
 <script>
+  // The poster shows straight away; the looping video only starts loading
+  // once the page itself has, in a smaller cut on phones, and not at all
+  // for visitors who ask for reduced motion or data saving.
   (function () {
     var video = document.getElementById('heroVideo');
     if (!video) return;
-    var sources = {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var saveData = navigator.connection && navigator.connection.saveData;
+    if (reduce || saveData) return;
+    var small = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+    var sources = small ? {
+      light: "{{ url_for('static', filename='video/hero-light-960.mp4') }}",
+      dark: "{{ url_for('static', filename='video/hero-dark-960.mp4') }}"
+    } : {
       light: "{{ url_for('static', filename='video/hero-light.mp4') }}",
       dark: "{{ url_for('static', filename='video/hero-dark.mp4') }}"
     };
@@ -44,8 +54,11 @@
       video.load();
       video.play().catch(function () {});
     }
-    applyForTheme(window.vdCurrentTheme ? window.vdCurrentTheme() : 'light');
-    document.addEventListener('vd-theme-change', function (e) { applyForTheme(e.detail.theme); });
+    function start() {
+      applyForTheme(window.vdCurrentTheme ? window.vdCurrentTheme() : 'light');
+      document.addEventListener('vd-theme-change', function (e) { applyForTheme(e.detail.theme); });
+    }
+    if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
   })();
 </script>
 
