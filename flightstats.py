@@ -108,7 +108,15 @@ def logbook_row(record, airport):
 
     dep_ap, arr_ap = airport(dep), airport(arr)
     date = record.get("flight_date") or (record.get("submitted_at") or "")[:10] or None
-    delay_info = leg.get("delay") or {}
+    # The delay cause: what the pilot coded in the PIREP (the main code,
+    # i.e. the one with the most minutes) when they did, otherwise the
+    # delay dispatch predicted for the leg.
+    coded = [c for c in (pirep.get("delay_codes") or []) if isinstance(c, dict) and c.get("code")]
+    if coded:
+        main = max(coded, key=lambda c: _num(c.get("minutes")) or 0)
+        delay_info = {"iata_code": main["code"], "description": main.get("description")}
+    else:
+        delay_info = leg.get("delay") or {}
     mel = leg.get("mel") or {}
     unit = ofp.get("weight_unit")
     seats = _num(leg.get("seat_capacity"))
@@ -140,6 +148,7 @@ def logbook_row(record, airport):
         "ci": _num(leg.get("cost_index")),
         "delay_code": str(delay_info.get("iata_code") or "") or None,
         "delay_desc": str(delay_info.get("description") or "")[:120] or None,
+        "delay_coded": bool(coded),
         "mel": (str(mel.get("system") or mel.get("id") or "") or None) if mel else None,
         # All fuel in kg (see fuel_kg). AFAD is entered in the OFP's unit.
         "block_fuel": fuel_kg(ofp.get("block_fuel"), unit),

@@ -1,0 +1,372 @@
+[
+ {
+  "code": "11",
+  "group": "Passenger and baggage",
+  "description": "Late check-in, acceptance after deadline"
+ },
+ {
+  "code": "12",
+  "group": "Passenger and baggage",
+  "description": "Late check-in, congestion in check-in area"
+ },
+ {
+  "code": "13",
+  "group": "Passenger and baggage",
+  "description": "Check-in error, passenger and baggage"
+ },
+ {
+  "code": "14",
+  "group": "Passenger and baggage",
+  "description": "Oversales, booking errors"
+ },
+ {
+  "code": "15",
+  "group": "Passenger and baggage",
+  "description": "Boarding, discrepancies and paging, missing checked-in passenger"
+ },
+ {
+  "code": "16",
+  "group": "Passenger and baggage",
+  "description": "Commercial publicity, passenger convenience, VIP, press, missing personal items"
+ },
+ {
+  "code": "17",
+  "group": "Passenger and baggage",
+  "description": "Catering order, late or incorrect order given to supplier"
+ },
+ {
+  "code": "18",
+  "group": "Passenger and baggage",
+  "description": "Baggage processing, sorting"
+ },
+ {
+  "code": "19",
+  "group": "Passenger and baggage",
+  "description": "Boarding or deboarding of passengers with reduced mobility"
+ },
+ {
+  "code": "21",
+  "group": "Cargo and mail",
+  "description": "Cargo documentation, errors"
+ },
+ {
+  "code": "22",
+  "group": "Cargo and mail",
+  "description": "Cargo late positioning"
+ },
+ {
+  "code": "23",
+  "group": "Cargo and mail",
+  "description": "Cargo late acceptance"
+ },
+ {
+  "code": "24",
+  "group": "Cargo and mail",
+  "description": "Cargo inadequate packing"
+ },
+ {
+  "code": "25",
+  "group": "Cargo and mail",
+  "description": "Cargo oversales, booking errors"
+ },
+ {
+  "code": "26",
+  "group": "Cargo and mail",
+  "description": "Cargo late preparation in warehouse"
+ },
+ {
+  "code": "27",
+  "group": "Cargo and mail",
+  "description": "Mail documentation, packing"
+ },
+ {
+  "code": "28",
+  "group": "Cargo and mail",
+  "description": "Mail late positioning"
+ },
+ {
+  "code": "29",
+  "group": "Cargo and mail",
+  "description": "Mail late acceptance"
+ },
+ {
+  "code": "31",
+  "group": "Aircraft and ramp handling",
+  "description": "Aircraft documentation late or inaccurate, weight and balance, manifests"
+ },
+ {
+  "code": "32",
+  "group": "Aircraft and ramp handling",
+  "description": "Loading or unloading, bulky or special load, lack of loading staff"
+ },
+ {
+  "code": "33",
+  "group": "Aircraft and ramp handling",
+  "description": "Loading equipment, lack of or breakdown, lack of staff"
+ },
+ {
+  "code": "34",
+  "group": "Aircraft and ramp handling",
+  "description": "Servicing equipment, lack of or breakdown, e.g. steps"
+ },
+ {
+  "code": "35",
+  "group": "Aircraft and ramp handling",
+  "description": "Aircraft cleaning"
+ },
+ {
+  "code": "36",
+  "group": "Aircraft and ramp handling",
+  "description": "Fuelling or defuelling, fuel supplier"
+ },
+ {
+  "code": "37",
+  "group": "Aircraft and ramp handling",
+  "description": "Catering, late delivery or loading"
+ },
+ {
+  "code": "38",
+  "group": "Aircraft and ramp handling",
+  "description": "ULD, lack of or serviceability"
+ },
+ {
+  "code": "39",
+  "group": "Aircraft and ramp handling",
+  "description": "Technical equipment, lack of or breakdown, e.g. pushback"
+ },
+ {
+  "code": "41",
+  "group": "Technical and aircraft equipment",
+  "description": "Aircraft defects"
+ },
+ {
+  "code": "42",
+  "group": "Technical and aircraft equipment",
+  "description": "Scheduled maintenance, late release"
+ },
+ {
+  "code": "43",
+  "group": "Technical and aircraft equipment",
+  "description": "Non-scheduled maintenance, special checks or additional work"
+ },
+ {
+  "code": "44",
+  "group": "Technical and aircraft equipment",
+  "description": "Spares and maintenance equipment, lack of or breakdown"
+ },
+ {
+  "code": "45",
+  "group": "Technical and aircraft equipment",
+  "description": "AOG spares, to be carried to another station"
+ },
+ {
+  "code": "46",
+  "group": "Technical and aircraft equipment",
+  "description": "Aircraft change for technical reasons"
+ },
+ {
+  "code": "47",
+  "group": "Technical and aircraft equipment",
+  "description": "Standby aircraft, lack of planned standby for technical reasons"
+ },
+ {
+  "code": "48",
+  "group": "Technical and aircraft equipment",
+  "description": "Scheduled cabin configuration or version adjustments"
+ },
+ {
+  "code": "51",
+  "group": "Damage to aircraft",
+  "description": "Damage during flight operations: bird or lightning strike, turbulence, heavy landing"
+ },
+ {
+  "code": "52",
+  "group": "Damage to aircraft",
+  "description": "Damage during ground operations: collision, loading damage, towing"
+ },
+ {
+  "code": "55",
+  "group": "Automated systems",
+  "description": "Departure control system"
+ },
+ {
+  "code": "56",
+  "group": "Automated systems",
+  "description": "Cargo preparation or documentation system"
+ },
+ {
+  "code": "57",
+  "group": "Automated systems",
+  "description": "Flight plan system"
+ },
+ {
+  "code": "58",
+  "group": "Automated systems",
+  "description": "Other automated system"
+ },
+ {
+  "code": "61",
+  "group": "Flight operations and crewing",
+  "description": "Flight plan, late completion or change, flight documentation"
+ },
+ {
+  "code": "62",
+  "group": "Flight operations and crewing",
+  "description": "Operational requirements, fuel, load alteration"
+ },
+ {
+  "code": "63",
+  "group": "Flight operations and crewing",
+  "description": "Late crew boarding or departure procedures"
+ },
+ {
+  "code": "64",
+  "group": "Flight operations and crewing",
+  "description": "Flight deck crew shortage, sickness, awaiting standby, flight time limitations"
+ },
+ {
+  "code": "65",
+  "group": "Flight operations and crewing",
+  "description": "Flight deck crew special request, not within operational requirements"
+ },
+ {
+  "code": "66",
+  "group": "Flight operations and crewing",
+  "description": "Late cabin crew boarding or departure procedures"
+ },
+ {
+  "code": "67",
+  "group": "Flight operations and crewing",
+  "description": "Cabin crew shortage, sickness, awaiting standby, flight time limitations"
+ },
+ {
+  "code": "68",
+  "group": "Flight operations and crewing",
+  "description": "Cabin crew error or special request"
+ },
+ {
+  "code": "69",
+  "group": "Flight operations and crewing",
+  "description": "Captain request for security check, extraordinary"
+ },
+ {
+  "code": "71",
+  "group": "Weather",
+  "description": "Departure station"
+ },
+ {
+  "code": "72",
+  "group": "Weather",
+  "description": "Destination station"
+ },
+ {
+  "code": "73",
+  "group": "Weather",
+  "description": "En route or alternate"
+ },
+ {
+  "code": "75",
+  "group": "Weather",
+  "description": "De-icing of aircraft, removal of ice or snow, frost prevention"
+ },
+ {
+  "code": "76",
+  "group": "Weather",
+  "description": "Removal of snow, ice, water or sand from the airport"
+ },
+ {
+  "code": "77",
+  "group": "Weather",
+  "description": "Ground handling impaired by adverse weather"
+ },
+ {
+  "code": "81",
+  "group": "ATFM and airport",
+  "description": "ATFM: en-route demand and capacity"
+ },
+ {
+  "code": "82",
+  "group": "ATFM and airport",
+  "description": "ATFM: ATC staff or equipment en route, industrial action, military exercise"
+ },
+ {
+  "code": "83",
+  "group": "ATFM and airport",
+  "description": "ATFM: restriction at destination airport"
+ },
+ {
+  "code": "84",
+  "group": "ATFM and airport",
+  "description": "ATFM: weather at destination"
+ },
+ {
+  "code": "85",
+  "group": "ATFM and airport",
+  "description": "Mandatory security"
+ },
+ {
+  "code": "86",
+  "group": "ATFM and airport",
+  "description": "Immigration, customs, health"
+ },
+ {
+  "code": "87",
+  "group": "ATFM and airport",
+  "description": "Airport facilities: stands, ramp congestion, gate limitations"
+ },
+ {
+  "code": "88",
+  "group": "ATFM and airport",
+  "description": "Restrictions at destination airport: closure, curfew, noise abatement"
+ },
+ {
+  "code": "89",
+  "group": "ATFM and airport",
+  "description": "Restrictions at departure airport: ATS, start-up and pushback, closure, curfew"
+ },
+ {
+  "code": "91",
+  "group": "Reactionary",
+  "description": "Load connection, awaiting load from another flight"
+ },
+ {
+  "code": "92",
+  "group": "Reactionary",
+  "description": "Through check-in error, passenger and baggage"
+ },
+ {
+  "code": "93",
+  "group": "Reactionary",
+  "description": "Aircraft rotation: late arrival of aircraft from the previous sector"
+ },
+ {
+  "code": "94",
+  "group": "Reactionary",
+  "description": "Cabin crew rotation, awaiting cabin crew from another flight"
+ },
+ {
+  "code": "95",
+  "group": "Reactionary",
+  "description": "Crew rotation, awaiting flight deck crew from another flight"
+ },
+ {
+  "code": "96",
+  "group": "Reactionary",
+  "description": "Operations control: re-routing, diversion, consolidation, non-technical aircraft change"
+ },
+ {
+  "code": "97",
+  "group": "Miscellaneous",
+  "description": "Industrial action within own airline"
+ },
+ {
+  "code": "98",
+  "group": "Miscellaneous",
+  "description": "Industrial action outside own airline, excluding ATS"
+ },
+ {
+  "code": "99",
+  "group": "Miscellaneous",
+  "description": "Other reason, not matching any code above"
+ }
+]

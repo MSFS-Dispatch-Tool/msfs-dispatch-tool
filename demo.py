@@ -25,6 +25,8 @@ DELAYS = {
     "16": "Passenger and baggage: missing passenger",
     "63": "Late crew boarding or departure procedures",
     "71": "Weather: departure station",
+    "15": "Boarding, discrepancies and paging, missing checked-in passenger",
+    "33": "Loading equipment, lack of or breakdown, lack of staff",
 }
 MEL_SYSTEMS = ["APU", "Fuel pump", "Pack 2", "Weather radar", "Cabin PA"]
 
@@ -129,7 +131,8 @@ def build_pireps(user_id, carriers, count, months, base, rng):
         delay = None
         if dep_delay > 15:
             code = rng.choice(list(DELAYS))
-            delay = {"iata_code": code, "description": DELAYS[code], "duration_range_minutes": [10, 30]}
+            delay = {"iata_code": code, "description": DELAYS[code], "duration_range_minutes": [10, 30],
+                     "minutes": dep_delay}
         leg = {
             "flight_number": r["flight_number"], "carrier": r["carrier"], "aircraft_type": ac_type,
             "sobt": _hm(sobt) + "Z", "sibt": _hm(sibt) + "Z", "eet_minutes": dur - 20,
@@ -147,6 +150,11 @@ def build_pireps(user_id, carriers, count, months, base, rng):
         pirep = {"aobt": "N/A" if no_actuals else _hm(aobt), "atot": "N/A" if no_actuals else _hm(atot),
                  "aldt": _hm(aldt), "abit": _hm(abit), "afad": landing + rng.randint(-400, 500),
                  "submitted_at": submitted.isoformat().replace("+00:00", "Z")}
+        if not no_actuals and dep_delay >= 3:
+            # Coded like the PIREP form asks: the predicted cause, or a
+            # minor one for short delays nobody predicted.
+            code = delay["iata_code"] if delay else rng.choice(["63", "87", "15", "33"])
+            pirep["delay_codes"] = [{"code": code, "minutes": dep_delay, "description": DELAYS.get(code, "")}]
         prefix = r.get("callsign_prefix") or carrier["callsign_prefix"]
         callsign = f"{prefix}{rng.randint(10, 99)}{rng.choice('ABCDEFGH')}"
         rows.append((uuid.uuid4().hex, r["flight_number"], callsign, r["departure_icao"], r["arrival_icao"],
