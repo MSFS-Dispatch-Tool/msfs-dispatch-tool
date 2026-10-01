@@ -46,6 +46,7 @@ DEFAULT_SETTINGS = {
         "delay": {"enabled": True, "disabled_codes": []},
         "lmc": {"enabled": True, "disabled_ids": []},
         "mel": {"enabled": True, "disabled_ids": []},
+        "cdl": {"enabled": True, "disabled_ids": []},
     },
 }
 

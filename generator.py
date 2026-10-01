@@ -14,7 +14,6 @@ import string
 import uuid
 from collections import defaultdict
 
-MEL_PROBABILITY = 0.35
 DELAY_PROBABILITY = 0.45
 LMC_PROBABILITY = 0.50
 DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
@@ -429,11 +428,6 @@ def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None,
     return delay
 
 
-def roll_mel(mels, mel_settings=None):
-    pool = _filter_enabled(mels, mel_settings, "id", "disabled_ids")
-    if not pool:
-        return None
-    return resolve_component(weighted_pick(pool)) if random.random() < MEL_PROBABILITY else None
 
 
 def generate_callsign(prefix="RYR"):
