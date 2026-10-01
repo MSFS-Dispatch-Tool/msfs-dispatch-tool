@@ -1,16 +1,18 @@
 [
  {
   "id": "mel-01",
-  "ata": "22-11-01",
-  "system": "Autopilot flight control channel",
-  "description": "Autopilot channel {side} inoperative",
+  "ata": "22-01A",
+  "mmel_ref": "22-01A",
+  "system": "Autopilot",
+  "description": "Autopilot {side} inoperative",
   "mel_category": "C",
+  "installed": "-",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Single channel; CAT 1 approaches only",
+  "operations": false,
+  "dispatch_consequence": "Approach minimums must not need it: no autoland/CAT 2-3",
   "procedures": [
-   "(O) Use the remaining autopilot channel",
-   "(O) Autoland and CAT 2/3 approaches not available"
+   "May be inoperative provided approach minimums do not require its use"
   ],
   "effects": {
    "no_wx": [
@@ -18,24 +20,27 @@
    ]
   },
   "weight": 4,
+  "group": "ap",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "A",
    "B"
-  ],
-  "group": "ap"
+  ]
  },
  {
   "id": "mel-02",
-  "ata": "22-31-01",
+  "ata": "22-04",
+  "mmel_ref": "22-04",
   "system": "Autothrottle",
-  "description": "Autothrottle inoperative",
+  "description": "Autothrottle system inoperative",
   "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Manual thrust; CAT 1 approaches only",
+  "operations": false,
+  "dispatch_consequence": "Manual thrust; approaches that need it unavailable",
   "procedures": [
-   "(O) Manual thrust for the whole flight",
-   "(O) Autoland not available: CAT 1 approaches only"
+   "May be inoperative provided approach minimums do not require its use"
   ],
   "effects": {
    "no_wx": [
@@ -43,20 +48,24 @@
    ]
   },
   "weight": 3,
-  "group": "at"
+  "group": "at",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-03",
-  "ata": "24-22-01",
+  "ata": "24-02",
+  "mmel_ref": "24-02",
   "system": "APU generator",
-  "description": "APU generator inoperative (APU bleed still available)",
+  "description": "APU generator inoperative",
   "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "No APU electrics: ground power needed on stand",
+  "operations": false,
+  "dispatch_consequence": "No APU electrics",
   "procedures": [
-   "(O) Use ground power on stand",
-   "(O) APU bleed may be used for engine start and packs"
+   "Except for ETOPS, may be inoperative",
+   "Plan a ground power unit on stand: no APU electrical power before engine start"
   ],
   "effects": {
    "ground_support": [
@@ -64,223 +73,266 @@
    ]
   },
   "weight": 3,
-  "group": "apugen"
+  "group": "apugen",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-04",
-  "ata": "24-21-01",
-  "system": "Integrated drive generator (IDG)",
-  "description": "IDG {side} inoperative",
-  "mel_category": "C",
+  "ata": "24-01-02",
+  "mmel_ref": "24-01-02",
+  "system": "Engine driven generator",
+  "description": "Engine {side} driven generator inoperative",
+  "mel_category": "B",
+  "installed": "2",
+  "required": "1",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "APU generator runs for the whole flight: extra fuel",
+  "dispatch_consequence": "APU generator on all flight",
   "procedures": [
-   "(M) IDG disconnected",
-   "(O) APU generator on and used for the whole flight",
-   "(O) APU must be serviceable"
+   "(M)(O) Except for ETOPS, may be inoperative provided the APU generator operates normally and is used throughout flight",
+   "Allow for APU fuel burn for the whole flight"
   ],
   "effects": {
    "extra_fuel_min": 5
   },
   "weight": 3,
+  "group": "gen",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "gen"
+  ]
  },
  {
   "id": "mel-05",
-  "ata": "24-11-01",
-  "system": "IDG drive disconnect",
-  "description": "IDG {side} drive disconnect inoperative",
+  "ata": "24-01",
+  "mmel_ref": "24-01",
+  "system": "Engine driven generator drive",
+  "description": "IDG {side} drive disconnected",
   "mel_category": "A",
+  "installed": "2",
+  "required": "2",
   "maintenance": true,
-  "operations": true,
-  "dispatch_consequence": "Not dispatchable; never rolled",
+  "operations": false,
+  "dispatch_consequence": "Not rolled",
   "procedures": [
-   "(M) Not dispatchable until inspected"
+   "Not dispatchable until inspected"
   ],
   "effects": {},
   "weight": 0,
+  "group": "gen",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "gen"
+  ]
  },
  {
   "id": "mel-06",
-  "ata": "24-33-01",
+  "ata": "-",
+  "mmel_ref": "-",
   "system": "Static inverter",
   "description": "Static inverter inoperative",
-  "mel_category": "C",
+  "mel_category": "-",
+  "installed": "1",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Standby AC backup lost",
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(O) Standby AC power not available: check standby instruments on battery"
+   "No MMEL relief for the 737-800: not dispatchable"
   ],
   "effects": {},
-  "weight": 2,
-  "group": "inv"
+  "weight": 0,
+  "group": "inv",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-07",
-  "ata": "24-31-01",
-  "system": "Transformer rectifier (TR)",
+  "ata": "24-06",
+  "mmel_ref": "24-06",
+  "system": "Transformer rectifier",
   "description": "TR {side} inoperative",
-  "mel_category": "C",
-  "maintenance": true,
-  "operations": true,
-  "dispatch_consequence": "DC supply from the remaining TRs",
+  "mel_category": "-",
+  "installed": "3",
+  "required": "3",
+  "maintenance": false,
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL for the -800; not rolled",
   "procedures": [
-   "(M) Remaining TRs checked operative",
-   "(O) Monitor DC volts and amps"
+   "No MMEL relief for the 737-800 (item 24-06 covers the -100/-200 only): not dispatchable"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
+  "group": "tr",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2",
    "3"
-  ],
-  "group": "tr"
+  ]
  },
  {
   "id": "mel-08",
-  "ata": "24-26-01",
+  "ata": "-",
+  "mmel_ref": "-",
   "system": "AC galley bus",
   "description": "Galley bus {side} inoperative",
-  "mel_category": "C",
+  "mel_category": "-",
+  "installed": "2",
+  "required": "2",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Reduced cabin service",
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(O) Inform the cabin crew: reduced hot service"
+   "No MMEL relief for the 737-800: not dispatchable"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
+  "group": "galley",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "galley"
+  ]
  },
  {
   "id": "mel-09",
-  "ata": "29-11-01",
+  "ata": "29-02",
+  "mmel_ref": "29-02",
   "system": "Engine-driven hydraulic pump",
   "description": "Engine {side} driven pump inoperative",
-  "mel_category": "C",
-  "maintenance": true,
-  "operations": true,
-  "dispatch_consequence": "Electric pump runs all flight",
+  "mel_category": "-",
+  "installed": "2",
+  "required": "2",
+  "maintenance": false,
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL for the -800; not rolled",
   "procedures": [
-   "(M) Pump depressurised",
-   "(O) Electric pump of that system on for the whole flight"
+   "No MMEL relief for the 737-800 (only the depressurisation function is listed): not dispatchable"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
+  "group": "hyd",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "hyd"
+  ]
  },
  {
   "id": "mel-10",
-  "ata": "29-11-02",
+  "ata": "29-02",
+  "mmel_ref": "29-02",
   "system": "Electric motor-driven hydraulic pump",
   "description": "System {side} electric pump inoperative",
-  "mel_category": "C",
+  "mel_category": "-",
+  "installed": "2",
+  "required": "2",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Hydraulic redundancy reduced",
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(O) Engine-driven pump of that system must be operative"
+   "No MMEL relief for the 737-800: not dispatchable"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
+  "group": "hyd",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "A",
    "B"
-  ],
-  "group": "hyd"
+  ]
  },
  {
   "id": "mel-11",
-  "ata": "29-22-01",
+  "ata": "29-12",
+  "mmel_ref": "29-12",
   "system": "Standby hydraulic pump",
   "description": "Standby hydraulic pump inoperative",
-  "mel_category": "C",
+  "mel_category": "-",
+  "installed": "1",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "No standby hydraulics",
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(O) Standby rudder and alternate flap extension not available",
-   "(O) Systems A and B must be fully operative"
+   "No MMEL relief for the pump itself (only its low pressure light): not dispatchable"
   ],
   "effects": {},
-  "weight": 1,
-  "group": "hyd"
+  "weight": 0,
+  "group": "hyd",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-12",
-  "ata": "28-22-01",
-  "system": "Fuel pump",
-  "description": "{side} fuel pump inoperative",
+  "ata": "28-01-03-01",
+  "mmel_ref": "28-01-03-01",
+  "system": "Main tank aft fuel boost pump",
+  "description": "{side} main tank aft boost pump inoperative",
   "mel_category": "C",
-  "maintenance": false,
+  "installed": "2",
+  "required": "1",
+  "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "Fuel management restrictions; small extra fuel",
+  "dispatch_consequence": "Minimum tank fuel for take-off and landing",
   "procedures": [
-   "(O) Monitor fuel imbalance during the flight",
-   "(O) For a centre tank pump: plan centre tank fuel as possibly unusable"
+   "(M) Boost pump is deactivated",
+   "(O) Both main tank forward pumps operate normally",
+   "(O) At start of take-off, at least 3,402 kg (7,500 lb) in the associated tank",
+   "(O) For landing, at least 1,134 kg (2,500 lb) is kept in the associated tank"
   ],
   "effects": {
-   "extra_fuel_min": 5
+   "min_main_tank_fuel_kg": {
+    "takeoff": 3402,
+    "landing": 1134
+   }
   },
-  "weight": 5,
+  "weight": 4,
+  "group": "fuelpump",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
-   "Left forward",
-   "Left aft",
-   "Centre left",
-   "Centre right",
-   "Right forward",
-   "Right aft"
-  ],
-  "group": "fuelpump"
+   "Left",
+   "Right"
+  ]
  },
  {
   "id": "mel-13",
-  "ata": "28-23-01",
-  "system": "Crossfeed valve",
-  "description": "Crossfeed valve inoperative (closed)",
+  "ata": "28-05",
+  "mmel_ref": "28-05",
+  "system": "Crossfeed VALVE OPEN light",
+  "description": "Crossfeed VALVE OPEN light inoperative",
   "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": true,
-  "operations": true,
-  "dispatch_consequence": "No fuel balancing in flight",
+  "operations": false,
+  "dispatch_consequence": "Valve checked before departure",
   "procedures": [
-   "(M) Valve secured closed",
-   "(O) Fuel balancing not available: load fuel symmetrically"
+   "(M) Crossfeed valve is verified to operate normally",
+   "(M) Fuel quantity indication for both main tanks operates normally"
   ],
   "effects": {},
-  "weight": 2,
-  "group": "xfeed"
+  "weight": 1,
+  "group": "xfeed",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-14",
-  "ata": "34-43-01",
+  "ata": "34-15-01B",
+  "mmel_ref": "34-15-01B",
   "system": "Weather radar",
   "description": "Weather radar inoperative",
   "mel_category": "C",
+  "installed": "-",
+  "required": "0",
   "maintenance": false,
   "operations": true,
   "dispatch_consequence": "No dispatch into forecast thunderstorms",
   "procedures": [
-   "(O) Not to be operated into known or forecast thunderstorm areas"
+   "(O) Weather radar is not required by 14 CFR: no dispatch where thunderstorms are reported or forecast",
+   "(O) Alternate procedures are established and used",
+   "Reactive windshear warning and guidance system operates normally"
   ],
   "effects": {
    "no_wx": [
@@ -288,132 +340,159 @@
    ]
   },
   "weight": 3,
-  "group": "wxr"
+  "group": "wxr",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-15",
-  "ata": "34-45-01",
+  "ata": "34-40A",
+  "mmel_ref": "34-40A",
   "system": "TCAS",
   "description": "TCAS inoperative",
-  "mel_category": "A",
-  "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "No collision avoidance alerts",
+  "mel_category": "B",
+  "installed": "-",
+  "required": "0",
+  "maintenance": true,
+  "operations": false,
+  "dispatch_consequence": "Deactivated; only where TCAS isn't required",
   "procedures": [
-   "(O) Transponder must be operative",
-   "(O) Inform ATC; flight within the period allowed by the operator's MEL only"
+   "(M) System is deactivated and secured",
+   "Enroute or approach procedures do not require its use",
+   "European airspace requires ACAS II: in practice only a short repair window applies"
   ],
   "effects": {},
   "weight": 1,
-  "group": "tcas"
+  "group": "tcas",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-16",
-  "ata": "34-53-01",
+  "ata": "34-18B",
+  "mmel_ref": "34-18B",
   "system": "Transponder",
   "description": "Transponder {side} inoperative",
-  "mel_category": "C",
+  "mel_category": "D",
+  "installed": "2",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "One transponder remains",
   "procedures": [
-   "(O) Select the remaining transponder"
+   "Any in excess of those required by 14 CFR may be inoperative"
   ],
   "effects": {},
   "weight": 3,
+  "group": "xpdr",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "xpdr"
+  ]
  },
  {
   "id": "mel-17",
-  "ata": "34-24-01",
+  "ata": "34-07-01",
+  "mmel_ref": "34-07-01",
   "system": "Standby attitude indicator",
   "description": "Standby attitude indicator inoperative",
-  "mel_category": "C",
+  "mel_category": "B",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Standby instrument lost",
+  "operations": false,
+  "dispatch_consequence": "Day VMC only; not rolled until daylight checks exist",
   "procedures": [
-   "(O) Both PFDs and both IRSs must be operative"
+   "Operations are conducted in day VMC only",
+   "Not into known or forecast over-the-top conditions"
   ],
   "effects": {},
-  "weight": 1,
-  "group": "isis"
+  "weight": 0,
+  "group": "isis",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-18",
-  "ata": "31-25-01",
+  "ata": "31-01",
+  "mmel_ref": "31-01",
   "system": "Clock",
   "description": "{side} clock inoperative",
-  "mel_category": "D",
+  "mel_category": "C",
+  "installed": "2",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "No operational impact",
   "procedures": [
-   "(O) Use the remaining clock or FMC time"
+   "One may be inoperative at either pilot station"
   ],
   "effects": {},
   "weight": 1,
+  "group": "clock",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left",
    "Right"
-  ],
-  "group": "clock"
+  ]
  },
  {
   "id": "mel-19",
-  "ata": "34-55-01",
+  "ata": "34-13",
+  "mmel_ref": "34-13",
   "system": "DME",
   "description": "DME {side} inoperative",
-  "mel_category": "C",
+  "mel_category": "D",
+  "installed": "-",
+  "required": "-",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "Single DME",
   "procedures": [
-   "(O) Check the route and approaches do not need two DMEs"
+   "Any in excess of those required by 14 CFR may be inoperative"
   ],
   "effects": {},
   "weight": 2,
+  "group": "dme",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left",
    "Right"
-  ],
-  "group": "dme"
+  ]
  },
  {
   "id": "mel-20",
-  "ata": "34-51-01",
+  "ata": "34-17-03-01",
+  "mmel_ref": "34-17-03-01",
   "system": "VOR",
-  "description": "VOR {side} inoperative",
-  "mel_category": "C",
+  "description": "VOR 2 inoperative",
+  "mel_category": "D",
+  "installed": "2",
+  "required": "-",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "Single VOR",
   "procedures": [
-   "(O) Check the route and approaches do not need two VORs"
+   "Any in excess of those required by 14 CFR, and not powered by the standby bus, may be inoperative"
   ],
   "effects": {},
   "weight": 2,
-  "component_options": [
-   "Left",
-   "Right"
-  ],
-  "group": "vor"
+  "group": "vor",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-21",
-  "ata": "34-31-01",
-  "system": "ILS receiver (MMR)",
-  "description": "ILS receiver {side} inoperative",
-  "mel_category": "C",
+  "ata": "34-17-03-02",
+  "mmel_ref": "34-17-03-02",
+  "system": "ILS receiver",
+  "description": "ILS 2 inoperative",
+  "mel_category": "D",
+  "installed": "2",
+  "required": "-",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "CAT 1 approaches only",
   "procedures": [
-   "(O) Approach limited to CAT 1: two ILS receivers are needed for CAT 2/3"
+   "Any in excess of those required by 14 CFR, and not powered by the standby bus, may be inoperative",
+   "Approach minimums do not require its use: CAT 2/3 needs both receivers"
   ],
   "effects": {
    "no_wx": [
@@ -421,140 +500,143 @@
    ]
   },
   "weight": 3,
-  "component_options": [
-   "Left",
-   "Right"
-  ],
-  "group": "mmr"
+  "group": "mmr",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-22",
-  "ata": "34-58-01",
+  "ata": "34-45A",
+  "mmel_ref": "34-45A",
   "system": "GPS",
-  "description": "GPS {side} inoperative",
+  "description": "GPS inoperative",
   "mel_category": "C",
+  "installed": "-",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Single GPS",
+  "operations": false,
+  "dispatch_consequence": "Alternate procedures",
   "procedures": [
-   "(O) RNP approaches need the remaining GPS: check NOTAMs and RAIM"
+   "Alternate procedures are established and used",
+   "Expect no RNP approaches: plan ILS or VOR approaches"
   ],
   "effects": {},
   "weight": 2,
-  "component_options": [
-   "Left",
-   "Right"
-  ],
-  "group": "gps"
+  "group": "gps",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-23",
-  "ata": "34-61-01",
+  "ata": "34-36-02-02",
+  "mmel_ref": "34-36-02-02",
   "system": "Flight management computer",
   "description": "FMC {side} inoperative",
   "mel_category": "C",
+  "installed": "-",
+  "required": "1",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "Single FMC operation",
   "procedures": [
-   "(O) Single FMC operation: both CDUs driven by the remaining FMC"
+   "May be inoperative provided it is not required to meet 14 CFR navigation requirements"
   ],
   "effects": {},
   "weight": 2,
+  "group": "fmc",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left",
    "Right"
-  ],
-  "group": "fmc"
+  ]
  },
  {
   "id": "mel-24",
-  "ata": "31-61-01",
-  "system": "Display unit",
-  "description": "{side} display unit inoperative",
+  "ata": "31-08-01-01",
+  "mmel_ref": "31-08-01-01",
+  "system": "Lower display unit",
+  "description": "Lower display unit inoperative",
   "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
   "operations": true,
-  "dispatch_consequence": "Display reversion",
+  "dispatch_consequence": "Engine display on an alternate unit",
   "procedures": [
-   "(O) Use display select switching for the affected unit"
+   "(O) All remaining display units operate normally",
+   "(O) Check the engine display can be switched to an alternate display unit"
   ],
   "effects": {},
-  "weight": 3,
-  "component_options": [
-   "Captain PFD",
-   "Captain ND",
-   "Upper engine display",
-   "Lower display",
-   "First officer ND",
-   "First officer PFD"
-  ],
-  "group": "du"
+  "weight": 2,
+  "group": "du",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-25",
-  "ata": "32-42-01",
-  "system": "Anti-skid",
-  "description": "Anti-skid {side} inoperative",
-  "mel_category": "B",
+  "ata": "32-02-02",
+  "mmel_ref": "32-02-02",
+  "system": "Antiskid",
+  "description": "Antiskid channel {side} inoperative",
+  "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "Longer stopping distances; no contaminated runways",
+  "dispatch_consequence": "AFM performance limits",
   "procedures": [
-   "(M) Anti-skid deactivated",
-   "(O) Apply the anti-skid inoperative landing and take-off performance corrections",
-   "(O) Not on contaminated runways"
+   "(M) Associated antiskid channel is deactivated",
+   "(O) Operations are conducted in compliance with the AFM: apply its antiskid-inoperative performance"
   ],
   "effects": {
-   "no_wx": [
-    "CONTAM"
-   ],
    "performance": true
   },
   "weight": 1,
+  "group": "brakes",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
-   "Alternate valve",
-   "Normal valve"
-  ],
-  "group": "brakes"
+   "Inboard",
+   "Outboard"
+  ]
  },
  {
   "id": "mel-26",
-  "ata": "21-51-01",
+  "ata": "21-01-01-01",
+  "mmel_ref": "21-01-01-01",
   "system": "Air conditioning pack",
   "description": "{side} pack inoperative",
   "mel_category": "C",
-  "maintenance": true,
+  "installed": "2",
+  "required": "1",
+  "maintenance": false,
   "operations": true,
   "dispatch_consequence": "Single pack: maximum FL250",
   "procedures": [
-   "(M) Pack valve secured closed",
-   "(O) Maximum flight level FL250",
-   "(O) Remaining pack in HIGH if needed"
+   "(O) Flight altitude remains at or below FL 250"
   ],
   "effects": {
    "max_fl": 250
   },
   "weight": 4,
+  "group": "pack",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left",
    "Right"
-  ],
-  "group": "pack"
+  ]
  },
  {
   "id": "mel-27",
-  "ata": "49-11-01",
+  "ata": "49-01A",
+  "mmel_ref": "49-01A",
   "system": "APU",
   "description": "APU inoperative",
   "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "Ground power and air start needed at every stand",
+  "operations": false,
+  "dispatch_consequence": "No APU",
   "procedures": [
-   "(O) Ground power and conditioned air on stand",
-   "(O) Engine start with an air start unit, or crossbleed start after the first engine",
-   "(O) No APU backup for electrics or bleed in flight"
+   "Procedures do not require its use",
+   "Plan ground power and an air start unit (or a crossbleed start) at every stand"
   ],
   "effects": {
    "ground_support": [
@@ -563,44 +645,55 @@
    ]
   },
   "weight": 3,
-  "group": "apu"
+  "group": "apu",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-28",
-  "ata": "36-11-01",
-  "system": "Engine bleed air",
-  "description": "Engine {side} bleed inoperative",
+  "ata": "36-05-02A",
+  "mmel_ref": "36-05-02A",
+  "system": "Engine bleed air shutoff valve",
+  "description": "Engine {side} bleed valve (PRSOV) inoperative",
   "mel_category": "C",
+  "installed": "2",
+  "required": "1",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "Single bleed: maximum FL250",
+  "dispatch_consequence": "Single bleed: FL250 and no icing",
   "procedures": [
-   "(M) Bleed valve secured closed",
-   "(O) Maximum flight level FL250",
-   "(O) Isolation valve open: both packs on the remaining bleed"
+   "(M) Valve is secured closed before engine start",
+   "(O) Not operated in known or forecast icing conditions",
+   "(O) Flight altitude remains at or below FL 250"
   ],
   "effects": {
-   "max_fl": 250
+   "max_fl": 250,
+   "no_wx": [
+    "ICING"
+   ]
   },
   "weight": 2,
+  "group": "bleed",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "bleed"
+  ]
  },
  {
   "id": "mel-29",
-  "ata": "30-11-01",
+  "ata": "30-01",
+  "mmel_ref": "30-01",
   "system": "Wing anti-ice valve",
-  "description": "Wing anti-ice valve {side} inoperative (closed)",
+  "description": "Wing anti-ice valve {side} inoperative closed",
   "mel_category": "C",
+  "installed": "2",
+  "required": "0",
   "maintenance": true,
   "operations": true,
   "dispatch_consequence": "No dispatch into icing conditions",
   "procedures": [
    "(M) Valve secured closed",
-   "(O) Not to be operated in known or forecast icing conditions"
+   "(O) Not operated in known or forecast icing conditions"
   ],
   "effects": {
    "no_wx": [
@@ -608,220 +701,336 @@
    ]
   },
   "weight": 2,
+  "group": "wai",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left",
    "Right"
-  ],
-  "group": "wai"
+  ]
  },
  {
   "id": "mel-30",
-  "ata": "30-21-01",
-  "system": "Engine anti-ice valve",
-  "description": "Engine {side} anti-ice valve inoperative (secured open)",
+  "ata": "30-03-03B",
+  "mmel_ref": "30-03-03B",
+  "system": "Engine cowl anti-ice valve",
+  "description": "Engine {side} cowl anti-ice valve inoperative locked open",
   "mel_category": "C",
+  "installed": "2",
+  "required": "1",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "Engine anti-ice on all flight: extra fuel",
+  "dispatch_consequence": "Locked open: performance penalty",
   "procedures": [
-   "(M) Valve secured open",
-   "(O) Engine anti-ice on for the whole flight: apply the performance penalty"
+   "(M) Valve locked open; associated high stage valve considered inoperative",
+   "(O) Ambient temperature is below 38 °C",
+   "(O) At least 60% N1 on that engine in icing conditions",
+   "(O) Appropriate performance adjustments are applied",
+   "Allow some extra fuel for the open valve"
   ],
   "effects": {
    "extra_fuel_min": 5,
    "performance": true
   },
   "weight": 1,
+  "group": "eai",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "eai"
+  ]
  },
  {
   "id": "mel-31",
-  "ata": "27-61-01",
+  "ata": "27",
+  "mmel_ref": "27",
   "system": "Flight spoiler",
-  "description": "Flight spoiler pair {side} inoperative (retracted)",
-  "mel_category": "C",
-  "maintenance": true,
-  "operations": true,
-  "dispatch_consequence": "Performance corrections",
+  "description": "Flight spoiler pair {side} inoperative",
+  "mel_category": "-",
+  "installed": "-",
+  "required": "-",
+  "maintenance": false,
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(M) Spoilers secured retracted",
-   "(O) Apply the take-off and landing performance corrections"
+   "No MMEL relief for the 737-800: not dispatchable"
   ],
-  "effects": {
-   "extra_fuel_min": 3,
-   "performance": true
-  },
-  "weight": 2,
+  "effects": {},
+  "weight": 0,
+  "group": "spoiler",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "2/11",
    "3/10",
    "4/9",
    "5/8"
-  ],
-  "group": "spoiler"
+  ]
  },
  {
   "id": "mel-32",
-  "ata": "78-31-01",
+  "ata": "78-01-03",
+  "mmel_ref": "78-01-03",
   "system": "Thrust reverser",
   "description": "Engine {side} thrust reverser inoperative",
   "mel_category": "C",
+  "installed": "2",
+  "required": "1",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "One reverser locked; no contaminated runways",
+  "dispatch_consequence": "One reverser locked; performance adjustments",
   "procedures": [
-   "(M) Reverser deactivated and locked stowed",
-   "(O) Landing distance without reverse on that engine",
-   "(O) Not on contaminated runways"
+   "(M) Thrust reverser is locked in the forward thrust position",
+   "(O) Appropriate performance adjustments are applied"
   ],
   "effects": {
-   "no_wx": [
-    "CONTAM"
-   ],
    "performance": true
   },
   "weight": 3,
+  "group": "rev",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "1",
    "2"
-  ],
-  "group": "rev"
+  ]
  },
  {
   "id": "mel-33",
-  "ata": "28-41-01",
-  "system": "Fuel quantity indication",
-  "description": "Fuel quantity indication {side} inoperative",
+  "ata": "28-06",
+  "mmel_ref": "28-06",
+  "system": "Main tank fuel quantity indicator",
+  "description": "{side} main tank fuel quantity indicator inoperative",
   "mel_category": "C",
+  "installed": "2",
+  "required": "1",
   "maintenance": true,
   "operations": true,
-  "dispatch_consequence": "Manual fuel checks; extra fuel",
+  "dispatch_consequence": "Manual fuel checks",
   "procedures": [
-   "(M) Fuel quantity checked by measuring sticks before each departure",
-   "(O) Cross-check the uplift against the fuel receipt",
-   "(O) Carry 10 minutes of extra fuel for the indication uncertainty"
+   "(O) All boost pumps in the associated tank operate normally",
+   "(O) Fuel flow meters and the centre tank indicator operate normally",
+   "(O) Crew periodically computes fuel remaining or checks it against a precomputed burn",
+   "(M) Fuel quantity in the tank is verified by an acceptable procedure"
   ],
-  "effects": {
-   "extra_fuel_min": 10
-  },
+  "effects": {},
   "weight": 2,
+  "group": "fqi",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
-   "Main 1",
-   "Main 2",
-   "Centre"
-  ],
-  "group": "fqi"
+   "Left",
+   "Right"
+  ]
  },
  {
   "id": "mel-34",
-  "ata": "30-42-01",
+  "ata": "30-13",
+  "mmel_ref": "30-13",
   "system": "Windshield wiper",
   "description": "{side} windshield wiper inoperative",
   "mel_category": "C",
+  "installed": "2",
+  "required": "0",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "No dispatch into rain or snow",
   "procedures": [
-   "(O) Not to be operated in precipitation at departure or destination"
+   "Not operated in precipitation within 5 statute miles of the take-off or landing airport",
+   "Approach minimums do not require its use"
   ],
   "effects": {
    "no_wx": [
-    "PRECIP"
+    "PRECIP",
+    "LVP"
    ]
   },
   "weight": 2,
+  "group": "wiper",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Captain",
    "First officer"
-  ],
-  "group": "wiper"
+  ]
  },
  {
   "id": "mel-35",
-  "ata": "33-42-01",
+  "ata": "33-08-02A",
+  "mmel_ref": "33-08-02A",
   "system": "Landing light",
-  "description": "{side} landing light inoperative",
+  "description": "{side} landing light LED array inoperative",
   "mel_category": "C",
+  "installed": "4",
+  "required": "2",
   "maintenance": false,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "Reduced lighting",
   "procedures": [
-   "(O) Use the remaining landing lights for night operations"
+   "One LED array may be inoperative on each side"
   ],
   "effects": {},
   "weight": 3,
+  "group": "lights",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Left inboard",
    "Right inboard",
    "Left outboard",
    "Right outboard"
-  ],
-  "group": "lights"
+  ]
  },
  {
   "id": "mel-36",
-  "ata": "46-21-01",
+  "ata": "23-09A",
+  "mmel_ref": "23-09A",
   "system": "ACARS",
   "description": "ACARS inoperative",
-  "mel_category": "D",
+  "mel_category": "C",
+  "installed": "1",
+  "required": "0",
   "maintenance": false,
   "operations": true,
   "dispatch_consequence": "Voice reports instead of datalink",
   "procedures": [
-   "(O) Voice reports for OOOI times, load figures and clearances",
-   "(O) Departure clearance by voice"
+   "(O) Alternate procedures are established and used: voice reports for times, load figures and clearances"
   ],
   "effects": {},
   "weight": 3,
-  "group": "acars"
+  "group": "acars",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)"
  },
  {
   "id": "mel-37",
-  "ata": "38-31-01",
+  "ata": "38-02B",
+  "mmel_ref": "38-02B",
   "system": "Lavatory",
   "description": "{side} lavatory inoperative",
-  "mel_category": "D",
+  "mel_category": "C",
+  "installed": "-",
+  "required": "-",
   "maintenance": true,
-  "operations": true,
+  "operations": false,
   "dispatch_consequence": "Lavatory closed",
   "procedures": [
-   "(M) Lavatory door locked and placarded",
-   "(O) Inform the cabin crew"
+   "(M) Associated components deactivated or isolated to prevent leaks",
+   "(M) Lavatory door secured closed and placarded INOPERATIVE - DO NOT ENTER"
   ],
   "effects": {},
   "weight": 3,
+  "group": "lav",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Forward",
    "Aft left",
    "Aft right"
-  ],
-  "group": "lav"
+  ]
  },
  {
   "id": "mel-38",
-  "ata": "26-16-01",
-  "system": "Cargo smoke detection",
+  "ata": "26",
+  "mmel_ref": "26",
+  "system": "Lower cargo smoke detection",
   "description": "{side} cargo compartment smoke detection inoperative",
-  "mel_category": "C",
+  "mel_category": "-",
+  "installed": "-",
+  "required": "-",
   "maintenance": false,
-  "operations": true,
-  "dispatch_consequence": "That hold stays empty",
+  "operations": false,
+  "dispatch_consequence": "Not in the MMEL; not rolled",
   "procedures": [
-   "(O) Compartment empty, or loaded only with non-combustible cargo",
-   "(O) No live animals in that hold"
+   "No MMEL relief for lower cargo compartment smoke detection on the passenger 737-800: not dispatchable"
   ],
-  "effects": {
-   "cargo_hold_empty": true
-  },
-  "weight": 1,
+  "effects": {},
+  "weight": 0,
+  "group": "cargosmoke",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
   "component_options": [
    "Forward",
    "Aft"
+  ]
+ },
+ {
+  "id": "mel-39",
+  "ata": "28-01-03-02",
+  "mmel_ref": "28-01-03-02",
+  "system": "Main tank forward fuel boost pump",
+  "description": "{side} main tank forward boost pump inoperative",
+  "mel_category": "C",
+  "installed": "2",
+  "required": "1",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Minimum tank fuel for take-off and landing",
+  "procedures": [
+   "(M) Boost pump is deactivated",
+   "(O) Both main tank aft pumps operate normally",
+   "(O) At start of take-off, at least 2,177 kg (4,800 lb) in the associated tank",
+   "(O) For landing, at least 817 kg (1,800 lb) is kept in the associated tank"
   ],
-  "group": "cargosmoke"
+  "effects": {
+   "min_main_tank_fuel_kg": {
+    "takeoff": 2177,
+    "landing": 817
+   }
+  },
+  "weight": 3,
+  "group": "fuelpump",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "component_options": [
+   "Left",
+   "Right"
+  ]
+ },
+ {
+  "id": "mel-40",
+  "ata": "28-02A",
+  "mmel_ref": "28-02A",
+  "system": "Centre tank fuel boost pump",
+  "description": "{side} centre tank boost pump inoperative",
+  "mel_category": "C",
+  "installed": "2",
+  "required": "1",
+  "maintenance": true,
+  "operations": false,
+  "dispatch_consequence": "Centre tank stays empty",
+  "procedures": [
+   "(M) Boost pump is deactivated",
+   "Centre tank remains empty",
+   "Usable fuel is limited to the two main tanks: about 7,830 kg"
+  ],
+  "effects": {
+   "centre_tank_empty": true,
+   "max_fuel_kg": 7830
+  },
+  "weight": 3,
+  "group": "fuelpump",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "component_options": [
+   "Left",
+   "Right"
+  ]
+ },
+ {
+  "id": "mel-41",
+  "ata": "31-08-01-02",
+  "mmel_ref": "31-08-01-02",
+  "system": "Inboard display unit",
+  "description": "{side} inboard display unit inoperative",
+  "mel_category": "A",
+  "installed": "2",
+  "required": "1",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Conventional navigation only; 1 flight-day to repair",
+  "procedures": [
+   "(O) Check the engine display can be switched to an alternate display unit",
+   "(O) All navigation based on ILS, VOR and DME",
+   "Repairs are made within 1 flight-day"
+  ],
+  "effects": {},
+  "weight": 1,
+  "group": "du",
+  "source": "FAA MMEL B-737 Rev 63 (draft 02/10/2026)",
+  "component_options": [
+   "Captain",
+   "First officer"
+  ],
+  "interval_days": 1
  }
 ]

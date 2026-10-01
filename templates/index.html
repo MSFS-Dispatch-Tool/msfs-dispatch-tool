@@ -2903,10 +2903,12 @@ function techCardsHtml(flight, i) {
   const melCards = mels.map(m => {
     const tags = [m.mel_category ? `<span class="tech-tag cat">CAT ${m.mel_category}</span>` : '',
       m.interval_days ? `<span class="tech-tag">RECTIFY WITHIN ${m.interval_days} DAYS</span>` : '',
-      m.maintenance ? '<span class="tech-tag">(M)</span>' : '', m.operations ? '<span class="tech-tag">(O)</span>' : ''].join('');
+      m.maintenance ? '<span class="tech-tag">(M)</span>' : '', m.operations ? '<span class="tech-tag">(O)</span>' : '',
+      m.installed && m.installed !== '-' ? `<span class="tech-tag">${escText(m.installed)} INSTALLED / ${escText(m.required)} REQUIRED</span>` : ''].join('');
     const steps = (m.procedures || []).map((text, k) => step(`${m.id}#${k}`, text)).join('');
     return `<div class="tech-card"><div class="tech-card-head"><b>${melTitle(m)}</b>${tags}</div>
-      <p>${escText(m.description)}</p>${steps ? `<ul class="tech-steps">${steps}</ul>` : `<p class="tech-applied">${escText(m.dispatch_consequence || '')}</p>`}</div>`;
+      <p>${escText(m.description)}</p>${steps ? `<ul class="tech-steps">${steps}</ul>` : `<p class="tech-applied">${escText(m.dispatch_consequence || '')}</p>`}
+      ${m.source ? `<p class="tech-note" style="margin-top:6px;">Conditions from the ${escText(m.source)}</p>` : ''}</div>`;
   });
   const cdlCards = cdl.map(c => {
     const e = c.effects || {};
@@ -2919,7 +2921,7 @@ function techCardsHtml(flight, i) {
     ? `<ul class="tech-checks" style="margin-bottom:12px;">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
   const applied = techAppliedText(leg);
   return `${checks}${melCards.join('')}${cdlCards.join('')}${applied ? `<p class="tech-applied">${applied}</p>` : ''}
-    <p class="tech-note">(M) maintenance procedure, done by engineers before departure; (O) operational procedure for the crew. Representative content written for simulation, not an approved MEL</p>`;
+    <p class="tech-note">(M) maintenance procedure, done by engineers before departure; (O) operational procedure for the crew. ${mels.some(m => m.source) ? 'Items with a source follow the FAA master MEL; an airline MEL can be stricter. ' : ''}For simulation, not an approved MEL</p>`;
 }
 function toggleTechStep(i, key, input) {
   const flight = loadActiveFlight(); if (!flight) return;
@@ -3401,6 +3403,14 @@ function submitLoadsheet(index) {
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
+  // MEL fuel limits (see techlog.py): fuel-pump minimums, centre tank empty
+  const tech = flight.legs[index].tech || {};
+  const ofp = flight.leg_state[index].ofp || {};
+  const fobKg = /lb/i.test(ofp.weight_unit || '') ? Math.round(fob * 0.45359237) : fob;
+  const problems = [];
+  if (tech.min_takeoff_fuel_kg && fobKg < tech.min_takeoff_fuel_kg) problems.push(`below the MEL take-off minimum of ${fmtNum(tech.min_takeoff_fuel_kg)} kg`);
+  if (tech.max_fuel_kg && fobKg > tech.max_fuel_kg) problems.push(`above the ${fmtNum(tech.max_fuel_kg)} kg the main tanks hold with the centre tank empty`);
+  if (problems.length && !confirm(`FOB ${fmtNum(fobKg)} kg is ${problems.join(' and ')}. Sign the loadsheet anyway?`)) return;
   flight.leg_state[index].loadsheet = {zfw, fob, pax, crew, signed_at: new Date().toISOString()};
   flight.leg_state[index].loadsheet_signed = true;
   saveAndRender(flight);
