@@ -18,7 +18,13 @@
    "1",
    "2"
   ],
-  "group": "ap"
+  "group": "ap",
+  "name": "Autopilot (one of two)",
+  "plain": "One of the two autopilots is broken. You can still use the other one",
+  "steps": [
+   "Use the other autopilot",
+   "Autoland with both autopilots isn't available"
+  ]
  },
  {
   "id": "mel-02",
@@ -39,7 +45,13 @@
    ]
   },
   "weight": 3,
-  "group": "athr"
+  "group": "athr",
+  "name": "Autothrust",
+  "plain": "The automatic thrust control is broken",
+  "steps": [
+   "Set the thrust by hand for the whole flight",
+   "No fog landings"
+  ]
  },
  {
   "id": "mel-03",
@@ -60,7 +72,12 @@
    ]
   },
   "weight": 3,
-  "group": "apugen"
+  "group": "apugen",
+  "name": "APU generator",
+  "plain": "The small engine in the tail can't make electricity",
+  "steps": [
+   "Ask for a ground power cart at the gate"
+  ]
  },
  {
   "id": "mel-04",
@@ -84,7 +101,13 @@
    "1",
    "2"
   ],
-  "group": "gen"
+  "group": "gen",
+  "name": "Engine generator",
+  "plain": "One engine's electrical generator is broken",
+  "steps": [
+   "Run the tail engine (APU) for the whole flight to replace it",
+   "It burns a little extra fuel, already added to your plan"
+  ]
  },
  {
   "id": "mel-05",
@@ -120,7 +143,12 @@
   ],
   "effects": {},
   "weight": 2,
-  "group": "inv"
+  "group": "inv",
+  "name": "Static inverter",
+  "plain": "A backup electrical converter is broken",
+  "steps": [
+   "Engineers check the backup power before the flight"
+  ]
  },
  {
   "id": "mel-07",
@@ -142,7 +170,13 @@
    "2",
    "ESS"
   ],
-  "group": "tr"
+  "group": "tr",
+  "name": "Electrical converter",
+  "plain": "One of the converters that make DC power is broken",
+  "steps": [
+   "Engineers check the others work",
+   "Keep an eye on the electrical page"
+  ]
  },
  {
   "id": "mel-08",
@@ -162,7 +196,12 @@
    "FWD",
    "AFT"
   ],
-  "group": "galley"
+  "group": "galley",
+  "name": "Galley power",
+  "plain": "One of the kitchens has no power",
+  "steps": [
+   "Let the cabin crew know: fewer hot drinks and meals"
+  ]
  },
  {
   "id": "mel-09",
@@ -184,7 +223,12 @@
    "Green",
    "Yellow"
   ],
-  "group": "hyd"
+  "group": "hyd",
+  "name": "Hydraulic pump",
+  "plain": "One engine's hydraulic pump is switched off",
+  "steps": [
+   "Flaps, gear or brakes may move more slowly on that system"
+  ]
  },
  {
   "id": "mel-10",
@@ -200,7 +244,12 @@
   ],
   "effects": {},
   "weight": 2,
-  "group": "hyd"
+  "group": "hyd",
+  "name": "Blue hydraulic pump",
+  "plain": "The electric pump of the blue hydraulic system is broken",
+  "steps": [
+   "Nothing changes in normal flight"
+  ]
  },
  {
   "id": "mel-11",
@@ -217,7 +266,12 @@
   ],
   "effects": {},
   "weight": 2,
-  "group": "hyd"
+  "group": "hyd",
+  "name": "Hydraulic power transfer unit",
+  "plain": "The unit that shares hydraulic power between systems is broken",
+  "steps": [
+   "Expect no backup between the green and yellow systems"
+  ]
  },
  {
   "id": "mel-12",
@@ -244,7 +298,13 @@
    "Right wing 1",
    "Right wing 2"
   ],
-  "group": "fuelpump"
+  "group": "fuelpump",
+  "name": "Fuel pump",
+  "plain": "One fuel pump is broken",
+  "steps": [
+   "Watch for uneven fuel between the wings",
+   "A small amount of extra fuel is added to your plan"
+  ]
  },
  {
   "id": "mel-13",
@@ -261,7 +321,12 @@
   ],
   "effects": {},
   "weight": 2,
-  "group": "xfeed"
+  "group": "xfeed",
+  "name": "Crossfeed valve",
+  "plain": "The valve that moves fuel between wings is stuck closed",
+  "steps": [
+   "Load the same fuel in both wings: you can't balance it in flight"
+  ]
  },
  {
   "id": "mel-14",
@@ -281,7 +346,12 @@
    ]
   },
   "weight": 3,
-  "group": "wxr"
+  "group": "wxr",
+  "name": "Weather radar",
+  "plain": "The weather radar is broken, so storms ahead can't be seen",
+  "steps": [
+   "Don't fly into areas with thunderstorms"
+  ]
  },
  {
   "id": "mel-15",
@@ -298,7 +368,13 @@
   ],
   "effects": {},
   "weight": 1,
-  "group": "tcas"
+  "group": "tcas",
+  "name": "Collision avoidance (TCAS)",
+  "plain": "The traffic collision warning system doesn't work",
+  "steps": [
+   "Make sure the transponder works",
+   "Tell air traffic control"
+  ]
  },
  {
   "id": "mel-16",
@@ -318,7 +394,12 @@
    "1",
    "2"
   ],
-  "group": "xpdr"
+  "group": "xpdr",
+  "name": "Transponder (one of two)",
+  "plain": "One of the two transponders is broken",
+  "steps": [
+   "Use the other transponder"
+  ]
  },
  {
   "id": "mel-17",
@@ -334,7 +415,12 @@
   ],
   "effects": {},
   "weight": 1,
-  "group": "isis"
+  "group": "isis",
+  "name": "Standby instruments",
+  "plain": "The backup flight instrument is broken",
+  "steps": [
+   "Both main screens and all three navigation units must work"
+  ]
  },
  {
   "id": "mel-18",
@@ -354,7 +440,12 @@
    "Captain",
    "First officer"
   ],
-  "group": "clock"
+  "group": "clock",
+  "name": "Clock",
+  "plain": "One of the cockpit clocks doesn't work",
+  "steps": [
+   "Use the other clock"
+  ]
  },
  {
   "id": "mel-19",
@@ -374,7 +465,12 @@
    "1",
    "2"
   ],
-  "group": "dme"
+  "group": "dme",
+  "name": "DME",
+  "plain": "One of the distance-measuring radios is broken",
+  "steps": [
+   "Use the other one"
+  ]
  },
  {
   "id": "mel-20",
@@ -394,7 +490,12 @@
    "1",
    "2"
   ],
-  "group": "vor"
+  "group": "vor",
+  "name": "VOR radio",
+  "plain": "One VOR navigation radio is broken",
+  "steps": [
+   "Navigate with the other one"
+  ]
  },
  {
   "id": "mel-21",
@@ -418,7 +519,12 @@
    "1",
    "2"
   ],
-  "group": "mmr"
+  "group": "mmr",
+  "name": "ILS receiver",
+  "plain": "One landing-guidance receiver is broken",
+  "steps": [
+   "No fog landings: low-visibility approaches need both receivers"
+  ]
  },
  {
   "id": "mel-22",
@@ -440,7 +546,13 @@
    "1",
    "2"
   ],
-  "group": "adiru"
+  "group": "adiru",
+  "name": "Navigation unit",
+  "plain": "One of the three navigation units is broken",
+  "steps": [
+   "Switch to the third unit",
+   "No special GPS approaches (RNP AR)"
+  ]
  },
  {
   "id": "mel-23",
@@ -461,7 +573,13 @@
    "1",
    "2"
   ],
-  "group": "fmgc"
+  "group": "fmgc",
+  "name": "Flight management computer",
+  "plain": "One of the two flight management computers is broken",
+  "steps": [
+   "Use the other one for both sides",
+   "Autoland with both autopilots isn't available"
+  ]
  },
  {
   "id": "mel-24",
@@ -485,7 +603,12 @@
    "First officer ND",
    "First officer PFD"
   ],
-  "group": "du"
+  "group": "du",
+  "name": "Display screen",
+  "plain": "One cockpit display screen is broken",
+  "steps": [
+   "Move its information to another screen"
+  ]
  },
  {
   "id": "mel-25",
@@ -508,7 +631,13 @@
    "performance": true
   },
   "weight": 1,
-  "group": "brakes"
+  "group": "brakes",
+  "name": "Anti-skid brakes",
+  "plain": "The anti-skid braking system is switched off",
+  "steps": [
+   "Take-off and landing need more runway",
+   "Don't use snowy or icy runways"
+  ]
  },
  {
   "id": "mel-26",
@@ -532,7 +661,13 @@
    "1",
    "2"
   ],
-  "group": "pack"
+  "group": "pack",
+  "name": "Air conditioning pack",
+  "plain": "One of the two air conditioning units is broken",
+  "steps": [
+   "Fly no higher than FL315",
+   "Already set in your SimBrief plan"
+  ]
  },
  {
   "id": "mel-27",
@@ -555,7 +690,13 @@
    ]
   },
   "weight": 3,
-  "group": "apu"
+  "group": "apu",
+  "name": "APU (tail engine)",
+  "plain": "The small engine in the tail doesn't work",
+  "steps": [
+   "Ask for a ground power cart and an air starter at every gate",
+   "Or start the second engine using air from the first"
+  ]
  },
  {
   "id": "mel-28",
@@ -579,7 +720,12 @@
    "1",
    "2"
   ],
-  "group": "bleed"
+  "group": "bleed",
+  "name": "Engine bleed",
+  "plain": "One engine can't supply air to the aircraft systems",
+  "steps": [
+   "Fly no higher than FL315"
+  ]
  },
  {
   "id": "mel-29",
@@ -604,7 +750,12 @@
    "Left",
    "Right"
   ],
-  "group": "wai"
+  "group": "wai",
+  "name": "Wing anti-ice",
+  "plain": "One wing's anti-ice system doesn't work",
+  "steps": [
+   "Don't fly into icing conditions"
+  ]
  },
  {
   "id": "mel-30",
@@ -628,7 +779,12 @@
    "1",
    "2"
   ],
-  "group": "eai"
+  "group": "eai",
+  "name": "Engine anti-ice",
+  "plain": "One engine's anti-ice is stuck on",
+  "steps": [
+   "Expect slightly lower performance; a little extra fuel is added"
+  ]
  },
  {
   "id": "mel-31",
@@ -654,7 +810,13 @@
    "4",
    "5"
   ],
-  "group": "spoiler"
+  "group": "spoiler",
+  "name": "Spoiler",
+  "plain": "One spoiler panel on the wing doesn't work",
+  "steps": [
+   "Take-off and landing need a bit more runway",
+   "A little extra fuel is added"
+  ]
  },
  {
   "id": "mel-32",
@@ -681,7 +843,13 @@
    "1",
    "2"
   ],
-  "group": "rev"
+  "group": "rev",
+  "name": "Thrust reverser",
+  "plain": "One engine's reverse thrust is locked out",
+  "steps": [
+   "Plan the landing without reverse on that engine",
+   "Don't use snowy or icy runways"
+  ]
  },
  {
   "id": "mel-33",
@@ -706,7 +874,13 @@
    "Right inner",
    "Centre"
   ],
-  "group": "fqi"
+  "group": "fqi",
+  "name": "Fuel gauge",
+  "plain": "One tank's fuel gauge doesn't work",
+  "steps": [
+   "Engineers measure the fuel by hand before each flight",
+   "10 minutes of extra fuel is added for safety"
+  ]
  },
  {
   "id": "mel-34",
@@ -730,7 +904,12 @@
    "Captain",
    "First officer"
   ],
-  "group": "wiper"
+  "group": "wiper",
+  "name": "Windshield wiper",
+  "plain": "One windshield wiper doesn't work",
+  "steps": [
+   "Don't fly if it's raining or snowing at either airport"
+  ]
  },
  {
   "id": "mel-35",
@@ -750,7 +929,12 @@
    "Left",
    "Right"
   ],
-  "group": "lights"
+  "group": "lights",
+  "name": "Landing light",
+  "plain": "One landing light doesn't work",
+  "steps": [
+   "Use the other lights at night"
+  ]
  },
  {
   "id": "mel-36",
@@ -767,7 +951,12 @@
   ],
   "effects": {},
   "weight": 3,
-  "group": "acars"
+  "group": "acars",
+  "name": "ACARS datalink",
+  "plain": "The cockpit datalink to the airline doesn't work",
+  "steps": [
+   "Send times and figures to the airline by radio instead"
+  ]
  },
  {
   "id": "mel-37",
@@ -789,7 +978,13 @@
    "Aft left",
    "Aft right"
   ],
-  "group": "lav"
+  "group": "lav",
+  "name": "Lavatory",
+  "plain": "One toilet is out of order",
+  "steps": [
+   "The door is locked and marked out of order",
+   "Let the cabin crew know"
+  ]
  },
  {
   "id": "mel-38",
@@ -812,6 +1007,11 @@
    "Forward",
    "Aft"
   ],
-  "group": "cargosmoke"
+  "group": "cargosmoke",
+  "name": "Cargo hold smoke detector",
+  "plain": "The smoke detector in one cargo hold doesn't work",
+  "steps": [
+   "Keep that hold empty: put the bags in the other one"
+  ]
  }
 ]
