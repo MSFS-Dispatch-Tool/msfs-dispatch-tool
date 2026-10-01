@@ -7,6 +7,9 @@ import json
 import os
 import re
 import secrets
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 import requests
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlencode
@@ -15,6 +18,7 @@ import auth
 import wxmap
 import blog
 import flightstats
+import webperf
 import demo
 import techlog
 import ops
@@ -30,6 +34,7 @@ from timeutils import (
 )
 
 app = Flask(__name__)
+webperf.init_app(app)  # gzip + fingerprinted, long-cached static files
 
 # Session signing key - set FLASK_SECRET_KEY in the environment so
 # sessions (and therefore logins) survive a restart/redeploy. Without
@@ -674,32 +679,50 @@ def get_settings_safe():
         return db.DEFAULT_SETTINGS
 
 
+# METAR/TAF per airport, kept for 10 minutes: SELECT, an aircraft swap and a
+# re-SELECT of the same trip reuse them instead of calling aviationweather.gov
+# again (METARs are issued every 30-60 minutes). Only successful fetches are
+# cached, so an outage is retried on the next request.
+WEATHER_TTL_SECONDS = 10 * 60
+_weather_cache = {}
+_weather_cache_lock = threading.Lock()
+
+
+def _fetch_reports(kind, ids, field):
+    """{icao: raw report} from aviationweather.gov, or None if the call failed."""
+    try:
+        resp = requests.get(f"https://aviationweather.gov/api/data/{kind}",
+                            params={"ids": ",".join(ids), "format": "json"},
+                            headers={"User-Agent": WEATHER_USER_AGENT}, timeout=8)
+        resp.raise_for_status()
+        return {item.get("icaoId"): item.get(field) for item in resp.json()}
+    except Exception:
+        return None
+
+
 def fetch_weather_batch(icao_list):
     unique = sorted(set(icao_list))
-    ids_param = ",".join(unique)
-    result = {icao: {"metar": None, "taf": None} for icao in unique}
-    try:
-        resp = requests.get("https://aviationweather.gov/api/data/metar",
-                             params={"ids": ids_param, "format": "json"},
-                             headers={"User-Agent": WEATHER_USER_AGENT}, timeout=8)
-        resp.raise_for_status()
-        for item in resp.json():
-            icao = item.get("icaoId")
-            if icao in result:
-                result[icao]["metar"] = item.get("rawOb")
-    except Exception:
-        pass
-    try:
-        resp = requests.get("https://aviationweather.gov/api/data/taf",
-                             params={"ids": ids_param, "format": "json"},
-                             headers={"User-Agent": WEATHER_USER_AGENT}, timeout=8)
-        resp.raise_for_status()
-        for item in resp.json():
-            icao = item.get("icaoId")
-            if icao in result:
-                result[icao]["taf"] = item.get("rawTAF")
-    except Exception:
-        pass
+    now = time.monotonic()
+    result, missing = {}, []
+    with _weather_cache_lock:
+        for icao in unique:
+            hit = _weather_cache.get(icao)
+            if hit and now - hit[0] < WEATHER_TTL_SECONDS:
+                result[icao] = dict(hit[1])
+            else:
+                missing.append(icao)
+    if missing:
+        # METAR and TAF in parallel: two round trips cost one
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            metars_f = pool.submit(_fetch_reports, "metar", missing, "rawOb")
+            tafs_f = pool.submit(_fetch_reports, "taf", missing, "rawTAF")
+            metars, tafs = metars_f.result(), tafs_f.result()
+        with _weather_cache_lock:
+            for icao in missing:
+                wx = {"metar": (metars or {}).get(icao), "taf": (tafs or {}).get(icao)}
+                result[icao] = wx
+                if metars is not None and tafs is not None:
+                    _weather_cache[icao] = (now, dict(wx))
     return result
 
 
@@ -877,6 +900,10 @@ def airports_search_world():
 def search():
     origin_raw = request.args.get("origin", default="", type=str)
     destination_raw = request.args.get("destination", default="", type=str)
+    if not origin_raw.strip() and not destination_raw.strip():
+        # An unfiltered search is the whole network (~19 MB, ~2 s); the app
+        # never sends one, so refuse it rather than let anyone trigger it
+        return jsonify({"error": "Give a departure or destination airport."}), 400
     trip_type = request.args.get("trip_type", default="random", type=str)
     airline = request.args.get("airline", default="", type=str).strip().upper()
     if airline and airline not in ACTIVE_CARRIER_CODES:
@@ -1493,44 +1520,24 @@ def account_delete_route():
     return jsonify({"ok": True})
 
 
-@app.route("/stats")
-def stats_route():
-    empty = {"total_flights": 0, "total_flight_minutes": 0, "airports": [], "monthly": []}
-    if not db.db_available():
-        return jsonify(empty)
-    try:
-        result = db.get_stats(current_user_id())
-    except Exception:
-        return jsonify(empty)
-    for entry in result["airports"]:
-        info = airports_by_icao.get(entry["icao"]) or airports_world_by_icao.get(entry["icao"], {})
-        entry["name"] = info.get("name")
-        entry["lat"] = info.get("lat")
-        entry["lon"] = info.get("lon")
-
-    base = get_settings_safe()["profile"].get("preferred_base")
-    if base and not any(entry["icao"] == base for entry in result["airports"]):
-        info = airports_by_icao.get(base) or airports_world_by_icao.get(base)
-        if info:
-            result["airports"].append({
-                "icao": base, "count": 0,
-                "name": info.get("name"), "lat": info.get("lat"), "lon": info.get("lon"),
-            })
-    return jsonify(result)
-
-
 @app.route("/stats/flights")
 def stats_flights_route():
     """The account's whole logbook as compact rows (see flightstats) - the
     Stats page filters and aggregates them in the browser."""
-    empty = {"flights": [], "airports": {}}
+    empty = {"flights": [], "airports": {}, "base": None}
     if not db.db_available():
         return jsonify(empty)
     try:
         records = db.list_pireps(current_user_id())
     except Exception:
         return jsonify(empty)
-    return jsonify(flightstats.logbook(records, lambda icao: airports_by_icao.get(icao) or airports_world_by_icao.get(icao)))
+    lookup = lambda icao: airports_by_icao.get(icao) or airports_world_by_icao.get(icao)
+    result = flightstats.logbook(records, lookup)
+    # The pilot's base, so the profile map can show it before any flight there
+    base = get_settings_safe()["profile"].get("preferred_base")
+    info = lookup(base) if base else None
+    result["base"] = {"icao": base, "name": info.get("name"), "lat": info.get("lat"), "lon": info.get("lon")} if info else None
+    return jsonify(result)
 
 
 @app.route("/simbrief/redirect-url")

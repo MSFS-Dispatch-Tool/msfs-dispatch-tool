@@ -14,8 +14,10 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-APP_TEMPLATES = ["index.html", "onboarding.html", "login.html", "admin_users.html",
-                 "auth_callback.html", "auth_forgot_password.html", "auth_reset_password.html"]
+APP_FILES = ["templates/index.html", "templates/onboarding.html", "templates/login.html",
+             "templates/admin_users.html", "templates/auth_callback.html",
+             "templates/auth_forgot_password.html", "templates/auth_reset_password.html",
+             "static/js/app.js"]
 
 TEXT_NODE = re.compile(r">([^<>{}]{3,}?[A-Za-z0-9)\]])\.(\s*)</")
 JS_STRING = re.compile(r"(['`\"])([A-Z][^'`\"\n]{8,}?[A-Za-z0-9)\]])\.\1")
@@ -43,8 +45,8 @@ def fix(text):
 
 def main():
     offenders = 0
-    for name in APP_TEMPLATES:
-        path = ROOT / "templates" / name
+    for name in APP_FILES:
+        path = ROOT / name
         text = path.read_text(encoding="utf-8")
         if "--fix" in sys.argv:
             fixed = fix(text)
@@ -53,7 +55,7 @@ def main():
                 text = fixed
         for line, snippet in scan(text):
             offenders += 1
-            print(f"templates/{name}:{line}: {snippet}")
+            print(f"{name}:{line}: {snippet}")
     if offenders:
         print(f"\n{offenders} UI sentence(s) end with a full stop. Run with --fix to remove them.")
         return 1
