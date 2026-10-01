@@ -31,7 +31,28 @@ Also required in the Supabase dashboard (Authentication -> ...):
 """
 
 import os
+import time
+
 import requests
+
+UNREACHABLE = "The sign-in service can't be reached right now. Try again in a minute."
+
+
+class _Http:
+    """requests, with a network failure (timeout, DNS, refused connection)
+    raised as AuthError so callers show a message instead of a 500."""
+    def __getattr__(self, method):
+        call = getattr(requests, method)
+
+        def wrapped(*args, **kwargs):
+            try:
+                return call(*args, **kwargs)
+            except requests.RequestException:
+                raise AuthError(UNREACHABLE)
+        return wrapped
+
+
+http = _Http()
 
 SUPABASE_URL = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
@@ -117,6 +138,8 @@ def _raise_for_gotrue_error(resp):
         body = resp.json()
     except ValueError:
         body = {}
+    if not isinstance(body, dict):
+        body = {}
     message = body.get("error_description") or body.get("msg") or body.get("error") or f"Auth request failed ({resp.status_code})."
     raise AuthError(message)
 
@@ -126,7 +149,7 @@ def sign_up(email, password, redirect_to=None):
     Returns the GoTrue user object. The account can't sign in until the
     emailed link is clicked (assuming "Confirm email" is on)."""
     params = {"redirect_to": redirect_to} if redirect_to else {}
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/auth/v1/signup",
         headers=_anon_headers(),
         params=params,
@@ -142,7 +165,7 @@ def sign_in(email, password):
     """Returns {"access_token", "refresh_token", "expires_in", "user"}.
     Raises AuthError (with GoTrue's own message, e.g. "Email not
     confirmed") on bad credentials or an unverified account."""
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/auth/v1/token",
         headers=_anon_headers(),
         params={"grant_type": "password"},
@@ -155,7 +178,7 @@ def sign_in(email, password):
 
 
 def refresh_session(refresh_token):
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/auth/v1/token",
         headers=_anon_headers(),
         params={"grant_type": "refresh_token"},
@@ -172,7 +195,7 @@ def get_user(access_token):
     decoding the JWT locally) - one extra network round trip, but no JWT
     secret to manage and it can't go stale relative to what Supabase
     itself considers valid (e.g. a since-banned or deleted account)."""
-    resp = requests.get(
+    resp = http.get(
         f"{SUPABASE_URL}/auth/v1/user",
         headers={**_anon_headers(), "Authorization": f"Bearer {access_token}"},
         timeout=AUTH_TIMEOUT,
@@ -187,7 +210,7 @@ def update_password(access_token, new_password):
     used by the password-recovery flow (app.py's /auth/reset-password),
     where that token comes from the emailed recovery link rather than a
     normal sign-in."""
-    resp = requests.put(
+    resp = http.put(
         f"{SUPABASE_URL}/auth/v1/user",
         headers={**_anon_headers(), "Authorization": f"Bearer {access_token}"},
         json={"password": new_password},
@@ -200,7 +223,7 @@ def update_password(access_token, new_password):
 
 def request_password_reset(email, redirect_to=None):
     params = {"redirect_to": redirect_to} if redirect_to else {}
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/auth/v1/recover",
         headers=_anon_headers(),
         params=params,
@@ -213,7 +236,7 @@ def request_password_reset(email, redirect_to=None):
 
 def resend_verification(email, redirect_to=None):
     params = {"redirect_to": redirect_to} if redirect_to else {}
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/auth/v1/resend",
         headers=_anon_headers(),
         params=params,
@@ -230,7 +253,7 @@ def resend_verification(email, redirect_to=None):
 # ---------------------------------------------------------------------
 
 def admin_list_users(page=1, per_page=200):
-    resp = requests.get(
+    resp = http.get(
         f"{SUPABASE_URL}/auth/v1/admin/users",
         headers=_service_headers(),
         params={"page": page, "per_page": per_page},
@@ -246,7 +269,7 @@ def admin_set_banned(user_id, banned):
     """banned=True locks the account out indefinitely (a very long ban
     duration - GoTrue has no simple boolean flag); banned=False lifts it
     immediately ("none")."""
-    resp = requests.put(
+    resp = http.put(
         f"{SUPABASE_URL}/auth/v1/admin/users/{user_id}",
         headers=_service_headers(),
         json={"ban_duration": "876000h" if banned else "none"},
@@ -258,7 +281,7 @@ def admin_set_banned(user_id, banned):
 
 
 def admin_delete_user(user_id):
-    resp = requests.delete(
+    resp = http.delete(
         f"{SUPABASE_URL}/auth/v1/admin/users/{user_id}",
         headers=_service_headers(),
         timeout=AUTH_TIMEOUT,
@@ -308,7 +331,7 @@ def verify_turnstile(token, remote_ip=None):
 def ensure_avatar_bucket():
     """Idempotent: creates the public avatar-photos bucket if it
     doesn't already exist. Safe to call on every app startup."""
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/storage/v1/bucket",
         headers=_service_headers(),
         json={"id": AVATAR_BUCKET, "name": AVATAR_BUCKET, "public": True,
@@ -325,7 +348,7 @@ def upload_avatar(path, data, content_type):
     """Uploads (overwriting any existing file at the same path) and
     returns the public URL. path is typically the user's id plus an
     extension, e.g. '<uuid>.jpg'."""
-    resp = requests.post(
+    resp = http.post(
         f"{SUPABASE_URL}/storage/v1/object/{AVATAR_BUCKET}/{path}",
         headers={
             "apikey": SUPABASE_SERVICE_ROLE_KEY,
@@ -338,4 +361,6 @@ def upload_avatar(path, data, content_type):
     )
     if resp.status_code >= 400:
         raise AuthError(f"Photo upload failed: {resp.text}")
-    return f"{SUPABASE_URL}/storage/v1/object/public/{AVATAR_BUCKET}/{path}"
+    # The file name stays the same on every upload, so the version stops
+    # browsers showing the old photo from their cache
+    return f"{SUPABASE_URL}/storage/v1/object/public/{AVATAR_BUCKET}/{path}?v={int(time.time())}"

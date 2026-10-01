@@ -68,8 +68,9 @@ _CLOUD_RE = re.compile(r"\b(?:BKN|OVC|VV)\d{3}")
 _MOISTURE = {"RA", "DZ", "SN", "SG", "PL", "GS", "GR", "IC", "FG", "BR", "UP"}
 
 
-def _strip_header(report):
-    """Drops the station/time header so its digits aren't read as weather."""
+def _padded(report):
+    """Upper case with a space at each end, so every group, the first and
+    the last included, can be matched between spaces."""
     return f" {(report or '').upper()} "
 
 
@@ -81,7 +82,7 @@ def weather_conditions(metar, taf, scope):
     texts = [t for t in (metar, taf) if t]
     if not texts:
         return found
-    joined = " ".join(_strip_header(t) for t in texts)
+    joined = " ".join(_padded(t) for t in texts)
 
     if _TS_RE.search(joined):
         found.add("TS")

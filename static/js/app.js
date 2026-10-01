@@ -1749,19 +1749,21 @@ function legLoadTable(leg, legIndex, fleetOptions) {
         </table>`;
 }
 
+// One aircraft flies every leg of the trip, so changing it changes them all
+// (each leg keeps its own load factor).
 async function reassignAircraft(selectEl) {
-  const legIndex = Number(selectEl.dataset.legIndex);
   const aircraftType = selectEl.value;
-  const leg = expandedDetailData.legs[legIndex];
   selectEl.disabled = true;
   try {
-    const params = new URLSearchParams({
-      flight_number: leg.flight_number, aircraft_type: aircraftType, load_factor: leg.load_factor,
-    });
-    const resp = await fetch(`/select/reassign-aircraft?${params}`);
-    const result = await resp.json();
-    if (result.error) throw new Error(result.error);
-    Object.assign(leg, result);
+    const results = await Promise.all(expandedDetailData.legs.map(async leg => {
+      const params = new URLSearchParams({
+        flight_number: leg.flight_number, aircraft_type: aircraftType, load_factor: leg.load_factor,
+      });
+      const result = await (await fetch(`/select/reassign-aircraft?${params}`)).json();
+      if (result.error) throw new Error(result.error);
+      return result;
+    }));
+    expandedDetailData.legs.forEach((leg, i) => Object.assign(leg, results[i]));
     const cell = document.getElementById('detailCell');
     const [carriers, ownedAircraft] = await Promise.all([getCarriers(), getOwnedAircraft()]);
     cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
@@ -1775,10 +1777,10 @@ async function reassignAircraft(selectEl) {
 function legWeatherBlock(leg) {
   return `
         <div class="weather-block">
-          <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.metar || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${leg.weather.departure.taf || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.metar || 'UNAVAILABLE'}</span></div>
-          <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${leg.weather.arrival.taf || 'UNAVAILABLE'}</span></div>
+          <div class="weather-row"><span class="weather-label">METAR ${leg.departure_info.icao}</span><span class="weather-text">${escText(leg.weather.departure.metar || 'UNAVAILABLE')}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.departure_info.icao}</span><span class="weather-text">${escText(leg.weather.departure.taf || 'UNAVAILABLE')}</span></div>
+          <div class="weather-row"><span class="weather-label">METAR ${leg.arrival_info.icao}</span><span class="weather-text">${escText(leg.weather.arrival.metar || 'UNAVAILABLE')}</span></div>
+          <div class="weather-row"><span class="weather-label">TAF ${leg.arrival_info.icao}</span><span class="weather-text">${escText(leg.weather.arrival.taf || 'UNAVAILABLE')}</span></div>
         </div>`;
 }
 
@@ -1952,7 +1954,7 @@ async function swapAircraft(key) {
   const btn = document.getElementById('swapAircraftBtn'); if (btn) btn.disabled = true;
   const exclude = [...new Set(itineraryNogo(data.legs).map(c => c.item).filter(Boolean))];
   try {
-    const params = new URLSearchParams({ flights: key, exclude: exclude.join(','), eet: data.legs.map(l => l.eet_minutes || '').join(',') });
+    const params = new URLSearchParams({ flights: key, exclude: exclude.join(','), eet: data.legs.map(l => l.eet_minutes || '').join(','), aircraft_type: data.legs[0].aircraft_type || '' });
     const res = await (await fetch('/select/swap-aircraft?' + params)).json();
     if (res.error) throw new Error(res.error);
     data.legs.forEach((leg, i) => { leg.mels = res.mels; leg.cdl = res.cdl; leg.mel = res.mels[0] || null; leg.tech = res.tech[i]; });
@@ -1975,8 +1977,8 @@ function legOfpTable(ofp) {
   const unit = ofp.weight_unit || 'KG';
   return `
         <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">SIMBRIEF OFP</td><td class="v">${ofp.callsign || 'N/A'} &mdash; ${ofp.registration || 'REG N/A'} (${ofp.icao_type || 'TYPE N/A'})</td></tr>
-          <tr><td class="k">ROUTE</td><td class="v">${ofp.route || 'N/A'}</td></tr>
+          <tr><td class="k">SIMBRIEF OFP</td><td class="v">${escText(ofp.callsign || 'N/A')} &mdash; ${escText(ofp.registration || 'REG N/A')} (${escText(ofp.icao_type || 'TYPE N/A')})</td></tr>
+          <tr><td class="k">ROUTE</td><td class="v">${escText(ofp.route || 'N/A')}</td></tr>
           <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? fmtNum(ofp.cost_index) : 'N/A'}</td></tr>
           <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel !== '' ? fmtNum(ofp.block_fuel) + ' ' + unit : 'N/A'}</td></tr>
           <tr><td class="k">EZFW</td><td class="v">${ofp.est_zfw !== '' ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
@@ -2276,7 +2278,7 @@ function renderRecap(flight) {
     </div>
     <div class="af-cols">
       <div class="panel af-route">
-        <div class="panel-header"><span>${leg.flight_number}${callsign ? ' &mdash; ' + callsign : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}</span></div>
+        <div class="panel-header"><span>${leg.flight_number}${callsign ? ' &mdash; ' + escText(callsign) : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}</span></div>
         <div class="panel-body">
           <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
           ${routeMapDiv(leg, `map-recap-${i}`)}
@@ -3279,7 +3281,7 @@ function renderPirepLog() {
       <div class="leg-status-row" style="display:block;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
           <div style="cursor:pointer;" onclick="togglePirepRecord('${r.id}')">
-            <strong>${r.flight_number} — ${r.callsign || 'N/A'}</strong><br>
+            <strong>${escText(r.flight_number)} — ${escText(r.callsign || 'N/A')}</strong><br>
             <span class="placeholder-text">${r.departure_icao} &rarr; ${r.arrival_icao} &middot; FLIGHT DATE ${r.flight_date || 'N/A'} &middot; PIREP FILED ${filedAt.toUTCString()}</span>
           </div>
           <div>
