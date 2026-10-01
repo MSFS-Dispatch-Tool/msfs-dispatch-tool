@@ -12,6 +12,10 @@ An MEL item (data/aircraft/<family>/mel_list.json) carries machine-readable
                     CONTAM (contaminated destination runway), PRECIP
   performance       take-off/landing performance corrections apply
   cargo_hold_empty  one cargo hold must stay empty
+  min_main_tank_fuel_kg  {"takeoff", "landing"}: fuel the affected main tank
+                    must hold (737 boost pump items); both mains are loaded
+                    alike, so the totals are twice that
+  max_fuel_kg       usable fuel limit (centre tank kept empty)
 A CDL item (cdl_list.json) adds a fuel-burn percentage and a take-off and
 landing weight penalty.
 
@@ -123,7 +127,8 @@ def _resolve(item, rng):
             resolved[key] = resolved[key].replace("{side}", str(side))
         elif key in resolved:
             resolved[key] = resolved[key].replace("{side} ", "").replace("{side}", "")
-    if item.get("mel_category") in CATEGORY_INTERVAL_DAYS:
+    # Category A items carry their own interval (e.g. 1 flight-day)
+    if "interval_days" not in item and item.get("mel_category") in CATEGORY_INTERVAL_DAYS:
         resolved["interval_days"] = CATEGORY_INTERVAL_DAYS[item["mel_category"]]
     return resolved
 
@@ -165,6 +170,10 @@ def leg_tech(status, dep_icao, arr_icao, dep_wx, arr_wx, eet_minutes):
     cdl_pct = sum((c.get("effects") or {}).get("fuel_burn_pct") or 0 for c in cdl)
     cdl_fuel = math.ceil((eet_minutes or 0) * cdl_pct / 100) if cdl_pct else 0
     weight_penalty = sum((c.get("effects") or {}).get("weight_penalty_kg") or 0 for c in cdl)
+    tank_minimums = [e["min_main_tank_fuel_kg"] for e in effects if e.get("min_main_tank_fuel_kg")]
+    min_takeoff_fuel = 2 * max((t["takeoff"] for t in tank_minimums), default=0)
+    min_landing_fuel = 2 * max((t["landing"] for t in tank_minimums), default=0)
+    fuel_caps = [e["max_fuel_kg"] for e in effects if e.get("max_fuel_kg")]
     needed = {g for e in effects for g in (e.get("ground_support") or [])}
     ground = [g for g in GROUND_SUPPORT_ORDER if g in needed]
 
@@ -193,6 +202,13 @@ def leg_tech(status, dep_icao, arr_icao, dep_wx, arr_wx, eet_minutes):
             checks.append({"level": "caution", "item": m["id"], "text": f"{label}: apply the take-off and landing performance corrections"})
         if e.get("cargo_hold_empty"):
             checks.append({"level": "caution", "item": m["id"], "text": f"{label}: {m.get('chosen_component') or 'affected'} hold stays empty; load bags in the other hold"})
+    if min_takeoff_fuel:
+        checks.append({"level": "caution", "item": None,
+                       "text": f"MEL fuel minimum: at least {min_takeoff_fuel:,} kg on board for take-off "
+                               f"({min_takeoff_fuel // 2:,} kg in each main tank) and {min_landing_fuel:,} kg kept for landing"})
+    if fuel_caps:
+        checks.append({"level": "caution", "item": None,
+                       "text": f"Centre tank stays empty: block fuel limited to about {min(fuel_caps):,} kg in the main tanks"})
     if ground:
         checks.append({"level": "caution", "item": None,
                        "text": f"Needs {' and '.join(GROUND_SUPPORT_NAMES[g] for g in ground)} at {dep_icao} and {arr_icao}"})
@@ -212,6 +228,9 @@ def leg_tech(status, dep_icao, arr_icao, dep_wx, arr_wx, eet_minutes):
         "cdl_fuel_min": cdl_fuel,
         "cdl_fuel_pct": round(cdl_pct, 2),
         "weight_penalty_kg": weight_penalty,
+        "min_takeoff_fuel_kg": min_takeoff_fuel or None,
+        "min_landing_fuel_kg": min_landing_fuel or None,
+        "max_fuel_kg": min(fuel_caps) if fuel_caps else None,
         "ground_support": ground,
         "checks": checks,
         "nogo": any(c["level"] == "nogo" for c in checks),
