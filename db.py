@@ -101,6 +101,14 @@ def init_db():
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            # Demo pilot accounts created from the admin page (see demo.py).
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS demo_accounts (
+                    user_id TEXT PRIMARY KEY,
+                    email TEXT,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
         conn.commit()
 
 
@@ -201,6 +209,7 @@ def delete_user_data(user_id):
             cur.execute("DELETE FROM pireps WHERE user_id = %s", (user_id,))
             cur.execute("DELETE FROM app_settings WHERE id = %s", (user_id,))
             cur.execute("DELETE FROM active_flights WHERE user_id = %s", (user_id,))
+            cur.execute("DELETE FROM demo_accounts WHERE user_id = %s", (user_id,))
         conn.commit()
 
 

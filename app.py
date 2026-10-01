@@ -15,6 +15,7 @@ import auth
 import wxmap
 import blog
 import flightstats
+import demo
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras,
@@ -85,10 +86,16 @@ def require_login():
         return redirect(url_for("reset_password"))
     # Access lock (see auth.email_allowed): a signed-in account that isn't
     # on the allowlist sees only the restricted page (and can sign out).
-    if not auth.email_allowed(user.get("email")) and request.endpoint != "logout":
+    if not _has_access(user) and request.endpoint != "logout":
         if request.accept_mimetypes.best == "application/json" or request.method != "GET":
             return jsonify({"error": "This account doesn't have access to VirtualDispatch yet."}), 403
         return redirect(url_for("access_restricted"))
+
+
+def _has_access(user):
+    """The access lock: allowlisted emails, plus demo accounts created from
+    the admin page (checked only when the email isn't allowlisted)."""
+    return auth.email_allowed(user.get("email")) or demo.is_demo_account(user.get("id"))
 
 
 def _now_ts():
@@ -183,7 +190,7 @@ def access_restricted():
     user = current_user()
     if not user:
         return redirect(url_for("login"))
-    if auth.email_allowed(user.get("email")):
+    if _has_access(user):
         return redirect(url_for("dispatch_app"))
     return render_template("login.html", mode="restricted", signup_email=user.get("email")), 403
 
@@ -458,7 +465,33 @@ def admin_delete_user_route(user_id):
     if current_user() and current_user()["id"] == user_id:
         return jsonify({"error": "Can't delete your own account from here."}), 400
     auth.admin_delete_user(user_id)
+    if db.db_available():
+        db.delete_user_data(user_id)
     return jsonify({"ok": True})
+
+
+@app.route("/admin/api/demo-account", methods=["POST"])
+def admin_demo_account_route():
+    """Creates or resets a demo pilot with a seeded logbook (see demo.py)."""
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    payload = request.get_json(silent=True) or {}
+    email = (payload.get("email") or "").strip()
+    password = payload.get("password") or ""
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        return jsonify({"error": "Enter a valid email address"}), 400
+    if len(password) < 8:
+        return jsonify({"error": "The password needs at least 8 characters"}), 400
+    try:
+        flights = max(1, min(1000, int(payload.get("flights") or 170)))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Number of flights must be a number"}), 400
+    try:
+        result = demo.seed_account(email, password, CARRIERS, flights=flights,
+                                   base=payload.get("base") or "EGKK")
+    except (demo.DemoError, auth.AuthError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"ok": True, "email": email, **result})
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
