@@ -150,6 +150,10 @@ def logbook_row(record, airport):
         "delay_desc": str(delay_info.get("description") or "")[:120] or None,
         "delay_coded": bool(coded),
         "mel": (str(mel.get("system") or mel.get("id") or "") or None) if mel else None,
+        # Flights dispatched since MEL/CDL effects carry every item (leg.mels,
+        # leg.cdl); older ones only the single leg.mel above.
+        "mel_count": len(leg.get("mels") or []) if leg.get("mels") is not None else (1 if mel else 0),
+        "cdl": (str((leg.get("cdl") or [{}])[0].get("part") or "") or None) if leg.get("cdl") else None,
         # All fuel in kg (see fuel_kg). AFAD is entered in the OFP's unit.
         "block_fuel": fuel_kg(ofp.get("block_fuel"), unit),
         "plan_trip_fuel": fuel_kg(ofp.get("plan_trip_fuel"), unit),

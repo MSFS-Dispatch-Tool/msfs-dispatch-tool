@@ -761,6 +761,33 @@
   .status-warn  { background: var(--amber-bg); color: var(--amber); }
   .status-alert { background: var(--red-bg);   color: var(--red); }
 
+  /* Technical status: MEL/CDL items, dispatch checks, procedure cards */
+  .tech-block { margin-top: 10px; }
+  .tech-items { display: flex; flex-direction: column; gap: 6px; }
+  .tech-checks { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+  .tech-checks li { padding-left: 18px; position: relative; line-height: 1.45; }
+  .tech-checks li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .tech-checks li.caution::before { background: var(--amber); }
+  .tech-checks li.nogo { color: var(--red); font-weight: 600; }
+  .tech-checks li.nogo::before { background: var(--red); }
+  .tech-applied { margin-top: 8px; font-size: 12.5px; color: var(--text-muted); }
+  .tech-applied strong { color: var(--text); }
+  .nogo-banner { margin: 4px 0 12px; padding: 10px 14px; border: 1px solid var(--red); border-radius: var(--radius-sm); background: var(--red-bg); color: var(--red); font-size: 13px; }
+  .nogo-banner strong { display: block; margin-bottom: 4px; }
+  .nogo-banner .nogo-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .confirm-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .tech-card { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px; background: var(--white); }
+  .tech-card-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+  .tech-card-head b { font-size: 13.5px; }
+  .tech-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; padding: 2px 7px; border-radius: 999px; background: var(--face-dark); color: var(--text-muted); }
+  .tech-tag.cat { background: var(--amber-bg); color: var(--amber); }
+  .tech-card p { margin: 6px 0; font-size: 13px; }
+  .tech-steps { list-style: none; margin: 6px 0 0; padding: 0; }
+  .tech-steps label { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; padding: 3px 0; cursor: pointer; }
+  .tech-steps input { margin-top: 2px; }
+  .tech-steps .done { color: var(--text-muted); text-decoration: line-through; }
+  .tech-note { font-size: 11.5px; color: var(--text-muted); margin-top: 10px; }
+
   .placeholder-text { color: var(--text); font-size: 13px; }
   .empty-state { padding: 30px 16px; text-align: center; color: var(--text-muted); font-size: 13.5px; }
 
@@ -2754,8 +2781,8 @@ function legWeatherBlock(leg) {
 // or, once the previous leg's PIREP is in, the larger of that and the
 // knock-on delay from the late inbound aircraft (see applyReactionaryDelay).
 function legOwnDelayMinutes(leg) {
-  if (!leg.delay) return 0;
-  return Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes);
+  const rolled = !leg.delay ? 0 : Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes);
+  return rolled + (leg.aircraft_change ? leg.aircraft_change.minutes : 0);
 }
 function legExpectedDelayMinutes(leg) {
   return Number.isFinite(leg.expected_delay_minutes) ? leg.expected_delay_minutes : legOwnDelayMinutes(leg);
@@ -2765,17 +2792,104 @@ function legDelayMelBlock(leg) {
   const total = legExpectedDelayMinutes(leg);
   const lines = [];
   if (leg.reactionary) lines.push(`<span class="status-chip status-warn">DELAY 93</span> Aircraft rotation: late arrival from the previous leg (${r} min)`);
-  if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${own} min)`);
-  if (leg.reactionary && leg.delay) lines.push(`<span class="placeholder-text">Expected off-block delay ${total} min: the ${leg.delay.iata_code} delay runs alongside the late turnaround, not after it</span>`);
+  if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${leg.delay.iata_code}</span> ${leg.delay.description} (${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} min)`);
+  if (leg.aircraft_change) lines.push(`<span class="status-chip status-warn">DELAY 46</span> ${leg.aircraft_change.description} (${leg.aircraft_change.minutes} min)`);
+  if (leg.reactionary && own) lines.push(`<span class="placeholder-text">Expected off-block delay ${total} min: the other delays run alongside the late turnaround, not after it</span>`);
   return `
         <p class="placeholder-text" style="margin-top:10px;">
           ${lines.length ? lines.join('<br>') : `<span class="status-chip status-ok">ON TIME</span>`}
         </p>
-        <p class="placeholder-text">
-          ${leg.mel
-            ? `<span class="status-chip status-warn">MEL</span> ${leg.mel.system} &mdash; ${leg.mel.description} <em>(${leg.mel.dispatch_consequence})</em>`
-            : `<span class="status-chip status-ok">NO MEL</span>`}
-        </p>`;
+        ${techSummaryHtml(leg)}`;
+}
+
+// ---- Technical status (MEL/CDL, see techlog.py) ----
+function legMels(leg) { return leg.mels || (leg.mel ? [leg.mel] : []); }
+function legCdl(leg) { return leg.cdl || []; }
+function melTitle(m) { return `MEL ${m.ata ? m.ata + ' ' : ''}${escText(m.system)}`; }
+function techAppliedText(leg) {
+  const t = leg.tech; if (!t) return '';
+  const parts = [];
+  if (t.max_fl) parts.push(`cruise FL${t.max_fl} (MEL maximum)`);
+  if (t.extra_fuel_min) {
+    const sources = [t.mel_fuel_min ? `${t.mel_fuel_min} MEL` : '', t.cdl_fuel_min ? `${t.cdl_fuel_min} CDL` : ''].filter(Boolean);
+    parts.push(`${t.extra_fuel_min} min extra fuel (${sources.join(' + ')})`);
+  }
+  if (legMels(leg).length || legCdl(leg).length) parts.push('items in the OFP remarks');
+  return parts.length ? `Sent to SimBrief: <strong>${parts.join(' &middot; ')}</strong>` : '';
+}
+function techSummaryHtml(leg) {
+  const mels = legMels(leg), cdl = legCdl(leg);
+  if (!mels.length && !cdl.length) return `<p class="placeholder-text"><span class="status-chip status-ok">NO MEL OR CDL ITEMS</span></p>`;
+  const items = mels.map(m => `<div><span class="status-chip status-warn">MEL ${escText(m.ata || '')}</span> ${escText(m.system)} &mdash; ${escText(m.description)}${m.mel_category ? ` <span class="tech-tag cat">CAT ${m.mel_category}</span>` : ''}</div>`)
+    .concat(cdl.map(c => `<div><span class="status-chip status-warn">CDL ${escText(c.ata || '')}</span> ${escText(c.part)} &mdash; ${escText(c.description)}</div>`));
+  const checks = leg.tech && leg.tech.checks && leg.tech.checks.length
+    ? `<ul class="tech-checks">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
+  // Flights saved before MEL effects existed: show the old one-line consequence
+  const legacy = !leg.tech && mels[0] && mels[0].dispatch_consequence ? `<p class="tech-applied">${escText(mels[0].dispatch_consequence)}</p>` : '';
+  const applied = techAppliedText(leg);
+  return `<div class="tech-block"><div class="tech-items">${items.join('')}</div>${checks}${legacy}${applied ? `<p class="tech-applied">${applied}</p>` : ''}</div>`;
+}
+function itineraryNogo(legs) {
+  return legs.flatMap((leg, i) => ((leg.tech && leg.tech.checks) || []).filter(c => c.level === 'nogo').map(c => ({ leg: i, ...c })));
+}
+// MEL/CDL tab: one card per item with its crew and maintenance procedures
+// as a checklist the pilot works through before the flight.
+function techCardsHtml(flight, i) {
+  const leg = flight.legs[i], mels = legMels(leg), cdl = legCdl(leg);
+  if (!mels.length && !cdl.length) return `<div class="empty-state">This aircraft has no deferred MEL items or CDL deviations</div>`;
+  const done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
+  const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
+  const melCards = mels.map(m => {
+    const tags = [m.mel_category ? `<span class="tech-tag cat">CAT ${m.mel_category}</span>` : '',
+      m.interval_days ? `<span class="tech-tag">RECTIFY WITHIN ${m.interval_days} DAYS</span>` : '',
+      m.maintenance ? '<span class="tech-tag">(M)</span>' : '', m.operations ? '<span class="tech-tag">(O)</span>' : ''].join('');
+    const steps = (m.procedures || []).map((text, k) => step(`${m.id}#${k}`, text)).join('');
+    return `<div class="tech-card"><div class="tech-card-head"><b>${melTitle(m)}</b>${tags}</div>
+      <p>${escText(m.description)}</p>${steps ? `<ul class="tech-steps">${steps}</ul>` : `<p class="tech-applied">${escText(m.dispatch_consequence || '')}</p>`}</div>`;
+  });
+  const cdlCards = cdl.map(c => {
+    const e = c.effects || {};
+    const lines = [e.fuel_burn_pct ? `Fuel burn +${e.fuel_burn_pct}%: added as extra fuel` : '',
+      e.weight_penalty_kg ? `Take-off and landing weight limits reduced by ${e.weight_penalty_kg} kg` : '', c.note || ''].filter(Boolean);
+    return `<div class="tech-card"><div class="tech-card-head"><b>CDL ${escText(c.ata || '')} ${escText(c.part)}</b><span class="tech-tag">CONFIGURATION DEVIATION</span></div>
+      <p>${escText(c.description)}</p>${lines.length ? `<ul class="tech-steps">${lines.map((t, k) => step(`${c.id}#${k}`, t)).join('')}</ul>` : ''}</div>`;
+  });
+  const checks = leg.tech && leg.tech.checks && leg.tech.checks.length
+    ? `<ul class="tech-checks" style="margin-bottom:12px;">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
+  const applied = techAppliedText(leg);
+  return `${checks}${melCards.join('')}${cdlCards.join('')}${applied ? `<p class="tech-applied">${applied}</p>` : ''}
+    <p class="tech-note">(M) maintenance procedure, done by engineers before departure; (O) operational procedure for the crew. Representative content written for simulation, not an approved MEL</p>`;
+}
+function toggleTechStep(i, key, input) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const st = flight.leg_state[i];
+  st.tech_done = st.tech_done || {};
+  if (input.checked) st.tech_done[key] = true; else delete st.tech_done[key];
+  input.nextElementSibling.classList.toggle('done', input.checked);
+  saveActiveFlight(flight);
+}
+
+// Dispatch swaps the aircraft when an item makes a leg NO-GO: the new one
+// brings its own status and costs a code 46 delay on the first leg.
+async function swapAircraft(key) {
+  const data = expandedDetailData; if (!data || expandedKey !== key) return;
+  const btn = document.getElementById('swapAircraftBtn'); if (btn) btn.disabled = true;
+  const exclude = [...new Set(itineraryNogo(data.legs).map(c => c.item).filter(Boolean))];
+  try {
+    const params = new URLSearchParams({ flights: key, exclude: exclude.join(','), eet: data.legs.map(l => l.eet_minutes || '').join(',') });
+    const res = await (await fetch('/select/swap-aircraft?' + params)).json();
+    if (res.error) throw new Error(res.error);
+    data.legs.forEach((leg, i) => { leg.mels = res.mels; leg.cdl = res.cdl; leg.mel = res.mels[0] || null; leg.tech = res.tech[i]; });
+    const first = data.legs[0], before = legExpectedDelayMinutes(first);
+    first.aircraft_change = first.aircraft_change
+      ? { ...first.aircraft_change, minutes: first.aircraft_change.minutes + res.aircraft_change.minutes } : res.aircraft_change;
+    first.expected_delay_minutes = before + res.aircraft_change.minutes;
+    ['eobt', 'etot', 'eldt', 'eibt'].forEach(f => { if (first[f]) first[f] = shiftZulu(first[f], res.aircraft_change.minutes); });
+    await paintDetail();
+  } catch (err) {
+    alert('Could not swap the aircraft. Check the connection and retry');
+    if (btn) btn.disabled = false;
+  }
 }
 
 function legOfpTable(ofp) {
@@ -2810,11 +2924,17 @@ function buildDetailHtml(data, key, carriers, ownedAircraft) {
       </div>
     </div>`).join('');
 
+  const nogo = itineraryNogo(data.legs);
+  const banner = nogo.length ? `<div class="nogo-banner" role="alert"><strong>NOT DISPATCHABLE AS PLANNED</strong>
+      ${nogo.map(c => `Leg ${c.leg + 1}: ${escText(c.text)}`).join('<br>')}
+      <div class="nogo-actions"><button class="action small" id="swapAircraftBtn" type="button" onclick="swapAircraft('${key}')">SWAP AIRCRAFT</button>
+      <span>Dispatch assigns another aircraft: about 20 to 45 min of delay (code 46) on leg 1. Or pick another flight</span></div></div>` : '';
   return `
     <div class="detail-inner">
       ${legBlocks}
+      ${banner}
       <div class="confirm-row">
-        <button class="action" onclick="confirmFlight('${key}')">CONFIRM</button>
+        <button class="action" onclick="confirmFlight('${key}')"${nogo.length ? ' disabled title="Not dispatchable: swap the aircraft or pick another flight"' : ''}>CONFIRM</button>
       </div>
     </div>`;
 }
@@ -2950,7 +3070,7 @@ function saveAndRender(flight) {
 let recapLegIndex = null;     // null = the leg in progress
 let recapTab = 'next';
 let recapFlightKey = '';
-const RECAP_TABS = [['next', 'NEXT STEP'], ['briefing', 'BRIEFING'], ['weather', 'WEATHER'], ['ofp', 'SIMBRIEF OFP']];
+const RECAP_TABS = [['next', 'NEXT STEP'], ['briefing', 'BRIEFING'], ['tech', 'MEL / CDL'], ['weather', 'WEATHER'], ['ofp', 'SIMBRIEF OFP']];
 
 function legProgress(flight, i) {
   const done = flight.leg_status[i].status === 'done';
@@ -2990,6 +3110,7 @@ function recapNextStepHtml(flight, i, allDone) {
   if (state.simbrief === 'not_sent') {
     return `<h3 class="af-step-title">Plan the flight on SimBrief</h3>
       <p class="af-step-text">Send this leg to SimBrief: the flight number, callsign, aircraft, cost index, passengers and expected off-block time are filled in for you. Generate the OFP there, then come back to fetch it</p>
+      ${techAppliedText(leg) ? `<p class="af-step-text">${techAppliedText(leg)}. Work through the MEL / CDL tab before the flight</p>` : ''}
       <button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
   }
   if (state.simbrief === 'sent') {
@@ -3061,7 +3182,7 @@ function renderRecap(flight) {
   const ofpBody = state.ofp
     ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '')
     : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief</div>`;
-  const panes = { next: recapNextStepHtml(flight, i, allDone), briefing, weather: legWeatherBlock(leg), ofp: ofpBody };
+  const panes = { next: recapNextStepHtml(flight, i, allDone), briefing, tech: techCardsHtml(flight, i), weather: legWeatherBlock(leg), ofp: ofpBody };
   const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : 'next';
 
   const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
@@ -3152,6 +3273,11 @@ async function doPrepareLeg(index) {
     eobt: leg.eobt || '',
     taxi_out_minutes: leg.taxi_out_minutes
   });
+  if (leg.tech) {
+    if (leg.tech.max_fl) qs.set('max_fl', leg.tech.max_fl);
+    if (leg.tech.extra_fuel_min) qs.set('extra_fuel_min', leg.tech.extra_fuel_min);
+    if (leg.tech.remarks) qs.set('remarks', leg.tech.remarks);
+  }
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
     const data = await resp.json();
@@ -3286,7 +3412,7 @@ function updateDelayCoding(i) {
   const r = leg.reactionary ? Math.min(leg.reactionary.minutes, d) : 0;
   const rows = [];
   if (r) rows.push(['93', r]);
-  if (d - r > 0) rows.push([leg.delay ? leg.delay.iata_code : '', d - r]);
+  if (d - r > 0) rows.push([leg.aircraft_change ? '46' : leg.delay ? leg.delay.iata_code : '', d - r]);
   while (rows.length < 2) rows.push(['', '']);
   box.innerHTML = `<p>You left the gate <strong>${d} min</strong> after the scheduled off-block time. Code the delay like a real crew: up to two IATA codes whose minutes add up to ${d}</p>
     ${rows.map(([code, mins], k) => `<div class="delay-code-row">
@@ -3683,7 +3809,8 @@ async function renderAccountSettings() {
       <div class="panel-body">
         ${renderComplicationCategory('delay', 'DELAYS', "Random departure delays rolled per leg at SELECT time – duration depends on the delay code. Feeds into EOBT/ETOT/ELDT/EIBT and what's sent to SimBrief", genOptions.delay, settings.generation.delay, d => `${d.code} — ${d.description}`, d => d.code)}
         ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'A late change to passenger or cargo figures, rolled at CONFIRM (loadsheet sign-off) time, alongside dangerous goods', genOptions.lmc, settings.generation.lmc, l => l.description, l => l.id)}
-        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'A simulated equipment deferral with a defined dispatch consequence, rolled per leg at SELECT time', genOptions.mel, settings.generation.mel, m => `${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
+        ${renderComplicationCategory('mel', 'MELs (MINIMUM EQUIPMENT LIST)', 'Deferred equipment defects on the aircraft, rolled once per trip at SELECT time: none, or up to three. Each can cap the flight level, add fuel, need ground equipment or rule out some weather', genOptions.mel, settings.generation.mel, m => `${m.ata ? m.ata + ' ' : ''}${m.system}: ${m.description}`, m => m.id, m => m.fleet)}
+        ${renderComplicationCategory('cdl', 'CDL (CONFIGURATION DEVIATION LIST)', 'A missing panel or fairing on the aircraft, rolled on some trips: adds a fuel-burn penalty and can reduce the weight limits', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, c => `${c.ata ? c.ata + ' ' : ''}${c.part}: ${c.description}`, c => c.id, c => c.fleet)}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -3866,6 +3993,7 @@ async function saveGenerationSettings() {
       delay: readCategorySettings('delay', 'disabled_codes'),
       lmc: readCategorySettings('lmc', 'disabled_ids'),
       mel: readCategorySettings('mel', 'disabled_ids'),
+      cdl: readCategorySettings('cdl', 'disabled_ids'),
     }
   };
   try {

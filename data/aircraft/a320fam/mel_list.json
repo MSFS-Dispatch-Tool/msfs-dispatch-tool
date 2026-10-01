@@ -1,336 +1,817 @@
 [
-  {
-    "id": "mel-01",
-    "system": "Autopilot",
-    "description": "Autopilot {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted on the remaining autopilot provided approach minimums don't require dual-channel autoland.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "Autopilot 1",
-      "2": "Autopilot 2"
-    },
-    "weight": 4
+ {
+  "id": "mel-01",
+  "ata": "22-11-01",
+  "system": "Autopilot",
+  "description": "Autopilot {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "One autopilot remains; CAT 3 DUAL not available",
+  "procedures": [
+   "(O) Use the remaining autopilot",
+   "(O) CAT 3 DUAL not available: plan CAT 3 SINGLE minima at most"
+  ],
+  "effects": {},
+  "weight": 4,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "ap"
+ },
+ {
+  "id": "mel-02",
+  "ata": "22-31-01",
+  "system": "Autothrust",
+  "description": "Autothrust (A/THR) inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Manual thrust; CAT 1 approaches only",
+  "procedures": [
+   "(O) Manual thrust for the whole flight",
+   "(O) Approach limited to CAT 1: no low-visibility approaches"
+  ],
+  "effects": {
+   "no_wx": [
+    "LVP"
+   ]
   },
-  {
-    "id": "mel-02",
-    "system": "Autothrust",
-    "description": "Autothrust (A/THR) inoperative.",
-    "dispatch_consequence": "Dispatch permitted provided approach minimums don't require its use; manual thrust management for the sector.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Autothrust INOP"
-    },
-    "weight": 4
+  "weight": 3,
+  "group": "athr"
+ },
+ {
+  "id": "mel-03",
+  "ata": "24-22-01",
+  "system": "APU generator",
+  "description": "APU generator inoperative (APU bleed still available)",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No APU electrics: ground power needed on stand",
+  "procedures": [
+   "(O) Use ground power on stand",
+   "(O) APU bleed may be used for engine start and air conditioning"
+  ],
+  "effects": {
+   "ground_support": [
+    "GPU"
+   ]
   },
-  {
-    "id": "mel-03",
-    "system": "APU Generator",
-    "description": "APU generator inoperative (APU still usable for bleed air).",
-    "dispatch_consequence": "Dispatch permitted; APU usable for air only, not electrical backup.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "APU Generator"
-    },
-    "weight": 3
+  "weight": 3,
+  "group": "apugen"
+ },
+ {
+  "id": "mel-04",
+  "ata": "24-21-01",
+  "system": "Engine generator",
+  "description": "Engine generator {side} inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "APU generator runs for the whole flight: extra fuel",
+  "procedures": [
+   "(M) Generator disconnected and secured",
+   "(O) APU generator on and used for the whole flight",
+   "(O) APU must be serviceable"
+  ],
+  "effects": {
+   "extra_fuel_min": 5
   },
-  {
-    "id": "mel-04",
-    "system": "Engine Generator",
-    "description": "Engine Generator {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted; electrical load carried by remaining generator sources, provided capacity is verified sufficient.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "Engine Generator 1",
-      "2": "Engine Generator 2"
-    },
-    "weight": 3
+  "weight": 3,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "gen"
+ },
+ {
+  "id": "mel-05",
+  "ata": "24-21-02",
+  "system": "Constant speed drive",
+  "description": "Constant speed drive {side} disconnected",
+  "mel_category": "A",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Not dispatchable; never rolled",
+  "procedures": [
+   "(M) Not dispatchable until inspected"
+  ],
+  "effects": {},
+  "weight": 0,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "gen"
+ },
+ {
+  "id": "mel-06",
+  "ata": "24-35-01",
+  "system": "Static inverter",
+  "description": "Static inverter inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Standby AC backup reduced",
+  "procedures": [
+   "(O) Check AC ESS SHED bus powered from the remaining sources before flight"
+  ],
+  "effects": {},
+  "weight": 2,
+  "group": "inv"
+ },
+ {
+  "id": "mel-07",
+  "ata": "24-31-01",
+  "system": "Transformer rectifier",
+  "description": "Transformer rectifier {side} inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "DC supply from the remaining TRs",
+  "procedures": [
+   "(M) Remaining TRs checked operative",
+   "(O) Monitor DC bus supply on the ELEC page"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2",
+   "ESS"
+  ],
+  "group": "tr"
+ },
+ {
+  "id": "mel-08",
+  "ata": "25-31-01",
+  "system": "Galley power",
+  "description": "Galley power supply {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Reduced cabin service",
+  "procedures": [
+   "(O) Inform the cabin crew: reduced hot service on this galley"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "FWD",
+   "AFT"
+  ],
+  "group": "galley"
+ },
+ {
+  "id": "mel-09",
+  "ata": "29-11-01",
+  "system": "Engine-driven hydraulic pump",
+  "description": "{side} system engine-driven pump inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Hydraulic redundancy reduced; PTU required",
+  "procedures": [
+   "(M) Pump depressurised and secured",
+   "(O) Expect slower operation of the affected system's services",
+   "(O) PTU must be operative"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "Green",
+   "Yellow"
+  ],
+  "group": "hyd"
+ },
+ {
+  "id": "mel-10",
+  "ata": "29-22-01",
+  "system": "Blue electric pump",
+  "description": "Blue system electric pump inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Blue system backed by the RAT only",
+  "procedures": [
+   "(O) Blue system is supplied by the RAT only in an emergency"
+  ],
+  "effects": {},
+  "weight": 2,
+  "group": "hyd"
+ },
+ {
+  "id": "mel-11",
+  "ata": "29-23-01",
+  "system": "Power transfer unit",
+  "description": "Power transfer unit (PTU) inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No PTU backup between Green and Yellow",
+  "procedures": [
+   "(O) No Green/Yellow cross-pressurisation",
+   "(O) Yellow electric pump used for cargo doors and parking brake accumulator"
+  ],
+  "effects": {},
+  "weight": 2,
+  "group": "hyd"
+ },
+ {
+  "id": "mel-12",
+  "ata": "28-22-01",
+  "system": "Fuel pump",
+  "description": "{side} fuel pump inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Fuel management restrictions; small extra fuel",
+  "procedures": [
+   "(O) Monitor fuel imbalance during the flight",
+   "(O) For a centre tank pump: plan centre tank fuel as possibly unusable"
+  ],
+  "effects": {
+   "extra_fuel_min": 5
   },
-  {
-    "id": "mel-05",
-    "system": "Constant Speed Drive",
-    "description": "Constant Speed Drive {side} disconnected.",
-    "dispatch_consequence": "Dispatch not permitted until reset/inspected on the ground - included as a genuine no-fly scenario the tool should NOT randomly select; flagged here for completeness only.",
-    "mel_category": "A",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "CSD 1 Disconnect",
-      "2": "CSD 2 Disconnect"
-    },
-    "weight": 0
+  "weight": 5,
+  "component_options": [
+   "Left wing 1",
+   "Left wing 2",
+   "Centre 1",
+   "Centre 2",
+   "Right wing 1",
+   "Right wing 2"
+  ],
+  "group": "fuelpump"
+ },
+ {
+  "id": "mel-13",
+  "ata": "28-23-01",
+  "system": "Crossfeed valve",
+  "description": "Crossfeed valve inoperative (closed)",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "No fuel balancing in flight",
+  "procedures": [
+   "(M) Valve secured closed",
+   "(O) Fuel balancing not available: load fuel symmetrically"
+  ],
+  "effects": {},
+  "weight": 2,
+  "group": "xfeed"
+ },
+ {
+  "id": "mel-14",
+  "ata": "34-41-01",
+  "system": "Weather radar",
+  "description": "Weather radar inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No dispatch into forecast thunderstorms",
+  "procedures": [
+   "(O) Not to be operated into known or forecast thunderstorm areas"
+  ],
+  "effects": {
+   "no_wx": [
+    "TS"
+   ]
   },
-  {
-    "id": "mel-06",
-    "system": "Static Inverter",
-    "description": "Static inverter inoperative.",
-    "dispatch_consequence": "Dispatch permitted; standby instrument power backup reduced.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Static Inverter"
-    },
-    "weight": 2
+  "weight": 3,
+  "group": "wxr"
+ },
+ {
+  "id": "mel-15",
+  "ata": "34-43-01",
+  "system": "TCAS",
+  "description": "TCAS inoperative",
+  "mel_category": "A",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No collision avoidance alerts",
+  "procedures": [
+   "(O) Transponder must be operative",
+   "(O) Inform ATC; flight within the period allowed by the operator's MEL only"
+  ],
+  "effects": {},
+  "weight": 1,
+  "group": "tcas"
+ },
+ {
+  "id": "mel-16",
+  "ata": "34-52-01",
+  "system": "Transponder",
+  "description": "Transponder {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "One transponder remains",
+  "procedures": [
+   "(O) Select the remaining transponder"
+  ],
+  "effects": {},
+  "weight": 3,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "xpdr"
+ },
+ {
+  "id": "mel-17",
+  "ata": "34-22-01",
+  "system": "Integrated standby instrument (ISIS)",
+  "description": "ISIS inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Standby instrument lost",
+  "procedures": [
+   "(O) Both PFDs and the three ADIRUs must be operative"
+  ],
+  "effects": {},
+  "weight": 1,
+  "group": "isis"
+ },
+ {
+  "id": "mel-18",
+  "ata": "31-21-01",
+  "system": "Clock",
+  "description": "{side} clock inoperative",
+  "mel_category": "D",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No operational impact",
+  "procedures": [
+   "(O) Use the remaining clock or FMGC time"
+  ],
+  "effects": {},
+  "weight": 1,
+  "component_options": [
+   "Captain",
+   "First officer"
+  ],
+  "group": "clock"
+ },
+ {
+  "id": "mel-19",
+  "ata": "34-51-01",
+  "system": "DME",
+  "description": "DME {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Single DME",
+  "procedures": [
+   "(O) Check the route and approaches do not need two DMEs"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "dme"
+ },
+ {
+  "id": "mel-20",
+  "ata": "34-55-01",
+  "system": "VOR",
+  "description": "VOR {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Single VOR",
+  "procedures": [
+   "(O) Check the route and approaches do not need two VORs"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "vor"
+ },
+ {
+  "id": "mel-21",
+  "ata": "34-36-01",
+  "system": "Multi-mode receiver (ILS)",
+  "description": "MMR {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "CAT 1 approaches only",
+  "procedures": [
+   "(O) Approach limited to CAT 1: two ILS receivers are needed for CAT 2/3"
+  ],
+  "effects": {
+   "no_wx": [
+    "LVP"
+   ]
   },
-  {
-    "id": "mel-07",
-    "system": "Transformer Rectifier",
-    "description": "Transformer Rectifier {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted provided remaining DC generation capacity is verified sufficient.",
-    "mel_category": "C",
-    "component_options": ["1", "2", "ESS"],
-    "failure_name": {
-      "1": "Transformer Rectifier 1",
-      "2": "Transformer Rectifier 2",
-      "ESS": "Transformer Rectifier ESS"
-    },
-    "weight": 2
+  "weight": 3,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "mmr"
+ },
+ {
+  "id": "mel-22",
+  "ata": "34-12-01",
+  "system": "Air data inertial reference unit",
+  "description": "ADIRU {side} inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Reduced navigation redundancy",
+  "procedures": [
+   "(M) ADIRU switched off",
+   "(O) Use ADIRU 3 by switching the affected side",
+   "(O) No RNP AR approaches"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "adiru"
+ },
+ {
+  "id": "mel-23",
+  "ata": "22-83-01",
+  "system": "Flight management and guidance computer",
+  "description": "FMGC {side} inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Single FMGC operation",
+  "procedures": [
+   "(O) Single FMGC operation: FMGC data on the affected side via the remaining unit",
+   "(O) CAT 3 DUAL not available"
+  ],
+  "effects": {},
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "fmgc"
+ },
+ {
+  "id": "mel-24",
+  "ata": "31-61-01",
+  "system": "Display unit",
+  "description": "{side} display unit inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Display reversion",
+  "procedures": [
+   "(O) Use the display reversion switching for the affected unit"
+  ],
+  "effects": {},
+  "weight": 3,
+  "component_options": [
+   "Captain PFD",
+   "Captain ND",
+   "Upper ECAM",
+   "Lower ECAM",
+   "First officer ND",
+   "First officer PFD"
+  ],
+  "group": "du"
+ },
+ {
+  "id": "mel-25",
+  "ata": "32-42-01",
+  "system": "Anti-skid",
+  "description": "Anti-skid inoperative",
+  "mel_category": "B",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Longer stopping distances; no contaminated runways",
+  "procedures": [
+   "(M) Anti-skid deactivated",
+   "(O) Apply the anti-skid inoperative landing and take-off performance corrections",
+   "(O) Not on contaminated runways"
+  ],
+  "effects": {
+   "no_wx": [
+    "CONTAM"
+   ],
+   "performance": true
   },
-  {
-    "id": "mel-08",
-    "system": "Galley Power",
-    "description": "Galley power supply {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted; reduced catering/hot-service capability on affected galleys for the sector.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "Galley Power 1",
-      "2": "Galley Power 2"
-    },
-    "weight": 2
+  "weight": 1,
+  "group": "brakes"
+ },
+ {
+  "id": "mel-26",
+  "ata": "21-51-01",
+  "system": "Air conditioning pack",
+  "description": "Pack {side} inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Single pack: maximum FL315",
+  "procedures": [
+   "(M) Pack valve secured closed",
+   "(O) Maximum flight level FL315",
+   "(O) Remaining pack in HI flow if needed for cabin temperature"
+  ],
+  "effects": {
+   "max_fl": 315
   },
-  {
-    "id": "mel-09",
-    "system": "Hydraulic Engine Pump",
-    "description": "{side} system engine-driven pump inoperative.",
-    "dispatch_consequence": "Dispatch permitted; associated hydraulic system pressure maintained by remaining source, standard procedure adjustments.",
-    "mel_category": "C",
-    "component_options": ["Green", "Yellow"],
-    "failure_name": {
-      "Green": "Green System Engine Pump",
-      "Yellow": "Yellow System Engine Pump"
-    },
-    "weight": 3
+  "weight": 4,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "pack"
+ },
+ {
+  "id": "mel-27",
+  "ata": "49-10-01",
+  "system": "APU",
+  "description": "APU inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Ground power and air start needed at every stand",
+  "procedures": [
+   "(O) Ground power and conditioned air on stand",
+   "(O) Engine start with an air start unit, or crossbleed start after the first engine",
+   "(O) No APU backup for electrics or bleed in flight"
+  ],
+  "effects": {
+   "ground_support": [
+    "GPU",
+    "ASU"
+   ]
   },
-  {
-    "id": "mel-10",
-    "system": "Blue Electric Pump",
-    "description": "Blue system electric pump inoperative.",
-    "dispatch_consequence": "Dispatch permitted; Blue hydraulic system backed up by the RAT in flight if needed, no normal-ops impact.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Blue Electric Pump"
-    },
-    "weight": 2
+  "weight": 3,
+  "group": "apu"
+ },
+ {
+  "id": "mel-28",
+  "ata": "36-11-01",
+  "system": "Engine bleed",
+  "description": "Engine {side} bleed inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Single bleed: maximum FL315",
+  "procedures": [
+   "(M) Bleed valve secured closed",
+   "(O) Maximum flight level FL315",
+   "(O) Crossbleed open for wing anti-ice from the other side"
+  ],
+  "effects": {
+   "max_fl": 315
   },
-  {
-    "id": "mel-11",
-    "system": "Power Transfer Unit",
-    "description": "Power Transfer Unit (PTU) inoperative.",
-    "dispatch_consequence": "Dispatch permitted; loss of Green/Yellow system cross-pressurization, standard procedure adjustments.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Power Transfer Unit"
-    },
-    "weight": 2
+  "weight": 2,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "bleed"
+ },
+ {
+  "id": "mel-29",
+  "ata": "30-11-01",
+  "system": "Wing anti-ice valve",
+  "description": "Wing anti-ice valve {side} inoperative (closed)",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "No dispatch into icing conditions",
+  "procedures": [
+   "(M) Valve secured closed",
+   "(O) Not to be operated in known or forecast icing conditions"
+  ],
+  "effects": {
+   "no_wx": [
+    "ICING"
+   ]
   },
-  {
-    "id": "mel-12",
-    "system": "Fuel Pump",
-    "description": "{side} fuel pump inoperative.",
-    "dispatch_consequence": "Dispatch permitted with fuel management/crossfeed procedure adjustments; a very common real-life dispatch scenario.",
-    "mel_category": "C",
-    "component_options": [
-      "Left Wing 1", "Left Wing 2",
-      "Center 1", "Center 2",
-      "Right Wing 1", "Right Wing 2"
-    ],
-    "failure_name": {
-      "Left Wing 1": "Left Wing Tank Pump 1",
-      "Left Wing 2": "Left Wing Tank Pump 2",
-      "Center 1": "Center Tank Pump 1",
-      "Center 2": "Center Tank Pump 2",
-      "Right Wing 1": "Right Wing Tank Pump 1",
-      "Right Wing 2": "Right Wing Tank Pump 2"
-    },
-    "weight": 5
+  "weight": 2,
+  "component_options": [
+   "Left",
+   "Right"
+  ],
+  "group": "wai"
+ },
+ {
+  "id": "mel-30",
+  "ata": "30-21-01",
+  "system": "Engine anti-ice valve",
+  "description": "Engine {side} anti-ice valve inoperative (secured open)",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Engine anti-ice on all flight: extra fuel",
+  "procedures": [
+   "(M) Valve secured open",
+   "(O) Engine anti-ice on for the whole flight: apply the performance penalty"
+  ],
+  "effects": {
+   "extra_fuel_min": 5,
+   "performance": true
   },
-  {
-    "id": "mel-13",
-    "system": "Crossfeed Valve",
-    "description": "Crossfeed valve inoperative.",
-    "dispatch_consequence": "Dispatch permitted; fuel balancing procedure adjustments for the sector.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Crossfeed Valve"
-    },
-    "weight": 2
+  "weight": 1,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "eai"
+ },
+ {
+  "id": "mel-31",
+  "ata": "27-64-01",
+  "system": "Spoiler",
+  "description": "Spoiler {side} inoperative (retracted)",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Performance corrections",
+  "procedures": [
+   "(M) Spoiler secured retracted",
+   "(O) Apply the take-off and landing performance corrections"
+  ],
+  "effects": {
+   "extra_fuel_min": 3,
+   "performance": true
   },
-  {
-    "id": "mel-14",
-    "system": "Weather Radar",
-    "description": "Weather radar inoperative.",
-    "dispatch_consequence": "Dispatch permitted outside known areas of hazardous weather; more relevant on convective-season routes.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "Weather Radar"
-    },
-    "weight": 3
+  "weight": 2,
+  "component_options": [
+   "2",
+   "3",
+   "4",
+   "5"
+  ],
+  "group": "spoiler"
+ },
+ {
+  "id": "mel-32",
+  "ata": "78-30-01",
+  "system": "Thrust reverser",
+  "description": "Engine {side} thrust reverser inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "One reverser locked; no contaminated runways",
+  "procedures": [
+   "(M) Reverser deactivated and locked stowed",
+   "(O) Landing distance without reverse on that engine",
+   "(O) Not on contaminated runways"
+  ],
+  "effects": {
+   "no_wx": [
+    "CONTAM"
+   ],
+   "performance": true
   },
-  {
-    "id": "mel-15",
-    "system": "TCAS",
-    "description": "TCAS inoperative.",
-    "dispatch_consequence": "Dispatch permitted with operational restrictions in TCAS-mandated airspace; rare/high-friction scenario in European airspace.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "TCAS"
-    },
-    "weight": 1
+  "weight": 3,
+  "component_options": [
+   "1",
+   "2"
+  ],
+  "group": "rev"
+ },
+ {
+  "id": "mel-33",
+  "ata": "28-42-01",
+  "system": "Fuel quantity indication",
+  "description": "Fuel quantity indication {side} inoperative",
+  "mel_category": "C",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Manual fuel checks; extra fuel",
+  "procedures": [
+   "(M) Fuel quantity checked by measuring sticks before each departure",
+   "(O) Cross-check the uplift against the fuel receipt",
+   "(O) Carry 10 minutes of extra fuel for the indication uncertainty"
+  ],
+  "effects": {
+   "extra_fuel_min": 10
   },
-  {
-    "id": "mel-16",
-    "system": "Transponder",
-    "description": "Transponder {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted on remaining transponder.",
-    "mel_category": "D",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "Transponder 1",
-      "2": "Transponder 2"
-    },
-    "weight": 3
+  "weight": 2,
+  "component_options": [
+   "Left inner",
+   "Right inner",
+   "Centre"
+  ],
+  "group": "fqi"
+ },
+ {
+  "id": "mel-34",
+  "ata": "30-42-01",
+  "system": "Windshield wiper",
+  "description": "{side} windshield wiper inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "No dispatch into rain or snow",
+  "procedures": [
+   "(O) Not to be operated in precipitation at departure or destination"
+  ],
+  "effects": {
+   "no_wx": [
+    "PRECIP"
+   ]
   },
-  {
-    "id": "mel-17",
-    "system": "ISIS",
-    "description": "Integrated Standby Instrument System (ISIS) inoperative.",
-    "dispatch_consequence": "Dispatch permitted provided primary attitude systems and redundancy are verified normal.",
-    "mel_category": "C",
-    "component_options": null,
-    "failure_name": {
-      "default": "ISIS"
-    },
-    "weight": 2
+  "weight": 2,
+  "component_options": [
+   "Captain",
+   "First officer"
+  ],
+  "group": "wiper"
+ },
+ {
+  "id": "mel-35",
+  "ata": "33-42-01",
+  "system": "Landing light",
+  "description": "{side} landing light inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Reduced lighting",
+  "procedures": [
+   "(O) Use the remaining landing light and the nose light for night operations"
+  ],
+  "effects": {},
+  "weight": 3,
+  "component_options": [
+   "Left",
+   "Right"
+  ],
+  "group": "lights"
+ },
+ {
+  "id": "mel-36",
+  "ata": "46-21-01",
+  "system": "ACARS",
+  "description": "ACARS inoperative",
+  "mel_category": "D",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "Voice reports instead of datalink",
+  "procedures": [
+   "(O) Voice reports for OOOI times, load figures and clearances",
+   "(O) Departure clearance by voice"
+  ],
+  "effects": {},
+  "weight": 3,
+  "group": "acars"
+ },
+ {
+  "id": "mel-37",
+  "ata": "38-31-01",
+  "system": "Lavatory",
+  "description": "{side} lavatory inoperative",
+  "mel_category": "D",
+  "maintenance": true,
+  "operations": true,
+  "dispatch_consequence": "Lavatory closed",
+  "procedures": [
+   "(M) Lavatory door locked and placarded",
+   "(O) Inform the cabin crew"
+  ],
+  "effects": {},
+  "weight": 3,
+  "component_options": [
+   "Forward",
+   "Aft left",
+   "Aft right"
+  ],
+  "group": "lav"
+ },
+ {
+  "id": "mel-38",
+  "ata": "26-16-01",
+  "system": "Cargo smoke detection",
+  "description": "{side} cargo compartment smoke detection inoperative",
+  "mel_category": "C",
+  "maintenance": false,
+  "operations": true,
+  "dispatch_consequence": "That hold stays empty",
+  "procedures": [
+   "(O) Compartment empty, or loaded only with non-combustible cargo",
+   "(O) No live animals in that hold"
+  ],
+  "effects": {
+   "cargo_hold_empty": true
   },
-  {
-    "id": "mel-18",
-    "system": "Clock",
-    "description": "{side} clock inoperative.",
-    "dispatch_consequence": "Dispatch permitted; no operational impact.",
-    "mel_category": "D",
-    "component_options": ["Captain", "First Officer"],
-    "failure_name": {
-      "Captain": "Captain Clock Fail",
-      "First Officer": "First Officer Clock Fail"
-    },
-    "weight": 1
-  },
-  {
-    "id": "mel-19",
-    "system": "DME",
-    "description": "DME {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted with reduced distance-reference redundancy.",
-    "mel_category": "D",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "DME 1",
-      "2": "DME 2"
-    },
-    "weight": 2
-  },
-  {
-    "id": "mel-20",
-    "system": "VOR",
-    "description": "VOR {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted on remaining VOR receiver.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "VOR 1",
-      "2": "VOR 2"
-    },
-    "weight": 2
-  },
-  {
-    "id": "mel-21",
-    "system": "Multi-Mode Receiver",
-    "description": "Multi-Mode Receiver (MMR) {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted, but affects approach capability at destination/alternate if minimums require dual ILS/GPS.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "Multi-Mode Receiver 1",
-      "2": "Multi-Mode Receiver 2"
-    },
-    "weight": 3
-  },
-  {
-    "id": "mel-22",
-    "system": "Air Data Inertial Reference Unit",
-    "description": "Air Data Inertial Reference Unit (ADIRU) {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted on remaining ADIRUs with standard reversionary procedures.",
-    "mel_category": "C",
-    "component_options": ["1", "2", "3"],
-    "failure_name": {
-      "1": "ADIRU 1",
-      "2": "ADIRU 2",
-      "3": "ADIRU 3"
-    },
-    "weight": 2
-  },
-  {
-    "id": "mel-23",
-    "system": "Flight Management and Guidance Computer",
-    "description": "Flight Management and Guidance Computer (FMGC) {side} inoperative.",
-    "dispatch_consequence": "Dispatch permitted with single-FMGC operating procedures.",
-    "mel_category": "C",
-    "component_options": ["1", "2"],
-    "failure_name": {
-      "1": "FMGC 1",
-      "2": "FMGC 2"
-    },
-    "weight": 3
-  },
-  {
-    "id": "mel-24",
-    "system": "Display Unit",
-    "description": "{side} display unit inoperative.",
-    "dispatch_consequence": "Dispatch permitted with reversionary-panel procedures for the affected display.",
-    "mel_category": "C",
-    "component_options": [
-      "Captain's PFD", "Captain's ND",
-      "ECAM Upper", "ECAM Lower",
-      "F/O's ND", "F/O's PFD"
-    ],
-    "failure_name": {
-      "Captain's PFD": "Display Unit 1 (Capt PFD)",
-      "Captain's ND": "Display Unit 2 (Capt ND)",
-      "ECAM Upper": "Display Unit 3 (ECAM Upper)",
-      "ECAM Lower": "Display Unit 4 (ECAM Lower)",
-      "F/O's ND": "Display Unit 5 (F/O ND)",
-      "F/O's PFD": "Display Unit 6 (F/O PFD)"
-    },
-    "weight": 3
-  },
-  {
-    "id": "mel-25",
-    "system": "Braking",
-    "description": "{side} braking mode inoperative.",
-    "dispatch_consequence": "Dispatch permitted with a landing distance penalty; performance-limited runway analysis required.",
-    "mel_category": "B",
-    "component_options": ["Normal", "Alternate"],
-    "failure_name": {
-      "Normal": "Normal Braking",
-      "Alternate": "Alternate Braking"
-    },
-    "weight": 2
-  }
+  "weight": 1,
+  "component_options": [
+   "Forward",
+   "Aft"
+  ],
+  "group": "cargosmoke"
+ }
 ]

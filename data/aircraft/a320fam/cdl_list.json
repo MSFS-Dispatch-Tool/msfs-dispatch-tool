@@ -1,0 +1,106 @@
+[
+ {
+  "id": "cdl-01",
+  "ata": "23-61",
+  "part": "Static dischargers",
+  "description": "Up to three static dischargers missing",
+  "effects": {
+   "fuel_burn_pct": 0,
+   "weight_penalty_kg": 0
+  },
+  "note": "No performance penalty within the CDL limit",
+  "weight": 4,
+  "group": "cdl1"
+ },
+ {
+  "id": "cdl-02",
+  "ata": "57-51",
+  "part": "Flap track fairing",
+  "description": "One flap track fairing tail cone missing",
+  "effects": {
+   "fuel_burn_pct": 0.4,
+   "weight_penalty_kg": 20
+  },
+  "note": "",
+  "weight": 2,
+  "group": "cdl2"
+ },
+ {
+  "id": "cdl-03",
+  "ata": "53-35",
+  "part": "Belly fairing panel",
+  "description": "One belly fairing access panel missing",
+  "effects": {
+   "fuel_burn_pct": 0.3,
+   "weight_penalty_kg": 0
+  },
+  "note": "",
+  "weight": 2,
+  "group": "cdl3"
+ },
+ {
+  "id": "cdl-04",
+  "ata": "54-50",
+  "part": "Pylon fairing",
+  "description": "Engine pylon aft fairing panel missing",
+  "effects": {
+   "fuel_burn_pct": 0.5,
+   "weight_penalty_kg": 30
+  },
+  "note": "",
+  "weight": 1,
+  "group": "cdl4"
+ },
+ {
+  "id": "cdl-05",
+  "ata": "32-21",
+  "part": "Landing gear door fairing",
+  "description": "Main landing gear door fairing seal missing",
+  "effects": {
+   "fuel_burn_pct": 0.2,
+   "weight_penalty_kg": 0
+  },
+  "note": "",
+  "weight": 2,
+  "group": "cdl5"
+ },
+ {
+  "id": "cdl-06",
+  "ata": "57-24",
+  "part": "Wing tip fence or sharklet fairing",
+  "description": "Wing tip fairing panel missing",
+  "effects": {
+   "fuel_burn_pct": 0.6,
+   "weight_penalty_kg": 40
+  },
+  "note": "",
+  "weight": 1,
+  "group": "cdl6"
+ },
+ {
+  "id": "cdl-07",
+  "ata": "27-51",
+  "part": "Flap seal",
+  "description": "One flap seal segment missing",
+  "effects": {
+   "fuel_burn_pct": 0.2,
+   "weight_penalty_kg": 0
+  },
+  "note": "",
+  "weight": 2,
+  "group": "cdl7"
+ },
+ {
+  "id": "cdl-08",
+  "ata": "52-71",
+  "part": "Door seal fairing",
+  "description": "Passenger door seal fairing missing",
+  "effects": {
+   "fuel_burn_pct": 0.1,
+   "weight_penalty_kg": 0
+  },
+  "note": "",
+  "weight": 2,
+  "group": "cdl8"
+ }
+]

@@ -16,10 +16,11 @@ import wxmap
 import blog
 import flightstats
 import demo
+import techlog
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
-    generate_leg_conditions, roll_delay, roll_mel, generate_callsign, generate_loadsheet_extras,
-    assign_aircraft_type, pax_and_cargo
+    generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras,
+    assign_aircraft_type, pax_and_cargo, sample_delay_minutes
 )
 from timeutils import (
     resolve_leg_times, resolve_leg_schedule, format_zulu, turnaround_minutes,
@@ -539,19 +540,26 @@ def load_carrier(code):
     fleet_by_type = {ac["type"]: ac for ac in config["fleet"]}
 
     mel_groups = {ac.get("mel_group", ac["type"]) for ac in fleet_by_type.values()}
-    carrier_mels = []
-    seen_mel_ids = set()
-    for mel_group in mel_groups:
-        mel_path = os.path.join("aircraft", mel_group, "mel_list.json")
-        if not os.path.exists(os.path.join(DATA_DIR, mel_path)):
-            continue
-        for m in load_json(mel_path):
-            namespaced_id = m["id"] if mel_group == "738" else f"{mel_group}/{m['id']}"
-            if namespaced_id not in seen_mel_ids:
-                seen_mel_ids.add(namespaced_id)
-                m["id"] = namespaced_id
-                m["fleet"] = mel_group
-                carrier_mels.append(m)
+
+    def load_group_items(filename):
+        items, seen = [], set()
+        for mel_group in sorted(mel_groups):
+            path = os.path.join("aircraft", mel_group, filename)
+            if not os.path.exists(os.path.join(DATA_DIR, path)):
+                continue
+            for m in load_json(path):
+                namespaced_id = m["id"] if mel_group == "738" else f"{mel_group}/{m['id']}"
+                if namespaced_id not in seen:
+                    seen.add(namespaced_id)
+                    m["id"] = namespaced_id
+                    m["fleet"] = mel_group
+                    items.append(m)
+        return items
+
+    # CDL items (configuration deviations: missing panels and fairings,
+    # see techlog.py) are grouped and namespaced the same way.
+    carrier_mels = load_group_items("mel_list.json")
+    carrier_cdls = load_group_items("cdl_list.json")
 
     return {
         "icao": config["icao"], "iata": config["iata"], "name": config["name"],
@@ -559,6 +567,7 @@ def load_carrier(code):
         "fleet_by_type": fleet_by_type,
         "routes": carrier_routes,
         "mels": carrier_mels,
+        "cdls": carrier_cdls,
     }
 
 
@@ -1002,9 +1011,11 @@ def select():
     # re-rolled per leg. Every leg of one itinerary is the same carrier
     # (round-trip pairing never crosses carriers - see generator.py), so
     # the first leg's fleet is the whole itinerary's fleet.
-    itinerary_mels = carrier_for(itinerary[0])["mels"]
-    itinerary_mel = roll_mel(itinerary_mels, settings["generation"]["mel"])
     owned_types = owned_aircraft_for(settings, itinerary[0]["carrier"])
+    # Several deferred items at once are possible, plus a CDL deviation -
+    # see techlog.roll_tech_status. Only items for the aircraft family
+    # this itinerary is flown on.
+    tech_status = roll_itinerary_tech(itinerary, owned_types, settings)
 
     legs_out = []
     leg_times = []
@@ -1015,7 +1026,11 @@ def select():
             seat_capacity=fleet_entry["seats"],
         )
         conditions["aircraft_type"] = fleet_entry["type"]
-        conditions["mel"] = itinerary_mel
+        conditions["mels"] = tech_status["mels"]
+        conditions["cdl"] = tech_status["cdl"]
+        # The first item under the old single-MEL field, for anything that
+        # still reads leg.mel (stats, older saved flights).
+        conditions["mel"] = tech_status["mels"][0] if tech_status["mels"] else None
         conditions["flight_number"] = route_leg["flight_number"]
         conditions["carrier"] = route_leg["carrier"]
         conditions["departure_info"] = airport_info(route_leg["departure_icao"])
@@ -1071,6 +1086,10 @@ def select():
             stot_dt = sldt_dt = None
             conditions["sobt"] = conditions["stot"] = conditions["sldt"] = conditions["sibt"] = None
         conditions["eet_minutes"] = schedule["eet_minutes"]
+        conditions["tech"] = techlog.leg_tech(
+            tech_status, route_leg["departure_icao"], route_leg["arrival_icao"],
+            dep_weather, arr_weather, schedule["eet_minutes"],
+        )
 
         # Expected (E-) times = scheduled (S-) times shifted by the leg's
         # own delay, if any (its sampled length - see
@@ -1100,6 +1119,62 @@ def select():
         legs_out[i]["turnaround_minutes"] = turnaround_minutes(leg_times[i - 1][1], leg_times[i][0])
 
     return jsonify({"itinerary": itinerary, "legs": legs_out})
+
+
+def roll_itinerary_tech(itinerary, owned_types, settings, exclude_ids=()):
+    """MEL and CDL items for an itinerary's aircraft (one airframe flies
+    the whole rotation, so they're rolled once, not per leg)."""
+    carrier = carrier_for(itinerary[0])
+    family = fleet_entry_for(itinerary[0], owned_types)
+    group = family.get("mel_group", family["type"])
+    mels = [m for m in carrier["mels"] if m.get("fleet") == group]
+    cdls = [c for c in carrier["cdls"] if c.get("fleet") == group]
+    return techlog.roll_tech_status(mels, cdls, settings["generation"]["mel"], settings["generation"].get("cdl"),
+                                    exclude_ids=exclude_ids)
+
+
+AIRCRAFT_SWAP_DELAY_RANGE = (20, 45)
+
+
+@app.route("/select/swap-aircraft")
+def select_swap_aircraft():
+    """Dispatch swaps the aircraft when a deferred item makes a leg NO-GO
+    in today's weather (see techlog.leg_tech). The replacement comes with
+    its own technical status - rolled again without the offending items,
+    and without any item that would ground it in the same weather - and
+    the swap costs a code 46 delay (aircraft change for technical
+    reasons) on the first leg. Everything else already reviewed stays."""
+    flight_numbers = [f.strip() for f in request.args.get("flights", default="", type=str).split(",") if f.strip()]
+    itinerary = [routes_by_flight_number.get(fn) for fn in flight_numbers]
+    if not itinerary or any(leg is None for leg in itinerary):
+        return jsonify({"error": "Unknown flights."}), 400
+    exclude = {i for i in request.args.get("exclude", default="", type=str).split(",") if i}
+    eets = request.args.get("eet", default="", type=str).split(",")
+    weather = fetch_weather_batch([icao for leg in itinerary for icao in (leg["departure_icao"], leg["arrival_icao"])])
+    settings = get_settings_safe()
+    owned_types = owned_aircraft_for(settings, itinerary[0]["carrier"])
+
+    def eet(i):
+        try:
+            return int(eets[i])
+        except (IndexError, ValueError):
+            return itinerary[i]["duration_minutes"]
+
+    status, legs_tech = None, None
+    for _ in range(25):
+        status = roll_itinerary_tech(itinerary, owned_types, settings, exclude_ids=exclude)
+        legs_tech = [techlog.leg_tech(status, leg["departure_icao"], leg["arrival_icao"],
+                                      weather.get(leg["departure_icao"]), weather.get(leg["arrival_icao"]), eet(i))
+                     for i, leg in enumerate(itinerary)]
+        grounded = techlog.nogo_items(legs_tech)
+        if not grounded:
+            break
+        exclude |= grounded
+    minutes = sample_delay_minutes(AIRCRAFT_SWAP_DELAY_RANGE)
+    return jsonify({
+        "mels": status["mels"], "cdl": status["cdl"], "tech": legs_tech,
+        "aircraft_change": {"iata_code": "46", "description": "Aircraft change for technical reasons", "minutes": minutes},
+    })
 
 
 @app.route("/select/reassign-aircraft")
@@ -1271,12 +1346,19 @@ def generation_options():
     fleet - see load_carrier - so a 737 item and an A320 item never
     collide), with a "fleet" label per item so the settings page can
     group them instead of showing one flat 50-item list."""
-    all_mels = [m for code in ACTIVE_CARRIER_CODES for m in CARRIERS[code]["mels"]]
+    # Carriers flying the same family (easyJet and Wizz Air: A320) share
+    # one item list, so each item is listed once.
+    def unique(items):
+        return list({i["id"]: i for i in items}.values())
+    all_mels = unique([m for code in ACTIVE_CARRIER_CODES for m in CARRIERS[code]["mels"]])
+    all_cdls = unique([c for code in ACTIVE_CARRIER_CODES for c in CARRIERS[code]["cdls"]])
     return jsonify({
         "delay": [{"code": d["iata_code"], "description": d["description"]} for d in delay_codes],
         "lmc": [{"id": l["id"], "description": l["description"]} for l in lmc_events],
-        "mel": [{"id": m["id"], "system": m["system"], "description": m["description"], "fleet": m["fleet"]}
-                for m in all_mels],
+        "mel": [{"id": m["id"], "system": m["system"], "description": m["description"], "fleet": m["fleet"],
+                 "ata": m.get("ata")} for m in all_mels if m.get("weight", 1) > 0],
+        "cdl": [{"id": c["id"], "part": c["part"], "description": c["description"], "fleet": c["fleet"], "ata": c.get("ata")}
+                for c in all_cdls],
     })
 
 
@@ -1522,6 +1604,21 @@ def simbrief_redirect_url():
     static_id = request.args.get("static_id", default="", type=str).strip()
     if static_id:
         params["static_id"] = static_id
+
+    # Technical status (see techlog.leg_tech): an MEL flight-level cap goes
+    # in as the cruise level, MEL/CDL fuel as extra fuel in minutes (the
+    # one unit that doesn't depend on the pilot's kg/lb setting), and the
+    # items themselves into the OFP remarks.
+    max_fl = request.args.get("max_fl", type=int)
+    if max_fl and 100 <= max_fl <= 450:
+        params["fl"] = f"FL{max_fl}"
+    extra_fuel_min = request.args.get("extra_fuel_min", type=int)
+    if extra_fuel_min and 0 < extra_fuel_min <= 120:
+        params["addedfuel"] = extra_fuel_min
+        params["addedfuel_units"] = "min"
+    remarks = re.sub(r"[^A-Za-z0-9 /.+-]", "", request.args.get("remarks", default="", type=str))[:180].strip()
+    if remarks:
+        params["manualrmk"] = remarks
 
     return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
 
