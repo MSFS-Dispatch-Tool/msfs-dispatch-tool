@@ -17,6 +17,7 @@ import blog
 import flightstats
 import demo
 import techlog
+import ops
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
     generate_leg_conditions, roll_delay, generate_callsign, generate_loadsheet_extras,
@@ -1019,6 +1020,7 @@ def select():
 
     legs_out = []
     leg_times = []
+    prev_eibt_dt = None
     for route_leg in itinerary:
         fleet_entry = fleet_entry_for(route_leg, owned_types)
         conditions = generate_leg_conditions(
@@ -1038,14 +1040,16 @@ def select():
         dep_weather = weather.get(route_leg["departure_icao"], {"metar": None, "taf": None})
         arr_weather = weather.get(route_leg["arrival_icao"], {"metar": None, "taf": None})
         conditions["weather"] = {"departure": dep_weather, "arrival": arr_weather}
+        # Only the first leg rolls a delay of its own. From the second leg
+        # on the pilot is in command of the aircraft, so the only delay
+        # dispatch expects is the knock-on from the previous leg (below).
         # Weather-flagged delay codes (departure/destination weather,
         # de-icing) only enter the pool when the leg's own METAR actually
         # supports them - see generator.roll_delay - so a summer 20C
         # departure never rolls "de-icing of aircraft".
-        conditions["delay"] = roll_delay(
+        conditions["delay"] = None if legs_out else roll_delay(
             delay_codes, settings["generation"]["delay"],
-            dep_metar=dep_weather.get("metar"), arr_metar=arr_weather.get("metar"),
-            exclude_codes=("93",) if legs_out else (),
+            dep_metar=dep_weather.get("metar"), arr_metar=arr_weather.get("metar"), month=today.month,
         )
         taxi_out = conditions["taxi_out_minutes"]
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, today, taxi_out)
@@ -1101,7 +1105,20 @@ def select():
         # Same day-suffix anchoring as above: EOBT vs today (it's the
         # same kind of figure as SOBT), ETOT/ELDT/EIBT vs this leg's own
         # SOBT date.
-        delay_minutes = conditions["delay"]["minutes"] if conditions["delay"] else 0
+        # Knock-on (reactionary, code 93) delay expected from the previous
+        # leg: this leg can't leave before that leg's expected in-block time
+        # plus the minimum turnaround, so a delay the schedule's turnaround
+        # can't absorb carries over. Replaced by the actual figure once the
+        # previous leg's PIREP is in (applyReactionaryDelay in the browser).
+        knock_on = 0
+        if legs_out and sobt_dt is not None and prev_eibt_dt is not None:
+            ready = prev_eibt_dt + timedelta(minutes=MIN_TURNAROUND_MINUTES)
+            knock_on = max(0, round((ready - sobt_dt).total_seconds() / 60))
+        conditions["reactionary"] = {
+            "iata_code": "93", "description": "Aircraft rotation: late arrival of aircraft from the previous sector",
+            "minutes": knock_on, "expected": True,
+        } if knock_on else None
+        delay_minutes = max(conditions["delay"]["minutes"] if conditions["delay"] else 0, knock_on)
         conditions["expected_delay_minutes"] = delay_minutes
         if sobt_dt is not None:
             delay_delta = timedelta(minutes=delay_minutes)
@@ -1112,11 +1129,21 @@ def select():
         else:
             conditions["eobt"] = conditions["etot"] = conditions["eldt"] = conditions["eibt"] = None
 
+        # An ATFM delay comes with a slot (CTOT); curfews at either end are
+        # checked in the browser against the leg's current expected times.
+        conditions["atfm"] = ops.atfm_slot(conditions["delay"], conditions["departure_info"],
+                                           conditions["arrival_info"], conditions["etot"])
+        conditions["curfews"] = ops.leg_curfews(route_leg["departure_icao"], route_leg["arrival_icao"], tz_by_icao,
+                                                sobt_dt.date() if sobt_dt else today)
+
+        prev_eibt_dt = sibt_dt + timedelta(minutes=delay_minutes) if sibt_dt is not None else None
         leg_times.append((sobt_dt, sibt_dt))
         legs_out.append(conditions)
 
     for i in range(1, len(legs_out)):
         legs_out[i]["turnaround_minutes"] = turnaround_minutes(leg_times[i - 1][1], leg_times[i][0])
+    # Crew duty for the whole rotation, kept on the first leg (see ops.crew_duty).
+    legs_out[0]["duty"] = ops.crew_duty(leg_times[0][0], tz_by_icao.get(itinerary[0]["departure_icao"]), len(legs_out))
 
     return jsonify({"itinerary": itinerary, "legs": legs_out})
 

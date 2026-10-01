@@ -1,0 +1,110 @@
+[
+ {
+  "icao": "EDDF",
+  "name": "Frankfurt",
+  "takeoff_until": "23:00",
+  "landing_until": "23:00",
+  "opens": "05:00",
+  "note": "Night flight ban 23:00-05:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "LSZH",
+  "name": "Zurich",
+  "takeoff_until": "23:30",
+  "landing_until": "23:30",
+  "opens": "06:00",
+  "note": "Curfew 23:30-06:00; 23:00-23:30 only to clear delays",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "LSGG",
+  "name": "Geneva",
+  "takeoff_until": "00:00",
+  "landing_until": "00:30",
+  "opens": "06:00",
+  "note": "No departures 00:00-06:00; late arrivals tolerated until about 00:30",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "LFPO",
+  "name": "Paris Orly",
+  "takeoff_until": "23:30",
+  "landing_until": "23:30",
+  "opens": "06:00",
+  "note": "Curfew 23:30-06:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "LIML",
+  "name": "Milan Linate",
+  "takeoff_until": "23:00",
+  "landing_until": "23:00",
+  "opens": "06:30",
+  "note": "Night closure 23:00-06:30",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EDDL",
+  "name": "Düsseldorf",
+  "takeoff_until": "22:00",
+  "landing_until": "23:00",
+  "opens": "06:00",
+  "note": "No take-offs after 22:00 or landings after 23:00, until 06:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EGAC",
+  "name": "Belfast City",
+  "takeoff_until": "23:00",
+  "landing_until": "23:00",
+  "opens": "06:30",
+  "note": "Scheduled flights 06:30-21:30; delayed flights may be allowed until 23:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EDDB",
+  "name": "Berlin Brandenburg",
+  "takeoff_until": "00:00",
+  "landing_until": "00:00",
+  "opens": "05:00",
+  "note": "Night flight ban 00:00-05:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EDDH",
+  "name": "Hamburg",
+  "takeoff_until": "00:00",
+  "landing_until": "00:00",
+  "opens": "06:00",
+  "note": "Flights 06:00-23:00; delayed flights until 00:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EDDW",
+  "name": "Bremen",
+  "takeoff_until": "22:30",
+  "landing_until": "22:30",
+  "opens": "06:00",
+  "note": "Night flight ban 22:30-06:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "EDLW",
+  "name": "Dortmund",
+  "takeoff_until": "22:30",
+  "landing_until": "22:30",
+  "opens": "06:00",
+  "note": "Night flight ban 22:30-06:00",
+  "departure_check": "takeoff"
+ },
+ {
+  "icao": "LFSB",
+  "name": "Basel-Mulhouse",
+  "takeoff_until": "23:00",
+  "landing_until": "00:00",
+  "opens": "05:00",
+  "note": "Departures must leave the stand by 23:00; night closure until 05:00",
+  "departure_check": "offblock"
+ }
+]

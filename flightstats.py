@@ -149,6 +149,8 @@ def logbook_row(record, airport):
         "delay_code": str(delay_info.get("iata_code") or "") or None,
         "delay_desc": str(delay_info.get("description") or "")[:120] or None,
         "delay_coded": bool(coded),
+        # ATFM slot compliance when the leg had a CTOT (True/False), else None
+        "slot_met": (pirep.get("slot") or {}).get("met") if isinstance(pirep.get("slot"), dict) else None,
         "mel": (str(mel.get("system") or mel.get("id") or "") or None) if mel else None,
         # Flights dispatched since MEL/CDL effects carry every item (leg.mels,
         # leg.cdl); older ones only the single leg.mel above.

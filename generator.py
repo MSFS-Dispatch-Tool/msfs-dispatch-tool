@@ -8,13 +8,24 @@ routes that happen to connect. Scheduled routes only - no synthesized
 repositioning legs.
 """
 
+import functools
 import random
 import re
 import string
 import uuid
 from collections import defaultdict
 
-DELAY_PROBABILITY = 0.45
+# Delay calibration - Eurocontrol CODA, all-causes delay to air transport
+# in Europe, annual 2024: 17.5 min average departure delay per flight, 46%
+# of those minutes reactionary (knock-on), 4.3 min airline-related, 2.3 min
+# en-route ATFM, the rest airport, weather and other causes; 33.8% of
+# departures delayed by more than 15 minutes. Monthly average delay was
+# 13.8 min in January and 28.1 in July; the other months are interpolated
+# along the usual summer peak.
+CAUSE_MINUTE_SHARE = {"reactionary": 0.46, "airline": 0.246, "enroute": 0.131, "other": 0.163}
+DELAYED_OVER_15_SHARE = 0.338
+MONTH_FACTOR = {1: 0.79, 2: 0.76, 3: 0.80, 4: 0.90, 5: 1.00, 6: 1.35,
+                7: 1.61, 8: 1.45, 9: 1.05, 10: 0.90, 11: 0.76, 12: 0.92}
 LMC_PROBABILITY = 0.50
 DG_PROBABILITY_ON_LMC = 1.0  # dangerous goods is always "rolled" alongside
                              # LMC at loadsheet-confirm time - see app.py
@@ -413,17 +424,83 @@ def sample_delay_minutes(duration_range):
     return round(lo + (hi - lo) * random.betavariate(1.4, 2.8))
 
 
-def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None, exclude_codes=()):
-    """exclude_codes keeps codes out of the random pool - /select passes
-    "93" (late inbound aircraft) for every leg after the first, since on
-    those legs the inbound aircraft is the pilot's own previous leg and
-    any knock-on delay comes from its actual arrival, not a dice roll."""
+_BETA_A, _BETA_B = 1.4, 2.8
+
+
+def delay_cause(iata_code):
+    code = int(iata_code)
+    if 91 <= code <= 96:
+        return "reactionary"
+    if code in (81, 82):
+        return "enroute"
+    if 11 <= code <= 69:
+        return "airline"
+    return "other"
+
+
+def _beta_cdf(x, steps=400):
+    if x <= 0:
+        return 0.0
+    if x >= 1:
+        return 1.0
+    pdf = lambda t: t ** (_BETA_A - 1) * (1 - t) ** (_BETA_B - 1)
+    total = sum(pdf((i + 0.5) / steps) for i in range(steps))
+    part = sum(pdf((i + 0.5) / steps * x) for i in range(steps)) * x
+    return part / total
+
+
+def _over_15_share(duration_range):
+    return _over_15_share_cached(*duration_range)
+
+
+@functools.lru_cache(maxsize=None)
+def _over_15_share_cached(lo, hi):
+    if lo > 15:
+        return 1.0
+    if hi <= 15:
+        return 0.0
+    return 1 - _beta_cdf((15.5 - lo) / (hi - lo))
+
+
+def delay_odds(pool, month=None):
+    """Per-code pick weights and the chance of any delay, calibrated so the
+    causes contribute their CODA share of delay minutes and the share of
+    departures more than 15 minutes late matches CODA for the month. A
+    cause with no code in the pool (93 on later legs, whose knock-on delay
+    comes from the real previous leg) drops out, with its share."""
+    by_cause = {}
+    for d in pool:
+        by_cause.setdefault(delay_cause(d["iata_code"]), []).append(d)
+    weights = []
+    for d in pool:
+        siblings = by_cause[delay_cause(d["iata_code"])]
+        lo, hi = d["duration_range_minutes"]
+        mean = lo + (hi - lo) * _BETA_A / (_BETA_A + _BETA_B)
+        share = CAUSE_MINUTE_SHARE[delay_cause(d["iata_code"])] * d["weight"] / sum(s["weight"] for s in siblings)
+        weights.append(share / mean)
+    total = sum(weights)
+    if not total:
+        return weights, 0.0
+    over15 = sum(w * _over_15_share(d["duration_range_minutes"]) for w, d in zip(weights, pool)) / total
+    present = sum(CAUSE_MINUTE_SHARE[c] for c in by_cause)
+    target = DELAYED_OVER_15_SHARE * MONTH_FACTOR.get(month, 1.0) * present
+    return weights, min(0.85, max(0.05, target / over15)) if over15 else 0.0
+
+
+def roll_delay(delay_codes, delay_settings=None, dep_metar=None, arr_metar=None, exclude_codes=(), month=None):
+    """Rolled for the first leg of an itinerary only (later legs get just
+    the knock-on from the previous leg - see /select). exclude_codes keeps
+    codes out of the random pool. How likely a delay is, and which cause,
+    follows delay_odds."""
     pool = _filter_enabled(delay_codes, delay_settings, "iata_code", "disabled_codes")
     pool = [d for d in pool if d["iata_code"] not in exclude_codes
             and _weather_supports_delay(d["iata_code"], dep_metar, arr_metar)]
-    if not pool or random.random() >= DELAY_PROBABILITY:
+    if not pool:
         return None
-    delay = dict(weighted_pick(pool))
+    weights, probability = delay_odds(pool, month)
+    if random.random() >= probability:
+        return None
+    delay = dict(random.choices(pool, weights=weights, k=1)[0])
     delay["minutes"] = sample_delay_minutes(delay["duration_range_minutes"])
     return delay
 
