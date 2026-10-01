@@ -7,7 +7,7 @@
    30
   ],
   "weight": 4,
-  "plain": "The catering order was late or wrong"
+  "plain": "Catering order late or incorrect"
  },
  {
   "iata_code": "18",
@@ -17,7 +17,7 @@
    20
   ],
   "weight": 3,
-  "plain": "Bags were slow to be sorted"
+  "plain": "Baggage sorting"
  },
  {
   "iata_code": "32",
@@ -27,7 +27,7 @@
    25
   ],
   "weight": 3,
-  "plain": "Bags or cargo were slow to load"
+  "plain": "Loading or unloading of bags and cargo"
  },
  {
   "iata_code": "33",
@@ -37,7 +37,7 @@
    30
   ],
   "weight": 2,
-  "plain": "Loading equipment broke down or wasn't available"
+  "plain": "Loading equipment unavailable or unserviceable"
  },
  {
   "iata_code": "34",
@@ -47,7 +47,7 @@
    25
   ],
   "weight": 2,
-  "plain": "Stairs or service vehicles weren't available"
+  "plain": "Steps or servicing equipment unavailable"
  },
  {
   "iata_code": "35",
@@ -57,7 +57,7 @@
    15
   ],
   "weight": 2,
-  "plain": "Cleaning the cabin took longer"
+  "plain": "Aircraft cleaning"
  },
  {
   "iata_code": "36",
@@ -67,7 +67,7 @@
    30
   ],
   "weight": 3,
-  "plain": "Refuelling was late"
+  "plain": "Late refuelling"
  },
  {
   "iata_code": "39",
@@ -77,7 +77,7 @@
    30
   ],
   "weight": 2,
-  "plain": "The pushback tug wasn't available"
+  "plain": "Pushback tug unavailable"
  },
  {
   "iata_code": "41",
@@ -87,7 +87,7 @@
    60
   ],
   "weight": 3,
-  "plain": "A technical fault had to be fixed"
+  "plain": "Technical defect being rectified"
  },
  {
   "iata_code": "63",
@@ -97,7 +97,7 @@
    20
   ],
   "weight": 3,
-  "plain": "The crew boarded late"
+  "plain": "Late crew boarding"
  },
  {
   "iata_code": "64",
@@ -107,7 +107,7 @@
    60
   ],
   "weight": 1,
-  "plain": "Waiting for a replacement pilot"
+  "plain": "Flight crew shortage: waiting for a standby pilot"
  },
  {
   "iata_code": "67",
@@ -117,7 +117,7 @@
    60
   ],
   "weight": 1,
-  "plain": "Waiting for replacement cabin crew"
+  "plain": "Cabin crew shortage: waiting for standby crew"
  },
  {
   "iata_code": "71",
@@ -127,7 +127,7 @@
    45
   ],
   "weight": 3,
-  "plain": "Bad weather at the departure airport"
+  "plain": "Weather at the departure airport"
  },
  {
   "iata_code": "72",
@@ -137,7 +137,7 @@
    45
   ],
   "weight": 3,
-  "plain": "Bad weather at the destination"
+  "plain": "Weather at the destination"
  },
  {
   "iata_code": "75",
@@ -147,7 +147,7 @@
    30
   ],
   "weight": 2,
-  "plain": "The aircraft needs de-icing"
+  "plain": "Aircraft de-icing"
  },
  {
   "iata_code": "77",
@@ -157,7 +157,7 @@
    60
   ],
   "weight": 0,
-  "plain": "Thunderstorm at the departure airport: ramp closed for lightning"
+  "plain": "Ramp closed for lightning at the departure airport"
  },
  {
   "iata_code": "81",
@@ -167,7 +167,7 @@
    40
   ],
   "weight": 4,
-  "plain": "Air traffic congestion along the route"
+  "plain": "ATC flow restriction en route"
  },
  {
   "iata_code": "82",
@@ -177,7 +177,7 @@
    60
   ],
   "weight": 2,
-  "plain": "Air traffic control is short of staff"
+  "plain": "ATC staffing or equipment shortage"
  },
  {
   "iata_code": "83",
@@ -187,7 +187,7 @@
    45
   ],
   "weight": 2,
-  "plain": "Congestion at the destination airport"
+  "plain": "Flow restriction at the destination airport"
  },
  {
   "iata_code": "87",
@@ -197,7 +197,7 @@
    30
   ],
   "weight": 3,
-  "plain": "No gate or parking stand available"
+  "plain": "Stand or gate unavailable"
  },
  {
   "iata_code": "89",
@@ -217,6 +217,6 @@
    60
   ],
   "weight": 5,
-  "plain": "The aircraft arrived late from its previous flight"
+  "plain": "Late arrival of the inbound aircraft"
  }
 ]

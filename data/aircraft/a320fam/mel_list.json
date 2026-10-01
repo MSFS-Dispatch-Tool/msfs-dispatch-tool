@@ -20,10 +20,10 @@
   ],
   "group": "ap",
   "name": "Autopilot (one of two)",
-  "plain": "One of the two autopilots is broken. You can still use the other one",
+  "plain": "One of the two autopilots is inoperative, while the other remains available",
   "steps": [
-   "Use the other autopilot",
-   "Autoland with both autopilots isn't available"
+   "Use the serviceable autopilot",
+   "CAT III dual approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -47,10 +47,10 @@
   "weight": 3,
   "group": "athr",
   "name": "Autothrust",
-  "plain": "The automatic thrust control is broken",
+  "plain": "The autothrust is inoperative",
   "steps": [
-   "Set the thrust by hand for the whole flight",
-   "No fog landings"
+   "Fly with manual thrust throughout",
+   "Low-visibility approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -74,9 +74,9 @@
   "weight": 3,
   "group": "apugen",
   "name": "APU generator",
-  "plain": "The small engine in the tail can't make electricity",
+  "plain": "The APU runs but cannot supply electrical power; APU bleed air remains available for engine start",
   "steps": [
-   "Ask for a ground power cart at the gate"
+   "Request a ground power unit (GPU) on stand"
   ]
  },
  {
@@ -102,11 +102,11 @@
    "2"
   ],
   "group": "gen",
-  "name": "Engine generator",
-  "plain": "One engine's electrical generator is broken",
+  "name": "Engine generator (IDG)",
+  "plain": "One engine-driven generator is inoperative",
   "steps": [
-   "Run the tail engine (APU) for the whole flight to replace it",
-   "It burns a little extra fuel, already added to your plan"
+   "Keep the APU running with its generator online for the whole flight",
+   "Extra fuel for the APU burn is already included in the flight plan"
   ]
  },
  {
@@ -142,7 +142,7 @@
    "(O) Check AC ESS SHED bus powered from the remaining sources before flight"
   ],
   "effects": {},
-  "weight": 2,
+  "weight": 0,
   "group": "inv",
   "name": "Static inverter",
   "plain": "A backup electrical converter is broken",
@@ -171,11 +171,10 @@
    "ESS"
   ],
   "group": "tr",
-  "name": "Electrical converter",
-  "plain": "One of the converters that make DC power is broken",
+  "name": "Transformer rectifier",
+  "plain": "One transformer rectifier is inoperative",
   "steps": [
-   "Engineers check the others work",
-   "Keep an eye on the electrical page"
+   "Monitor the DC supply on the ELEC page"
   ]
  },
  {
@@ -198,9 +197,9 @@
   ],
   "group": "galley",
   "name": "Galley power",
-  "plain": "One of the kitchens has no power",
+  "plain": "One galley has no electrical power",
   "steps": [
-   "Let the cabin crew know: fewer hot drinks and meals"
+   "Brief the cabin crew: limited hot service"
   ]
  },
  {
@@ -224,10 +223,11 @@
    "Yellow"
   ],
   "group": "hyd",
-  "name": "Hydraulic pump",
-  "plain": "One engine's hydraulic pump is switched off",
+  "name": "Engine-driven hydraulic pump",
+  "plain": "One engine-driven hydraulic pump is inoperative",
   "steps": [
-   "Flaps, gear or brakes may move more slowly on that system"
+   "Switch off the affected engine pump and keep it off for the whole flight",
+   "Expect slower operation of the services on that hydraulic system"
   ]
  },
  {
@@ -245,10 +245,10 @@
   "effects": {},
   "weight": 2,
   "group": "hyd",
-  "name": "Blue hydraulic pump",
-  "plain": "The electric pump of the blue hydraulic system is broken",
+  "name": "Blue electric hydraulic pump",
+  "plain": "The blue system electric pump is inoperative",
   "steps": [
-   "Nothing changes in normal flight"
+   "No impact in normal operation; the RAT remains the blue system backup"
   ]
  },
  {
@@ -267,10 +267,11 @@
   "effects": {},
   "weight": 2,
   "group": "hyd",
-  "name": "Hydraulic power transfer unit",
-  "plain": "The unit that shares hydraulic power between systems is broken",
+  "name": "Power transfer unit (PTU)",
+  "plain": "The PTU is inoperative",
   "steps": [
-   "Expect no backup between the green and yellow systems"
+   "Switch off the PTU and keep it off for the whole flight",
+   "No pressure transfer between the green and yellow systems"
   ]
  },
  {
@@ -300,10 +301,11 @@
   ],
   "group": "fuelpump",
   "name": "Fuel pump",
-  "plain": "One fuel pump is broken",
+  "plain": "One fuel pump is inoperative",
   "steps": [
-   "Watch for uneven fuel between the wings",
-   "A small amount of extra fuel is added to your plan"
+   "Switch off the affected fuel pump and keep it off for the whole flight",
+   "Monitor fuel balance between the wings",
+   "A small fuel margin is already included in the flight plan"
   ]
  },
  {
@@ -323,9 +325,9 @@
   "weight": 2,
   "group": "xfeed",
   "name": "Crossfeed valve",
-  "plain": "The valve that moves fuel between wings is stuck closed",
+  "plain": "The fuel crossfeed valve is inoperative in the closed position",
   "steps": [
-   "Load the same fuel in both wings: you can't balance it in flight"
+   "Load fuel symmetrically: imbalance cannot be corrected in flight"
   ]
  },
  {
@@ -348,9 +350,10 @@
   "weight": 3,
   "group": "wxr",
   "name": "Weather radar",
-  "plain": "The weather radar is broken, so storms ahead can't be seen",
+  "plain": "The weather radar is inoperative",
   "steps": [
-   "Don't fly into areas with thunderstorms"
+   "Do not plan the flight through forecast thunderstorm activity. Amend your route and planning accordingly",
+   "Brief the windshear escape procedure before departure"
   ]
  },
  {
@@ -367,7 +370,7 @@
    "(O) Inform ATC; flight within the period allowed by the operator's MEL only"
   ],
   "effects": {},
-  "weight": 1,
+  "weight": 0,
   "group": "tcas",
   "name": "Collision avoidance (TCAS)",
   "plain": "The traffic collision warning system doesn't work",
@@ -396,9 +399,9 @@
   ],
   "group": "xpdr",
   "name": "Transponder (one of two)",
-  "plain": "One of the two transponders is broken",
+  "plain": "One of the two transponders is inoperative",
   "steps": [
-   "Use the other transponder"
+   "Select the serviceable transponder"
   ]
  },
  {
@@ -416,10 +419,11 @@
   "effects": {},
   "weight": 1,
   "group": "isis",
-  "name": "Standby instruments",
-  "plain": "The backup flight instrument is broken",
+  "name": "Standby instrument (ISIS)",
+  "plain": "The integrated standby instrument is inoperative or unreliable",
   "steps": [
-   "Both main screens and all three navigation units must work"
+   "Both PFDs and all three ADIRUs must be serviceable",
+   "No standby attitude, speed or altitude reference is available"
   ]
  },
  {
@@ -441,10 +445,10 @@
    "First officer"
   ],
   "group": "clock",
-  "name": "Clock",
-  "plain": "One of the cockpit clocks doesn't work",
+  "name": "Cockpit clock",
+  "plain": "One of the two cockpit clocks is inoperative or unreliable",
   "steps": [
-   "Use the other clock"
+   "Use the remaining clock"
   ]
  },
  {
@@ -466,10 +470,10 @@
    "2"
   ],
   "group": "dme",
-  "name": "DME",
-  "plain": "One of the distance-measuring radios is broken",
+  "name": "DME (one of two)",
+  "plain": "One of the two DME receivers is inoperative",
   "steps": [
-   "Use the other one"
+   "Use the remaining DME"
   ]
  },
  {
@@ -491,10 +495,10 @@
    "2"
   ],
   "group": "vor",
-  "name": "VOR radio",
-  "plain": "One VOR navigation radio is broken",
+  "name": "VOR receiver",
+  "plain": "One VOR receiver is inoperative or unreliable",
   "steps": [
-   "Navigate with the other one"
+   "Navigate on the serviceable VOR"
   ]
  },
  {
@@ -520,10 +524,10 @@
    "2"
   ],
   "group": "mmr",
-  "name": "ILS receiver",
-  "plain": "One landing-guidance receiver is broken",
+  "name": "ILS receiver (MMR)",
+  "plain": "One multi-mode receiver is inoperative or unreliable",
   "steps": [
-   "No fog landings: low-visibility approaches need both receivers"
+   "Plan CAT I approaches only: CAT II/III needs both receivers. Check the destination and alternate weather accordingly"
   ]
  },
  {
@@ -547,11 +551,11 @@
    "2"
   ],
   "group": "adiru",
-  "name": "Navigation unit",
-  "plain": "One of the three navigation units is broken",
+  "name": "ADIRU",
+  "plain": "One air data and inertial reference unit is inoperative or unreliable",
   "steps": [
-   "Switch to the third unit",
-   "No special GPS approaches (RNP AR)"
+   "Select ADIRU 3 on the affected side (ATT HDG and AIR DATA switching)",
+   "RNP AR approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -574,11 +578,11 @@
    "2"
   ],
   "group": "fmgc",
-  "name": "Flight management computer",
-  "plain": "One of the two flight management computers is broken",
+  "name": "Flight management computer (FMGC)",
+  "plain": "One flight management and guidance computer is inoperative or unreliable",
   "steps": [
-   "Use the other one for both sides",
-   "Autoland with both autopilots isn't available"
+   "Operate on the serviceable FMGC",
+   "CAT III dual approaches are not available. Amend your route and planning accordingly"
   ]
  },
  {
@@ -604,10 +608,10 @@
    "First officer PFD"
   ],
   "group": "du",
-  "name": "Display screen",
-  "plain": "One cockpit display screen is broken",
+  "name": "Display unit",
+  "plain": "One cockpit display unit is inoperative or unreliable",
   "steps": [
-   "Move its information to another screen"
+   "Transfer the affected display to another display unit"
   ]
  },
  {
@@ -632,11 +636,11 @@
   },
   "weight": 1,
   "group": "brakes",
-  "name": "Anti-skid brakes",
-  "plain": "The anti-skid braking system is switched off",
+  "name": "Anti-skid",
+  "plain": "The anti-skid system is inoperative",
   "steps": [
-   "Take-off and landing need more runway",
-   "Don't use snowy or icy runways"
+   "Apply the anti-skid inoperative take-off and landing performance: longer runways are needed",
+   "No operations on contaminated runways"
   ]
  },
  {
@@ -663,10 +667,9 @@
   ],
   "group": "pack",
   "name": "Air conditioning pack",
-  "plain": "One of the two air conditioning units is broken",
+  "plain": "One of the two air conditioning packs is inoperative",
   "steps": [
-   "Fly no higher than FL315",
-   "Already set in your SimBrief plan"
+   "Cruise above FL315 not allowed. Limitation already reflected in the flight plan"
   ]
  },
  {
@@ -691,11 +694,14 @@
   },
   "weight": 3,
   "group": "apu",
-  "name": "APU (tail engine)",
-  "plain": "The small engine in the tail doesn't work",
+  "name": "APU",
+  "plain": "The APU is inoperative",
   "steps": [
-   "Ask for a ground power cart and an air starter at every gate",
-   "Or start the second engine using air from the first"
+   "Ground operations: external electrical power and pneumatic air are needed for aircraft preparation and engine start",
+   "Engine start: start the first engine with ground air; use ground air or a cross-bleed start for the second",
+   "Cabin systems: before and after flight, air conditioning depends on external air or engine bleed air",
+   "In-flight effect: with both engines and generators operating, the aircraft is normally unaffected in routine flight",
+   "Main limitation: electrical and pneumatic backup is lost, so a subsequent engine, generator or bleed-air failure has greater operational impact"
   ]
  },
  {
@@ -722,9 +728,10 @@
   ],
   "group": "bleed",
   "name": "Engine bleed",
-  "plain": "One engine can't supply air to the aircraft systems",
+  "plain": "One engine bleed is inoperative",
   "steps": [
-   "Fly no higher than FL315"
+   "Keep the affected engine bleed switched off for the whole flight",
+   "Cruise above FL315 not allowed. Limitation already reflected in the flight plan"
   ]
  },
  {
@@ -751,10 +758,10 @@
    "Right"
   ],
   "group": "wai",
-  "name": "Wing anti-ice",
-  "plain": "One wing's anti-ice system doesn't work",
+  "name": "Wing anti-ice valve",
+  "plain": "One wing anti-ice valve is inoperative in the closed position",
   "steps": [
-   "Don't fly into icing conditions"
+   "Do not plan the flight into known or forecast icing. Amend your route and planning accordingly"
   ]
  },
  {
@@ -780,10 +787,10 @@
    "2"
   ],
   "group": "eai",
-  "name": "Engine anti-ice",
-  "plain": "One engine's anti-ice is stuck on",
+  "name": "Engine anti-ice valve",
+  "plain": "One engine anti-ice valve is stuck open",
   "steps": [
-   "Expect slightly lower performance; a little extra fuel is added"
+   "Expect reduced take-off and climb performance; extra fuel is already included in the flight plan"
   ]
  },
  {
@@ -812,10 +819,10 @@
   ],
   "group": "spoiler",
   "name": "Spoiler",
-  "plain": "One spoiler panel on the wing doesn't work",
+  "plain": "One spoiler panel is inoperative and retracted",
   "steps": [
-   "Take-off and landing need a bit more runway",
-   "A little extra fuel is added"
+   "Apply the take-off and landing performance corrections",
+   "A small fuel penalty is already included in the flight plan"
   ]
  },
  {
@@ -845,10 +852,10 @@
   ],
   "group": "rev",
   "name": "Thrust reverser",
-  "plain": "One engine's reverse thrust is locked out",
+  "plain": "One thrust reverser is locked out",
   "steps": [
-   "Plan the landing without reverse on that engine",
-   "Don't use snowy or icy runways"
+   "Calculate landing distance without reverse thrust on that engine",
+   "No operations on contaminated runways"
   ]
  },
  {
@@ -868,7 +875,7 @@
   "effects": {
    "extra_fuel_min": 10
   },
-  "weight": 2,
+  "weight": 0,
   "component_options": [
    "Left inner",
    "Right inner",
@@ -899,7 +906,7 @@
     "PRECIP"
    ]
   },
-  "weight": 2,
+  "weight": 0,
   "component_options": [
    "Captain",
    "First officer"
@@ -931,9 +938,9 @@
   ],
   "group": "lights",
   "name": "Landing light",
-  "plain": "One landing light doesn't work",
+  "plain": "One landing light is inoperative",
   "steps": [
-   "Use the other lights at night"
+   "Use the remaining lights for night operations"
   ]
  },
  {
@@ -950,7 +957,7 @@
    "(O) Departure clearance by voice"
   ],
   "effects": {},
-  "weight": 3,
+  "weight": 0,
   "group": "acars",
   "name": "ACARS datalink",
   "plain": "The cockpit datalink to the airline doesn't work",
@@ -980,10 +987,10 @@
   ],
   "group": "lav",
   "name": "Lavatory",
-  "plain": "One toilet is out of order",
+  "plain": "One lavatory is inoperative and closed",
   "steps": [
-   "The door is locked and marked out of order",
-   "Let the cabin crew know"
+   "The door is locked and placarded",
+   "Brief the cabin crew"
   ]
  },
  {
@@ -1008,10 +1015,10 @@
    "Aft"
   ],
   "group": "cargosmoke",
-  "name": "Cargo hold smoke detector",
-  "plain": "The smoke detector in one cargo hold doesn't work",
+  "name": "Cargo smoke detection",
+  "plain": "Smoke detection in one cargo hold is inoperative",
   "steps": [
-   "Keep that hold empty: put the bags in the other one"
+   "Keep that hold empty and load the bags in the other hold"
   ]
  }
 ]

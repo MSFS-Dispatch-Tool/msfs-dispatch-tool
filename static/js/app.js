@@ -1859,11 +1859,11 @@ function legDelayMelBlock(leg) {
   const own = legOwnDelayMinutes(leg), r = leg.reactionary ? leg.reactionary.minutes : 0;
   const total = legExpectedDelayMinutes(leg);
   const lines = [];
-  if (leg.reactionary) lines.push(`<span class="status-chip status-warn">DELAY ${r} MIN</span> Your aircraft ${leg.reactionary.expected ? 'is expected to arrive' : 'arrived'} late from the previous flight`);
+  if (leg.reactionary) lines.push(`<span class="status-chip status-warn">DELAY ${r} MIN</span> ${leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector'}`);
   if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN</span> ${escText(leg.delay.plain || leg.delay.description)}`);
-  if (leg.aircraft_change) lines.push(`<span class="status-chip status-warn">DELAY ${leg.aircraft_change.minutes} MIN</span> Swapping to another aircraft`);
-  if (leg.reactionary && own) lines.push(`<span class="placeholder-text">Total expected delay ${total} min: the other delays happen during the late turnaround, so they don't add up</span>`);
-  if (leg.atfm) lines.push(`<span class="status-chip status-warn">SLOT ${escText(leg.atfm.ctot)}</span> Air traffic control has given you a take-off slot (${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}): take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. This is a new slot because the first one was missed' : ''}`);
+  if (leg.aircraft_change) lines.push(`<span class="status-chip status-warn">DELAY ${leg.aircraft_change.minutes} MIN</span> Aircraft change`);
+  if (leg.reactionary && own) lines.push(`<span class="placeholder-text">Total expected delay ${total} min: the other delays are absorbed during the late turnaround</span>`);
+  if (leg.atfm) lines.push(`<span class="status-chip status-warn">SLOT ${escText(leg.atfm.ctot)}</span> ATC slot (${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}): take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. This is a new slot because the first one was missed' : ''}`);
   return `
         <p class="placeholder-text" style="margin-top:10px;">
           ${lines.length ? lines.join('<br>') : `<span class="status-chip status-ok">ON TIME</span>`}
@@ -1890,7 +1890,7 @@ function techAppliedText(leg) {
   if (t.max_fl) parts.push(`cruise no higher than FL${t.max_fl}`);
   if (t.extra_fuel_min) parts.push(`${t.extra_fuel_min} min of extra fuel`);
   if (legMels(leg).length || legCdl(leg).length) parts.push('the defects noted in the remarks');
-  return parts.length ? `Already in your SimBrief plan: <strong>${parts.join(' &middot; ')}</strong>` : '';
+  return parts.length ? `Included in your SimBrief plan: <strong>${parts.join(' &middot; ')}</strong>` : '';
 }
 function techSummaryHtml(leg) {
   const mels = legMels(leg), cdl = legCdl(leg);
@@ -1909,7 +1909,7 @@ function itineraryNogo(legs) {
 // MEL / CDL tab: one card per defect, with what to do as a checklist
 function techCardsHtml(flight, i) {
   const leg = flight.legs[i], mels = legMels(leg), cdl = legCdl(leg);
-  if (!mels.length && !cdl.length) return `<div class="empty-state">Nothing to report: this aircraft has no defects or missing panels</div>`;
+  if (!mels.length && !cdl.length) return `<div class="empty-state">No deferred defects or missing panels on this aircraft</div>`;
   const done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
   const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
   const official = m => {
@@ -1936,7 +1936,7 @@ function techCardsHtml(flight, i) {
     ? `<ul class="tech-checks" style="margin-bottom:12px;">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
   const applied = techAppliedText(leg);
   return `${checks}${melCards.join('')}${cdlCards.join('')}${applied ? `<p class="tech-applied">${applied}</p>` : ''}
-    <p class="tech-note">Tick the steps off as you prepare. Simplified from the official defect lists, for simulation only</p>`;
+    <p class="tech-note">Tick each step as you prepare the flight. Based on the official MEL, simplified for simulation</p>`;
 }
 function toggleTechStep(i, key, input) {
   const flight = loadActiveFlight(); if (!flight) return;
@@ -2006,10 +2006,10 @@ function buildDetailHtml(data, key, carriers, ownedAircraft) {
     </div>`).join('');
 
   const nogo = itineraryNogo(data.legs);
-  const banner = nogo.length ? `<div class="nogo-banner" role="alert"><strong>THIS AIRCRAFT CAN'T FLY THIS TRIP</strong>
+  const banner = nogo.length ? `<div class="nogo-banner" role="alert"><strong>AIRCRAFT NOT DISPATCHABLE FOR THIS TRIP</strong>
       ${nogo.map(c => `Leg ${c.leg + 1}: ${escText(c.text)}`).join('<br>')}
       <div class="nogo-actions"><button class="action small" id="swapAircraftBtn" type="button" onclick="swapAircraft('${key}')">SWAP AIRCRAFT</button>
-      <span>Swap to another aircraft (about 20 to 45 min of delay on the first flight), or pick a different flight</span></div></div>` : '';
+      <span>Request an aircraft change (expect 20 to 45 min of delay on the first sector) or choose another flight</span></div></div>` : '';
   return `
     <div class="detail-inner">
       ${legBlocks}
@@ -2508,7 +2508,7 @@ function updateDelayCoding(i) {
   if (r) rows.push(['93', r]);
   if (d - r > 0) rows.push([leg.aircraft_change ? '46' : leg.delay ? leg.delay.iata_code : '', d - r]);
   while (rows.length < 2) rows.push(['', '']);
-  box.innerHTML = `<p>You left the gate <strong>${d} min</strong> late. Pick the reason, like real crews do: up to two reasons whose minutes add up to ${d}</p>
+  box.innerHTML = `<p>You went off-block <strong>${d} min</strong> late. Code the delay as crews do: up to two reasons, totalling ${d} min</p>
     ${rows.map(([code, mins], k) => `<div class="delay-code-row">
       <label>${k ? 'SECOND CODE (OPTIONAL)' : 'MAIN CODE'}<select id="dc-code-${i}-${k}" onchange="checkDelaySum(${i})">${delayCodeOptions(code)}</select></label>
       <label>MINUTES<input id="dc-min-${i}-${k}" type="number" min="1" step="1" value="${mins}" oninput="checkDelaySum(${i})"></label>
@@ -2923,10 +2923,10 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">DISPATCH COMPLICATIONS</div>
       <div class="panel-body">
-        ${renderComplicationCategory('delay', 'DELAYS', "Random delays before the first flight of a trip. Later flights only pick up the knock-on if the aircraft arrives late. Your times and SimBrief plan update automatically", genOptions.delay, settings.generation.delay, delaySettingsRow, d => d.code, null, genOptions.default_probability.delay, 'Chance of a delay on the first flight')}
-        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES', 'Small changes to passengers or bags just before departure, which you add to the loadsheet', genOptions.lmc, settings.generation.lmc, lmcSettingsRow, l => l.id, null, genOptions.default_probability.lmc, 'Chance per trip')}
-        ${renderComplicationCategory('mel', 'AIRCRAFT DEFECTS (MEL)', "Things on the aircraft that are broken but allowed to fly with, under conditions. Up to three per trip: some limit your altitude, add fuel, need ground equipment, or keep the aircraft on the ground in certain weather", genOptions.mel, settings.generation.mel, melSettingsRow, m => m.id, m => m.fleet, genOptions.default_probability.mel, 'Chance of at least one defect')}
-        ${renderComplicationCategory('cdl', 'MISSING PANELS (CDL)', 'A small panel or seal missing from the outside of the aircraft. It costs a little extra fuel and sometimes a few kilos of maximum weight', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, cdlSettingsRow, c => c.id, c => c.fleet, genOptions.default_probability.cdl, 'Chance per trip')}
+        ${renderComplicationCategory('delay', 'DELAYS', "Delays before the first sector of a trip, in realistic proportions. Later sectors only inherit a late inbound aircraft. Times and the SimBrief plan update automatically", genOptions.delay, settings.generation.delay, delaySettingsRow, d => d.code, null, genOptions.default_probability.delay, 'Chance of a delay on the first sector')}
+        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'Late changes to passenger or baggage figures after the loadsheet is prepared, to be amended before sign-off', genOptions.lmc, settings.generation.lmc, lmcSettingsRow, l => l.id, null, genOptions.default_probability.lmc, 'Chance per trip')}
+        ${renderComplicationCategory('mel', 'DEFERRED DEFECTS (MEL)', "Equipment the aircraft may be dispatched without, under conditions. Up to three per trip: some limit the cruise level, add fuel, require ground equipment or rule out certain weather", genOptions.mel, settings.generation.mel, melSettingsRow, m => m.id, m => m.fleet, genOptions.default_probability.mel, 'Chance of at least one deferred defect')}
+        ${renderComplicationCategory('cdl', 'MISSING PANELS (CDL)', 'An external panel or seal missing from the airframe: adds a small fuel penalty and can reduce the weight limits', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, cdlSettingsRow, c => c.id, c => c.fleet, genOptions.default_probability.cdl, 'Chance per trip')}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -3055,10 +3055,10 @@ function renderComplicationCategory(key, title, explanation, items, categorySett
     return `<tr class="${on ? '' : 'off'}">
       <td><input type="checkbox" class="gen-item" data-id="${escAttr(id)}" ${on ? 'checked' : ''} ${masterOn ? '' : 'disabled'}
         onchange="this.closest('tr').classList.toggle('off', !this.checked)" aria-label="Include ${escAttr(id)}"></td>
-      <td class="item" data-label="WHAT">${r.item}</td>
-      <td data-label="WHAT IT MEANS">${r.description}</td>
-      <td class="effect" data-label="EFFECT ON YOUR FLIGHT">${r.effect}</td>
-      <td class="actions" data-label="WHAT TO DO">${r.actions.length ? `<ul>${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>` : '&mdash;'}</td>
+      <td class="item" data-label="ITEM">${r.item}</td>
+      <td data-label="DESCRIPTION">${r.description}</td>
+      <td class="effect" data-label="EFFECT ON THE FLIGHT">${r.effect}</td>
+      <td class="actions" data-label="CREW ACTIONS">${r.actions.length ? `<ul>${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>` : '&mdash;'}</td>
     </tr>`;
   };
   let rows;
@@ -3093,9 +3093,9 @@ function renderComplicationCategory(key, title, explanation, items, categorySett
           <button class="ghost small" type="button" onclick="resetProbability('${key}')" ${masterOn ? '' : 'disabled'}>REALISTIC</button>
         </div>
         <details>
-          <summary>SEE ALL ${items.length} AND CHOOSE WHICH CAN HAPPEN</summary>
+          <summary>SHOW ALL ${items.length} ITEMS</summary>
           <div class="gen-table-wrap"><table class="gen-table" id="gen-${key}-items">
-            <thead><tr><th>ON</th><th>WHAT</th><th>WHAT IT MEANS</th><th>EFFECT ON YOUR FLIGHT</th><th>WHAT TO DO</th></tr></thead>
+            <thead><tr><th>ON</th><th>ITEM</th><th>DESCRIPTION</th><th>EFFECT ON THE FLIGHT</th><th>CREW ACTIONS</th></tr></thead>
             <tbody>${rows}</tbody>
           </table></div>
         </details>
@@ -3119,7 +3119,7 @@ function resetProbability(key) {
 }
 
 // ---- Settings table rows (plain wording) ----
-const NO_WX_LABELS = { TS: 'thunderstorms', ICING: 'icing', LVP: 'fog or very low cloud at the destination', CONTAM: 'snowy or icy runways', PRECIP: 'rain or snow' };
+const NO_WX_LABELS = { TS: 'thunderstorms', ICING: 'icing', LVP: 'low visibility (below CAT I) at the destination', CONTAM: 'a contaminated runway', PRECIP: 'rain or snow' };
 function delaySettingsRow(d) {
   const [lo, hi] = d.duration_range_minutes || [0, 0];
   const typical = Math.round(lo + (hi - lo) / 3);
@@ -3156,7 +3156,7 @@ function melEffectLines(e) {
   if (e.extra_fuel_min) out.push(`${e.extra_fuel_min} min of extra fuel (added in SimBrief)`);
   if (e.min_main_tank_fuel_kg) out.push(`Each wing tank needs at least ${fmtNum(e.min_main_tank_fuel_kg.takeoff)} kg at take-off and ${fmtNum(e.min_main_tank_fuel_kg.landing)} kg at landing`);
   if (e.centre_tank_empty) out.push(`Centre tank can't be used${e.max_fuel_kg ? ` (about ${fmtNum(e.max_fuel_kg)} kg of fuel at most)` : ''}`);
-  if (e.ground_support && e.ground_support.length) out.push(`Needs ${e.ground_support.map(g => g === 'GPU' ? 'a ground power cart' : 'an air starter').join(' and ')} at every gate`);
+  if (e.ground_support && e.ground_support.length) out.push(`Requires ${e.ground_support.map(g => g === 'GPU' ? 'a ground power unit (GPU)' : 'an air start unit (ASU)').join(' and ')} on every stand`);
   if (e.no_wx && e.no_wx.length) out.push(`Can't fly into ${e.no_wx.map(c => NO_WX_LABELS[c] || c).join(', ')}`);
   if (e.performance) out.push('Needs more runway for take-off and landing');
   if (e.cargo_hold_empty) out.push('One cargo hold must stay empty');

@@ -11,10 +11,10 @@
   "note": "No performance penalty within the CDL limit",
   "weight": 4,
   "group": "cdl1",
-  "name": "Static wicks",
-  "plain": "Up to three of the small rods that discharge static from the wings are missing",
+  "name": "Static dischargers",
+  "plain": "Up to three static dischargers are missing",
   "steps": [
-   "Nothing to do: no effect on the flight"
+   "No performance penalty"
   ]
  },
  {
@@ -29,11 +29,11 @@
   "note": "",
   "weight": 2,
   "group": "cdl2",
-  "name": "Flap track cover",
-  "plain": "One of the covers under the wing flaps is missing",
+  "name": "Flap track fairing",
+  "plain": "One flap track fairing is missing",
   "steps": [
-   "A small fuel penalty is added to your plan",
-   "Maximum weights are slightly lower"
+   "Fuel penalty already included in the flight plan",
+   "Maximum take-off and landing weights slightly reduced: check them against the flight plan"
   ]
  },
  {
@@ -48,10 +48,10 @@
   "note": "",
   "weight": 2,
   "group": "cdl3",
-  "name": "Belly panel",
-  "plain": "One panel under the fuselage is missing",
+  "name": "Belly fairing panel",
+  "plain": "One belly fairing panel is missing",
   "steps": [
-   "A small fuel penalty is added to your plan"
+   "Fuel penalty already included in the flight plan"
   ]
  },
  {
@@ -66,11 +66,11 @@
   "note": "",
   "weight": 1,
   "group": "cdl4",
-  "name": "Engine pylon panel",
-  "plain": "One panel behind an engine mount is missing",
+  "name": "Pylon fairing",
+  "plain": "One pylon fairing is missing",
   "steps": [
-   "A small fuel penalty is added to your plan",
-   "Maximum weights are slightly lower"
+   "Fuel penalty already included in the flight plan",
+   "Maximum take-off and landing weights slightly reduced: check them against the flight plan"
   ]
  },
  {
@@ -85,10 +85,10 @@
   "note": "",
   "weight": 2,
   "group": "cdl5",
-  "name": "Landing gear door seal",
-  "plain": "A seal on a main landing gear door is missing",
+  "name": "Landing gear door fairing",
+  "plain": "One landing gear door fairing is missing",
   "steps": [
-   "A small fuel penalty is added to your plan"
+   "Fuel penalty already included in the flight plan"
   ]
  },
  {
@@ -103,11 +103,11 @@
   "note": "",
   "weight": 1,
   "group": "cdl6",
-  "name": "Wing tip panel",
-  "plain": "A panel on a wing tip is missing",
+  "name": "Wing tip fence or sharklet fairing",
+  "plain": "One wing tip fence or sharklet fairing is missing",
   "steps": [
-   "A small fuel penalty is added to your plan",
-   "Maximum weights are slightly lower"
+   "Fuel penalty already included in the flight plan",
+   "Maximum take-off and landing weights slightly reduced: check them against the flight plan"
   ]
  },
  {
@@ -123,9 +123,9 @@
   "weight": 2,
   "group": "cdl7",
   "name": "Flap seal",
-  "plain": "A piece of rubber seal on a flap is missing",
+  "plain": "One flap seal is missing",
   "steps": [
-   "A small fuel penalty is added to your plan"
+   "Fuel penalty already included in the flight plan"
   ]
  },
  {
@@ -140,10 +140,10 @@
   "note": "",
   "weight": 2,
   "group": "cdl8",
-  "name": "Door seal cover",
-  "plain": "A cover around a passenger door seal is missing",
+  "name": "Door seal fairing",
+  "plain": "One door seal fairing is missing",
   "steps": [
-   "A tiny fuel penalty is added to your plan"
+   "Minimal fuel penalty already included in the flight plan"
   ]
  }
 ]
