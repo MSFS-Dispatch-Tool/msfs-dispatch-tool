@@ -27,7 +27,7 @@ async def main():
         check("preview: pack FL250 sent to SimBrief", "cruise no higher than FL250" in detail)
         await page.locator(".confirm-row button").click(); await page.wait_for_timeout(2000)
         tech = await page.inner_text("#af-pane-briefing")
-        check("MEL tab: installed/required, FAA source, MMEL provisos", "Official MEL wording" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
+        check("MEL tab: installed/required, FAA source, MMEL provisos", "Official wording" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
         await page.screenshot(path=shot("mel738_tab.png"))
         # Loadsheet: an OFP with too little take-off fuel for the pump minimum
         await page.route("**/loadsheet/extras*", lambda r: r.fulfill(status=200, content_type="application/json",
