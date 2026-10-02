@@ -8,8 +8,17 @@
 
 <section class="hero">
   <div class="hero-media">
-    <video id="heroVideo" class="hero-media-asset" autoplay muted loop playsinline preload="none"
-           poster="{{ url_for('static', filename='img/hero-flight.jpg') }}"></video>
+    <video id="heroVideo" class="hero-media-asset" autoplay muted loop playsinline preload="none"></video>
+    <script>
+      // The poster is the first frame of the theme's video, so the page
+      // shows exactly where the video starts while it loads. Set here,
+      // before first paint, since the theme is only known in the browser.
+      window.vdHeroPosters = {
+        light: "{{ url_for('static', filename='img/hero-light-poster.webp') }}",
+        dark: "{{ url_for('static', filename='img/hero-dark-poster.webp') }}"
+      };
+      document.getElementById('heroVideo').setAttribute('poster', vdHeroPosters[vdCurrentTheme()]);
+    </script>
     <div class="hero-media-overlay"></div>
   </div>
   <div class="container hero-content">
@@ -36,6 +45,7 @@
   (function () {
     var video = document.getElementById('heroVideo');
     if (!video) return;
+    document.addEventListener('vd-theme-change', function (e) { video.setAttribute('poster', window.vdHeroPosters[e.detail.theme]); });
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var saveData = navigator.connection && navigator.connection.saveData;
     if (reduce || saveData) return;
