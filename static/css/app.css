@@ -72,6 +72,9 @@
   .app-link:hover { background: var(--face-dark); }
   .app-link { white-space: nowrap; }
   .app-help { font-family: inherit; line-height: inherit; width: 34px; padding-left: 0; padding-right: 0; cursor: pointer; }
+  .app-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; cursor: pointer; }
+  .app-icon-btn svg { width: 15px; height: 15px; }
+  .app-logo .for-dark { display: none; }
   @media (max-width: 880px) {
     /* Logo and account links on the first row, the section buttons below. */
     .app-header { grid-template-columns: 1fr auto; row-gap: 8px; padding: 8px 12px; }
@@ -984,3 +987,201 @@
 /* Flight search: departure and arrival time windows side by side */
 .time-filters { display: flex; gap: 6px; }
 .time-filters select { flex: 1 1 0; min-width: 0; }
+
+/* ==== Night mode: a flight deck with the panel lights on ====
+   Charcoal panels, legends in warm backlit white with a faint glow, and
+   the cockpit display colours for meaning: cyan for what can be acted on,
+   green normal, amber caution, red warning. The loadsheet and PIREP read
+   like an MCDU page. Light values above stay the default; everything here
+   only applies with data-theme="dark" (see _theme_head.html). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --face:        #161B21;
+  --face-dark:   #0F1317;
+  --white:       #1B2128;
+  --shadow-dk:   #3A444F;
+  --shadow-md:   #262E37;
+  --text:        #EFE6D2;
+  --text-muted:  #A3998A;
+  --amber:       #FFB547;
+  --amber-bg:    rgba(255,181,71,0.10);
+  --orange:      #FF9150;
+  --orange-bg:   rgba(255,145,80,0.12);
+  --green:       #46DB86;
+  --green-bg:    rgba(70,219,134,0.10);
+  --red:         #FF6259;
+  --red-bg:      rgba(255,98,89,0.12);
+  --titlebar:    #48D3E6;
+  --titlebar-2:  #7DE3F0;
+  --blue-hi:     #48D3E6;
+  --accent-bg:   rgba(72,211,230,0.12);
+  --on-accent:   #06181C;
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.035), 0 2px 10px rgba(0,0,0,0.45);
+  --backlight:   0 0 7px rgba(255,200,120,0.32);
+  --cyan-glow:   0 0 8px rgba(72,211,230,0.55);
+}
+:root[data-theme="dark"] body { background: #0A0D10; }
+:root[data-theme="dark"] ::selection { background: rgba(72,211,230,0.3); }
+
+/* Header */
+:root[data-theme="dark"] .app-header { background: rgba(10,13,16,0.9); border-bottom-color: #1F262E; }
+:root[data-theme="dark"] .app-logo .for-light { display: none; }
+:root[data-theme="dark"] .app-logo .for-dark { display: block; }
+:root[data-theme="dark"] .app-nav { background: #12171C; border-color: #262E37; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); }
+:root[data-theme="dark"] .app-nav-btn { color: var(--text); text-shadow: var(--backlight); }
+:root[data-theme="dark"] .app-nav-btn:hover { background: rgba(255,255,255,0.05); }
+:root[data-theme="dark"] .app-nav-btn.is-current, :root[data-theme="dark"] .app-nav-btn.is-current:hover {
+  background: rgba(72,211,230,0.12); color: var(--titlebar); text-shadow: var(--cyan-glow);
+  box-shadow: inset 0 0 0 1px rgba(72,211,230,0.45), 0 0 12px -4px rgba(72,211,230,0.6);
+}
+:root[data-theme="dark"] .app-nav-btn.is-empty:not(.is-current) { color: var(--text-muted); text-shadow: none; }
+:root[data-theme="dark"] .app-clock { color: #46DB86; text-shadow: 0 0 6px rgba(70,219,134,0.45); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+:root[data-theme="dark"] .app-link { background: #161B21; border-color: #333C46; color: var(--text); text-shadow: var(--backlight); }
+:root[data-theme="dark"] .app-link:hover { background: #1F262E; }
+:root[data-theme="dark"] .app-theme { color: #FFD58A; }
+:root[data-theme="dark"] .app-theme svg { filter: drop-shadow(0 0 3px rgba(255,200,110,0.6)); }
+
+/* Panels: charcoal with an engraved, backlit header strip */
+:root[data-theme="dark"] .panel {
+  background: linear-gradient(180deg, #181D23 0%, #151A1F 100%); border-color: #262E37;
+}
+:root[data-theme="dark"] .panel-header,
+:root[data-theme="dark"] .leg-block-header,
+:root[data-theme="dark"] .sheet-h,
+:root[data-theme="dark"] .gen-table th {
+  background: #101418; color: #F3E7CC; text-shadow: var(--backlight); border-bottom-color: #262E37;
+}
+:root[data-theme="dark"] .sheet-h, :root[data-theme="dark"] .bsum-k, :root[data-theme="dark"] .sheet-k,
+:root[data-theme="dark"] .weather-label, :root[data-theme="dark"] .st-kpi-label, :root[data-theme="dark"] .ls-items-title,
+:root[data-theme="dark"] table.itin-list th, :root[data-theme="dark"] .st-table th { text-shadow: var(--backlight); }
+:root[data-theme="dark"] .home-btn { color: var(--text); background: rgba(255,255,255,0.06); }
+:root[data-theme="dark"] .home-btn:hover { background: rgba(255,255,255,0.12); }
+
+/* Controls: lit when they are what you can press */
+:root[data-theme="dark"] .field input, :root[data-theme="dark"] .field select,
+:root[data-theme="dark"] .aircraft-reassign-select, :root[data-theme="dark"] .sort-by select,
+:root[data-theme="dark"] .st-field input, :root[data-theme="dark"] .st-field select,
+:root[data-theme="dark"] .glossary-modal input#glossaryFilter {
+  background: #0F1317; border-color: #333C46; color: var(--text);
+}
+:root[data-theme="dark"] .field input:focus, :root[data-theme="dark"] .field select:focus { box-shadow: 0 0 0 3px rgba(72,211,230,0.18); }
+:root[data-theme="dark"] .field input:disabled, :root[data-theme="dark"] .field select:disabled { background: #13171B; }
+:root[data-theme="dark"] button.action { color: var(--on-accent); box-shadow: 0 0 14px -5px rgba(72,211,230,0.7); }
+:root[data-theme="dark"] button.action:active { background: #2BB4C7; }
+:root[data-theme="dark"] button.action:disabled { background: #222A32; color: var(--text-muted); box-shadow: none; }
+:root[data-theme="dark"] button.action.danger { color: #1A0504; box-shadow: 0 0 14px -5px rgba(255,98,89,0.7); }
+:root[data-theme="dark"] button.action.danger:hover { background: #FF8A82; }
+:root[data-theme="dark"] button.ghost, :root[data-theme="dark"] .chip-swap, :root[data-theme="dark"] .st-chip,
+:root[data-theme="dark"] .seg-control span, :root[data-theme="dark"] .af-leg { background: #1B2128; border-color: #333C46; }
+:root[data-theme="dark"] button.ghost:hover, :root[data-theme="dark"] .chip-swap:hover, :root[data-theme="dark"] .st-chip:hover { background: #232A33; }
+:root[data-theme="dark"] button.ghost:disabled, :root[data-theme="dark"] .st-chip:disabled, :root[data-theme="dark"] .st-chip:disabled:hover { background: #1B2128; }
+:root[data-theme="dark"] .seg-control input:checked + span, :root[data-theme="dark"] .st-chip.on {
+  background: var(--titlebar); border-color: var(--titlebar); color: var(--on-accent); box-shadow: 0 0 10px -3px rgba(72,211,230,0.7);
+}
+:root[data-theme="dark"] .custom-dropdown { background: #1B2128; border-color: #333C46; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+:root[data-theme="dark"] .custom-dropdown .opt { border-bottom-color: #232A33; }
+:root[data-theme="dark"] .custom-dropdown .opt:hover, :root[data-theme="dark"] .custom-dropdown .opt.active { color: var(--on-accent); }
+:root[data-theme="dark"] .custom-dropdown .opt:hover .place, :root[data-theme="dark"] .custom-dropdown .opt.active .place { color: #0B3A42; }
+:root[data-theme="dark"] .switch-toggle .track { background: #2A323B; }
+:root[data-theme="dark"] .switch-toggle .track::before { background: #C9C0AD; }
+:root[data-theme="dark"] .switch-toggle input:checked + .track { box-shadow: 0 0 10px -2px rgba(72,211,230,0.7); }
+:root[data-theme="dark"] .switch-toggle input:checked + .track::before { background: #EAFBFE; }
+:root[data-theme="dark"] .crit-chip button:hover { background: rgba(255,255,255,0.1); }
+:root[data-theme="dark"] .crit-chip.dep { color: var(--titlebar); }
+:root[data-theme="dark"] .crit-chip.dest { color: var(--orange); }
+:root[data-theme="dark"] .st-field select.is-set { color: var(--titlebar); }
+:root[data-theme="dark"] .notice-banner { border-color: rgba(255,98,89,0.4); }
+:root[data-theme="dark"] .sync-notice { color: var(--titlebar); border-color: rgba(72,211,230,0.35); }
+
+/* Lists and tables */
+:root[data-theme="dark"] table.itin-list td.detail-cell, :root[data-theme="dark"] .st-table tr.st-group td { background: #12161B; }
+:root[data-theme="dark"] table.itin-list tr.itin-row:hover { background: #1C2229; }
+:root[data-theme="dark"] table.itin-list tr.itin-row.expanded { box-shadow: inset 3px 0 0 var(--titlebar); }
+:root[data-theme="dark"] .carrier-badge { background: #262E37; }
+:root[data-theme="dark"] .result-count strong { text-shadow: var(--backlight); }
+
+/* Active flight: steps and status tiles light up like annunciators */
+:root[data-theme="dark"] .af-leg.on { background: var(--accent-bg); border-color: var(--titlebar); box-shadow: inset 0 0 0 1px var(--titlebar), 0 0 12px -5px rgba(72,211,230,0.8); }
+:root[data-theme="dark"] .af-flow-step:not(.done):not(.now) .af-flow-n { background: #12161B; }
+:root[data-theme="dark"] .af-flow-step.done .af-flow-n { color: #062012; box-shadow: 0 0 10px -3px rgba(70,219,134,0.8); }
+:root[data-theme="dark"] .af-flow-step.done b { text-shadow: 0 0 6px rgba(70,219,134,0.45); }
+:root[data-theme="dark"] .af-flow-step.now .af-flow-n { color: var(--on-accent); box-shadow: 0 0 0 4px rgba(72,211,230,0.15), 0 0 14px -2px rgba(72,211,230,0.9); }
+:root[data-theme="dark"] .af-flow-step.now b { text-shadow: var(--backlight); }
+:root[data-theme="dark"] .af-flow-step.now .af-flow-tag { color: var(--on-accent); }
+:root[data-theme="dark"] .af-tabbar { background: #101418; }
+:root[data-theme="dark"] .af-tabbar button.on { text-shadow: var(--cyan-glow); background: #161B21; }
+:root[data-theme="dark"] .bsum-tile { background: #12161B; border-color: #262E37; border-top-color: #3A444F; }
+:root[data-theme="dark"] .bsum-tile:hover { border-color: #3A444F; }
+:root[data-theme="dark"] .bsum-tile.ok { border-top-color: var(--green); box-shadow: 0 -4px 12px -6px rgba(70,219,134,0.75); }
+:root[data-theme="dark"] .bsum-tile.caution { border-top-color: var(--amber); box-shadow: 0 -4px 12px -6px rgba(255,181,71,0.75); }
+:root[data-theme="dark"] .bsum-tile.nogo { border-top-color: var(--red); box-shadow: 0 -4px 12px -6px rgba(255,98,89,0.8); }
+:root[data-theme="dark"] .bsum-tile.ok .bsum-v { color: var(--green); text-shadow: 0 0 6px rgba(70,219,134,0.4); }
+:root[data-theme="dark"] .bsum-tile.caution .bsum-v { color: var(--amber); text-shadow: 0 0 6px rgba(255,181,71,0.4); }
+:root[data-theme="dark"] .bsum-tile.nogo .bsum-v { text-shadow: 0 0 6px rgba(255,98,89,0.45); }
+:root[data-theme="dark"] .sheet, :root[data-theme="dark"] .leg-block, :root[data-theme="dark"] .tech-card,
+:root[data-theme="dark"] .brief-row, :root[data-theme="dark"] .leg-status-row, :root[data-theme="dark"] .gen-table { background: #12161B; }
+:root[data-theme="dark"] .ls-item { border-color: rgba(255,181,71,0.4); }
+:root[data-theme="dark"] .ls-item.done { background: #12161B; border-color: #262E37; }
+
+/* Loadsheet and PIREP: an MCDU page, not a sheet of paper */
+:root[data-theme="dark"] .doc-sheet, :root[data-theme="dark"] .doc {
+  background: #050807; border-color: #26332C; color: #C8F2D4;
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.9), 0 0 0 4px #12161B, 0 0 0 5px #262E37;
+}
+:root[data-theme="dark"] .doc-sheet { color: #7CF0A6; text-shadow: 0 0 5px rgba(70,219,134,0.45); }
+:root[data-theme="dark"] .doc-head { color: #FFFFFF; border-bottom-color: #2D3B33; }
+:root[data-theme="dark"] .doc-meta, :root[data-theme="dark"] .doc-sub { color: #48D3E6; }
+:root[data-theme="dark"] .doc-rows, :root[data-theme="dark"] .delay-coding { border-bottom-color: #2D3B33; }
+:root[data-theme="dark"] .doc-row .dk { color: #7CF0A6; }
+:root[data-theme="dark"] .doc-row .dh { color: #8A9A90; }
+:root[data-theme="dark"] .doc input, :root[data-theme="dark"] .doc select, :root[data-theme="dark"] .doc textarea {
+  background: #0B110E; border-color: #2D3B33; color: #48D3E6;
+}
+:root[data-theme="dark"] .doc input:focus, :root[data-theme="dark"] .doc select:focus, :root[data-theme="dark"] .doc textarea:focus {
+  outline: none; border-color: #48D3E6; box-shadow: 0 0 8px -2px rgba(72,211,230,0.7);
+}
+
+/* Statistics */
+:root[data-theme="dark"] .st-kpi { background: linear-gradient(180deg, #181D23 0%, #151A1F 100%); border-color: #262E37; }
+:root[data-theme="dark"] .st-kpi-value { text-shadow: var(--backlight); }
+:root[data-theme="dark"] .st-grid-line { stroke: #232A32; }
+:root[data-theme="dark"] .st-baseline { stroke: #3A444F; }
+:root[data-theme="dark"] .st-axis { fill: #8C8476; }
+:root[data-theme="dark"] .st-hit.on, :root[data-theme="dark"] .st-hit:focus-visible { fill: rgba(72,211,230,0.08); }
+:root[data-theme="dark"] .st-bar-track { background: #1F262E; }
+:root[data-theme="dark"] .st-bar-fill, :root[data-theme="dark"] .st-colbar { background: #3FA7E0; }
+:root[data-theme="dark"] .st-collabel { color: #8C8476; border-top-color: #3A444F; }
+:root[data-theme="dark"] .st-tip { background: #1B2128; border-color: #333C46; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+
+/* Maps: dark sea and land drawn by addBasemap; the overlays (routes,
+   airports, weather) are drawn in day colours and turned into their night
+   equivalents here - same hue, light on dark - and so is the legend. */
+:root[data-theme="dark"] .leaflet-container.vd-map, :root[data-theme="dark"] .selection-map,
+:root[data-theme="dark"] .route-map { background: #070A0D; }
+:root[data-theme="dark"] .vd-map .leaflet-overlay-pane,
+:root[data-theme="dark"] .map-legend .sw,
+:root[data-theme="dark"] .map-legend .sw-area { filter: invert(1) hue-rotate(180deg) saturate(1.3); }
+:root[data-theme="dark"] .vd-country-label span { color: #59636E; text-shadow: 0 0 2px #070A0D, 0 0 3px #070A0D; }
+:root[data-theme="dark"] .vd-city-label i { background: #59636E; }
+:root[data-theme="dark"] .vd-city-label.cap i { background: #0F1317; border-color: #8C96A0; }
+:root[data-theme="dark"] .vd-city-label span { color: #7C8691; text-shadow: 0 0 2px #070A0D, 0 0 3px #070A0D; }
+:root[data-theme="dark"] .vd-city-label.cap span { color: #A7B0B9; }
+:root[data-theme="dark"] .map-overlay, :root[data-theme="dark"] #mapPanel .wx-toolbar { background: rgba(18,22,27,0.94); border-color: #333C46; }
+:root[data-theme="dark"] .leaflet-tooltip { background: #1B2128; border-color: #333C46; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+:root[data-theme="dark"] .leaflet-tooltip-top::before { border-top-color: #1B2128; }
+:root[data-theme="dark"] .leaflet-tooltip-bottom::before { border-bottom-color: #1B2128; }
+:root[data-theme="dark"] .leaflet-tooltip-left::before { border-left-color: #1B2128; }
+:root[data-theme="dark"] .leaflet-tooltip-right::before { border-right-color: #1B2128; }
+:root[data-theme="dark"] .selection-map .map-label-dep { color: var(--titlebar); }
+:root[data-theme="dark"] .selection-map .map-label-dest { color: var(--orange); }
+:root[data-theme="dark"] .selection-map .map-label-hl { color: #B79CFF; border-color: #B79CFF; }
+:root[data-theme="dark"] .leaflet-popup-content-wrapper, :root[data-theme="dark"] .leaflet-popup-tip { background: #1B2128; color: var(--text); box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+:root[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted); }
+:root[data-theme="dark"] .leaflet-bar a, :root[data-theme="dark"] .leaflet-bar a:hover { background: #1B2128; color: var(--text); border-bottom-color: #333C46; }
+:root[data-theme="dark"] .leaflet-bar { border-color: #333C46; }
+:root[data-theme="dark"] .leaflet-control-attribution { background: rgba(10,13,16,0.8) !important; color: #7C8691; }
+:root[data-theme="dark"] .leaflet-control-attribution a { color: #8FC9D3; }
+
+/* Glossary */
+:root[data-theme="dark"] .glossary-overlay { background: rgba(0,0,0,0.6); }
+:root[data-theme="dark"] .glossary-modal { box-shadow: 0 0 0 1px #262E37, 0 16px 40px rgba(0,0,0,0.7); }

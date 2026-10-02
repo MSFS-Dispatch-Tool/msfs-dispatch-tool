@@ -56,6 +56,33 @@ async def main():
         await page.goto(BASE + "/privacy")
         html = await page.content()
         check("privacy policy lists the data and services", all(k in html for k in ("SimBrief", "Turnstile", "profile photo", "OpenStreetMap")))
+
+        # Day / night: the app's header switch repaints the map in place, and
+        # the choice follows the visitor to the website and the sign-in page.
+        ctx = await browser.new_context(viewport={"width": 1600, "height": 950})
+        tp = await prepare(await ctx.new_page())
+        await tp.goto(BASE + "/app?from=EGKK", wait_until="networkidle")
+        await tp.wait_for_function("searchStatus === 'ready' && basemapLandLayers.size > 0")
+        check("day is the default", await tp.evaluate("document.documentElement.dataset.theme") == "light")
+        await tp.click(".app-theme")
+        state = await tp.evaluate("""[document.documentElement.dataset.theme, localStorage.getItem('vd-theme'),
+            getComputedStyle(document.querySelector('.app-logo .for-dark')).display,
+            [...basemapLandLayers].every(g => g.getLayers()[0].options.fillColor === BASEMAP_LAND.dark.fillColor),
+            getComputedStyle(document.body).backgroundColor]""")
+        check("the header switch turns the app to night, map included",
+              state[:4] == ["dark", "dark", "block", True] and state[4] == "rgb(10, 13, 16)", state)
+        await tp.screenshot(path=shot("night_search.png"))
+        await tp.goto(BASE + "/")
+        shown = await tp.evaluate("[...document.querySelectorAll('.tour-shot.active')].filter(i => getComputedStyle(i).display !== 'none').map(i => i.getAttribute('src').split('?')[0].split('/').pop())")
+        check("the website opens at night with night screenshots", await tp.evaluate("document.documentElement.dataset.theme") == "dark" and shown == ["tour-intro-dark.webp"], shown)
+        await tp.click(".theme-toggle")
+        shown = await tp.evaluate("[...document.querySelectorAll('.tour-shot.active')].filter(i => getComputedStyle(i).display !== 'none').map(i => i.getAttribute('src').split('?')[0].split('/').pop())")
+        check("the website's switch brings back day screenshots", shown == ["tour-intro.webp"], shown)
+        await tp.click(".theme-toggle")
+        await tp.goto(BASE + "/login")
+        check("the sign-in page has the switch and opens at night",
+              await tp.locator(".theme-toggle").count() == 1 and await tp.evaluate("getComputedStyle(document.body).backgroundColor") != "rgb(243, 244, 246)")
+        await ctx.close()
         check.done(page)
         await browser.close()
 

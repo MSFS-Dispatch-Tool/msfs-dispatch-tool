@@ -1,0 +1,25 @@
+<script>
+  /* Day or night, for the website and the app alike. Runs before first
+     paint so a page never flashes the wrong theme: day for everyone,
+     unless the visitor switched to night before (remembered in this
+     browser, so the choice follows them from the website into the app). */
+  (function () {
+    var theme = 'light';
+    try { if (localStorage.getItem('vd-theme') === 'dark') theme = 'dark'; } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+  function vdCurrentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+  // Pages that draw in their own colours (the app's maps, the landing
+  // video) listen for vd-theme-change.
+  function vdToggleTheme() {
+    var next = vdCurrentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('vd-theme', next); } catch (e) {}
+    document.dispatchEvent(new CustomEvent('vd-theme-change', { detail: { theme: next } }));
+  }
+  window.vdCurrentTheme = vdCurrentTheme;
+  window.vdToggleTheme = vdToggleTheme;
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">

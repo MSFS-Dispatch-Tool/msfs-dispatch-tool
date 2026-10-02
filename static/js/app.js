@@ -1155,6 +1155,23 @@ function escText(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Land and borders in the colours of the current theme. The land layers
+// are drawn on canvas, so a day/night switch restyles them in place; every
+// other map colour is turned into its night version by the CSS.
+const BASEMAP_LAND = {
+  light: { fillColor: '#FBFBF8', fillOpacity: 1, color: '#C3CAD5', weight: 0.8 },
+  dark:  { fillColor: '#141A20', fillOpacity: 1, color: '#2E3842', weight: 0.8 },
+};
+const basemapLandLayers = new Set();
+function basemapLandStyle() {
+  return BASEMAP_LAND[window.vdCurrentTheme ? vdCurrentTheme() : 'light'];
+}
+document.addEventListener('vd-theme-change', () => {
+  basemapLandLayers.forEach(layer => {
+    if (layer._map) layer.setStyle(basemapLandStyle()); else basemapLandLayers.delete(layer);
+  });
+});
+
 function addBasemap(map) {
   map.getContainer().classList.add('vd-map');
   map.createPane('vdLand').style.zIndex = 200;
@@ -1163,10 +1180,10 @@ function addBasemap(map) {
   labelPane.style.pointerEvents = 'none';
   getBasemap().then(data => {
     if (!map.getContainer()._leaflet_id) return;   // map removed while loading
-    L.geoJSON(data.countries, {
+    basemapLandLayers.add(L.geoJSON(data.countries, {
       pane: 'vdLand', renderer: L.canvas({ pane: 'vdLand' }), interactive: false,
-      style: { fillColor: '#FBFBF8', fillOpacity: 1, color: '#C3CAD5', weight: 0.8 },
-    }).addTo(map);
+      style: basemapLandStyle(),
+    }).addTo(map));
     // Label boxes are estimated from text length (px per character at the
     // CSS sizes below) rather than measured, so hidden labels need no DOM.
     const labels = [];

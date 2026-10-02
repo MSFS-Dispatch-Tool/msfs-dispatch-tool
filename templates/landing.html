@@ -84,30 +84,30 @@
 {# How it works: one continuous scroll. Each step pins a full-screen
    screenshot of the app behind a translucent card (see public.css .tour). #}
 {% set tour = [
-  {'key': 'intro', 'shot': 'tour-intro.webp', 'eyebrow': 'How it works', 'title': 'Your dispatch desk for the sim',
+  {'key': 'intro', 'shot': 'tour-intro', 'eyebrow': 'How it works', 'title': 'Your dispatch desk for the sim',
    'body': ['VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure.',
             'The goal is simple: every leg should start with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft.']},
-  {'key': 'routes', 'shot': 'tour-routes.webp', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
+  {'key': 'routes', 'shot': 'tour-routes', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
    'points': ['Filter by departure and arrival time, airline, domestic or international, and one- or multi-leg trips, with live weather and SIGMETs on the route map',
               'Schedules from multiple real-world airlines',
               'Passenger numbers built on real-world data, not guesswork: real airline load factors applied to each aircraft&rsquo;s actual seat count, full flights included. Cargo and cost index are generated automatically to match',
               'Smart aircraft assignment based on your installed add-ons and each carrier&rsquo;s fleet']},
-  {'key': 'defects', 'shot': 'tour-defects.webp', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
+  {'key': 'defects', 'shot': 'tour-defects', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
    'points': ['Aircraft-specific MEL and CDL items modelled on real master MEL relief: a lower cruise level, extra fuel, an empty hold or a ground power unit, set in your SimBrief plan for you',
               'Delays based on real-world IATA delay codes and European delay statistics, linked to the flight&rsquo;s conditions: de-icing when it&rsquo;s cold, a ramp closure when a thunderstorm is reported, and a knock-on delay on every later leg of the trip',
               'Air traffic control slots to make, night curfews at the airports that have them, and crew duty limits that cap how long your day can be',
               'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'simbrief', 'shot': 'tour-simbrief.webp', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
+  {'key': 'simbrief', 'shot': 'tour-simbrief', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
    'points': ['Full SimBrief integration: we compile the flight plan for you, including the dispatch notes, defect limits and extra fuel. All you have to do is select your favorite SimBrief aircraft profile and make sure everything is to your liking',
               'VirtualDispatch fetches all the necessary information from your SimBrief OFP and automatically builds statistics and data on your flights from it']},
-  {'key': 'gate', 'shot': 'tour-gate.webp', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
+  {'key': 'gate', 'shot': 'tour-gate', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
    'points': ['No two flights are alike. Every leg is a new challenge: no-shows, late passengers, an oversold full flight, extra bags, dangerous goods on board',
               'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'paperwork', 'shot': 'tour-paperwork.webp', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
+  {'key': 'paperwork', 'shot': 'tour-paperwork', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
    'points': ['Your flight, your responsibility. Sign the loadsheet and make sure the fuel quantity is right and the performance is OK for departure',
               'Try to be on time: if you leave late, give the delay codes in your report, and your on-time record builds up in your logbook',
               'Once you&rsquo;ve arrived, make sure all the relevant paperwork is signed and get ready for the next flight']},
-  {'key': 'stats', 'shot': 'tour-stats.webp', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
+  {'key': 'stats', 'shot': 'tour-stats', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
    'points': ['Review all your flights, PIREPs and saved information',
               'Deep analytics, highly customizable, with filters on every view',
               'Get an in-depth understanding of your sim career',
@@ -117,7 +117,10 @@
 <section class="tour" id="how-it-works" aria-label="How it works" style="--tour-count: {{ tour|length }}">
   <div class="tour-stage">
     {% for step in tour %}
-    <img class="tour-shot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot) }}" alt="" {% if not loop.first %}loading="lazy"{% endif %} width="1920" height="1080">
+    {# Day and night screenshots of each step; only the current theme's are
+       shown, and hidden lazy images are never downloaded. #}
+    <img class="tour-shot for-light{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '.webp') }}" alt="" loading="lazy" width="1920" height="1080">
+    <img class="tour-shot for-dark{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '-dark.webp') }}" alt="" loading="lazy" width="1920" height="1080">
     {% endfor %}
     <div class="tour-glass"></div>
     <div class="tour-scrim"></div>
@@ -201,7 +204,7 @@
         s.classList.toggle('active', k === i);
         s.classList.toggle('is-past', k < i);
       });
-      shots.forEach(function (sh, k) { sh.classList.toggle('active', k === i); });
+      shots.forEach(function (sh) { sh.classList.toggle('active', Number(sh.getAttribute('data-step')) === i); });
       dots.forEach(function (d, k) {
         d.classList.toggle('active', k === i);
         if (k === i) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');

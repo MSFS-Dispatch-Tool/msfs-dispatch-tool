@@ -33,24 +33,28 @@
 }
 
 :root[data-theme="dark"] {
-  --face:        #14161C;
-  --face-2:      #191B22;
-  --face-dark:   #1E2129;
-  --titlebar:    #5B8DF6;
-  --titlebar-2:  #7BA3FF;
-  --text:        #EDEFF3;
-  --text-muted:  #97A0AE;
-  --shadow-dk:   #333844;
-  --shadow-md:   #262A33;
-  --accent-bg:   #1C2A46;
-  --band-mint:   #172420;
-  --band-peach:  #2A2119;
-  --band-lilac:  #201E2E;
-  --glass:        rgba(22,25,32,0.62);
-  --glass-border: rgba(255,255,255,0.1);
-  --glass-hover:  rgba(255,255,255,0.08);
-  /* The dark-mode logo is white, so its veil darkens instead of whitening. */
-  --hero-veil:    rgba(10,14,26,0.55);
+  /* Night: the flight deck with the panel lights on (see theme.css) -
+     charcoal, warm backlit text, cyan for what you can act on. */
+  color-scheme: dark;
+  --face:        #11151A;
+  --face-2:      #151A20;
+  --face-dark:   #0C1014;
+  --titlebar:    #48D3E6;
+  --titlebar-2:  #7DE3F0;
+  --text:        #EFE6D2;
+  --text-muted:  #A3998A;
+  --shadow-dk:   #3A444F;
+  --shadow-md:   #232A32;
+  --accent-bg:   rgba(72,211,230,0.12);
+  --band-mint:   #13201B;
+  --band-peach:  #231B14;
+  --band-lilac:  #1B1A27;
+  --glass:        rgba(14,18,23,0.66);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-hover:  rgba(255,255,255,0.07);
+  /* The night logo is white, so its veil darkens instead of whitening. */
+  --hero-veil:    rgba(6,9,12,0.55);
+  --backlight:    0 0 6px rgba(255,200,120,0.22);
 }
 
 * { box-sizing: border-box; }
@@ -225,6 +229,9 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   opacity: 0; transform: scale(1.05); transition: opacity 0.7s ease, transform 5s ease-out;
 }
 .tour-shot.active { opacity: 1; transform: scale(1); }
+.tour-shot.for-dark { display: none; }
+:root[data-theme="dark"] .tour-shot.for-light { display: none; }
+:root[data-theme="dark"] .tour-shot.for-dark { display: block; }
 /* The frosted pane: one sheet of glass down the left of the stage, the
    screenshot blurred behind it, its right edge fading out rather than
    ending on a hard line. The step text sits straight on it. */
@@ -240,8 +247,15 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 78%, transparent 100%);
   mask-image: linear-gradient(90deg, #000 0%, #000 78%, transparent 100%);
 }
-:root[data-theme="dark"] .tour-scrim { background: linear-gradient(180deg, rgba(11,14,21,0.5) 0%, rgba(11,14,21,0) 18%); }
-:root[data-theme="dark"] .tour-glass { background: linear-gradient(90deg, rgba(12,15,22,0.8) 0%, rgba(12,15,22,0.64) 70%, rgba(12,15,22,0.38) 100%); }
+:root[data-theme="dark"] .tour-stage { background: #0A0D10; }
+:root[data-theme="dark"] .tour-scrim { background: linear-gradient(180deg, rgba(8,11,14,0.55) 0%, rgba(8,11,14,0) 18%); }
+:root[data-theme="dark"] .tour-glass { background: linear-gradient(90deg, rgba(10,13,16,0.82) 0%, rgba(10,13,16,0.66) 70%, rgba(10,13,16,0.38) 100%); }
+:root[data-theme="dark"] .tour-icon {
+  color: #7DE3F0; background: linear-gradient(140deg, #0C2C33 0%, #12505B 100%);
+  box-shadow: 0 0 0 1px rgba(72,211,230,0.35), 0 0 18px -4px rgba(72,211,230,0.6);
+}
+:root[data-theme="dark"] .tour-icon svg { filter: drop-shadow(0 0 3px rgba(72,211,230,0.7)); }
+:root[data-theme="dark"] .tour-eyebrow, :root[data-theme="dark"] .eyebrow { text-shadow: 0 0 8px rgba(72,211,230,0.5); }
 /* Text: without JS the steps simply stack over the stage. Pinned (JS):
    the section is one screen of scroll per step, the stage sticks, and
    all steps share one spot - the active one shows, the others wait just
@@ -307,9 +321,10 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 }
 .tour-dot:hover .tour-dot-label, .tour-dot:focus-visible .tour-dot-label { opacity: 1; }
 :root[data-theme="dark"] .tour-dot { background: rgba(255,255,255,0.3); }
+:root[data-theme="dark"] .tour-dot.active { box-shadow: 0 0 10px rgba(72,211,230,0.7); }
 @media (max-width: 760px) {
   .tour-glass { width: 100%; -webkit-mask-image: none; mask-image: none; background: rgba(246,248,252,0.72); }
-  :root[data-theme="dark"] .tour-glass { background: rgba(12,15,22,0.74); }
+  :root[data-theme="dark"] .tour-glass { background: rgba(10,13,16,0.76); }
   .tour-step { padding: 96px 0 72px; }
   .tour-card { width: auto; margin: 0 20px; }
   .tour.is-pinned .tour-step { align-items: flex-start; padding-top: 104px; }
@@ -366,24 +381,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   .tour.is-pinned .tour-step, .tour.is-pinned .tour-step.is-past { transform: none; }
   .tour-shot, .tour-shot.active { transform: none; }
 }
-
-/* ---- Theme toggle ---- */
-
-.theme-toggle {
-  position: fixed; right: 20px; bottom: 20px; z-index: 500;
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--face); border: 1px solid var(--shadow-dk);
-  box-shadow: 0 4px 16px rgba(16,24,40,0.14);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text); padding: 0;
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-.theme-toggle:hover { transform: translateY(-2px); }
-.theme-toggle svg { width: 22px; height: 22px; }
-.theme-toggle .icon-moon { display: none; }
-:root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
-:root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
-@media (max-width: 560px) { .theme-toggle { right: 14px; bottom: 14px; width: 44px; height: 44px; } }
 
 /* ---- Footer ---- */
 
@@ -450,3 +447,24 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 #cookie-banner p a { color: var(--titlebar); }
 #cookie-banner .cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 #cookie-banner .btn { padding: 9px 18px; font-size: 13.5px; }
+
+/* ---- Night extras: backlit buttons, nav and cards ---- */
+:root[data-theme="dark"] .nav-pills { box-shadow: 0 8px 28px rgba(0,0,0,0.5); }
+:root[data-theme="dark"] .nav-pills a { text-shadow: var(--backlight); }
+:root[data-theme="dark"] .nav-pills a.is-current, :root[data-theme="dark"] .nav-pills a.is-current:hover {
+  background: rgba(72,211,230,0.14); color: var(--titlebar); text-shadow: 0 0 8px rgba(72,211,230,0.55);
+  box-shadow: inset 0 0 0 1px rgba(72,211,230,0.45);
+}
+:root[data-theme="dark"] .btn-primary {
+  background: var(--titlebar); border-color: var(--titlebar); color: #06181C;
+  box-shadow: 0 0 22px -6px rgba(72,211,230,0.75);
+}
+:root[data-theme="dark"] .btn-secondary { border-color: rgba(239,230,210,0.6); text-shadow: var(--backlight); }
+:root[data-theme="dark"] .feature-card, :root[data-theme="dark"] .soon-card, :root[data-theme="dark"] .blog-card {
+  background: linear-gradient(180deg, #171C22 0%, #13171C 100%); border-color: #262E37;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
+}
+:root[data-theme="dark"] .soon-icon, :root[data-theme="dark"] .feature-card .icon { box-shadow: 0 0 0 1px rgba(72,211,230,0.3), 0 0 14px -5px rgba(72,211,230,0.6); }
+:root[data-theme="dark"] .step-list li::before { background: var(--titlebar); color: #06181C; box-shadow: 0 0 12px -3px rgba(72,211,230,0.7); }
+:root[data-theme="dark"] .cta-band { background: linear-gradient(180deg, var(--face) 0%, #0E2328 100%); }
+:root[data-theme="dark"] .site-footer { background: #0A0D10; }
