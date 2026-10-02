@@ -1323,8 +1323,8 @@ def confirm():
     Called when the person presses CONFIRM after reviewing a flight.
     Generates a callsign PER LEG (only happens here, never earlier -
     each flight number/sector gets its own, since real callsigns are
-    per-flight, not per-rotation) and rolls dangerous goods + LMC
-    together, as the loadsheet-signing moment.
+    per-flight, not per-rotation). Last-minute changes and dangerous
+    goods come later, with each leg's loadsheet (see /loadsheet/extras).
     """
     flights_raw = request.args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
@@ -1340,19 +1340,28 @@ def confirm():
         generate_callsign(route_leg.get("callsign_prefix") or carrier_for(route_leg)["callsign_prefix"])
         for route_leg in itinerary
     ]
-    settings = get_settings_safe()
-    full_flight = request.args.get("full", type=int)
-    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"],
-                                        full_flight=None if full_flight is None else bool(full_flight))
-
     return jsonify({
         "confirmation_id": callsigns[0],  # unique enough for this tool's purposes
         "callsigns": callsigns,           # one per flight_numbers[i], same order
         "flight_numbers": flight_numbers,
-        "dangerous_goods": dg,
-        "lmc_event": lmc,
         "leg_status": [{"flight_number": fn, "status": "pending"} for fn in flight_numbers],
     })
+
+
+@app.route("/loadsheet/extras")
+def loadsheet_extras():
+    """What turns up when the captain asks for one leg's loadsheet: a
+    last-minute change (or none) and the dangerous goods on board, rolled
+    only now, as in real operations. full=1 when the leg is fully booked
+    (no late joiners then, but it can be oversold)."""
+    fn = request.args.get("flight", default="", type=str).strip()
+    if fn not in routes_by_flight_number:
+        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+    full_flight = request.args.get("full", type=int)
+    settings = get_settings_safe()
+    dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"],
+                                        full_flight=None if full_flight is None else bool(full_flight))
+    return jsonify({"lmc_event": lmc, "dangerous_goods": dg})
 
 
 # ---------------------------------------------------------------------
@@ -1731,11 +1740,17 @@ def simbrief_redirect_url():
     if extra_fuel_min and 0 < extra_fuel_min <= 120:
         params["addedfuel"] = extra_fuel_min
         params["addedfuel_units"] = "min"
-    remarks = re.sub(r"[^A-Za-z0-9 /.+-]", "", request.args.get("remarks", default="", type=str))[:180].strip()
+    # The defects in full (official MEL wording, crew actions and dispatch
+    # consequences), one item per line in SimBrief's dispatcher remarks
+    remarks = request.args.get("remarks", default="", type=str).replace("\r", "")
+    remarks = re.sub(r"[^A-Za-z0-9 \n/.,:;()%+'-]", "", remarks)[:REMARKS_MAX_CHARS].strip()
     if remarks:
         params["manualrmk"] = remarks
 
     return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
+
+
+REMARKS_MAX_CHARS = 2500
 
 
 def ofp_route_fixes(navlog):
@@ -1852,9 +1867,22 @@ def simbrief_ofp():
         "efob": fuel.get("plan_ramp", ""),
         # Planned trip burn and fuel at destination, kept so the Stats page
         # can compare them with the pilot's actual fuel at destination (AFAD).
-        "plan_trip_fuel": fuel.get("est_burn", ""),
+        "plan_trip_fuel": fuel.get("enroute_burn", "") or fuel.get("est_burn", ""),
         "plan_landing_fuel": fuel.get("plan_landing", ""),
         "epax": weights.get("pax_count", ""),
+        # The loadsheet is built from these (all in weight_unit)
+        "dow": weights.get("oew", ""),
+        "pax_weight": weights.get("pax_weight", ""),
+        "bag_count": weights.get("bag_count", ""),
+        "payload": weights.get("payload", ""),
+        "cargo": weights.get("cargo", ""),
+        "max_zfw": weights.get("max_zfw", ""),
+        "max_tow": weights.get("max_tow", ""),
+        "max_ldw": weights.get("max_ldw", ""),
+        "est_ldw": weights.get("est_ldw", ""),
+        "takeoff_fuel": fuel.get("plan_takeoff", ""),
+        "taxi_fuel": fuel.get("taxi", ""),
+        "trip_fuel": fuel.get("enroute_burn", "") or fuel.get("est_burn", ""),
         "navlog": ofp_route_fixes(data.get("navlog")),
     })
 

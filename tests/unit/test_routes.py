@@ -31,9 +31,16 @@ def test_select_rolls_a_delay_on_the_first_leg_only(client):
         assert legs[1]["delay"] is None and legs[1]["atfm"] is None
 
 
-def test_confirm_respects_the_full_flag(client):
+def test_confirm_gives_callsigns_only(client):
+    data = client.get("/confirm?flights=FR113").get_json()
+    assert data["callsigns"][0].startswith("RYR") and "lmc_event" not in data
+
+
+def test_loadsheet_extras_respect_the_full_flag(client):
+    assert client.get("/loadsheet/extras?flight=NOPE").status_code == 400
+
     def events(full):
-        got = (client.get(f"/confirm?flights=FR113&full={full}").get_json()["lmc_event"] for _ in range(150))
+        got = (client.get(f"/loadsheet/extras?flight=FR113&full={full}").get_json()["lmc_event"] for _ in range(150))
         return {e["id"] for e in got if e}
     assert "lmc-02" not in events(1)
     assert "lmc-08" not in events(0)
@@ -55,6 +62,11 @@ def test_simbrief_link_carries_the_dispatch_inputs(client):
     assert q["orig"] == "EGKK" and q["type"] == "B738" and q["deph"] == "07" and q["depm"] == "55"
     assert q["fl"] == "FL250" and q["addedfuel"] == "15" and q["addedfuel_units"] == "min"
     assert q["manualrmk"] == "MEL 21 PACK script"            # only safe characters reach SimBrief
+    long = "MEL 24-21-01: ENGINE GENERATOR 2 INOPERATIVE\nCREW ACTIONS: KEEP THE APU RUNNING; EXTRA FUEL (5 MIN)\n" * 60
+    q = parse_qs(urlparse(client.get("/simbrief/redirect-url", query_string={
+        "flights": "FR113", "civalue": 8, "pax": 170, "taxi_out_minutes": 12, "aircraft_type": "738", "remarks": long}).get_json()["url"]).query)
+    rmk = q["manualrmk"][0]
+    assert "\n" in rmk and "(5 MIN)" in rmk and len(rmk) <= 2500        # multi-line, capped
     # out-of-range values are dropped, not passed on
     url = client.get("/simbrief/redirect-url?flights=FR113&civalue=8&pax=1&taxi_out_minutes=12&aircraft_type=738"
                      "&max_fl=999&extra_fuel_min=500").get_json()["url"]

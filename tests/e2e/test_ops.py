@@ -35,7 +35,7 @@ async def main():
             await page.click("#swapAircraftBtn"); await page.wait_for_timeout(1500)
         await page.locator(".confirm-row button").click(); await page.wait_for_timeout(2000)
         await page.evaluate("""() => { const f = loadActiveFlight();
-          f.leg_state.forEach(st => { st.simbrief = 'received'; st.ofp = {weight_unit: 'kgs'}; st.loadsheet_signed = true; st.loadsheet = {zfw: 1}; });
+          f.leg_state.forEach(st => { st.simbrief = 'available'; st.ofp = {weight_unit: 'kgs'}; st.loadsheet_signed = true; st.loadsheet = {zfw: 1}; st.pirep_open = true; });
           saveAndRender(f); }""")
         await page.wait_for_timeout(500)
         fl = await page.evaluate("loadActiveFlight()")
@@ -46,11 +46,11 @@ async def main():
             await page.fill(f"#{id_}-hh", str(m // 60)); await page.fill(f"#{id_}-mm", str(m % 60))
         # leg 1: off-block at SOBT+40 (delay coding), take-off 14:58Z (slot met: CTOT 14:52, +6), in-block 21:50Z (very late)
         sobt = zm(L0["sobt"])
-        await page.evaluate("selectRecapLeg(0); selectRecapTab('next')"); await page.wait_for_timeout(300)
+        await page.evaluate("selectRecapLeg(0); selectRecapTab('pirep')"); await page.wait_for_timeout(300)
         await fill("aobt-0", sobt + 40); await page.wait_for_timeout(200)
         await fill("atot-0", zm("14:58")); await fill("aldt-0", zm("21:40")); await fill("abit-0", zm("21:50"))
         await page.fill("#afad-0", "2400"); await page.check("#normal-0")
-        await page.click("#pirep-0 button:has-text('SUBMIT PIREP')"); await page.wait_for_timeout(1000)
+        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(1000)
         fl = await page.evaluate("loadActiveFlight()")
         p0 = fl["leg_state"][0]["pirep"]
         exp_delta = zm("14:58") - zm(L0["atfm"]["ctot"])

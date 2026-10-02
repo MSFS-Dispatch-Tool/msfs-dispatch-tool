@@ -64,11 +64,10 @@ async def main():
         check("changing the aircraft changes every leg", len(set(seats)) == 1, seats)
         await page.screenshot(path=shot("search_aircraft.png"))
 
-        confirm_urls = []
-        page.on("request", lambda r: confirm_urls.append(r.url) if "/confirm" in r.url else None)
         await page.click(".confirm-row button")
-        await page.wait_for_timeout(1500)
-        check("CONFIRM tells the server whether the first leg is full", confirm_urls and "full=" in confirm_urls[0], confirm_urls[:1])
+        await page.wait_for_selector(".af-top")
+        steps = await page.evaluate("[...document.querySelectorAll('.af-step .af-step-l')].map(e => e.textContent)")
+        check("CONFIRM opens the active flight with its four steps", steps == ["SEND TO SIMBRIEF", "FETCH OFP", "SIGN LOADSHEET", "FILE PIREP"], steps)
         await page.evaluate("""async () => { const r = await (await fetch('/active-flight')).json();
             await fetch('/active-flight', {method: 'PUT', headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({flight: null, base_rev: r.rev})}); clearActiveFlight(); }""")

@@ -30,7 +30,7 @@ async def main():
             leg.delay = {iata_code: code, description: code === '81' ? 'ATFM due to ATC en-route demand/capacity' : 'Catering order, late or incorrect order given to supplier', duration_range_minutes: [5, 60], minutes: mins};
             leg.expected_delay_minutes = mins; ['eobt','etot','eldt','eibt'].forEach(x => leg[x] = shiftZulu(leg[x], mins - before)); };
           setDelay(f.legs[0], '81', 20); setDelay(f.legs[1], '17', 10);
-          f.leg_state.forEach(st => { st.simbrief = 'received'; st.ofp = {weight_unit: 'kgs'}; st.loadsheet_signed = true; st.loadsheet = {zfw: 1}; });
+          f.leg_state.forEach(st => { st.simbrief = 'available'; st.ofp = {weight_unit: 'kgs'}; st.loadsheet_signed = true; st.loadsheet = {zfw: 1}; st.pirep_open = true; });
           saveAndRender(f); }""")
         await page.wait_for_timeout(800)
         fl = await page.evaluate("loadActiveFlight()")
@@ -38,7 +38,7 @@ async def main():
         zm = lambda s: int(s[:2]) * 60 + int(s[3:5])
         # Fill PIREP leg 0: off-block SOBT+27 (so a 27-min delay to code), in-block 50 min after SIBT -> reactionary
         await page.evaluate("selectRecapLeg(0)"); await page.wait_for_timeout(300)
-        await page.evaluate("selectRecapTab('next')"); await page.wait_for_timeout(300)
+        await page.evaluate("selectRecapTab('pirep')"); await page.wait_for_timeout(300)
         sobt0, sibt0, sobt1 = zm(L0["sobt"]), zm(L0["sibt"]), zm(L1["sobt"])
         aobt = sobt0 + 27; abit = sibt0 + 50
         async def fill(id_, m):
@@ -54,14 +54,14 @@ async def main():
         await page.fill("#dc-min-0-0", "20")
         await page.dispatch_event("#dc-min-0-0", "input")
         await page.wait_for_timeout(200)
-        check("sum warning shown", "must add up" in await page.inner_text("#dc-sum-0"))
+        check("sum warning shown", "MUST ADD UP" in (await page.inner_text("#dc-sum-0")).upper())
         await fill("atot-0", aobt + 12); await fill("aldt-0", abit - 6); await fill("abit-0", abit)
         await page.fill("#afad-0", "2500"); await page.check("#normal-0")
-        await page.click("#pirep-0 button:has-text('SUBMIT PIREP')"); await page.wait_for_timeout(500)
+        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(500)
         check("submit blocked when minutes don't add up", any("add up" in a for a in alerts), str(alerts[-1:]))
         # second row: code 63 for 7 min
         await page.select_option("#dc-code-0-1", "63"); await page.fill("#dc-min-0-1", "7"); await page.dispatch_event("#dc-min-0-1", "input")
-        await page.click("#pirep-0 button:has-text('SUBMIT PIREP')"); await page.wait_for_timeout(1000)
+        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(1000)
         fl = await page.evaluate("loadActiveFlight()")
         p0 = fl["leg_state"][0]["pirep"]
         check("PIREP stored the two codes", p0 and p0.get("delay_codes") and [c["code"] for c in p0["delay_codes"]] == ["81", "63"], str(p0 and p0.get("delay_codes")))

@@ -1,4 +1,4 @@
-"""737 fuel pump items: the fuel minimum and centre-tank limit at loadsheet signing."""
+"""737 fuel pump items: the fuel minimum and centre-tank limit on the loadsheet."""
 import asyncio
 
 from playwright.async_api import async_playwright
@@ -26,22 +26,32 @@ async def main():
         check("preview: FAA item numbers and fuel minimum", "Main tank fuel pump, aft" in detail and "minimum 6,804 kg at take-off" in detail and "Centre tank unusable" in detail, "")
         check("preview: pack FL250 sent to SimBrief", "cruise no higher than FL250" in detail)
         await page.locator(".confirm-row button").click(); await page.wait_for_timeout(2000)
-        await page.evaluate("selectRecapTab('tech')"); await page.wait_for_timeout(400)
-        tech = await page.inner_text("#af-pane-tech")
+        tech = await page.inner_text("#af-pane-briefing")
         check("MEL tab: installed/required, FAA source, MMEL provisos", "Official MEL wording" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
         await page.screenshot(path=shot("mel738_tab.png"))
+        # Loadsheet: an OFP with too little take-off fuel for the pump minimum
+        await page.route("**/loadsheet/extras*", lambda r: r.fulfill(status=200, content_type="application/json",
+                         body='{"lmc_event": null, "dangerous_goods": {"id": "dg-05", "label": "No dangerous goods on this sector"}}'))
+        ofp = {"weight_unit": "kgs", "dow": "41500", "pax_weight": "84", "payload": "16000", "est_zfw": "57500", "max_zfw": "62732",
+               "max_tow": "79015", "max_ldw": "66360", "takeoff_fuel": "5000", "taxi_fuel": "200", "trip_fuel": "3000", "epax": "180"}
+        await page.evaluate("""(ofp) => { const f = loadActiveFlight(); const st = f.leg_state[0];
+          st.simbrief = 'available'; st.ofp = ofp; saveAndRender(f); }""", ofp)
+        await page.wait_for_timeout(400)
+        await page.click("#af-pane-loadsheet button:has-text('ASK FOR LOADSHEET')"); await page.wait_for_timeout(600)
+        pane = await page.inner_text("#af-pane-loadsheet")
+        check("loadsheet flags take-off fuel below the MEL minimum", "below the MEL minimum of 6,804 KG" in pane, pane[-400:])
+        check("SIGN LOADSHEET stays off until the fuel is sorted", await page.locator("#signLoadsheetBtn-0").is_disabled())
+        await page.click("#af-pane-loadsheet button:has-text('UPLIFT FUEL')"); await page.wait_for_timeout(400)
+        sheet = await page.inner_text("#loadsheet-0")
+        check("uplift brings the take-off fuel to the minimum", "TAKE OFF FUEL               6900" in sheet and "FUEL UPLIFT" in sheet, sheet[:900])
+        check("then the loadsheet can be signed", not await page.locator("#signLoadsheetBtn-0").is_disabled())
+        await page.screenshot(path=shot("mel738_loadsheet.png"))
+        # Centre tank unusable: block fuel above what the main tanks hold
         await page.evaluate("""() => { const f = loadActiveFlight(); const st = f.leg_state[0];
-          st.simbrief = 'received'; st.ofp = {weight_unit: 'kgs'}; saveAndRender(f); }""")
-        await page.wait_for_timeout(500)
-        await page.evaluate("selectRecapLeg(0); selectRecapTab('next')"); await page.wait_for_timeout(300)
-        for f, v in (("zfw", "60000"), ("fob", "5000"), ("pax", "180"), ("crew", "6")):
-            await page.fill(f"#ls-{f}-0", v)
-        await page.click("#loadsheet-0 button:has-text('SIGN LOADSHEET')"); await page.wait_for_timeout(600)
-        signed = await page.evaluate("loadActiveFlight().leg_state[0].loadsheet_signed")
-        check("loadsheet below MEL fuel minimum asks, and cancelling keeps it unsigned", dialogs and "below the MEL take-off minimum of 6,804 kg" in dialogs[0] and not signed, dialogs[:1])
-        await page.fill("#ls-fob-0", "9000")
-        await page.click("#loadsheet-0 button:has-text('SIGN LOADSHEET')"); await page.wait_for_timeout(600)
-        check("FOB above the centre-tank-empty limit warns too", len(dialogs) >= 2 and "7,830 kg the main tanks hold" in dialogs[1], dialogs[1:2])
+          st.ofp = Object.assign({}, st.ofp, {takeoff_fuel: '9000'}); st.ls.decisions = {}; saveAndRender(f); }""")
+        await page.wait_for_timeout(400)
+        pane = await page.inner_text("#af-pane-loadsheet")
+        check("block fuel above the main tanks asks for a defuel", "the main tanks hold (centre tank unusable). Defuel 1,400 KG" in pane, pane[-400:])
         check.done(page)
         await b.close()
 asyncio.run(main())
