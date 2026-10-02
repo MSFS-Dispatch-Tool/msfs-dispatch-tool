@@ -1948,15 +1948,6 @@ function simbriefRemarks(leg) {
 function itineraryNogo(legs) {
   return legs.flatMap((leg, i) => ((leg.tech && leg.tech.checks) || []).filter(c => c.level === 'nogo').map(c => ({ leg: i, ...c })));
 }
-function toggleTechStep(i, key, input) {
-  const flight = loadActiveFlight(); if (!flight) return;
-  const st = flight.leg_state[i];
-  st.tech_done = st.tech_done || {};
-  if (input.checked) st.tech_done[key] = true; else delete st.tech_done[key];
-  input.nextElementSibling.classList.toggle('done', input.checked);
-  saveActiveFlight(flight);
-}
-
 // Dispatch swaps the aircraft when an item makes a leg NO-GO: the new one
 // brings its own status and costs a code 46 delay on the first leg.
 async function swapAircraft(key) {
@@ -2071,7 +2062,7 @@ function routeMapNote(leg, state, refetchIndex) {
   if (ofpRouteFixes(leg, ofp)) return `Planned route from the SimBrief OFP: ${escText(ofp.route || '')}`;
   const refetch = refetchIndex != null
     ? ` <button class="ghost small" type="button" onclick="fetchOfp(${refetchIndex})">FETCH OFP AGAIN</button>` : '';
-  if (!ofp) return 'Straight line between the airports. The planned route appears once the OFP is fetched from SimBrief';
+  if (!ofp) return 'Waiting for the SimBrief OFP to plot the planned route';
   if (ofp.origin_icao && ofp.destination_icao && (ofp.origin_icao !== leg.departure_info.icao || ofp.destination_icao !== leg.arrival_info.icao)) {
     return `Straight line: the saved OFP is for ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, not this leg${refetch}`;
   }
@@ -2280,8 +2271,8 @@ function ofpNum(value) {
 function sheetRow(label, value, tone = '') {
   return `<div class="sheet-row${tone ? ' ' + tone : ''}"><span class="sheet-k">${label}</span><span class="sheet-v">${value}</span></div>`;
 }
-function sheetSection(title, rows, extra = '') {
-  return `<section class="sheet"><h4 class="sheet-h">${title}</h4>${rows.join('')}${extra}</section>`;
+function sheetSection(title, rows, extra = '', id = '') {
+  return `<section class="sheet"${id ? ` id="brief-${id}"` : ''}><h4 class="sheet-h">${title}</h4>${rows.join('')}${extra}</section>`;
 }
 function briefingSummary(flight, i) {
   const leg = flight.legs[i];
@@ -2296,9 +2287,19 @@ function briefingSummary(flight, i) {
     ['DELAY', delay ? `+${delay} MIN` : 'ON TIME', delay ? (code ? `IATA ${escText(code)}` : 'Expected delay') : 'No delay expected', delay ? 'caution' : 'ok'],
     ['TECH LOG', mels || cdl ? `${mels} MEL &middot; ${cdl} CDL` : 'CLEAN', mels || cdl ? 'See the technical log' : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
     ['CREW DUTY', duty ? (duty.over > 0 ? `${fmtMinutes(duty.over)} OVER` : `${fmtMinutes(-duty.over)} SPARE`) : 'N/A',
-      duty ? `FDP ${fmtMinutes(duty.fdp)} / ${fmtMinutes(duty.duty.max_fdp_minutes)}` : '', duty ? duty.level : ''],
+      duty ? `FDP ${hm(duty.fdp)} of ${hm(duty.duty.max_fdp_minutes)}` : '', duty ? duty.level : ''],
   ];
-  return `<div class="bsum">${tiles.map(([k, v, sub, tone]) => `<div class="bsum-tile ${tone}"><span class="bsum-k">${k}</span><b class="bsum-v">${v}</b><span class="bsum-sub">${sub}</span></div>`).join('')}</div>`;
+  const target = ['dispatch', 'timing', 'tech', 'crew'];
+  return `<div class="bsum">${tiles.map(([k, v, sub, tone], n) => `<button type="button" class="bsum-tile ${tone}" onclick="scrollBriefing('${target[n]}')"><span class="bsum-k">${k}</span><b class="bsum-v">${v}</b><span class="bsum-sub">${sub}</span></button>`).join('')}</div>`;
+}
+function hm(min) { return `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`; }
+// A summary tile takes you to its section; DISPATCH to the first one that
+// needs attention, or the top
+function scrollBriefing(key) {
+  const pane = document.getElementById('af-pane-briefing'); if (!pane) return;
+  let el = key === 'dispatch' ? (pane.querySelector('.sheet-row.nogo, .sheet-row.caution') || pane.querySelector('.sheet')) : document.getElementById('brief-' + key);
+  if (el && key === 'dispatch') el = el.closest('.sheet') || el;
+  if (el) pane.scrollTo({ top: el.offsetTop - pane.offsetTop - 8, behavior: 'smooth' });
 }
 function briefingHtml(flight, i) {
   const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp;
@@ -2311,28 +2312,35 @@ function briefingHtml(flight, i) {
     sheetRow('BAGS (EXPECTED)', `${fmtNum(leg.cargo_weight_kg)} kg`),
   ];
   return briefingSummary(flight, i)
-    + sheetSection('FLIGHT', flightRows)
-    + sheetSection('TIMING AND CREW', timingRows(flight, i))
-    + sheetSection('TECHNICAL LOG', techRows(leg), techCards(flight, i))
-    + sheetSection('SIMBRIEF OFP', ofpRows(st))
-    + sheetSection('WEATHER', weatherRows(leg))
+    + sheetSection('FLIGHT', flightRows, '', 'flight')
+    + sheetSection('TIMING', timingRows(flight, i), '', 'timing')
+    + sheetSection('TECHNICAL LOG', techRows(leg), techCards(flight, i), 'tech')
+    + sheetSection('SIMBRIEF OFP', ofpRows(st), '', 'ofp')
+    + sheetSection('WEATHER', weatherRows(leg), '', 'weather')
+    + sheetSection('CREW', crewRows(flight), '', 'crew')
     + briefingActionsHtml(flight, i);
 }
 function timingRows(flight, i) {
   const leg = flight.legs[i], rows = [];
   const own = legOwnDelayMinutes(leg);
-  const time = (label, e, sch) => rows.push(sheetRow(label, `${escText(e || 'N/A')} <span class="sheet-note">scheduled ${escText(sch || 'N/A')}</span>`));
-  time('OFF-BLOCK', leg.eobt, leg.sobt);
-  time('TAKE-OFF', leg.etot, leg.stot);
-  time('LANDING', leg.eldt, leg.sldt);
-  time('IN-BLOCK', leg.eibt, leg.sibt);
-  if (leg.eet_minutes != null) rows.push(sheetRow('FLIGHT TIME (EET)', fmtMinutes(leg.eet_minutes)));
+  const cell = (e, sch) => {
+    const a = zuluMinutes(e), b = zuluMinutes(sch), d = a != null && b != null ? clockDiff(b, a) : 0;
+    return `${escText(e || 'N/A')}${d ? ` <span class="time-delta">${d > 0 ? '+' : ''}${d}</span>` : ''}`;
+  };
+  const times = [['OFF-BLOCK', leg.sobt, leg.eobt], ['TAKE-OFF', leg.stot, leg.etot], ['LANDING', leg.sldt, leg.eldt], ['IN-BLOCK', leg.sibt, leg.eibt]];
+  rows.push(`<div class="sheet-row sheet-cols sheet-colhead"><span class="sheet-k"></span><span>SCHEDULED</span><span>ESTIMATED</span></div>`
+    + times.map(([k, sch, e]) => `<div class="sheet-row sheet-cols"><span class="sheet-k">${k}</span><span>${escText(sch || 'N/A')}</span><span>${cell(e, sch)}</span></div>`).join('')
+    + (leg.eet_minutes != null ? `<div class="sheet-row sheet-cols"><span class="sheet-k">FLIGHT TIME</span><span>${fmtMinutes(leg.eet_minutes)}</span><span></span></div>` : ''));
   if (leg.reactionary) rows.push(sheetRow(`DELAY +${leg.reactionary.minutes} MIN`, `${leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector'} <span class="sheet-note">IATA 93</span>`, 'caution'));
   if (leg.delay) rows.push(sheetRow(`DELAY +${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN`, `${escText(leg.delay.plain || leg.delay.description)} <span class="sheet-note">IATA ${escText(leg.delay.iata_code)}</span>`, 'caution'));
   if (leg.aircraft_change) rows.push(sheetRow(`DELAY +${leg.aircraft_change.minutes} MIN`, 'Aircraft change <span class="sheet-note">IATA 46</span>', 'caution'));
   if (leg.reactionary && own) rows.push(sheetRow('TOTAL DELAY', `${legExpectedDelayMinutes(leg)} min: the other delays are absorbed during the late turnaround`));
   if (leg.atfm) rows.push(sheetRow(`ATC SLOT ${escText(leg.atfm.ctot)}`, `Take off between ${slotWindowText(leg.atfm)} <span class="sheet-note">${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}${leg.atfm.revised ? ', new slot' : ''}</span>`, 'caution'));
   legCurfewChecks(leg).forEach(c => rows.push(sheetRow(`CURFEW ${escText(c.icao)}`, c.text, c.level)));
+  return rows;
+}
+function crewRows(flight) {
+  const rows = [];
   const duty = dutyFigures(flight.legs, flight.leg_state);
   if (duty) {
     const d = duty.duty;
@@ -2340,7 +2348,7 @@ function timingRows(flight, i) {
     rows.push(sheetRow('MAX FDP', `${fmtMinutes(d.max_fdp_minutes)} for ${d.sectors} sector${d.sectors > 1 ? 's' : ''} <span class="sheet-note">EASA ORO.FTL.205</span>`));
     rows.push(sheetRow('EXPECTED FDP', `${fmtMinutes(duty.fdp)} <span class="sheet-note">${duty.over > 0 ? `${fmtMinutes(duty.over)} into commander's discretion` : `${fmtMinutes(-duty.over)} to spare`}</span>`, duty.level));
   }
-  return rows;
+  return rows.length ? rows : [sheetRow('STATUS', 'No crew duty figures for this trip')];
 }
 const CHECK_LABELS = { nogo: 'NO-GO', caution: 'CAUTION', ok: 'CLEAR' };
 function techRows(leg) {
@@ -2357,14 +2365,13 @@ function techRows(leg) {
 // One card per deferred item, in the same order for each: reference and
 // name, deadline, what it means, the crew's steps, the official wording.
 function techCards(flight, i) {
-  const leg = flight.legs[i], done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
-  const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
+  const leg = flight.legs[i];
   const card = (ref, m, steps) => {
     const official = (m.procedures || []).map(t => `<li>${escText(stripMO(t))}</li>`).join('');
     return `<div class="tcard">
       <div class="tcard-head"><span class="tech-ref">${ref}</span><b>${techTitle(m)}</b></div>
       <p class="tcard-means">${escText(m.plain || m.description)}</p>
-      ${steps.length ? `<ul class="tech-steps">${steps.map((t, k) => step(`${m.id}#${k}`, t)).join('')}</ul>` : ''}
+      ${steps.length ? `<ul class="tcard-steps">${steps.map(t => `<li>${escText(t)}</li>`).join('')}</ul>` : ''}
       ${official || m.description ? `<details class="tech-official"><summary>Official wording</summary><p>${escText(m.description)}</p>${official ? `<ul>${official}</ul>` : ''}${m.source ? `<p>Source: ${escText(m.source)}</p>` : ''}</details>` : ''}
     </div>`;
   };
