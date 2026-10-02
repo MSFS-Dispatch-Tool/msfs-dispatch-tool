@@ -2156,30 +2156,36 @@ function stageTab(stage) {
   return stage === 'loadsheet' ? 'loadsheet' : stage === 'pirep' || stage === 'done' ? 'pirep' : 'briefing';
 }
 
-// The four steps double as the controls for the first two; the last two
-// open their tab.
+// The four steps as a read-only checklist: what's done, what's next and
+// what's still to do. The actions live where the work is (briefing,
+// loadsheet and PIREP tabs).
+const STEP_INFO = [
+  ['SEND TO SIMBRIEF', 'Open SimBrief with this leg filled in and generate the OFP there'],
+  ['FETCH OFP', 'Bring the OFP back: route, fuel and weights complete the briefing'],
+  ['SIGN LOADSHEET', 'Ask for the loadsheet, sort out any last-minute changes, sign it'],
+  ['FILE PIREP', 'Fly the leg, then report your actual times and fuel'],
+];
 function afStepsHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i);
-  const live = stage !== 'waiting' && stage !== 'done' && !st.loadsheet_signed;
-  const steps = [
-    { label: 'SEND TO SIMBRIEF', done: stage === 'done' || st.simbrief !== 'not_sent', now: stage === 'simbrief', on: live, act: `prepareLeg(${i})`,
-      title: st.simbrief !== 'not_sent' ? 'Send this leg to SimBrief again' : 'Open SimBrief with this leg filled in' },
-    { label: 'FETCH OFP', done: stage === 'done' || st.simbrief === 'available', now: stage === 'ofp', on: live && st.simbrief !== 'not_sent', act: `fetchOfp(${i})`,
-      title: st.simbrief === 'available' ? 'Fetch the OFP again' : 'Fetch the OFP you generated on SimBrief' },
-    { label: 'SIGN LOADSHEET', done: stage === 'done' || st.loadsheet_signed, now: stage === 'loadsheet', on: true, act: `selectRecapTab('loadsheet')`, title: 'Open the loadsheet' },
-    { label: 'FILE PIREP', done: !!st.pirep, now: stage === 'pirep', on: true, act: `selectRecapTab('pirep')`, title: 'Open the PIREP' },
-  ];
-  return `<ol class="af-steps" aria-label="Leg progress">${steps.map((s, k) => `<li>
-    <button type="button" class="af-step${s.done ? ' done' : ''}${s.now ? ' now' : ''}" onclick="${s.act}"${s.on ? '' : ' disabled'}${s.now ? ' aria-current="step"' : ''} title="${s.title}">
-      <span class="af-step-n" aria-hidden="true">${s.done ? '&#10003;' : k + 1}</span><span class="af-step-l">${s.label}</span></button></li>`).join('')}</ol>`;
+  const done = [stage === 'done' || st.simbrief !== 'not_sent', stage === 'done' || st.simbrief === 'available',
+    stage === 'done' || !!st.loadsheet_signed, !!st.pirep];
+  const nowIndex = ({ simbrief: 0, ofp: 1, loadsheet: 2, pirep: 3 })[stage];
+  return `<ol class="af-flow" aria-label="Steps for this leg">${STEP_INFO.map(([label, text], k) => {
+    const state = done[k] ? 'done' : k === nowIndex ? 'now' : 'todo';
+    const tag = state === 'done' ? 'DONE' : state === 'now' ? 'NEXT' : '';
+    return `<li class="af-flow-step ${state}"${state === 'now' ? ' aria-current="step"' : ''}>
+      <span class="af-flow-n" aria-hidden="true">${state === 'done' ? '&#10003;' : k + 1}</span>
+      <span class="af-flow-body"><b>${label}</b>${tag ? `<span class="af-flow-tag">${tag}</span>` : ''}<small>${text}</small></span></li>`;
+  }).join('')}</ol>${stage === 'waiting' ? `<p class="af-flow-note">These steps open once the PIREP for leg ${i} is filed</p>` : ''}`;
 }
-const STAGE_HINTS = {
-  simbrief: 'Next: send this leg to SimBrief and generate the OFP there',
-  ofp: 'Next: generate the OFP in the SimBrief tab, then fetch it',
-  loadsheet: 'Next: ask for the loadsheet, sort out any changes and sign it',
-  pirep: 'Next: fly the leg, then fill in and sign the PIREP',
-  done: 'PIREP filed: this leg is complete',
-};
+// The SimBrief actions, at the bottom of the briefing
+function briefingActionsHtml(flight, i) {
+  const st = flight.leg_state[i], stage = legStage(flight, i);
+  if (stage === 'waiting' || stage === 'done' || st.loadsheet_signed) return '';
+  if (st.simbrief === 'not_sent') return `<div class="doc-actions brief-actions"><button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button><span class="doc-blocker">Opens SimBrief with this leg filled in</span></div>`;
+  if (st.simbrief !== 'available') return `<div class="doc-actions brief-actions"><button class="action" onclick="fetchOfp(${i})">FETCH OFP</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button><span class="doc-blocker">Generate the OFP in the SimBrief tab first</span></div>`;
+  return `<div class="doc-actions brief-actions"><button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
+}
 
 function renderRecap(flight) {
   setAppNav('flight');
@@ -2202,7 +2208,6 @@ function renderRecap(flight) {
     return `<button type="button" class="af-leg${k === i ? ' on' : ''}${pr.done ? ' done' : ''}" onclick="selectRecapLeg(${k})" aria-pressed="${k === i}">
       <b>LEG ${k + 1}</b> ${l.flight_number} &middot; ${l.departure_info.icao} &rarr; ${l.arrival_info.icao}<small>${status}</small></button>`;
   }).join('');
-  const hint = stage === 'waiting' ? `Opens once the PIREP for leg ${i} is filed` : STAGE_HINTS[stage];
   const actions = allDone
     ? `<span class="status-chip status-ok">ALL LEGS COMPLETE</span><button class="action small" onclick="startNewFlight()">NEW FLIGHT</button>`
     : stage !== 'waiting' && stage !== 'done' ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
@@ -2217,18 +2222,17 @@ function renderRecap(flight) {
   document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}
     <div class="panel af-top">
       <div class="af-legs">${legTabs}</div>
-      ${afStepsHtml(flight, i)}
-      <div class="af-status"><span class="af-hint">${hint}</span>${actions}</div>
+      <div class="af-status">${actions}</div>
     </div>
     ${mismatch}
     <div class="af-cols">
       <div class="panel af-route">
         <div class="panel-header"><span>${leg.flight_number}${callsign ? ' &mdash; ' + escText(callsign) : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}</span></div>
         <div class="panel-body">
+          ${afStepsHtml(flight, i)}
           <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
           ${routeMapDiv(leg, `map-recap-${i}`)}
           <p class="af-map-note">${routeMapNote(leg, state, stage !== 'waiting' && stage !== 'done' ? i : null)}</p>
-          ${legScheduleTable(leg)}
         </div>
       </div>
       <div class="panel af-tabs">
@@ -2311,12 +2315,18 @@ function briefingHtml(flight, i) {
     + sheetSection('TIMING AND CREW', timingRows(flight, i))
     + sheetSection('TECHNICAL LOG', techRows(leg), techCards(flight, i))
     + sheetSection('SIMBRIEF OFP', ofpRows(st))
-    + sheetSection('WEATHER', weatherRows(leg));
+    + sheetSection('WEATHER', weatherRows(leg))
+    + briefingActionsHtml(flight, i);
 }
 function timingRows(flight, i) {
   const leg = flight.legs[i], rows = [];
   const own = legOwnDelayMinutes(leg);
-  rows.push(sheetRow('OFF-BLOCK', `Expected ${escText(leg.eobt || 'N/A')} <span class="sheet-note">scheduled ${escText(leg.sobt || 'N/A')}</span>`));
+  const time = (label, e, sch) => rows.push(sheetRow(label, `${escText(e || 'N/A')} <span class="sheet-note">scheduled ${escText(sch || 'N/A')}</span>`));
+  time('OFF-BLOCK', leg.eobt, leg.sobt);
+  time('TAKE-OFF', leg.etot, leg.stot);
+  time('LANDING', leg.eldt, leg.sldt);
+  time('IN-BLOCK', leg.eibt, leg.sibt);
+  if (leg.eet_minutes != null) rows.push(sheetRow('FLIGHT TIME (EET)', fmtMinutes(leg.eet_minutes)));
   if (leg.reactionary) rows.push(sheetRow(`DELAY +${leg.reactionary.minutes} MIN`, `${leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector'} <span class="sheet-note">IATA 93</span>`, 'caution'));
   if (leg.delay) rows.push(sheetRow(`DELAY +${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN`, `${escText(leg.delay.plain || leg.delay.description)} <span class="sheet-note">IATA ${escText(leg.delay.iata_code)}</span>`, 'caution'));
   if (leg.aircraft_change) rows.push(sheetRow(`DELAY +${leg.aircraft_change.minutes} MIN`, 'Aircraft change <span class="sheet-note">IATA 46</span>', 'caution'));

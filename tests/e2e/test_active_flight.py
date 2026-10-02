@@ -49,16 +49,20 @@ async def main():
         await page.click(".confirm-row button")
         await page.wait_for_selector(".af-top")
 
-        now = await page.evaluate("document.querySelector('.af-step.now .af-step-l').textContent")
+        now = await page.evaluate("document.querySelector('.af-flow-step.now b').textContent")
         check("step 1 is SEND TO SIMBRIEF and opens on the briefing", now == "SEND TO SIMBRIEF" and await page.locator("#af-pane-briefing").is_visible())
-        check("FETCH OFP is off until the leg is sent", await page.locator(".af-step").nth(1).is_disabled())
+        check("the steps are a tracker, not buttons", await page.locator(".af-flow button").count() == 0)
+        check("SEND TO SIMBRIEF sits at the bottom of the briefing", await page.evaluate("document.querySelector('#af-pane-briefing').lastElementChild.textContent.includes('SEND TO SIMBRIEF')"))
+        widths = await page.evaluate("[...document.querySelectorAll('.af-tabbar button')].map(b => Math.round(b.getBoundingClientRect().width))")
+        check("the three tabs are the same width", len(set(widths)) == 1, widths)
+        check("no schedule table under the map", await page.locator(".af-route table").count() == 0)
         check("loadsheet waits for the OFP", await page.locator("#af-pane-loadsheet button:has-text('ASK FOR LOADSHEET')").is_disabled())
         check("PIREP waits for the loadsheet", await page.locator("#af-pane-pirep button:has-text('FILL PIREP')").is_disabled())
 
-        await page.click(".af-step.now")       # send to SimBrief
+        await page.click("#af-pane-briefing button:has-text('SEND TO SIMBRIEF')")
         await page.wait_for_timeout(500)
-        check("step 2 FETCH OFP is next", await page.evaluate("document.querySelector('.af-step.now .af-step-l').textContent") == "FETCH OFP")
-        await page.click(".af-step.now")       # fetch the OFP
+        check("step 2 FETCH OFP is next", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "FETCH OFP")
+        await page.click("#af-pane-briefing button:has-text('FETCH OFP')")
         await page.wait_for_timeout(600)
         check("with the OFP in, the loadsheet tab opens", await page.locator("#af-pane-loadsheet").is_visible())
         brief = await page.inner_text("#af-pane-briefing")
@@ -95,7 +99,7 @@ async def main():
         fl = await page.evaluate("loadActiveFlight()")
         ls = fl["leg_state"][0]["loadsheet"]
         check("signed loadsheet keeps its figures and text", fl["leg_state"][0]["loadsheet_signed"] and ls["zfw"] == 58190 and "SIGNED BY THE CAPTAIN" in ls["text"], str({k: ls.get(k) for k in ("zfw", "tow", "edition")}))
-        check("step 4 FILE PIREP is next, on the PIREP tab", await page.evaluate("document.querySelector('.af-step.now .af-step-l').textContent") == "FILE PIREP" and await page.locator("#af-pane-pirep").is_visible())
+        check("step 4 FILE PIREP is next, on the PIREP tab", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "FILE PIREP" and await page.locator("#af-pane-pirep").is_visible())
 
         await page.click("#af-pane-pirep button:has-text('FILL PIREP')")
         await page.wait_for_timeout(300)
