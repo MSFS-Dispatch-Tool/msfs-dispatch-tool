@@ -2276,7 +2276,8 @@ function sheetSection(title, rows, extra = '', id = '') {
 }
 function briefingSummary(flight, i) {
   const leg = flight.legs[i];
-  const checks = [...((leg.tech && leg.tech.checks) || []), ...legCurfewChecks(leg), dutyCheck(flight.legs, flight.leg_state)].filter(Boolean);
+  const majorNotams = (legNotams(flight.leg_state[i]) || []).filter(n => n.level === 'major').map(() => ({ level: 'caution' }));
+  const checks = [...((leg.tech && leg.tech.checks) || []), ...legCurfewChecks(leg), dutyCheck(flight.legs, flight.leg_state), ...majorNotams].filter(Boolean);
   const nogo = checks.filter(c => c.level === 'nogo').length, caution = checks.filter(c => c.level === 'caution').length;
   const delay = legExpectedDelayMinutes(leg);
   const code = leg.reactionary && leg.reactionary.minutes >= legOwnDelayMinutes(leg) ? '93' : leg.aircraft_change ? '46' : leg.delay ? leg.delay.iata_code : '';
@@ -2285,11 +2286,12 @@ function briefingSummary(flight, i) {
   const tiles = [
     ['DISPATCH', nogo ? 'NO-GO' : caution ? 'CAUTION' : 'GO', nogo ? `${nogo} blocking item${nogo > 1 ? 's' : ''}` : caution ? `${caution} item${caution > 1 ? 's' : ''} to watch` : 'All checks clear', nogo ? 'nogo' : caution ? 'caution' : 'ok'],
     ['DELAY', delay ? `+${delay} MIN` : 'ON TIME', delay ? (code ? `IATA ${escText(code)}` : 'Expected delay') : 'No delay expected', delay ? 'caution' : 'ok'],
-    ['TECH LOG', mels || cdl ? `${mels} MEL &middot; ${cdl} CDL` : 'CLEAN', mels || cdl ? 'See the technical log' : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
-    ['CREW DUTY', duty ? (duty.over > 0 ? `${fmtMinutes(duty.over)} OVER` : `${fmtMinutes(-duty.over)} SPARE`) : 'N/A',
+    ['TECH LOG', mels && cdl ? `${mels + cdl} ITEMS` : mels ? `${mels} MEL` : cdl ? `${cdl} CDL` : 'CLEAN', mels || cdl ? `${mels} MEL, ${cdl} CDL` : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
+    notamTile(flight.leg_state[i].ofp),
+    ['CREW DUTY', duty ? (duty.over > 0 ? `${hm(duty.over)} OVER` : `${hm(-duty.over)} SPARE`) : 'N/A',
       duty ? `FDP ${hm(duty.fdp)} of ${hm(duty.duty.max_fdp_minutes)}` : '', duty ? duty.level : ''],
   ];
-  const target = ['dispatch', 'timing', 'tech', 'crew'];
+  const target = ['dispatch', 'timing', 'tech', 'notams', 'crew'];
   return `<div class="bsum">${tiles.map(([k, v, sub, tone], n) => `<button type="button" class="bsum-tile ${tone}" onclick="scrollBriefing('${target[n]}')"><span class="bsum-k">${k}</span><b class="bsum-v">${v}</b><span class="bsum-sub">${sub}</span></button>`).join('')}</div>`;
 }
 function hm(min) { return `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`; }
@@ -2315,6 +2317,7 @@ function briefingHtml(flight, i) {
     + sheetSection('FLIGHT', flightRows, '', 'flight')
     + sheetSection('TIMING', timingRows(flight, i), '', 'timing')
     + sheetSection('TECHNICAL LOG', techRows(leg), techCards(flight, i), 'tech')
+    + sheetSection('NOTAMS', notamRows(st), notamOthers(st), 'notams')
     + sheetSection('SIMBRIEF OFP', ofpRows(st), '', 'ofp')
     + sheetSection('WEATHER', weatherRows(leg), '', 'weather')
     + sheetSection('CREW', crewRows(flight), '', 'crew')
@@ -2349,6 +2352,35 @@ function crewRows(flight) {
     rows.push(sheetRow('EXPECTED FDP', `${fmtMinutes(duty.fdp)} <span class="sheet-note">${duty.over > 0 ? `${fmtMinutes(duty.over)} into commander's discretion` : `${fmtMinutes(-duty.over)} to spare`}</span>`, duty.level));
   }
   return rows.length ? rows : [sheetRow('STATUS', 'No crew duty figures for this trip')];
+}
+// NOTAMs come with the OFP (see notams.py): major and significant ones as
+// rows, the rest folded away
+function legNotams(st) { return st && st.ofp && Array.isArray(st.ofp.notams) ? st.ofp.notams : null; }
+function notamTile(ofp) {
+  if (!ofp) return ['NOTAMS', 'AFTER OFP', 'Come with the OFP', ''];
+  const list = Array.isArray(ofp.notams) ? ofp.notams : null;
+  if (!list) return ['NOTAMS', 'N/A', 'None in this OFP', ''];
+  const major = list.filter(n => n.level === 'major').length, sig = list.filter(n => n.level === 'significant').length;
+  if (!major && !sig) return ['NOTAMS', 'CLEAR', `${list.length} minor`, 'ok'];
+  return ['NOTAMS', major ? `${major} MAJOR` : `${sig} SIGNIFICANT`, major && sig ? `+${sig} significant` : `${list.length} in total`, 'caution'];
+}
+function notamText(n) {
+  const valid = n.from || n.to ? ` <span class="sheet-note">${escText(n.from || '')}${n.to ? ' to ' + escText(n.to) : ''}</span>` : '';
+  return `${n.reason ? `<b>${escText(n.reason.charAt(0).toUpperCase() + n.reason.slice(1))}</b>${valid}<br>` : ''}<span class="mono">${escText(n.text)}</span>${n.reason ? '' : valid}`;
+}
+function notamRows(st) {
+  if (!st.ofp) return [sheetRow('STATUS', 'Waiting for the SimBrief OFP: the departure and destination NOTAMs come with it')];
+  const list = legNotams(st);
+  if (!list) return [sheetRow('STATUS', 'SimBrief sent no NOTAMs with this OFP. Switch NOTAMs on in your SimBrief options, then fetch the OFP again')];
+  const key = list.filter(n => n.level !== 'other');
+  if (!key.length) return [sheetRow('STATUS', `No major or significant NOTAMs live at the departure or destination (${list.length} minor)`, 'ok')];
+  return key.map(n => sheetRow(`${escText(n.icao)} ${n.level === 'major' ? 'MAJOR' : 'SIGNIFICANT'}`, notamText(n), 'caution'));
+}
+function notamOthers(st) {
+  const others = (legNotams(st) || []).filter(n => n.level === 'other');
+  if (!others.length) return '';
+  return `<details class="sheet-more"><summary>Show ${others.length} other NOTAM${others.length > 1 ? 's' : ''}</summary>
+    ${others.map(n => sheetRow(escText(n.icao) + (n.id ? ' ' + escText(n.id) : ''), notamText(n))).join('')}</details>`;
 }
 const CHECK_LABELS = { nogo: 'NO-GO', caution: 'CAUTION', ok: 'CLEAR' };
 function techRows(leg) {

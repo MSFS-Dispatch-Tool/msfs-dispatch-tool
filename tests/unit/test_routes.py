@@ -91,6 +91,19 @@ def test_simbrief_ofp_survives_odd_responses(client, app_module, monkeypatch):
         assert resp.is_json
 
 
+def test_simbrief_ofp_returns_graded_notams(client, app_module, monkeypatch):
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"origin": {"icao_code": "EGKK", "notam": [{"notam_id": "A1", "notam_qcode": "QMRLC", "notam_text": "RWY 26L CLSD"}]},
+                    "destination": {"icao_code": "EGAC", "notam": {"notam_id": "B1", "notam_text": "BIRDS"}}}
+    monkeypatch.setattr(app_module.requests, "get", lambda *a, **k: Resp())
+    got = client.get("/simbrief/ofp?username=someone").get_json()["notams"]
+    assert [(n["icao"], n["level"]) for n in got] == [("EGKK", "major"), ("EGAC", "other")]
+
+
 def test_generation_options_and_settings_without_a_database(client):
     opts = client.get("/generation-options").get_json()
     assert {"delay", "lmc", "mel", "cdl", "default_probability"} <= set(opts)

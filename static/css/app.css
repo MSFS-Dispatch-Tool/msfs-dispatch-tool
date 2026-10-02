@@ -852,8 +852,7 @@
 .route-map .leaflet-tooltip { font-family: inherit; font-size:11px; font-weight:700; padding:1px 5px; }
 /* Active flight briefing: status tiles, then one card layout for every
    section: label column on the left, value on the right */
-.bsum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
-@media (max-width: 720px) { .bsum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.bsum { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 8px; margin-bottom: 14px; }
 .bsum-tile { display: flex; flex-direction: column; gap: 1px; padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--shadow-md); background: var(--white); border-top: 3px solid var(--shadow-dk); min-width: 0; font: inherit; text-align: left; color: inherit; cursor: pointer; }
 .bsum-tile:hover { border-color: var(--shadow-dk); }
 .bsum-tile:focus-visible { outline: 2px solid var(--titlebar); outline-offset: 2px; }
@@ -880,6 +879,7 @@
 .sheet-row.sheet-cols { grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); }
 .sheet-colhead span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); }
 .time-delta { margin-left: 6px; font-size: 11px; font-weight: 700; color: var(--amber); }
+.sheet-more summary { padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--titlebar); cursor: pointer; border-top: 1px solid var(--shadow-md); }
 .tcard-steps { margin: 0 0 4px; padding-left: 18px; font-size: 12.5px; line-height: 1.5; }
 @media (max-width: 480px) { .sheet-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } .sheet-row.sheet-cols { grid-template-columns: 90px minmax(0, 1fr) minmax(0, 1fr); gap: 6px; } }
 .tcards { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--shadow-md); }

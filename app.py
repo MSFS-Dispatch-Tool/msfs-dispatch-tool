@@ -21,6 +21,7 @@ import flightstats
 import webperf
 import demo
 import techlog
+import notams
 import ops
 import generator
 from generator import (
@@ -1884,6 +1885,9 @@ def simbrief_ofp():
         "taxi_fuel": fuel.get("taxi", ""),
         "trip_fuel": fuel.get("enroute_burn", "") or fuel.get("est_burn", ""),
         "navlog": ofp_route_fixes(data.get("navlog")),
+        # Departure and destination NOTAMs, graded (see notams.py); None
+        # when NOTAMs are switched off in the pilot's SimBrief options
+        "notams": notams.ofp_notams(data),
     })
 
 

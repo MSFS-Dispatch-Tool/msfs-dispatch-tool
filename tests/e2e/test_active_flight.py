@@ -16,7 +16,9 @@ OFP = {"static_id": "", "origin_icao": "EGKK", "destination_icao": "EGAC", "weig
        "initial_altitude_ft": "36000", "dow": "42750", "pax_weight": "84", "payload": "15400", "est_zfw": "58150",
        "max_zfw": "62500", "max_tow": "73500", "max_ldw": "64500", "takeoff_fuel": "6200", "taxi_fuel": "220",
        "trip_fuel": "2900", "est_tow": "64350", "est_ldw": "61450", "block_fuel": "6420", "plan_landing_fuel": "3300",
-       "epax": "171", "navlog": []}
+       "epax": "171", "navlog": [],
+       "notams": [{"icao": "EGAC", "id": "A0412/26", "level": "major", "reason": "ILS not available", "text": "ILS RWY 22 U/S", "from": "01OCT 0600Z", "to": "05OCT 1800Z"},
+                  {"icao": "EGKK", "id": "A2210/26", "level": "other", "reason": "", "text": "TWY J CLSD", "from": "", "to": "PERM"}]}
 EXTRAS = {"lmc_event": {"id": "lmc-04", "type": "cargo_change", "description": "Extra bags checked in at the gate", "delta": 60, "unit": "kg"},
           "dangerous_goods": {"id": "dg-02", "label": "Dry ice (UN1845, class 9), 40 kg for perishable cargo, hold 1",
                               "notoc": True, "un": "UN1845", "class": "9", "weight_kg": 40, "hold": "1"}}
@@ -57,7 +59,8 @@ async def main():
         check("the three tabs are the same width", len(set(widths)) == 1, widths)
         check("no schedule table under the map", await page.locator(".af-route table").count() == 0)
         order = await page.evaluate("[...document.querySelectorAll('#af-pane-briefing .sheet-h')].map(h => h.textContent)")
-        check("briefing sections in tile order, crew last", order[:3] == ["FLIGHT", "TIMING", "TECHNICAL LOG"] and order[-1] == "CREW", order)
+        check("NOTAMs wait for the OFP", "AFTER OFP" in await page.inner_text(".bsum-tile:has-text('NOTAMS')"))
+        check("briefing sections in tile order, crew last", order[:4] == ["FLIGHT", "TIMING", "TECHNICAL LOG", "NOTAMS"] and order[-1] == "CREW", order)
         head = await page.evaluate("[...document.querySelectorAll('#brief-timing .sheet-colhead span')].map(e => e.textContent)")
         check("timing has scheduled and estimated columns", head[1:] == ["SCHEDULED", "ESTIMATED"], head)
         await page.click(".bsum-tile:has-text('CREW DUTY')")
@@ -74,6 +77,10 @@ async def main():
         await page.wait_for_timeout(600)
         check("with the OFP in, the loadsheet tab opens", await page.locator("#af-pane-loadsheet").is_visible())
         brief = await page.inner_text("#af-pane-briefing")
+        tile = await page.inner_text(".bsum-tile:has-text('NOTAMS')")
+        check("NOTAM tile flags the major NOTAM", "1 MAJOR" in tile, tile)
+        notam_sec = await page.inner_text("#brief-notams")
+        check("NOTAM section lists major first, the rest folded away", "EGAC MAJOR" in notam_sec and "ILS RWY 22 U/S" in notam_sec and "Show 1 other NOTAM" in notam_sec, notam_sec)
         check("briefing shows the OFP figures", "SAM L620 HON" in brief and "FL360" in brief and "58,150" in brief, brief[-500:])
 
         await page.click("#af-pane-loadsheet button:has-text('ASK FOR LOADSHEET')")
