@@ -2174,7 +2174,8 @@ function briefingActionsHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i);
   if (stage === 'waiting' || stage === 'done' || st.loadsheet_signed) return '';
   if (st.simbrief === 'not_sent') return `<div class="doc-actions brief-actions"><button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button><span class="doc-blocker">Opens SimBrief with this leg filled in</span></div>`;
-  if (st.simbrief !== 'available') return `<div class="doc-actions brief-actions"><button class="action" onclick="fetchOfp(${i})">FETCH OFP</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button><span class="doc-blocker">Generate the OFP in the SimBrief tab first</span></div>`;
+  if (st.simbrief !== 'available') return `<div class="doc-actions brief-actions"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">Watching SimBrief: your OFP appears here as soon as you generate it</span></span>
+    <button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP NOW</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
   return `<div class="doc-actions brief-actions"><button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
 }
 
@@ -2233,6 +2234,9 @@ function renderRecap(flight) {
       </div>
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
+  // Waiting for this leg's OFP (also after a reload): watch for it
+  const waiting = flight.leg_state.findIndex((s, k) => s.simbrief === 'sent' && legStage(flight, k) === 'ofp');
+  if (waiting >= 0) { startOfpWatch(waiting); paintOfpWatch(); } else stopOfpWatch();
   if (tab === 'pirep' && document.getElementById('delaycoding-' + i)) updateDelayCoding(i);
 }
 
@@ -2276,7 +2280,8 @@ function sheetSection(title, rows, extra = '', id = '') {
 }
 function briefingSummary(flight, i) {
   const leg = flight.legs[i];
-  const checks = [...((leg.tech && leg.tech.checks) || []), ...legCurfewChecks(leg), dutyCheck(flight.legs, flight.leg_state)].filter(Boolean);
+  const majorNotams = (legNotams(flight.leg_state[i]) || []).filter(n => n.level === 'major').map(() => ({ level: 'caution' }));
+  const checks = [...((leg.tech && leg.tech.checks) || []), ...legCurfewChecks(leg), dutyCheck(flight.legs, flight.leg_state), ...majorNotams].filter(Boolean);
   const nogo = checks.filter(c => c.level === 'nogo').length, caution = checks.filter(c => c.level === 'caution').length;
   const delay = legExpectedDelayMinutes(leg);
   const code = leg.reactionary && leg.reactionary.minutes >= legOwnDelayMinutes(leg) ? '93' : leg.aircraft_change ? '46' : leg.delay ? leg.delay.iata_code : '';
@@ -2285,11 +2290,12 @@ function briefingSummary(flight, i) {
   const tiles = [
     ['DISPATCH', nogo ? 'NO-GO' : caution ? 'CAUTION' : 'GO', nogo ? `${nogo} blocking item${nogo > 1 ? 's' : ''}` : caution ? `${caution} item${caution > 1 ? 's' : ''} to watch` : 'All checks clear', nogo ? 'nogo' : caution ? 'caution' : 'ok'],
     ['DELAY', delay ? `+${delay} MIN` : 'ON TIME', delay ? (code ? `IATA ${escText(code)}` : 'Expected delay') : 'No delay expected', delay ? 'caution' : 'ok'],
-    ['TECH LOG', mels || cdl ? `${mels} MEL &middot; ${cdl} CDL` : 'CLEAN', mels || cdl ? 'See the technical log' : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
-    ['CREW DUTY', duty ? (duty.over > 0 ? `${fmtMinutes(duty.over)} OVER` : `${fmtMinutes(-duty.over)} SPARE`) : 'N/A',
+    ['TECH LOG', mels && cdl ? `${mels + cdl} ITEMS` : mels ? `${mels} MEL` : cdl ? `${cdl} CDL` : 'CLEAN', mels || cdl ? `${mels} MEL, ${cdl} CDL` : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
+    notamTile(flight.leg_state[i].ofp),
+    ['CREW DUTY', duty ? (duty.over > 0 ? `${hm(duty.over)} OVER` : `${hm(-duty.over)} SPARE`) : 'N/A',
       duty ? `FDP ${hm(duty.fdp)} of ${hm(duty.duty.max_fdp_minutes)}` : '', duty ? duty.level : ''],
   ];
-  const target = ['dispatch', 'timing', 'tech', 'crew'];
+  const target = ['dispatch', 'timing', 'tech', 'notams', 'crew'];
   return `<div class="bsum">${tiles.map(([k, v, sub, tone], n) => `<button type="button" class="bsum-tile ${tone}" onclick="scrollBriefing('${target[n]}')"><span class="bsum-k">${k}</span><b class="bsum-v">${v}</b><span class="bsum-sub">${sub}</span></button>`).join('')}</div>`;
 }
 function hm(min) { return `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`; }
@@ -2315,6 +2321,7 @@ function briefingHtml(flight, i) {
     + sheetSection('FLIGHT', flightRows, '', 'flight')
     + sheetSection('TIMING', timingRows(flight, i), '', 'timing')
     + sheetSection('TECHNICAL LOG', techRows(leg), techCards(flight, i), 'tech')
+    + sheetSection('NOTAMS', notamRows(st), notamOthers(st), 'notams')
     + sheetSection('SIMBRIEF OFP', ofpRows(st), '', 'ofp')
     + sheetSection('WEATHER', weatherRows(leg), '', 'weather')
     + sheetSection('CREW', crewRows(flight), '', 'crew')
@@ -2349,6 +2356,35 @@ function crewRows(flight) {
     rows.push(sheetRow('EXPECTED FDP', `${fmtMinutes(duty.fdp)} <span class="sheet-note">${duty.over > 0 ? `${fmtMinutes(duty.over)} into commander's discretion` : `${fmtMinutes(-duty.over)} to spare`}</span>`, duty.level));
   }
   return rows.length ? rows : [sheetRow('STATUS', 'No crew duty figures for this trip')];
+}
+// NOTAMs come with the OFP (see notams.py): major and significant ones as
+// rows, the rest folded away
+function legNotams(st) { return st && st.ofp && Array.isArray(st.ofp.notams) ? st.ofp.notams : null; }
+function notamTile(ofp) {
+  if (!ofp) return ['NOTAMS', 'AFTER OFP', 'Come with the OFP', ''];
+  const list = Array.isArray(ofp.notams) ? ofp.notams : null;
+  if (!list) return ['NOTAMS', 'N/A', 'None in this OFP', ''];
+  const major = list.filter(n => n.level === 'major').length, sig = list.filter(n => n.level === 'significant').length;
+  if (!major && !sig) return ['NOTAMS', 'CLEAR', `${list.length} minor`, 'ok'];
+  return ['NOTAMS', major ? `${major} MAJOR` : `${sig} SIGNIFICANT`, major && sig ? `+${sig} significant` : `${list.length} in total`, 'caution'];
+}
+function notamText(n) {
+  const valid = n.from || n.to ? ` <span class="sheet-note">${escText(n.from || '')}${n.to ? ' to ' + escText(n.to) : ''}</span>` : '';
+  return `${n.reason ? `<b>${escText(n.reason.charAt(0).toUpperCase() + n.reason.slice(1))}</b>${valid}<br>` : ''}<span class="mono">${escText(n.text)}</span>${n.reason ? '' : valid}`;
+}
+function notamRows(st) {
+  if (!st.ofp) return [sheetRow('STATUS', 'Waiting for the SimBrief OFP: the departure and destination NOTAMs come with it')];
+  const list = legNotams(st);
+  if (!list) return [sheetRow('STATUS', 'SimBrief sent no NOTAMs with this OFP. Switch NOTAMs on in your SimBrief options, then fetch the OFP again')];
+  const key = list.filter(n => n.level !== 'other');
+  if (!key.length) return [sheetRow('STATUS', `No major or significant NOTAMs live at the departure or destination (${list.length} minor)`, 'ok')];
+  return key.map(n => sheetRow(`${escText(n.icao)} ${n.level === 'major' ? 'MAJOR' : 'SIGNIFICANT'}`, notamText(n), 'caution'));
+}
+function notamOthers(st) {
+  const others = (legNotams(st) || []).filter(n => n.level === 'other');
+  if (!others.length) return '';
+  return `<details class="sheet-more"><summary>Show ${others.length} other NOTAM${others.length > 1 ? 's' : ''}</summary>
+    ${others.map(n => sheetRow(escText(n.icao) + (n.id ? ' ' + escText(n.id) : ''), notamText(n))).join('')}</details>`;
 }
 const CHECK_LABELS = { nogo: 'NO-GO', caution: 'CAUTION', ok: 'CLEAR' };
 function techRows(leg) {
@@ -2789,28 +2825,84 @@ async function doPrepareLeg(index) {
   }
 }
 
-async function fetchOfp(index) {
-  const flight = loadActiveFlight(); if (!flight) return;
+// Fetches the leg's OFP. While waiting for the pilot to generate it the
+// watcher calls this quietly (silent): no prompts or alerts, and an older
+// OFP just means "not yet". Returns true once the OFP is in.
+async function fetchOfp(index, silent = false) {
+  const flight = loadActiveFlight(); if (!flight) return false;
   const leg = flight.legs[index];
   const state = flight.leg_state[index];
-  const username = getSimbriefUsername();
-  if (!username) return;
+  const username = silent ? localStorage.getItem(SIMBRIEF_USERNAME_KEY) : getSimbriefUsername();
+  if (!username) return false;
   try {
-    const resp = await fetch('/simbrief/ofp?username=' + encodeURIComponent(username));
-    const data = await resp.json();
+    const qs = new URLSearchParams({ username });
+    if (silent && state.simbrief_static_id && state.simbrief === 'sent') qs.set('static_id', state.simbrief_static_id);
+    const data = await (await fetch('/simbrief/ofp?' + qs)).json();
+    if (data.pending) return false;
     if (data.error) throw new Error(data.error);
     if (state.simbrief_static_id && data.static_id && data.static_id !== state.simbrief_static_id) {
-      alert('The most recent SimBrief OFP for this username doesn\'t match the dispatch just sent for this leg. Generate the OFP on SimBrief (in the tab that just opened), then fetch again.');
-      return;
+      if (!silent) alert('The latest OFP on SimBrief isn\'t the one for this leg yet. Generate it in the SimBrief tab: it appears here automatically');
+      return false;
     }
     state.ofp = data;
     state.simbrief = 'available';
     state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(leg, data);
+    stopOfpWatch();
     saveAndRender(flight);
+    return true;
   } catch (err) {
-    alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first.');
+    if (!silent) alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first');
+    return false;
   }
 }
+
+// Automatic OFP capture: after the leg is sent to SimBrief, check for its OFP
+// every few seconds while this page is visible, at once when the pilot comes
+// back to it, and less often in the background. Gives up after 20 minutes
+// (FETCH OFP still works by hand).
+let OFP_POLL_MS = 5000;
+const OFP_POLL_HIDDEN_MS = 15000;
+const OFP_WATCH_MAX_MS = 20 * 60 * 1000;
+let ofpWatch = null;
+function startOfpWatch(index) {
+  if (ofpWatch && ofpWatch.index === index) return;
+  stopOfpWatch();
+  ofpWatch = { index, started: Date.now(), timer: null, busy: false, last: 0 };
+  scheduleOfpCheck(OFP_POLL_MS);
+}
+function stopOfpWatch() {
+  if (ofpWatch) clearTimeout(ofpWatch.timer);
+  ofpWatch = null;
+}
+function scheduleOfpCheck(delay) {
+  if (!ofpWatch) return;
+  clearTimeout(ofpWatch.timer);
+  ofpWatch.timer = setTimeout(checkOfpNow, delay);
+}
+async function checkOfpNow() {
+  const w = ofpWatch;
+  if (!w || w.busy) return;
+  const flight = loadActiveFlight(), st = flight && flight.leg_state[w.index];
+  if (!st || st.simbrief !== 'sent') { stopOfpWatch(); return; }
+  if (Date.now() - w.started > OFP_WATCH_MAX_MS) { stopOfpWatch(); paintOfpWatch(); return; }
+  w.busy = true;
+  const got = await fetchOfp(w.index, true);
+  w.busy = false;
+  if (got || ofpWatch !== w) return;
+  w.last = Date.now();
+  paintOfpWatch();
+  scheduleOfpCheck(document.hidden ? OFP_POLL_HIDDEN_MS : OFP_POLL_MS);
+}
+function paintOfpWatch() {
+  const el = document.getElementById('ofpWatchNote'); if (!el) return;
+  el.textContent = ofpWatch
+    ? `Watching SimBrief: your OFP appears here as soon as you generate it${ofpWatch.last ? ` (checked ${new Date(ofpWatch.last).toISOString().slice(11, 19)}Z)` : ''}`
+    : 'Stopped watching after 20 minutes: use FETCH OFP once the OFP is generated';
+}
+// Coming back from the SimBrief tab is when the OFP has usually just been made
+['visibilitychange', 'focus'].forEach(ev => (ev === 'focus' ? window : document).addEventListener(ev, () => {
+  if (ofpWatch && !document.hidden) scheduleOfpCheck(0);
+}));
 
 async function ofpAircraftTypeMismatch(leg, ofp) {
   if (!leg.carrier || !leg.aircraft_type || !ofp.icao_type) return false;
