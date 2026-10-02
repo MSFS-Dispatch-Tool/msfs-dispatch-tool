@@ -52,10 +52,18 @@ async def main():
 
         await page.goto(BASE + "/")
         html = await page.content()
-        check("landing claims match the app", "Filter by weather" not in html and "Sample timetable" in html)
+        check("landing claims match the app", "Filter by weather" not in html and "oversold" in html and "SAMPLE DATA" in html)
 
-        # How it works: the demos run on sample data in the page
+        # How it works: a card per feature with a real screenshot, opening full size
         await page.evaluate("document.getElementById('how-it-works').scrollIntoView()")
+        check("six feature cards", await page.locator(".fcard").count() == 6)
+        await page.click(".fcard-shot >> nth=0")
+        src = await page.evaluate("document.getElementById('shotDialog').open && document.getElementById('shotDialogImg').getAttribute('src')")
+        check("a feature screenshot opens full size", bool(src) and "features/routes.webp" in src, src)
+        await page.keyboard.press("Escape")
+
+        # The demo below runs on sample data in the page
+        await page.evaluate("document.getElementById('demo').scrollIntoView()")
         await page.wait_for_function("document.querySelectorAll('#demoMap .dm-route').length > 5")
         before = await page.evaluate("[+document.getElementById('demoCount').textContent, document.querySelectorAll('#demoMap .dm-route').length]")
         await page.select_option("#demoFilters select[name=airline]", "WZZ")

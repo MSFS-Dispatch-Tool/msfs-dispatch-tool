@@ -213,16 +213,71 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .eyebrow { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--titlebar); margin-bottom: 10px; }
 :root[data-theme="dark"] .eyebrow { text-shadow: 0 0 8px rgba(72,211,230,0.5); }
 
-/* ---- How it works: a grid of tiles, each a small working demo of the
-   app on sample data (static/js/landing.js). Colours for meaning follow
-   the app: green normal, amber caution, red warning. ---- */
-.features {
-  padding: 104px 0 112px; scroll-margin-top: 60px;
+/* ---- How it works: a card per feature, each with a real screenshot
+   that opens full size. ---- */
+.features { padding: 104px 0 40px; scroll-margin-top: 60px; }
+.fcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 860px) { .fcards { grid-template-columns: 1fr; } }
+.fcard {
+  display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  background: var(--face); border: 1px solid var(--shadow-md); border-radius: var(--radius); box-shadow: var(--shadow-card);
+}
+:root[data-theme="dark"] .fcard { background: linear-gradient(180deg, #181D23 0%, #13171C 100%); border-color: #262E37; box-shadow: inset 0 1px 0 rgba(255,255,255,0.035); }
+.fcard-shot {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; padding: 0; border: 0; cursor: zoom-in; overflow: hidden;
+  background: var(--face-dark); border-bottom: 1px solid var(--shadow-md);
+}
+.fcard-shot img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease; }
+.fcard-shot:hover img { transform: scale(1.03); }
+.fcard-shot[data-key="defects"] img { object-position: center bottom; }
+.fcard-shot .for-dark { display: none; }
+:root[data-theme="dark"] .fcard-shot .for-light { display: none; }
+:root[data-theme="dark"] .fcard-shot .for-dark { display: block; }
+.fcard-shot:focus-visible { outline: 2px solid var(--titlebar); outline-offset: -2px; }
+.fcard-zoom {
+  position: absolute; right: 12px; bottom: 12px; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  opacity: 0.85; transition: opacity 0.15s;
+}
+.fcard-zoom svg { width: 18px; height: 18px; }
+.fcard-shot:hover .fcard-zoom { opacity: 1; }
+.fcard-text { padding: 22px 24px 26px; }
+.fcard-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--titlebar); }
+.fcard-eyebrow .tile-icon { width: 32px; height: 32px; border-radius: 10px; }
+.fcard-eyebrow .tile-icon svg { width: 17px; height: 17px; }
+.fcard-num { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.fcard h3 { font-size: 21px; line-height: 1.25; letter-spacing: -0.015em; margin: 14px 0 12px; text-wrap: balance; }
+.fcard ul { margin: 0; padding: 0; list-style: none; }
+.fcard li { position: relative; padding: 9px 0 9px 18px; border-top: 1px solid var(--shadow-md); font-size: 15px; line-height: 1.55; color: var(--text-muted); }
+.fcard li:first-child { border-top: 0; padding-top: 0; }
+.fcard li::before { content: ''; position: absolute; left: 2px; top: 17px; width: 6px; height: 6px; border-radius: 50%; background: var(--titlebar); }
+.fcard li:first-child::before { top: 8px; }
+.shot-dialog { width: fit-content; max-width: 94vw; max-height: 92vh; padding: 0; border: 0; border-radius: 14px; background: var(--face); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+.shot-dialog::backdrop { background: rgba(6,9,12,0.72); backdrop-filter: blur(3px); }
+.shot-dialog img { display: block; height: auto; max-width: 94vw; }
+.shot-dialog form { position: sticky; top: 0; height: 0; z-index: 1; }
+.shot-close {
+  position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer;
+  background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---- Interactive demo: tiles with small working pieces of the app on
+   sample data (static/js/landing.js), under a banner that says so.
+   Colours for meaning follow the app: green normal, amber caution, red
+   warning. ---- */
+.demo-banner {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin: -16px 0 24px; padding: 14px 18px;
+  border: 1px dashed var(--shadow-dk); border-radius: 14px; font-size: 14.5px; color: var(--text-muted); background: var(--face-2);
+}
+.demo-banner b { flex: none; font-size: 11.5px; letter-spacing: 0.12em; color: var(--text); background: var(--accent-bg); padding: 3px 9px; border-radius: 999px; }
+:root[data-theme="dark"] .demo-banner b { color: var(--titlebar); }
+.demo {
+  padding: 72px 0 112px; scroll-margin-top: 60px;
   --ok: #067647; --ok-bg: #ECFDF3; --warn: #B54708; --warn-bg: #FFF6ED; --bad: #B42318; --bad-bg: #FEF3F2;
   --tile: #FFFFFF; --tile-border: #E4E7EC; --chip: #F2F4F7; --well: #F7F8FA;
   --map-sea: #DCE6EF; --map-land: #FBFBF8; --map-border: #C3CAD5; --route: #2563EB; --route-hl: #6938EF; --bar: #2a78d6;
 }
-:root[data-theme="dark"] .features {
+:root[data-theme="dark"] .demo {
   --ok: #46DB86; --ok-bg: rgba(70,219,134,0.10); --warn: #FFB547; --warn-bg: rgba(255,181,71,0.10); --bad: #FF6259; --bad-bg: rgba(255,98,89,0.12);
   --tile: #161B21; --tile-border: #262E37; --chip: #1F262E; --well: #12161B;
   --map-sea: #070A0D; --map-land: #141A20; --map-border: #2E3842; --route: #5B9BFF; --route-hl: #B79CFF; --bar: #3FA7E0;
@@ -239,8 +294,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .t-routes, .t-stats { grid-column: 1 / -1; }
 .t-brief { grid-column: span 7; }
 .t-gate { grid-column: span 5; }
-.t-sb { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: center; }
-@media (max-width: 960px) { .t-sb { display: flex; } }
 @media (max-width: 960px) { .bento > .tile { grid-column: 1 / -1; grid-row: auto; } }
 .tile-head { display: flex; gap: 14px; align-items: flex-start; }
 .tile-head h3 { font-size: 19px; letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 4px; }
@@ -315,7 +368,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .dm-dest.hl text { opacity: 1; fill: var(--text); }
 :root[data-theme="dark"] .dm-route.hl { filter: drop-shadow(0 0 4px rgba(183,156,255,0.8)); }
 :root[data-theme="dark"] .dm-base .dm-halo { opacity: 0.35; }
-.demo-note { margin: -4px 0 0; font-size: 12.5px; color: var(--text-muted); }
 
 /* Status lights */
 .lights { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
@@ -366,7 +418,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   box-shadow: inset 0 0 24px rgba(0,0,0,0.9), 0 0 0 4px #1B2128, 0 0 0 5px #2E3842; text-shadow: 0 0 5px rgba(70,219,134,0.4);
 }
 .mcdu .w { color: #FFFFFF; } .mcdu .c { color: #48D3E6; } .mcdu .a { color: #FFB547; }
-.remarks { margin: 0; padding: 14px 16px; border-radius: 10px; background: var(--chip); font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; color: var(--text); }
 
 /* Logbook */
 .stat-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
@@ -403,7 +454,9 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .sw-d, .sw-i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 5px -1px 0; background: var(--bar); }
 .sw-i { background: #eb6834; margin-left: 12px; }
 @media (max-width: 560px) {
-  .features { padding: 72px 0 80px; }
+  .features { padding: 72px 0 24px; }
+  .demo { padding: 56px 0 80px; }
+  .fcard-text { padding: 18px 18px 22px; }
   .features-head h2 { font-size: 30px; }
   .tile { padding: 18px; }
   .routes-body { min-height: 0; }

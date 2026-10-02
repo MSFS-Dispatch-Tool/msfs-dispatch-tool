@@ -91,21 +91,82 @@
 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ icons[name]|safe }}</svg>
 {%- endmacro %}
 
-{# How it works: the app's main pieces as small working demos on sample
-   data (static/js/landing.js), in a grid of tiles. #}
-<section class="features" id="how-it-works" aria-labelledby="featuresTitle" data-map-url="{{ url_for('static', filename='data/landing_map.json') }}">
+{# How it works: the app's features, each with a real screenshot (day and
+   night, static/img/features) that opens full size when clicked. #}
+{% set features = [
+  {'key': 'routes', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
+   'points': ['Filter by departure and arrival time, airline, domestic or international, and one- or multi-leg trips, with live weather and SIGMETs on the route map',
+              'Schedules from multiple real-world airlines',
+              'Passenger numbers built on real-world data, not guesswork: real airline load factors applied to each aircraft&rsquo;s actual seat count, full flights included. Cargo and cost index are generated automatically to match',
+              'Smart aircraft assignment based on your installed add-ons and each carrier&rsquo;s fleet']},
+  {'key': 'defects', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
+   'points': ['Aircraft-specific MEL and CDL items modelled on real master MEL relief: a lower cruise level, extra fuel, an empty hold or a ground power unit, set in your SimBrief plan for you',
+              'Delays based on real-world IATA delay codes and European delay statistics, linked to the flight&rsquo;s conditions: de-icing when it&rsquo;s cold, a ramp closure when a thunderstorm is reported, and a knock-on delay on every later leg of the trip',
+              'Air traffic control slots to make, night curfews at the airports that have them, and crew duty limits that cap how long your day can be',
+              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
+  {'key': 'simbrief', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
+   'points': ['Full SimBrief integration: we compile the flight plan for you, including the dispatch notes, defect limits and extra fuel. All you have to do is select your favorite SimBrief aircraft profile and make sure everything is to your liking',
+              'VirtualDispatch fetches all the necessary information from your SimBrief OFP and automatically builds statistics and data on your flights from it']},
+  {'key': 'gate', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
+   'points': ['No two flights are alike. Every leg is a new challenge: no-shows, late passengers, an oversold full flight, extra bags, dangerous goods on board',
+              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
+  {'key': 'paperwork', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
+   'points': ['Your flight, your responsibility. Sign the loadsheet and make sure the fuel quantity is right and the performance is OK for departure',
+              'Try to be on time: if you leave late, give the delay codes in your report, and your on-time record builds up in your logbook',
+              'Once you&rsquo;ve arrived, make sure all the relevant paperwork is signed and get ready for the next flight']},
+  {'key': 'stats', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
+   'points': ['Review all your flights, PIREPs and saved information',
+              'Deep analytics, highly customizable, with filters on every view',
+              'Get an in-depth understanding of your sim career',
+              'Full control over your data: download everything you&rsquo;ve tracked as a CSV whenever you want, or delete the flights you don&rsquo;t want in your statistics']},
+] %}
+
+<section class="features" id="how-it-works" aria-labelledby="featuresTitle">
   <div class="container">
     <div class="features-head">
       <span class="eyebrow">How it works</span>
       <h2 id="featuresTitle">Your dispatch desk for the sim</h2>
-      <p>Pick a real scheduled route, and VirtualDispatch prepares what a dispatcher would hand you: weather, defects and delays to work around, last-minute changes at the gate and a loadsheet to sign. Try it below on sample data</p>
+      <p>VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure. Every leg starts with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft</p>
     </div>
+    <div class="fcards">
+      {% for f in features %}
+      <article class="fcard">
+        <button class="fcard-shot" type="button" data-key="{{ f.key }}" aria-label="Enlarge the screenshot: {{ f.eyebrow }}">
+          <img class="for-light" src="{{ url_for('static', filename='img/features/' ~ f.key ~ '.webp') }}" alt="" loading="lazy">
+          <img class="for-dark" src="{{ url_for('static', filename='img/features/' ~ f.key ~ '-dark.webp') }}" alt="" loading="lazy">
+          <span class="fcard-zoom" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span>
+        </button>
+        <div class="fcard-text">
+          <span class="fcard-eyebrow"><span class="tile-icon">{{ icon(f.key) }}</span><span class="fcard-num">{{ '%02d' % loop.index }}</span>{{ f.eyebrow }}</span>
+          <h3>{{ f.title }}</h3>
+          <ul>{% for point in f.points %}<li>{{ point|safe }}</li>{% endfor %}</ul>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
+<dialog class="shot-dialog" id="shotDialog" aria-label="Screenshot">
+  <form method="dialog"><button class="shot-close" aria-label="Close">&times;</button></form>
+  <img id="shotDialogImg" alt="">
+</dialog>
+
+{# A hands-on preview: small pieces of the app on sample data
+   (static/js/landing.js), clearly marked as a demo. #}
+<section class="demo" id="demo" aria-labelledby="demoTitle" data-map-url="{{ url_for('static', filename='data/landing_map.json') }}">
+  <div class="container">
+    <div class="features-head">
+      <span class="eyebrow">Interactive demo</span>
+      <h2 id="demoTitle">Get a feel for it</h2>
+      <p>A few pieces of VirtualDispatch, simplified, to try right here in your browser</p>
+    </div>
+    <p class="demo-banner"><b>DEMO &middot; SAMPLE DATA</b> This preview runs on a made-up timetable, briefing and logbook to show the idea. It isn't the app: the real one works on every flight of the airlines' actual schedules, with your SimBrief plan, live weather and your own logbook</p>
     <div class="bento">
       <article class="tile t-routes">
         <header class="tile-head">
           <span class="tile-icon">{{ icon('routes') }}</span>
-          <div><h3>Choose from thousands of real-world routes</h3><p>Real timetables from Ryanair, easyJet and Wizz Air, with the app's own filters. Change one and the map follows</p></div>
+          <div><h3>Search a timetable</h3><p>The app's search filters on a sample timetable. Change one and the map follows</p></div>
         </header>
         <div class="routes-body">
           <div class="routes-side">
@@ -126,13 +187,12 @@
           </div>
           <div class="demo-map-wrap"><svg id="demoMap" class="demo-map" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the matching routes"></svg></div>
         </div>
-        <p class="demo-note">Sample timetable for this demo. The app uses each airline's real schedule</p>
       </article>
 
       <article class="tile t-brief">
         <header class="tile-head">
           <span class="tile-icon">{{ icon('defects') }}</span>
-          <div><h3>Know before you go</h3><p>Every briefing opens with four status lights. Click one to see what's behind it</p></div>
+          <div><h3>Read a briefing</h3><p>Every briefing opens with four status lights. Click one to see what's behind it</p></div>
         </header>
         <div class="lights" id="demoLights" role="tablist" aria-label="Briefing status">
           <button class="light" type="button" role="tab"><b>DISPATCH</b><span>&ndash;</span></button>
@@ -147,7 +207,7 @@
       <article class="tile t-gate">
         <header class="tile-head">
           <span class="tile-icon">{{ icon('gate') }}</span>
-          <div><h3>Last-minute changes at the gate</h3><p>Accept or decline, and the loadsheet follows</p></div>
+          <div><h3>Handle a gate change</h3><p>Accept or decline, and the loadsheet follows</p></div>
         </header>
         <div class="lmc-card" id="demoLmcCard">
           <p><span class="ld-tag">LMC</span> <span id="demoLmcText"></span></p>
@@ -158,21 +218,10 @@
         <button class="text-btn" type="button" id="demoNextLmc">Another change &rarr;</button>
       </article>
 
-      <article class="tile t-sb">
-        <header class="tile-head">
-          <span class="tile-icon">{{ icon('simbrief') }}</span>
-          <div><h3>Straight into SimBrief</h3><p>Route, fuel, cruise limits and every dispatch remark, filled in for you. The OFP comes back on its own</p></div>
-        </header>
-<pre class="remarks">MEL 24-21-01 ENGINE GENERATOR 2 INOP
-CREW ACTIONS: KEEP THE APU RUNNING
-EXTRA FUEL: 5 MIN (APU BURN)
-DELAY 40 MIN - IATA 93 LATE INBOUND</pre>
-      </article>
-
       <article class="tile t-stats">
         <header class="tile-head">
           <span class="tile-icon">{{ icon('stats') }}</span>
-          <div><h3>Your career, tracked</h3><p>Every PIREP feeds your logbook. Here's a sample pilot's: try the filters</p></div>
+          <div><h3>Explore a logbook</h3><p>A sample pilot's flights, with the filters of the stats page</p></div>
         </header>
         <div class="stat-controls">
           <div class="stat-ranges" id="demoRanges">
@@ -251,6 +300,25 @@ DELAY 40 MIN - IATA 93 LATE INBOUND</pre>
         sticky.setAttribute('aria-hidden', passed ? 'false' : 'true');
         stickyLink.tabIndex = passed ? 0 : -1;
       }).observe(heroActions);
+    }
+
+    // Feature screenshots open full size, in the current theme.
+    var dialog = document.getElementById('shotDialog');
+    if (dialog && dialog.showModal) {
+      document.querySelectorAll('.fcard-shot').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var img = btn.querySelector(vdCurrentTheme() === 'dark' ? 'img.for-dark' : 'img.for-light');
+          var big = document.getElementById('shotDialogImg');
+          // As large as fits the window, keeping the screenshot's proportions
+          big.onload = function () {
+            var w = Math.min(big.naturalWidth, window.innerWidth * 0.94, big.naturalWidth * window.innerHeight * 0.92 / big.naturalHeight);
+            big.style.width = Math.round(w) + 'px';
+          };
+          big.src = img.currentSrc || img.src;
+          dialog.showModal();
+        });
+      });
+      dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
     }
 
     // Nav: "How it works" is the current entry while that section is on screen.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  var section = document.getElementById('how-it-works');
+  var section = document.getElementById('demo');
   if (!section) return;
   var MAP_URL = section.getAttribute('data-map-url');
   var SVG_NS = 'http://www.w3.org/2000/svg';
