@@ -210,59 +210,134 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .step-list h4 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
 .step-list p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
 
+/* ---- How it works: text steps scroll on the left while a pinned
+   screenshot frame on the right cross-fades to the matching image. ---- */
+
 .eyebrow { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--titlebar); margin-bottom: 10px; }
-:root[data-theme="dark"] .eyebrow { text-shadow: 0 0 8px rgba(72,211,230,0.5); }
 
-/* ---- How it works: a card per feature, each with a real screenshot
-   that opens full size. ---- */
-.features { padding: 104px 0 40px; scroll-margin-top: 60px; }
-.fcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-@media (max-width: 860px) { .fcards { grid-template-columns: 1fr; } }
-.fcard {
-  display: flex; flex-direction: column; min-width: 0; overflow: hidden;
-  background: var(--face); border: 1px solid var(--shadow-md); border-radius: var(--radius); box-shadow: var(--shadow-card);
+/* ---- How it works: one continuous scroll. A sticky full-screen stage
+   holds a screenshot per step (crossfading); the steps scroll over it,
+   each a translucent card. The rail on the right shows and jumps to the
+   current step. ---- */
+.tour { position: relative; padding: 0; scroll-margin-top: 0; }
+.tour-stage {
+  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; z-index: 0;
+  background: #E9EDF3;
 }
-:root[data-theme="dark"] .fcard { background: linear-gradient(180deg, #181D23 0%, #13171C 100%); border-color: #262E37; box-shadow: inset 0 1px 0 rgba(255,255,255,0.035); }
-.fcard-shot {
-  position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; padding: 0; border: 0; cursor: zoom-in; overflow: hidden;
-  background: var(--face-dark); border-bottom: 1px solid var(--shadow-md);
+.tour-shot {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
+  opacity: 0; transform: scale(1.05); transition: opacity 0.7s ease, transform 5s ease-out;
 }
-.fcard-shot img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.4s ease; }
-.fcard-shot:hover img { transform: scale(1.03); }
-.fcard-shot[data-key="defects"] img { object-position: center bottom; }
-.fcard-shot .for-dark { display: none; }
-:root[data-theme="dark"] .fcard-shot .for-light { display: none; }
-:root[data-theme="dark"] .fcard-shot .for-dark { display: block; }
-.fcard-shot:focus-visible { outline: 2px solid var(--titlebar); outline-offset: -2px; }
-.fcard-zoom {
-  position: absolute; right: 12px; bottom: 12px; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  opacity: 0.85; transition: opacity 0.15s;
+.tour-shot.active { opacity: 1; transform: scale(1); }
+.tour-shot.for-dark { display: none; }
+:root[data-theme="dark"] .tour-shot.for-light { display: none; }
+:root[data-theme="dark"] .tour-shot.for-dark { display: block; }
+/* The frosted pane: one sheet of glass down the left of the stage, the
+   screenshot blurred behind it, its right edge fading out rather than
+   ending on a hard line. The step text sits straight on it. */
+.tour-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(244,246,250,0.45) 0%, rgba(244,246,250,0) 18%);
 }
-.fcard-zoom svg { width: 18px; height: 18px; }
-.fcard-shot:hover .fcard-zoom { opacity: 1; }
-.fcard-text { padding: 22px 24px 26px; }
-.fcard-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--titlebar); }
-.fcard-eyebrow .tile-icon { width: 32px; height: 32px; border-radius: 10px; }
-.fcard-eyebrow .tile-icon svg { width: 17px; height: 17px; }
-.fcard-num { color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.fcard h3 { font-size: 21px; line-height: 1.25; letter-spacing: -0.015em; margin: 14px 0 12px; text-wrap: balance; }
-.fcard ul { margin: 0; padding: 0; list-style: none; }
-.fcard li { position: relative; padding: 9px 0 9px 18px; border-top: 1px solid var(--shadow-md); font-size: 15px; line-height: 1.55; color: var(--text-muted); }
-.fcard li:first-child { border-top: 0; padding-top: 0; }
-.fcard li::before { content: ''; position: absolute; left: 2px; top: 17px; width: 6px; height: 6px; border-radius: 50%; background: var(--titlebar); }
-.fcard li:first-child::before { top: 8px; }
-.shot-dialog { width: fit-content; max-width: 94vw; max-height: 92vh; padding: 0; border: 0; border-radius: 14px; background: var(--face); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
-.shot-dialog::backdrop { background: rgba(6,9,12,0.72); backdrop-filter: blur(3px); }
-.shot-dialog img { display: block; height: auto; max-width: 94vw; }
-.shot-dialog form { position: sticky; top: 0; height: 0; z-index: 1; }
-.shot-close {
-  position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer;
-  background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+.tour-glass {
+  position: absolute; top: 0; bottom: 0; left: 0; pointer-events: none;
+  width: max(600px, calc((100vw - var(--max-width)) / 2 + 680px));
+  background: linear-gradient(90deg, rgba(246,248,252,0.78) 0%, rgba(246,248,252,0.62) 70%, rgba(246,248,252,0.35) 100%);
+  backdrop-filter: blur(26px) saturate(1.5); -webkit-backdrop-filter: blur(26px) saturate(1.5);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 78%, transparent 100%);
+}
+:root[data-theme="dark"] .tour-stage { background: #0A0D10; }
+:root[data-theme="dark"] .tour-scrim { background: linear-gradient(180deg, rgba(8,11,14,0.55) 0%, rgba(8,11,14,0) 18%); }
+:root[data-theme="dark"] .tour-glass { background: linear-gradient(90deg, rgba(10,13,16,0.82) 0%, rgba(10,13,16,0.66) 70%, rgba(10,13,16,0.38) 100%); }
+:root[data-theme="dark"] .tour-icon {
+  color: #7DE3F0; background: linear-gradient(140deg, #0C2C33 0%, #12505B 100%);
+  box-shadow: 0 0 0 1px rgba(72,211,230,0.35), 0 0 18px -4px rgba(72,211,230,0.6);
+}
+:root[data-theme="dark"] .tour-icon svg { filter: drop-shadow(0 0 3px rgba(72,211,230,0.7)); }
+:root[data-theme="dark"] .tour-eyebrow, :root[data-theme="dark"] .eyebrow { text-shadow: 0 0 8px rgba(72,211,230,0.5); }
+/* Text: without JS the steps simply stack over the stage. Pinned (JS):
+   the section is one screen of scroll per step, the stage sticks, and
+   all steps share one spot - the active one shows, the others wait just
+   below (upcoming) or above (past), faded out. */
+.tour-texts { position: relative; z-index: 1; }
+.tour-step { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: 110px 0; }
+.tour-card {
+  width: min(580px, calc(100vw - 48px));
+  margin-left: max(24px, calc((100vw - var(--max-width)) / 2 + 24px));
+}
+.tour.is-pinned { height: calc((var(--tour-count) + 0.5) * 100vh); height: calc((var(--tour-count) + 0.5) * 100svh); }
+.tour.is-pinned .tour-texts { position: absolute; inset: 0; pointer-events: none; }
+.tour.is-pinned .tour-step {
+  position: absolute; inset: 0; min-height: 0;
+  opacity: 0; visibility: hidden; transform: translateY(36px);
+  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.55s;
+}
+.tour.is-pinned .tour-step.is-past { transform: translateY(-36px); }
+.tour.is-pinned .tour-step.active {
+  opacity: 1; visibility: visible; transform: none; pointer-events: auto;
+  transition: opacity 0.5s ease 0.1s, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s, visibility 0s;
+}
+.tour:not(.is-pinned) .tour-stage { position: absolute; inset: 0; height: auto; }
+.tour-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.tour-icon {
+  width: 44px; height: 44px; flex: none; border-radius: 13px; display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; background: linear-gradient(140deg, #1D4ED8 0%, #3B82F6 100%);
+  box-shadow: 0 10px 22px -8px rgba(29,78,216,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.tour-icon svg { width: 22px; height: 22px; }
+.tour-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--titlebar); }
+.tour-num { color: var(--text-muted); margin-right: 10px; font-variant-numeric: tabular-nums; }
+.tour-title { font-size: 40px; line-height: 1.12; letter-spacing: -0.028em; font-weight: 700; margin: 0 0 22px; color: var(--text); text-wrap: balance; }
+.tour-step-intro .tour-title { font-size: 48px; }
+.tour-lead { font-size: 20px; line-height: 1.55; color: var(--text); opacity: 0.86; margin: 0 0 16px; }
+.tour-points { display: grid; }
+.tour-points p {
+  margin: 0; padding: 14px 0; border-top: 1px solid rgba(16,24,40,0.1);
+  font-size: 18px; line-height: 1.55; color: var(--text); opacity: 0.86;
+}
+.tour-points p:first-child { border-top: 0; padding-top: 0; }
+:root[data-theme="dark"] .tour-points p { border-top-color: rgba(255,255,255,0.1); }
+.tour-rail {
+  position: absolute; right: 28px; top: 50%; transform: translateY(-50%); z-index: 2;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+  padding: 12px 8px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px -10px rgba(16,24,40,0.3);
+}
+.tour-dot {
+  position: relative; width: 10px; height: 10px; padding: 0; border-radius: 999px; cursor: pointer;
+  border: 0; background: rgba(16,24,40,0.28); transition: height 0.3s ease, background 0.3s ease;
+}
+.tour-dot::before { content: ''; position: absolute; inset: -8px; }   /* a bigger target than the dot */
+.tour-dot.active { height: 30px; background: var(--titlebar); }
+.tour-dot:focus-visible { outline: 2px solid var(--titlebar); outline-offset: 3px; }
+.tour-dot-label {
+  position: absolute; right: 26px; top: 50%; transform: translateY(-50%); white-space: nowrap; pointer-events: none;
+  font-size: 12px; font-weight: 600; color: var(--text); background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 4px 10px; border-radius: 999px; opacity: 0; transition: opacity 0.2s ease;
+}
+.tour-dot:hover .tour-dot-label, .tour-dot:focus-visible .tour-dot-label { opacity: 1; }
+:root[data-theme="dark"] .tour-dot { background: rgba(255,255,255,0.3); }
+:root[data-theme="dark"] .tour-dot.active { box-shadow: 0 0 10px rgba(72,211,230,0.7); }
+@media (max-width: 760px) {
+  .tour-glass { width: 100%; -webkit-mask-image: none; mask-image: none; background: rgba(246,248,252,0.72); }
+  :root[data-theme="dark"] .tour-glass { background: rgba(10,13,16,0.76); }
+  .tour-step { padding: 96px 0 72px; }
+  .tour-card { width: auto; margin: 0 20px; }
+  .tour.is-pinned .tour-step { align-items: flex-start; padding-top: 104px; }
+  .tour-title { font-size: 28px; }
+  .tour-step-intro .tour-title { font-size: 32px; }
+  .tour-lead { font-size: 17px; }
+  .tour-points p { font-size: 16px; padding: 12px 0; }
+  .tour-rail { display: none; }
 }
 
-/* ---- Interactive demo: tiles with small working pieces of the app on
-   sample data (static/js/landing.js), under a banner that says so.
+/* ---- Interactive demo, below How it works: tiles with small working
+   pieces of the app on sample data (static/js/landing.js), under a
+   banner that says so.
    Colours for meaning follow the app: green normal, amber caution, red
    warning. ---- */
 .demo-banner {
@@ -272,7 +347,7 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .demo-banner b { flex: none; font-size: 11.5px; letter-spacing: 0.12em; color: var(--text); background: var(--accent-bg); padding: 3px 9px; border-radius: 999px; }
 :root[data-theme="dark"] .demo-banner b { color: var(--titlebar); }
 .demo {
-  padding: 72px 0 112px; scroll-margin-top: 60px;
+  padding: 104px 0 112px; scroll-margin-top: 60px;
   --ok: #067647; --ok-bg: #ECFDF3; --warn: #B54708; --warn-bg: #FFF6ED; --bad: #B42318; --bad-bg: #FEF3F2;
   --tile: #FFFFFF; --tile-border: #E4E7EC; --chip: #F2F4F7; --well: #F7F8FA;
   --map-sea: #DCE6EF; --map-land: #FBFBF8; --map-border: #C3CAD5; --route: #2563EB; --route-hl: #6938EF; --bar: #2a78d6;
@@ -454,9 +529,7 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .sw-d, .sw-i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 5px -1px 0; background: var(--bar); }
 .sw-i { background: #eb6834; margin-left: 12px; }
 @media (max-width: 560px) {
-  .features { padding: 72px 0 24px; }
-  .demo { padding: 56px 0 80px; }
-  .fcard-text { padding: 18px 18px 22px; }
+  .demo { padding: 72px 0 80px; }
   .features-head h2 { font-size: 30px; }
   .tile { padding: 18px; }
   .routes-body { min-height: 0; }
@@ -506,7 +579,10 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .soon-card, .light, .dm-route, .light-detail, .bars .bar i, .top-list li i b { transition: none; animation: none; }
+  .tour-shot, .tour-card, .tour-dot, .soon-card, .tour.is-pinned .tour-step, .tour.is-pinned .tour-step.active { transition: none; }
+  .tour.is-pinned .tour-step, .tour.is-pinned .tour-step.is-past { transform: none; }
+  .tour-shot, .tour-shot.active { transform: none; }
+  .light, .dm-route, .light-detail, .bars .bar i, .top-list li i b { transition: none; animation: none; }
 }
 
 /* ---- Footer ---- */

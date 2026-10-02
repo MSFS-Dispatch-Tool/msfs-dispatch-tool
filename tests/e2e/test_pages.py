@@ -54,15 +54,7 @@ async def main():
         html = await page.content()
         check("landing claims match the app", "Filter by weather" not in html and "oversold" in html and "SAMPLE DATA" in html)
 
-        # How it works: a card per feature with a real screenshot, opening full size
-        await page.evaluate("document.getElementById('how-it-works').scrollIntoView()")
-        check("six feature cards", await page.locator(".fcard").count() == 6)
-        await page.click(".fcard-shot >> nth=0")
-        src = await page.evaluate("document.getElementById('shotDialog').open && document.getElementById('shotDialogImg').getAttribute('src')")
-        check("a feature screenshot opens full size", bool(src) and "features/routes.webp" in src, src)
-        await page.keyboard.press("Escape")
-
-        # The demo below runs on sample data in the page
+        # The demo below How it works runs on sample data in the page
         await page.evaluate("document.getElementById('demo').scrollIntoView()")
         await page.wait_for_function("document.querySelectorAll('#demoMap .dm-route').length > 5")
         before = await page.evaluate("[+document.getElementById('demoCount').textContent, document.querySelectorAll('#demoMap .dm-route').length]")
@@ -105,12 +97,15 @@ async def main():
               state[:4] == ["dark", "dark", "block", True] and state[4] == "rgb(10, 13, 16)", state)
         await tp.screenshot(path=shot("night_search.png"))
         await tp.goto(BASE + "/")
-        check("the website opens at night", await tp.evaluate("document.documentElement.dataset.theme") == "dark")
+        shown = await tp.evaluate("[...document.querySelectorAll('.tour-shot.active')].filter(i => getComputedStyle(i).display !== 'none').map(i => i.getAttribute('src').split('?')[0].split('/').pop())")
+        check("the website opens at night with night screenshots", await tp.evaluate("document.documentElement.dataset.theme") == "dark" and shown == ["tour-intro-dark.webp"], shown)
         poster = await tp.evaluate("document.getElementById('heroVideo').getAttribute('poster')")
         check("the hero shows the night video's first frame while it loads", "hero-dark-poster.webp" in poster, poster)
         await tp.click(".theme-toggle")
         poster = await tp.evaluate("document.getElementById('heroVideo').getAttribute('poster')")
         check("the hero poster follows the switch", "hero-light-poster.webp" in poster, poster)
+        shown = await tp.evaluate("[...document.querySelectorAll('.tour-shot.active')].filter(i => getComputedStyle(i).display !== 'none').map(i => i.getAttribute('src').split('?')[0].split('/').pop())")
+        check("the website's switch brings back day screenshots", shown == ["tour-intro.webp"], shown)
         await tp.click(".theme-toggle")
         await tp.goto(BASE + "/login")
         check("the sign-in page has the switch and opens at night",

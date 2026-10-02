@@ -91,66 +91,71 @@
 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ icons[name]|safe }}</svg>
 {%- endmacro %}
 
-{# How it works: the app's features, each with a real screenshot (day and
-   night, static/img/features) that opens full size when clicked. #}
-{% set features = [
-  {'key': 'routes', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
+{# How it works: one continuous scroll. Each step pins a full-screen
+   screenshot of the app behind a translucent card (see public.css .tour). #}
+{% set tour = [
+  {'key': 'intro', 'shot': 'tour-intro', 'eyebrow': 'How it works', 'title': 'Your dispatch desk for the sim',
+   'body': ['VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure.',
+            'The goal is simple: every leg should start with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft.']},
+  {'key': 'routes', 'shot': 'tour-routes', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
    'points': ['Filter by departure and arrival time, airline, domestic or international, and one- or multi-leg trips, with live weather and SIGMETs on the route map',
               'Schedules from multiple real-world airlines',
               'Passenger numbers built on real-world data, not guesswork: real airline load factors applied to each aircraft&rsquo;s actual seat count, full flights included. Cargo and cost index are generated automatically to match',
               'Smart aircraft assignment based on your installed add-ons and each carrier&rsquo;s fleet']},
-  {'key': 'defects', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
+  {'key': 'defects', 'shot': 'tour-defects', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
    'points': ['Aircraft-specific MEL and CDL items modelled on real master MEL relief: a lower cruise level, extra fuel, an empty hold or a ground power unit, set in your SimBrief plan for you',
               'Delays based on real-world IATA delay codes and European delay statistics, linked to the flight&rsquo;s conditions: de-icing when it&rsquo;s cold, a ramp closure when a thunderstorm is reported, and a knock-on delay on every later leg of the trip',
               'Air traffic control slots to make, night curfews at the airports that have them, and crew duty limits that cap how long your day can be',
               'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'simbrief', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
+  {'key': 'simbrief', 'shot': 'tour-simbrief', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
    'points': ['Full SimBrief integration: we compile the flight plan for you, including the dispatch notes, defect limits and extra fuel. All you have to do is select your favorite SimBrief aircraft profile and make sure everything is to your liking',
               'VirtualDispatch fetches all the necessary information from your SimBrief OFP and automatically builds statistics and data on your flights from it']},
-  {'key': 'gate', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
+  {'key': 'gate', 'shot': 'tour-gate', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
    'points': ['No two flights are alike. Every leg is a new challenge: no-shows, late passengers, an oversold full flight, extra bags, dangerous goods on board',
               'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'paperwork', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
+  {'key': 'paperwork', 'shot': 'tour-paperwork', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
    'points': ['Your flight, your responsibility. Sign the loadsheet and make sure the fuel quantity is right and the performance is OK for departure',
               'Try to be on time: if you leave late, give the delay codes in your report, and your on-time record builds up in your logbook',
               'Once you&rsquo;ve arrived, make sure all the relevant paperwork is signed and get ready for the next flight']},
-  {'key': 'stats', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
+  {'key': 'stats', 'shot': 'tour-stats', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
    'points': ['Review all your flights, PIREPs and saved information',
               'Deep analytics, highly customizable, with filters on every view',
               'Get an in-depth understanding of your sim career',
               'Full control over your data: download everything you&rsquo;ve tracked as a CSV whenever you want, or delete the flights you don&rsquo;t want in your statistics']},
 ] %}
 
-<section class="features" id="how-it-works" aria-labelledby="featuresTitle">
-  <div class="container">
-    <div class="features-head">
-      <span class="eyebrow">How it works</span>
-      <h2 id="featuresTitle">Your dispatch desk for the sim</h2>
-      <p>VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure. Every leg starts with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft</p>
-    </div>
-    <div class="fcards">
-      {% for f in features %}
-      <article class="fcard">
-        <button class="fcard-shot" type="button" data-key="{{ f.key }}" aria-label="Enlarge the screenshot: {{ f.eyebrow }}">
-          <img class="for-light" src="{{ url_for('static', filename='img/features/' ~ f.key ~ '.webp') }}" alt="" loading="lazy">
-          <img class="for-dark" src="{{ url_for('static', filename='img/features/' ~ f.key ~ '-dark.webp') }}" alt="" loading="lazy">
-          <span class="fcard-zoom" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg></span>
-        </button>
-        <div class="fcard-text">
-          <span class="fcard-eyebrow"><span class="tile-icon">{{ icon(f.key) }}</span><span class="fcard-num">{{ '%02d' % loop.index }}</span>{{ f.eyebrow }}</span>
-          <h3>{{ f.title }}</h3>
-          <ul>{% for point in f.points %}<li>{{ point|safe }}</li>{% endfor %}</ul>
+<section class="tour" id="how-it-works" aria-label="How it works" style="--tour-count: {{ tour|length }}">
+  <div class="tour-stage">
+    {% for step in tour %}
+    {# Day and night screenshots of each step; only the current theme's are
+       shown, and hidden lazy images are never downloaded. #}
+    <img class="tour-shot for-light{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '.webp') }}" alt="" loading="lazy" width="1920" height="1080">
+    <img class="tour-shot for-dark{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '-dark.webp') }}" alt="" loading="lazy" width="1920" height="1080">
+    {% endfor %}
+    <div class="tour-glass"></div>
+    <div class="tour-scrim"></div>
+  <div class="tour-texts">
+    {% for step in tour %}
+    <div class="tour-step{% if loop.first %} tour-step-intro{% endif %}" id="tour-{{ step.key }}" data-step="{{ loop.index0 }}">
+      <article class="tour-card">
+        <div class="tour-card-head">
+          <span class="tour-icon">{{ icon(step.key) }}</span>
+          <span class="tour-eyebrow">{% if not loop.first %}<span class="tour-num">{{ '%02d' % loop.index0 }}</span>{% endif %}{{ step.eyebrow }}</span>
         </div>
+        <h2 class="tour-title">{{ step.title }}</h2>
+        {% for para in step.body or [] %}<p class="tour-lead">{{ para|safe }}</p>{% endfor %}
+        {% if step.points %}<div class="tour-points">{% for point in step.points %}<p>{{ point|safe }}</p>{% endfor %}</div>{% endif %}
       </article>
-      {% endfor %}
     </div>
+    {% endfor %}
+  </div>
+    <nav class="tour-rail" aria-label="Steps">
+      {% for step in tour %}
+      <button type="button" class="tour-dot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" aria-label="{{ step.eyebrow }}"><span class="tour-dot-label">{{ step.eyebrow }}</span></button>
+      {% endfor %}
+    </nav>
   </div>
 </section>
-
-<dialog class="shot-dialog" id="shotDialog" aria-label="Screenshot">
-  <form method="dialog"><button class="shot-close" aria-label="Close">&times;</button></form>
-  <img id="shotDialogImg" alt="">
-</dialog>
 
 {# A hands-on preview: small pieces of the app on sample data
    (static/js/landing.js), clearly marked as a demo. #}
@@ -287,6 +292,50 @@
   (function () {
     var hasIO = 'IntersectionObserver' in window;
 
+    // Tour: the section stays pinned while you scroll through it (one
+    // screen of scroll per step). Crossing a step's point swaps the
+    // screenshot and the text in place; the rail shows and jumps to steps.
+    var tour = document.getElementById('how-it-works');
+    var steps = Array.prototype.slice.call(document.querySelectorAll('.tour-step'));
+    var shots = Array.prototype.slice.call(document.querySelectorAll('.tour-shot'));
+    var dots = Array.prototype.slice.call(document.querySelectorAll('.tour-dot'));
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var currentStep = -1;
+    function activateTour(i) {
+      if (i === currentStep) return;
+      currentStep = i;
+      steps.forEach(function (s, k) {
+        s.classList.toggle('active', k === i);
+        s.classList.toggle('is-past', k < i);
+      });
+      shots.forEach(function (sh) { sh.classList.toggle('active', Number(sh.getAttribute('data-step')) === i); });
+      dots.forEach(function (d, k) {
+        d.classList.toggle('active', k === i);
+        if (k === i) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
+      });
+    }
+    function tourStepFromScroll() {
+      var scrolled = -tour.getBoundingClientRect().top / window.innerHeight;
+      return Math.max(0, Math.min(steps.length - 1, Math.floor(scrolled + 0.35)));
+    }
+    if (tour && steps.length) {
+      tour.classList.add('is-pinned');
+      activateTour(tourStepFromScroll());
+      var tourRaf = 0;
+      var onTourScroll = function () {
+        if (tourRaf) return;
+        tourRaf = requestAnimationFrame(function () { tourRaf = 0; activateTour(tourStepFromScroll()); });
+      };
+      window.addEventListener('scroll', onTourScroll, { passive: true });
+      window.addEventListener('resize', onTourScroll);
+      dots.forEach(function (d, k) {
+        d.addEventListener('click', function () {
+          var top = tour.getBoundingClientRect().top + window.scrollY + k * window.innerHeight;
+          window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
+        });
+      });
+    }
+
     // "Create an account" stays reachable at the top once the hero's own
     // button has scrolled out of view above.
     var heroActions = document.querySelector('.hero .actions');
@@ -300,25 +349,6 @@
         sticky.setAttribute('aria-hidden', passed ? 'false' : 'true');
         stickyLink.tabIndex = passed ? 0 : -1;
       }).observe(heroActions);
-    }
-
-    // Feature screenshots open full size, in the current theme.
-    var dialog = document.getElementById('shotDialog');
-    if (dialog && dialog.showModal) {
-      document.querySelectorAll('.fcard-shot').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var img = btn.querySelector(vdCurrentTheme() === 'dark' ? 'img.for-dark' : 'img.for-light');
-          var big = document.getElementById('shotDialogImg');
-          // As large as fits the window, keeping the screenshot's proportions
-          big.onload = function () {
-            var w = Math.min(big.naturalWidth, window.innerWidth * 0.94, big.naturalWidth * window.innerHeight * 0.92 / big.naturalHeight);
-            big.style.width = Math.round(w) + 'px';
-          };
-          big.src = img.currentSrc || img.src;
-          dialog.showModal();
-        });
-      });
-      dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
     }
 
     // Nav: "How it works" is the current entry while that section is on screen.
