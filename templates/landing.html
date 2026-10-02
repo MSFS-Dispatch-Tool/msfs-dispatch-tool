@@ -157,6 +157,99 @@
   </div>
 </section>
 
+{# A hands-on preview: small pieces of the app on sample data
+   (static/js/landing.js), clearly marked as a demo. #}
+<section class="demo" id="demo" aria-labelledby="demoTitle" data-map-url="{{ url_for('static', filename='data/landing_map.json') }}">
+  <div class="container">
+    <div class="features-head">
+      <span class="eyebrow">Interactive demo</span>
+      <h2 id="demoTitle">Get a feel for it</h2>
+      <p>A few pieces of VirtualDispatch, simplified, to try right here in your browser</p>
+    </div>
+    <p class="demo-banner"><b>DEMO &middot; SAMPLE DATA</b> This preview runs on a made-up timetable, briefing and logbook to show the idea. It isn't the app: the real one works on every flight of the airlines' actual schedules, with your SimBrief plan, live weather and your own logbook</p>
+    <div class="bento">
+      <article class="tile t-routes">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('routes') }}</span>
+          <div><h3>Search a timetable</h3><p>The app's search filters on a sample timetable. Change one and the map follows</p></div>
+        </header>
+        <div class="routes-body">
+          <div class="routes-side">
+            <form class="demo-filters" id="demoFilters" onsubmit="return false">
+              <label>Departure airport
+                <select name="dep"><option value="EGKK">EGKK &middot; London Gatwick</option><option value="EGGW">EGGW &middot; London Luton</option><option value="EIDW">EIDW &middot; Dublin</option><option value="LHBP">LHBP &middot; Budapest</option></select></label>
+              <label>Airline
+                <select name="airline"><option value="all">All</option><option value="RYR">Ryanair</option><option value="EZY">easyJet</option><option value="WZZ">Wizz Air</option></select></label>
+              <label>Sector legs
+                <select name="legs"><option value="all">All</option><option value="1l">One way</option><option value="rt">Round trip</option></select></label>
+              <label>Flight country
+                <select name="country"><option value="all">All</option><option value="dom">Domestic</option><option value="int">International</option></select></label>
+              <label class="wide">Departs (UTC)
+                <select name="time"><option value="all">Any time</option><option value="morning">Morning, 06-12Z</option><option value="afternoon">Afternoon, 12-18Z</option><option value="evening">Evening, 18-24Z</option></select></label>
+            </form>
+            <p class="demo-count" aria-live="polite"><b id="demoCount">&ndash;</b> itineraries to <b id="demoDests">&ndash;</b> airports</p>
+            <ul class="demo-list" id="demoList"></ul>
+          </div>
+          <div class="demo-map-wrap"><svg id="demoMap" class="demo-map" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the matching routes"></svg></div>
+        </div>
+      </article>
+
+      <article class="tile t-brief">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('defects') }}</span>
+          <div><h3>Read a briefing</h3><p>Every briefing opens with four status lights. Click one to see what's behind it</p></div>
+        </header>
+        <div class="lights" id="demoLights" role="tablist" aria-label="Briefing status">
+          <button class="light" type="button" role="tab"><b>DISPATCH</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>DELAY</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>TECH LOG</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>NOTAMS</b><span>&ndash;</span></button>
+        </div>
+        <div class="light-detail" id="demoLightDetail" role="tabpanel" aria-live="polite"></div>
+        <div class="roll-row"><span id="demoLegNote"></span><button class="btn-s primary" type="button" id="demoRoll">Roll another leg</button></div>
+      </article>
+
+      <article class="tile t-gate">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('gate') }}</span>
+          <div><h3>Handle a gate change</h3><p>Accept or decline, and the loadsheet follows</p></div>
+        </header>
+        <div class="lmc-card" id="demoLmcCard">
+          <p><span class="ld-tag">LMC</span> <span id="demoLmcText"></span></p>
+          <div class="lmc-acts" id="demoLmcActs"><button class="btn-s primary" type="button" id="demoAccept">ACCEPT</button><button class="btn-s" type="button" id="demoDecline">DECLINE</button></div>
+          <div class="lmc-acts" id="demoLmcDone" hidden></div>
+        </div>
+        <pre class="mcdu" id="demoSheet"></pre>
+        <button class="text-btn" type="button" id="demoNextLmc">Another change &rarr;</button>
+      </article>
+
+      <article class="tile t-stats">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('stats') }}</span>
+          <div><h3>Explore a logbook</h3><p>A sample pilot's flights, with the filters of the stats page</p></div>
+        </header>
+        <div class="stat-controls">
+          <div class="stat-ranges" id="demoRanges">
+            <button type="button" data-range="30" aria-pressed="false">30 days</button>
+            <button type="button" data-range="90" aria-pressed="false">90 days</button>
+            <button type="button" data-range="365" class="on" aria-pressed="true">12 months</button>
+            <button type="button" data-range="all" aria-pressed="false">All time</button>
+          </div>
+          <form class="demo-filters inline" id="demoStatFilters" onsubmit="return false">
+            <label>Airline <select name="airline"><option value="all">All</option><option value="RYR">Ryanair</option><option value="EZY">easyJet</option><option value="WZZ">Wizz Air</option></select></label>
+            <label>Aircraft <select name="type"><option value="all">All</option><option value="B738">B738</option><option value="A319">A319</option><option value="A320">A320</option><option value="A321">A321</option></select></label>
+          </form>
+        </div>
+        <div class="kpis" id="demoKpis"></div>
+        <div class="stats-body">
+          <div><h4 id="demoBarsTitle">Flights by month</h4><div class="bars" id="demoBars"></div></div>
+          <div><h4>Top airports</h4><ul class="top-list" id="demoTop"></ul><h4>Domestic / international</h4><div id="demoSplit"></div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="cta-band">
   <div class="container cta-band-inner">
     <h2>Not convinced yet?</h2>
@@ -194,6 +287,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
 <script>
   (function () {
     var hasIO = 'IntersectionObserver' in window;
