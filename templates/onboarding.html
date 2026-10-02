@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VirtualDispatch &mdash; Set up your profile</title>
 {% include "_favicons.html" %}
+{% include "_theme_head.html" %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -121,7 +122,7 @@
   .skip a { color: var(--text-muted); font-size: 13px; text-decoration: underline; }
 </style>
 </head>
-<body>
+<body class="vd-plain">
   <div class="panel">
     <div class="panel-header">
       <h1>Set up your profile</h1>
@@ -210,5 +211,6 @@
       reader.readAsDataURL(file);
     });
   </script>
+{% include "_theme_toggle.html" %}
 </body>
 </html>

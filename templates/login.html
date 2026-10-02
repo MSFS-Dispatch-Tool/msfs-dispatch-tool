@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VirtualDispatch</title>
 {% include "_favicons.html" %}
+{% include "_theme_head.html" %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -95,7 +96,7 @@
   .forgot a { color: var(--titlebar); text-decoration: underline; }
 </style>
 </head>
-<body>
+<body class="vd-plain">
   <div class="panel">
     <div class="panel-header">VirtualDispatch &mdash; {{ "Create account" if mode in ("signup", "signup_closed") else "Access restricted" if mode == "restricted" else "Sign in" }}</div>
     <div class="panel-body">
@@ -201,5 +202,6 @@
     }
   </script>
   {% endif %}
+{% include "_theme_toggle.html" %}
 </body>
 </html>
