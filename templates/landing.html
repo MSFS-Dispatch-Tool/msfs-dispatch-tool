@@ -91,69 +91,108 @@
 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ icons[name]|safe }}</svg>
 {%- endmacro %}
 
-{# How it works: one continuous scroll. Each step pins a full-screen
-   screenshot of the app behind a translucent card (see public.css .tour). #}
-{% set tour = [
-  {'key': 'intro', 'shot': 'tour-intro', 'eyebrow': 'How it works', 'title': 'Your dispatch desk for the sim',
-   'body': ['VirtualDispatch turns a flight in Microsoft Flight Simulator into an airline operation. You pick a real scheduled route flown by real-world carriers, and it prepares what a dispatcher would hand you: live weather at both ends, an aircraft and load to plan for, delays and equipment defects to work around, and a loadsheet to sign before departure.',
-            'The goal is simple: every leg should start with decisions to make, so flying the sim feels like doing the job, not just moving the aircraft.']},
-  {'key': 'routes', 'shot': 'tour-routes', 'eyebrow': 'Choose your route', 'title': 'Choose from thousands of real-world routes, based on real, up-to-date schedules',
-   'points': ['Filter by departure and arrival time, airline, domestic or international, and one- or multi-leg trips, with live weather and SIGMETs on the route map',
-              'Schedules from multiple real-world airlines',
-              'Passenger numbers built on real-world data, not guesswork: real airline load factors applied to each aircraft&rsquo;s actual seat count, full flights included. Cargo and cost index are generated automatically to match',
-              'Smart aircraft assignment based on your installed add-ons and each carrier&rsquo;s fleet']},
-  {'key': 'defects', 'shot': 'tour-defects', 'eyebrow': 'Defects and delays', 'title': 'Discover aircraft defects and realistic delays to plan for before departure',
-   'points': ['Aircraft-specific MEL and CDL items modelled on real master MEL relief: a lower cruise level, extra fuel, an empty hold or a ground power unit, set in your SimBrief plan for you',
-              'Delays based on real-world IATA delay codes and European delay statistics, linked to the flight&rsquo;s conditions: de-icing when it&rsquo;s cold, a ramp closure when a thunderstorm is reported, and a knock-on delay on every later leg of the trip',
-              'Air traffic control slots to make, night curfews at the airports that have them, and crew duty limits that cap how long your day can be',
-              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'simbrief', 'shot': 'tour-simbrief', 'eyebrow': 'SimBrief', 'title': 'Send everything to SimBrief',
-   'points': ['Full SimBrief integration: we compile the flight plan for you, including the dispatch notes, defect limits and extra fuel. All you have to do is select your favorite SimBrief aircraft profile and make sure everything is to your liking',
-              'VirtualDispatch fetches all the necessary information from your SimBrief OFP and automatically builds statistics and data on your flights from it']},
-  {'key': 'gate', 'shot': 'tour-gate', 'eyebrow': 'At the gate', 'title': 'Enjoy your flight, but be ready for the last-minute changes that may occur at the gate',
-   'points': ['No two flights are alike. Every leg is a new challenge: no-shows, late passengers, an oversold full flight, extra bags, dangerous goods on board',
-              'Full personalization: complete control over events, each individually toggleable with user-assigned probabilities']},
-  {'key': 'paperwork', 'shot': 'tour-paperwork', 'eyebrow': 'Paperwork', 'title': 'Sign your loadsheet and file your arrival PIREP',
-   'points': ['Your flight, your responsibility. Sign the loadsheet and make sure the fuel quantity is right and the performance is OK for departure',
-              'Try to be on time: if you leave late, give the delay codes in your report, and your on-time record builds up in your logbook',
-              'Once you&rsquo;ve arrived, make sure all the relevant paperwork is signed and get ready for the next flight']},
-  {'key': 'stats', 'shot': 'tour-stats', 'eyebrow': 'Your logbook', 'title': 'Review your flights and stats with an in-depth system tracking your virtual pilot performance',
-   'points': ['Review all your flights, PIREPs and saved information',
-              'Deep analytics, highly customizable, with filters on every view',
-              'Get an in-depth understanding of your sim career',
-              'Full control over your data: download everything you&rsquo;ve tracked as a CSV whenever you want, or delete the flights you don&rsquo;t want in your statistics']},
-] %}
+{# How it works: the app's main pieces as small working demos on sample
+   data (static/js/landing.js), in a grid of tiles. #}
+<section class="features" id="how-it-works" aria-labelledby="featuresTitle" data-map-url="{{ url_for('static', filename='data/landing_map.json') }}">
+  <div class="container">
+    <div class="features-head">
+      <span class="eyebrow">How it works</span>
+      <h2 id="featuresTitle">Your dispatch desk for the sim</h2>
+      <p>Pick a real scheduled route, and VirtualDispatch prepares what a dispatcher would hand you: weather, defects and delays to work around, last-minute changes at the gate and a loadsheet to sign. Try it below on sample data</p>
+    </div>
 
-<section class="tour" id="how-it-works" aria-label="How it works" style="--tour-count: {{ tour|length }}">
-  <div class="tour-stage">
-    {% for step in tour %}
-    {# Day and night screenshots of each step; only the current theme's are
-       shown, and hidden lazy images are never downloaded. #}
-    <img class="tour-shot for-light{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '.webp') }}" alt="" loading="lazy" width="1920" height="1080">
-    <img class="tour-shot for-dark{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" src="{{ url_for('static', filename='img/how/' ~ step.shot ~ '-dark.webp') }}" alt="" loading="lazy" width="1920" height="1080">
-    {% endfor %}
-    <div class="tour-glass"></div>
-    <div class="tour-scrim"></div>
-  <div class="tour-texts">
-    {% for step in tour %}
-    <div class="tour-step{% if loop.first %} tour-step-intro{% endif %}" id="tour-{{ step.key }}" data-step="{{ loop.index0 }}">
-      <article class="tour-card">
-        <div class="tour-card-head">
-          <span class="tour-icon">{{ icon(step.key) }}</span>
-          <span class="tour-eyebrow">{% if not loop.first %}<span class="tour-num">{{ '%02d' % loop.index0 }}</span>{% endif %}{{ step.eyebrow }}</span>
+    <div class="bento">
+      <article class="tile t-routes">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('routes') }}</span>
+          <div><h3>Choose from thousands of real-world routes</h3><p>Real timetables from Ryanair, easyJet and Wizz Air, with the app's own filters. Change one and the map follows</p></div>
+        </header>
+        <div class="routes-body">
+          <div class="routes-side">
+            <form class="demo-filters" id="demoFilters" onsubmit="return false">
+              <label>Departure airport
+                <select name="dep"><option value="EGKK">EGKK &middot; London Gatwick</option><option value="EGGW">EGGW &middot; London Luton</option><option value="EIDW">EIDW &middot; Dublin</option><option value="LHBP">LHBP &middot; Budapest</option></select></label>
+              <label>Airline
+                <select name="airline"><option value="all">All</option><option value="RYR">Ryanair</option><option value="EZY">easyJet</option><option value="WZZ">Wizz Air</option></select></label>
+              <label>Sector legs
+                <select name="legs"><option value="all">All</option><option value="1l">One way</option><option value="rt">Round trip</option></select></label>
+              <label>Flight country
+                <select name="country"><option value="all">All</option><option value="dom">Domestic</option><option value="int">International</option></select></label>
+              <label class="wide">Departs (UTC)
+                <select name="time"><option value="all">Any time</option><option value="morning">Morning, 06-12Z</option><option value="afternoon">Afternoon, 12-18Z</option><option value="evening">Evening, 18-24Z</option></select></label>
+            </form>
+            <p class="demo-count" aria-live="polite"><b id="demoCount">&ndash;</b> itineraries to <b id="demoDests">&ndash;</b> airports</p>
+            <ul class="demo-list" id="demoList"></ul>
+          </div>
+          <div class="demo-map-wrap"><svg id="demoMap" class="demo-map" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the matching routes"></svg></div>
         </div>
-        <h2 class="tour-title">{{ step.title }}</h2>
-        {% for para in step.body or [] %}<p class="tour-lead">{{ para|safe }}</p>{% endfor %}
-        {% if step.points %}<div class="tour-points">{% for point in step.points %}<p>{{ point|safe }}</p>{% endfor %}</div>{% endif %}
+        <p class="demo-note">Sample timetable for this demo. The app uses each airline's real schedule</p>
+      </article>
+
+      <article class="tile t-brief">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('defects') }}</span>
+          <div><h3>Know before you go</h3><p>Every briefing opens with four status lights. Click one to see what's behind it</p></div>
+        </header>
+        <div class="lights" id="demoLights" role="tablist" aria-label="Briefing status">
+          <button class="light" type="button" role="tab"><b>DISPATCH</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>DELAY</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>TECH LOG</b><span>&ndash;</span></button>
+          <button class="light" type="button" role="tab"><b>NOTAMS</b><span>&ndash;</span></button>
+        </div>
+        <div class="light-detail" id="demoLightDetail" role="tabpanel" aria-live="polite"></div>
+        <div class="roll-row"><span id="demoLegNote"></span><button class="btn-s primary" type="button" id="demoRoll">Roll another leg</button></div>
+      </article>
+
+      <article class="tile t-gate">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('gate') }}</span>
+          <div><h3>Last-minute changes at the gate</h3><p>Accept or decline, and the loadsheet follows</p></div>
+        </header>
+        <div class="lmc-card" id="demoLmcCard">
+          <p><span class="ld-tag">LMC</span> <span id="demoLmcText"></span></p>
+          <div class="lmc-acts" id="demoLmcActs"><button class="btn-s primary" type="button" id="demoAccept">ACCEPT</button><button class="btn-s" type="button" id="demoDecline">DECLINE</button></div>
+          <div class="lmc-acts" id="demoLmcDone" hidden></div>
+        </div>
+        <pre class="mcdu" id="demoSheet"></pre>
+        <button class="text-btn" type="button" id="demoNextLmc">Another change &rarr;</button>
+      </article>
+
+      <article class="tile t-sb">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('simbrief') }}</span>
+          <div><h3>Straight into SimBrief</h3><p>Route, fuel, cruise limits and every dispatch remark, filled in for you. The OFP comes back on its own</p></div>
+        </header>
+<pre class="remarks">MEL 24-21-01 ENGINE GENERATOR 2 INOP
+CREW ACTIONS: KEEP THE APU RUNNING
+EXTRA FUEL: 5 MIN (APU BURN)
+DELAY 40 MIN - IATA 93 LATE INBOUND</pre>
+      </article>
+
+      <article class="tile t-stats">
+        <header class="tile-head">
+          <span class="tile-icon">{{ icon('stats') }}</span>
+          <div><h3>Your career, tracked</h3><p>Every PIREP feeds your logbook. Here's a sample pilot's: try the filters</p></div>
+        </header>
+        <div class="stat-controls">
+          <div class="stat-ranges" id="demoRanges">
+            <button type="button" data-range="30" aria-pressed="false">30 days</button>
+            <button type="button" data-range="90" aria-pressed="false">90 days</button>
+            <button type="button" data-range="365" class="on" aria-pressed="true">12 months</button>
+            <button type="button" data-range="all" aria-pressed="false">All time</button>
+          </div>
+          <form class="demo-filters inline" id="demoStatFilters" onsubmit="return false">
+            <label>Airline <select name="airline"><option value="all">All</option><option value="RYR">Ryanair</option><option value="EZY">easyJet</option><option value="WZZ">Wizz Air</option></select></label>
+            <label>Aircraft <select name="type"><option value="all">All</option><option value="B738">B738</option><option value="A319">A319</option><option value="A320">A320</option><option value="A321">A321</option></select></label>
+          </form>
+        </div>
+        <div class="kpis" id="demoKpis"></div>
+        <div class="stats-body">
+          <div><h4 id="demoBarsTitle">Flights by month</h4><div class="bars" id="demoBars"></div></div>
+          <div><h4>Top airports</h4><ul class="top-list" id="demoTop"></ul><h4>Domestic / international</h4><div id="demoSplit"></div></div>
+        </div>
       </article>
     </div>
-    {% endfor %}
-  </div>
-    <nav class="tour-rail" aria-label="Steps">
-      {% for step in tour %}
-      <button type="button" class="tour-dot{% if loop.first %} active{% endif %}" data-step="{{ loop.index0 }}" aria-label="{{ step.eyebrow }}"><span class="tour-dot-label">{{ step.eyebrow }}</span></button>
-      {% endfor %}
-    </nav>
   </div>
 </section>
 
@@ -194,53 +233,10 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
 <script>
   (function () {
     var hasIO = 'IntersectionObserver' in window;
-
-    // Tour: the section stays pinned while you scroll through it (one
-    // screen of scroll per step). Crossing a step's point swaps the
-    // screenshot and the text in place; the rail shows and jumps to steps.
-    var tour = document.getElementById('how-it-works');
-    var steps = Array.prototype.slice.call(document.querySelectorAll('.tour-step'));
-    var shots = Array.prototype.slice.call(document.querySelectorAll('.tour-shot'));
-    var dots = Array.prototype.slice.call(document.querySelectorAll('.tour-dot'));
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var currentStep = -1;
-    function activateTour(i) {
-      if (i === currentStep) return;
-      currentStep = i;
-      steps.forEach(function (s, k) {
-        s.classList.toggle('active', k === i);
-        s.classList.toggle('is-past', k < i);
-      });
-      shots.forEach(function (sh) { sh.classList.toggle('active', Number(sh.getAttribute('data-step')) === i); });
-      dots.forEach(function (d, k) {
-        d.classList.toggle('active', k === i);
-        if (k === i) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
-      });
-    }
-    function tourStepFromScroll() {
-      var scrolled = -tour.getBoundingClientRect().top / window.innerHeight;
-      return Math.max(0, Math.min(steps.length - 1, Math.floor(scrolled + 0.35)));
-    }
-    if (tour && steps.length) {
-      tour.classList.add('is-pinned');
-      activateTour(tourStepFromScroll());
-      var tourRaf = 0;
-      var onTourScroll = function () {
-        if (tourRaf) return;
-        tourRaf = requestAnimationFrame(function () { tourRaf = 0; activateTour(tourStepFromScroll()); });
-      };
-      window.addEventListener('scroll', onTourScroll, { passive: true });
-      window.addEventListener('resize', onTourScroll);
-      dots.forEach(function (d, k) {
-        d.addEventListener('click', function () {
-          var top = tour.getBoundingClientRect().top + window.scrollY + k * window.innerHeight;
-          window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
-        });
-      });
-    }
 
     // "Create an account" stays reachable at the top once the hero's own
     // button has scrolled out of view above.

@@ -11,6 +11,7 @@ Scripts that build the app's data. None of them run on the server.
 | `easyjet_schedule/easyjet_missing.csv` | easyJet routes not operating in September: mostly winter and seasonal |
 | `wizzair_schedule/wizzair_schedule.csv` | Wizz Air timetable, summer 2026 (2,319 flights) |
 | `basemap/build_basemap.py` | Builds `static/data/basemap.json`, the offline world map behind the route maps |
+| `landing_map/build_landing_map.py` | Builds `static/data/landing_map.json`, the map of Europe behind the landing page's route demo |
 | `check_ui_copy.py` | Checks app UI sentences don't end with a full stop (`--fix` to correct them) |
 | `seed_demo_account.py` | Command-line version of the admin page's "Demo account" form |
 
