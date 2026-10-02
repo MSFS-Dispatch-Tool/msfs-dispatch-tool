@@ -26,6 +26,7 @@ def app_module():
 def client(app_module, monkeypatch):
     monkeypatch.setattr(app_module, "fetch_weather_batch",
                         lambda icaos: {i: {"metar": None, "taf": None} for i in set(icaos)})
+    app_module._simbrief_cache.clear()
     return app_module.app.test_client()
 
 

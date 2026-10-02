@@ -33,7 +33,14 @@ async def main():
         page = await prepare(await ctx.new_page())
         page.on("dialog", lambda d: asyncio.ensure_future(d.accept()))
         await page.route("**/simbrief/redirect-url*", lambda r: r.fulfill(status=200, content_type="application/json", body='{"url": "about:blank"}'))
-        await page.route("**/simbrief/ofp*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(OFP)))
+        ofp_calls = []
+
+        async def ofp(route):
+            # SimBrief has no OFP for this dispatch for the first two checks
+            ofp_calls.append(route.request.url)
+            body = {"pending": True} if len(ofp_calls) <= 2 else OFP
+            await route.fulfill(status=200, content_type="application/json", body=json.dumps(body))
+        await page.route("**/simbrief/ofp*", ofp)
         extras_urls = []
 
         async def extras(route):
@@ -73,7 +80,10 @@ async def main():
         await page.click("#af-pane-briefing button:has-text('SEND TO SIMBRIEF')")
         await page.wait_for_timeout(500)
         check("step 2 FETCH OFP is next", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "FETCH OFP")
-        await page.click("#af-pane-briefing button:has-text('FETCH OFP')")
+        check("the briefing says it's watching SimBrief", "Watching SimBrief" in await page.inner_text("#af-pane-briefing"))
+        await page.evaluate("OFP_POLL_MS = 300; scheduleOfpCheck(0)")
+        await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'available'", timeout=10000)
+        check("the OFP is captured automatically, no click", len(ofp_calls) >= 3 and all("static_id=" in u for u in ofp_calls), ofp_calls[:3])
         await page.wait_for_timeout(600)
         check("with the OFP in, the loadsheet tab opens", await page.locator("#af-pane-loadsheet").is_visible())
         brief = await page.inner_text("#af-pane-briefing")

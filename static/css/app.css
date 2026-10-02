@@ -572,7 +572,11 @@
   .af-flow-step.now small { color: var(--text); }
   .af-flow-step.now .af-flow-tag { background: var(--titlebar); color: #fff; }
   .af-flow-note { margin: 0 0 12px; font-size: 12px; color: var(--text-muted); }
-  .brief-actions { margin: 4px 0 6px; padding-top: 12px; border-top: 1px solid var(--shadow-md); }
+  .ofp-watch { display: inline-flex; align-items: center; gap: 8px; flex: 1 1 100%; font-size: 12.5px; color: var(--text); }
+.ofp-watch-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--titlebar); animation: ofp-pulse 1.4s ease-in-out infinite; }
+@keyframes ofp-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+@media (prefers-reduced-motion: reduce) { .ofp-watch-dot { animation: none; } }
+.brief-actions { margin: 4px 0 6px; padding-top: 12px; border-top: 1px solid var(--shadow-md); }
   .af-status { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: flex-end; flex: 1 1 240px; }
   .af-route-names { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
   .af-map-note { margin: 6px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4; overflow-wrap: anywhere; }

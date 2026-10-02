@@ -1797,6 +1797,34 @@ def ofp_route_fixes(navlog):
     return out
 
 
+# The latest OFP per SimBrief username for a few seconds, so several open
+# tabs (or a quick double check) cost SimBrief one request
+SIMBRIEF_CACHE_SECONDS = 4
+_simbrief_cache = {}
+_simbrief_lock = threading.Lock()
+
+
+def _simbrief_latest(username):
+    key = username.lower()
+    now = time.monotonic()
+    with _simbrief_lock:
+        hit = _simbrief_cache.get(key)
+        if hit and now - hit[0] < SIMBRIEF_CACHE_SECONDS:
+            return hit[1]
+    try:
+        resp = requests.get("https://www.simbrief.com/api/xml.fetcher.php",
+                            params={"username": username, "json": "v2"}, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception:
+        return None
+    with _simbrief_lock:
+        if len(_simbrief_cache) > 500:
+            _simbrief_cache.clear()
+        _simbrief_cache[key] = (now, data)
+    return data
+
+
 @app.route("/simbrief/ofp")
 def simbrief_ofp():
     """
@@ -1810,20 +1838,20 @@ def simbrief_ofp():
     username = request.args.get("username", default="", type=str).strip()
     if not username:
         return jsonify({"error": "SimBrief username is required."}), 400
+    # The browser checks for a new OFP every few seconds after sending a leg
+    # to SimBrief; with the dispatch's static_id, an older OFP comes back as
+    # a small {"pending": true} instead of the whole plan
+    expected = request.args.get("static_id", default="", type=str).strip()
 
-    try:
-        resp = requests.get(
-            "https://www.simbrief.com/api/xml.fetcher.php",
-            params={"username": username, "json": "v2"},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception:
+    data = _simbrief_latest(username)
+    if data is None:
         return jsonify({"error": "Could not reach SimBrief, or no OFP is on file for this username."}), 502
-
     if not isinstance(data, dict):
         return jsonify({"error": "Unexpected response from SimBrief."}), 502
+    if expected:
+        got = data.get("params", {}).get("static_id", "") if isinstance(data.get("params"), dict) else ""
+        if got != expected:
+            return jsonify({"pending": True})
 
     def section(name):
         # SimBrief sends an empty value as {} or "", never as a missing key
