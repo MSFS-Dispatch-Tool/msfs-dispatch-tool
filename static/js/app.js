@@ -1896,14 +1896,9 @@ function techTitle(m) {
   return escText(m.name || m.system || m.part || '') + (m.chosen_component ? `, ${escText(sideLabel(m.chosen_component))}` : '');
 }
 function techRef(m) { return escText(m.ata || m.mmel_ref || ''); }
-function fixText(m) {
-  if (!m.interval_days) return '';
-  const due = m.interval_days === 1 ? 'fix today' : `fix within ${m.interval_days} days`;
-  return m.mel_category ? `Category ${escText(m.mel_category)}, ${due}` : due.charAt(0).toUpperCase() + due.slice(1);
-}
 function legTechRows(leg) {
   const rows = legMels(leg).map(m => briefRow(`MEL ${techRef(m)}`,
-    `<b>${techTitle(m)}</b>: ${escText(m.plain || m.description)}${fixText(m) ? ` <span class="brief-note">${fixText(m)}</span>` : ''}`, 'warn'))
+    `<b>${techTitle(m)}</b>: ${escText(m.plain || m.description)}`, 'warn'))
     .concat(legCdl(leg).map(c => briefRow(`CDL ${techRef(c)}`, `<b>${techTitle(c)}</b>: ${escText(c.plain || c.description)}`, 'warn')));
   return rows.length ? rows : [briefRow('TECH LOG', 'No deferred defects or missing panels', 'ok')];
 }
@@ -2354,21 +2349,21 @@ function techRows(leg) {
 function techCards(flight, i) {
   const leg = flight.legs[i], done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
   const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
-  const card = (ref, m, steps, due) => {
+  const card = (ref, m, steps) => {
     const official = (m.procedures || []).map(t => `<li>${escText(stripMO(t))}</li>`).join('');
     return `<div class="tcard">
-      <div class="tcard-head"><span class="tech-ref">${ref}</span><b>${techTitle(m)}</b>${due ? `<span class="tcard-due">${due}</span>` : ''}</div>
+      <div class="tcard-head"><span class="tech-ref">${ref}</span><b>${techTitle(m)}</b></div>
       <p class="tcard-means">${escText(m.plain || m.description)}</p>
       ${steps.length ? `<ul class="tech-steps">${steps.map((t, k) => step(`${m.id}#${k}`, t)).join('')}</ul>` : ''}
       ${official || m.description ? `<details class="tech-official"><summary>Official wording</summary><p>${escText(m.description)}</p>${official ? `<ul>${official}</ul>` : ''}${m.source ? `<p>Source: ${escText(m.source)}</p>` : ''}</details>` : ''}
     </div>`;
   };
-  const cards = legMels(leg).map(m => card(`MEL ${techRef(m)}`, m, m.steps || (m.procedures || []).map(stripMO), fixText(m)))
+  const cards = legMels(leg).map(m => card(`MEL ${techRef(m)}`, m, m.steps || (m.procedures || []).map(stripMO)))
     .concat(legCdl(leg).map(c => {
       const e = c.effects || {};
       const steps = c.steps || [e.fuel_burn_pct ? `Burns ${e.fuel_burn_pct}% more fuel: already in the flight plan` : '',
         e.weight_penalty_kg ? `Maximum take-off and landing weights reduced by ${e.weight_penalty_kg} kg` : ''].filter(Boolean);
-      return card(`CDL ${techRef(c)}`, c, steps, '');
+      return card(`CDL ${techRef(c)}`, c, steps);
     }));
   return cards.length ? `<div class="tcards">${cards.join('')}</div>` : '';
 }
@@ -3538,7 +3533,7 @@ function melSettingsRow(m) {
   const out = melEffectLines(m.effects || {});
   if (!out.length) out.push('No effect on how you fly');
   return {
-    item: `<b>${escText(m.name || m.system)}</b>${fixText(m) ? `<span class="tech-tag cat">${fixText(m)}</span>` : ''}`,
+    item: `<b>${escText(m.name || m.system)}</b>`,
     description: escText(m.plain || m.description),
     effect: out.join('<br>'),
     actions: (m.steps || (m.procedures || []).map(stripMO)).map(escText),

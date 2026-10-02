@@ -887,7 +887,6 @@
 .tcard { padding: 10px 12px; border-top: 1px solid var(--shadow-md); }
 .tcard:first-child { border-top: none; }
 .tcard-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 13px; }
-.tcard-due { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--amber); }
 .tcard-means { margin: 4px 0 6px; font-size: 12.5px; color: var(--text-muted); }
 .brief-list { display: flex; flex-direction: column; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); overflow: hidden; margin-top: 8px; }
 .brief-row { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 10px; padding: 7px 10px; font-size: 12.5px; line-height: 1.45; border-top: 1px solid var(--shadow-md); background: var(--white); }
