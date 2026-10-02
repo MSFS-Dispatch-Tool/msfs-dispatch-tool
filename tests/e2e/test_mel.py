@@ -19,7 +19,7 @@ async def main():
         confirm = page.locator(".confirm-row button")
         check("CONFIRM disabled while NO-GO", await confirm.is_disabled())
         txt = await page.inner_text("#detailCell")
-        check("preview lists MEL items, CDL and SimBrief inputs", all(s in txt for s in ["DEFECT", "Air conditioning pack", "MISSING PANEL", "Included in your SimBrief plan", "FL315"]))
+        check("preview lists MEL items, CDL and SimBrief inputs", all(s in txt for s in ["MEL 34-41-01", "Air conditioning pack", "CDL ", "Included in your SimBrief plan", "FL315"]))
         await page.locator(".nogo-banner").scroll_into_view_if_needed()
         await page.screenshot(path=shot("mel_nogo.png"))
         d0 = await page.evaluate("expandedDetailData.legs[0]")
@@ -36,11 +36,11 @@ async def main():
         check("swapped aircraft has no weather radar item", all(m["system"] != "Weather radar" for m in d0["mels"]), str([m["system"] for m in d0["mels"]]))
         await page.screenshot(path=shot("mel_swapped.png"))
         await confirm.click(); await page.wait_for_timeout(2000)
-        await page.evaluate("selectRecapTab('tech')"); await page.wait_for_timeout(500)
-        tech = await page.inner_text("#af-pane-tech")
-        check("MEL / CDL tab shows procedure cards", "Cruise above FL315 not allowed" in tech and "FIX WITHIN 10 DAYS" in tech and "MISSING PANEL" in tech and "(M)" not in tech and "(O)" not in tech)
+        tech = await page.inner_text("#af-pane-briefing")
+        check("briefing technical log shows the procedure cards", "Cruise above FL315 not allowed" in tech and "fix within 10 days" in tech and "CDL " in tech and "(M)" not in tech and "(O)" not in tech)
+        check("only three tabs: briefing, loadsheet, PIREP", await page.evaluate("[...document.querySelectorAll('.af-tabbar button')].map(b => b.textContent).join(',')") == "BRIEFING,LOADSHEET,PIREP")
         await page.screenshot(path=shot("mel_tab.png"))
-        cb = page.locator("#af-pane-tech .tech-steps input").first
+        cb = page.locator("#af-pane-briefing .tech-steps input").first
         await cb.check(); await page.wait_for_timeout(300)
         st = await page.evaluate("loadActiveFlight().leg_state[0].tech_done")
         check("procedure tick is saved", st and len(st) == 1, str(st))
@@ -55,6 +55,10 @@ async def main():
         r = await page.evaluate(f"fetch('{u.replace(BASE, '')}').then(r => r.json())")
         url = r.get("url", "")
         check("SimBrief URL has fl=FL315, addedfuel in minutes, manualrmk", "fl=FL315" in url and "addedfuel_units=min" in url and "manualrmk=MEL" in url, url[-200:])
+        from urllib.parse import parse_qs, urlparse
+        rmk = parse_qs(urlparse(url).query).get("manualrmk", [""])[0]
+        check("SimBrief remarks carry every defect in full, one line each",
+              rmk.count("\n") >= 4 and "MEL PROVISOS:" in rmk and "CREW ACTIONS:" in rmk and "PACK" in rmk and "CDL " in rmk, rmk[:400])
         opts = await page.evaluate("fetch('/generation-options').then(r => r.json())")
         check("generation options include CDL and hide never-rolled items", len(opts["cdl"]) == 16 and not any(m["id"].endswith("mel-05") for m in opts["mel"]), f'{len(opts["cdl"])} cdl, {len(opts["mel"])} mel')
         check.done(page)

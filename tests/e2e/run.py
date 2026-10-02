@@ -21,6 +21,7 @@ URL = f"http://localhost:{PORT}"
 SUITES = [
     ("test_pages.py", "demo"),
     ("test_search.py", "demo"),
+    ("test_active_flight.py", "demo"),
     ("test_settings.py", "demo"),
     ("test_delays.py", "demo"),
     ("test_mel.py", "mel"),

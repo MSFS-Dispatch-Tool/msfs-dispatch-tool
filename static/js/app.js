@@ -1855,20 +1855,21 @@ function opsConstraintsHtml(legs, i, legStates) {
   return `<ul class="tech-checks">${checks.map(c => `<li class="${c.level}">${c.text}</li>`).join('')}</ul>`;
 }
 
-function legDelayMelBlock(leg) {
+// ---- Briefing rows: a fixed tag column and the text, one line each ----
+// Shared by the trip preview in flight search and the active flight briefing.
+function briefRow(tag, text, tone = '') {
+  return `<div class="brief-row${tone ? ' ' + tone : ''}"><span class="brief-tag">${tag}</span><span class="brief-text">${text}</span></div>`;
+}
+function legDelayRows(leg) {
   const own = legOwnDelayMinutes(leg), r = leg.reactionary ? leg.reactionary.minutes : 0;
-  const total = legExpectedDelayMinutes(leg);
-  const lines = [];
-  if (leg.reactionary) lines.push(`<span class="status-chip status-warn">DELAY ${r} MIN</span> ${leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector'}`);
-  if (leg.delay) lines.push(`<span class="status-chip status-warn">DELAY ${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN</span> ${escText(leg.delay.plain || leg.delay.description)}`);
-  if (leg.aircraft_change) lines.push(`<span class="status-chip status-warn">DELAY ${leg.aircraft_change.minutes} MIN</span> Aircraft change`);
-  if (leg.reactionary && own) lines.push(`<span class="placeholder-text">Total expected delay ${total} min: the other delays are absorbed during the late turnaround</span>`);
-  if (leg.atfm) lines.push(`<span class="status-chip status-warn">SLOT ${escText(leg.atfm.ctot)}</span> ATC slot (${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}): take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. This is a new slot because the first one was missed' : ''}`);
-  return `
-        <p class="placeholder-text" style="margin-top:10px;">
-          ${lines.length ? lines.join('<br>') : `<span class="status-chip status-ok">ON TIME</span>`}
-        </p>
-        ${techSummaryHtml(leg)}`;
+  const rows = [];
+  if (leg.reactionary) rows.push(briefRow(`DELAY ${r} MIN`, leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector', 'warn'));
+  if (leg.delay) rows.push(briefRow(`DELAY ${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN`, `${escText(leg.delay.plain || leg.delay.description)} <span class="brief-note">IATA ${escText(leg.delay.iata_code)}</span>`, 'warn'));
+  if (leg.aircraft_change) rows.push(briefRow(`DELAY ${leg.aircraft_change.minutes} MIN`, 'Aircraft change <span class="brief-note">IATA 46</span>', 'warn'));
+  if (leg.reactionary && own) rows.push(briefRow('TOTAL', `${legExpectedDelayMinutes(leg)} min expected: the other delays are absorbed during the late turnaround`));
+  if (leg.atfm) rows.push(briefRow(`SLOT ${escText(leg.atfm.ctot)}`, `ATC slot (${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}): take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. New slot: the first one was missed' : ''}`, 'warn'));
+  if (!rows.length) rows.push(briefRow('ON TIME', 'No delay expected', 'ok'));
+  return rows;
 }
 
 // ---- Technical status (MEL/CDL, see techlog.py) ----
@@ -1878,65 +1879,72 @@ function legCdl(leg) { return leg.cdl || []; }
 // text only appears folded away. Older saved flights lack the plain
 // fields, so everything falls back to the official text minus (M)/(O).
 function stripMO(text) { return String(text || '').replace(/^\s*(\((M|O)\)\s*)+/, ''); }
-function techItemName(m) { return escText(m.name || m.system || m.part || ''); }
-function techSide(m) { return m.chosen_component ? ` <span class="tech-tag">${escText(m.chosen_component)}</span>` : ''; }
-function fixTag(m) {
+// Which unit of a system: "2" reads "no. 2", "Left" reads "left", ESS stays ESS
+function sideLabel(side) {
+  const s = String(side || '');
+  if (/^\d+$/.test(s)) return `no. ${s}`;
+  return s && s !== s.toUpperCase() ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+}
+function techTitle(m) {
+  return escText(m.name || m.system || m.part || '') + (m.chosen_component ? `, ${escText(sideLabel(m.chosen_component))}` : '');
+}
+function techRef(m) { return escText(m.ata || m.mmel_ref || ''); }
+function fixText(m) {
   if (!m.interval_days) return '';
-  return `<span class="tech-tag cat">${m.interval_days === 1 ? 'FIX TODAY' : `FIX WITHIN ${m.interval_days} DAYS`}</span>`;
+  const due = m.interval_days === 1 ? 'fix today' : `fix within ${m.interval_days} days`;
+  return m.mel_category ? `Category ${escText(m.mel_category)}, ${due}` : due.charAt(0).toUpperCase() + due.slice(1);
+}
+function legTechRows(leg) {
+  const rows = legMels(leg).map(m => briefRow(`MEL ${techRef(m)}`,
+    `<b>${techTitle(m)}</b>: ${escText(m.plain || m.description)}${fixText(m) ? ` <span class="brief-note">${fixText(m)}</span>` : ''}`, 'warn'))
+    .concat(legCdl(leg).map(c => briefRow(`CDL ${techRef(c)}`, `<b>${techTitle(c)}</b>: ${escText(c.plain || c.description)}`, 'warn')));
+  return rows.length ? rows : [briefRow('TECH LOG', 'No deferred defects or missing panels', 'ok')];
+}
+function techChecksHtml(leg) {
+  const checks = (leg.tech && leg.tech.checks) || [];
+  return checks.length ? `<ul class="tech-checks">${checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
 }
 function techAppliedText(leg) {
   const t = leg.tech; if (!t) return '';
   const parts = [];
   if (t.max_fl) parts.push(`cruise no higher than FL${t.max_fl}`);
   if (t.extra_fuel_min) parts.push(`${t.extra_fuel_min} min of extra fuel`);
-  if (legMels(leg).length || legCdl(leg).length) parts.push('the defects noted in the remarks');
+  if (legMels(leg).length || legCdl(leg).length) parts.push('every defect in full in the dispatch remarks');
   return parts.length ? `Included in your SimBrief plan: <strong>${parts.join(' &middot; ')}</strong>` : '';
 }
-function techSummaryHtml(leg) {
-  const mels = legMels(leg), cdl = legCdl(leg);
-  if (!mels.length && !cdl.length) return `<p class="placeholder-text"><span class="status-chip status-ok">NO DEFECTS</span></p>`;
-  const items = mels.map(m => `<div><span class="status-chip status-warn">DEFECT</span> <b>${techItemName(m)}</b>${techSide(m)}: ${escText(m.plain || m.description)} ${fixTag(m)}</div>`)
-    .concat(cdl.map(c => `<div><span class="status-chip status-warn">MISSING PANEL</span> <b>${techItemName(c)}</b>: ${escText(c.plain || c.description)}</div>`));
-  const checks = leg.tech && leg.tech.checks && leg.tech.checks.length
-    ? `<ul class="tech-checks">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
-  const legacy = !leg.tech && mels[0] && mels[0].dispatch_consequence ? `<p class="tech-applied">${escText(mels[0].dispatch_consequence)}</p>` : '';
+// Trip preview: delays and defects as rows, then the dispatch checks
+function legDelayMelBlock(leg) {
+  const legacy = !leg.tech && legMels(leg)[0] && legMels(leg)[0].dispatch_consequence ? `<p class="tech-applied">${escText(legMels(leg)[0].dispatch_consequence)}</p>` : '';
   const applied = techAppliedText(leg);
-  return `<div class="tech-block"><div class="tech-items">${items.join('')}</div>${checks}${legacy}${applied ? `<p class="tech-applied">${applied}</p>` : ''}</div>`;
+  return `<div class="brief-list">${legDelayRows(leg).join('')}${legTechRows(leg).join('')}</div>
+    ${techChecksHtml(leg)}${legacy}${applied ? `<p class="tech-applied">${applied}</p>` : ''}`;
 }
+// The whole MEL/CDL text for SimBrief's dispatcher remarks: one block per
+// item with the official wording, the crew actions and what dispatch did.
+function simbriefRemarks(leg) {
+  const up = t => String(t || '').toUpperCase().replace(/°/g, ' ').replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim();
+  const lines = [];
+  legMels(leg).forEach(m => {
+    const due = m.interval_days ? ` CAT ${m.mel_category || '-'} ${m.interval_days === 1 ? 'FIX TODAY' : `FIX WITHIN ${m.interval_days} DAYS`}` : '';
+    lines.push(`MEL ${up(m.ata || m.mmel_ref)}${due}: ${up(m.description)}`);
+    const official = (m.procedures || []).map(stripMO).filter(Boolean);
+    if (official.length) lines.push(`MEL PROVISOS: ${official.map(up).join('; ')}`);
+    if ((m.steps || []).length) lines.push(`CREW ACTIONS: ${m.steps.map(up).join('; ')}`);
+    if (m.dispatch_consequence) lines.push(`DISPATCH: ${up(m.dispatch_consequence)}`);
+  });
+  legCdl(leg).forEach(c => {
+    lines.push(`CDL ${up(c.ata)}: ${up(c.description || c.part)}`);
+    if ((c.steps || []).length) lines.push(`CREW ACTIONS: ${c.steps.map(up).join('; ')}`);
+  });
+  const t = leg.tech || {};
+  const limits = [t.max_fl ? `MAX FL${t.max_fl}` : '', t.extra_fuel_min ? `EXTRA FUEL ${t.extra_fuel_min} MIN` : '',
+    t.weight_penalty_kg ? `MTOW AND MLW -${t.weight_penalty_kg} KG` : ''].filter(Boolean);
+  if (limits.length) lines.push(`DISPATCH LIMITS: ${limits.join(' / ')}`);
+  return lines.join('\n');
+}
+
 function itineraryNogo(legs) {
   return legs.flatMap((leg, i) => ((leg.tech && leg.tech.checks) || []).filter(c => c.level === 'nogo').map(c => ({ leg: i, ...c })));
-}
-// MEL / CDL tab: one card per defect, with what to do as a checklist
-function techCardsHtml(flight, i) {
-  const leg = flight.legs[i], mels = legMels(leg), cdl = legCdl(leg);
-  if (!mels.length && !cdl.length) return `<div class="empty-state">No deferred defects or missing panels on this aircraft</div>`;
-  const done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
-  const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
-  const official = m => {
-    const lines = (m.procedures || []).map(t => `<li>${escText(stripMO(t))}</li>`).join('');
-    if (!m.name || (!lines && !m.ata)) return '';
-    return `<details class="tech-official"><summary>Official MEL wording</summary>
-      <p>${m.ata ? `MEL ${escText(m.ata)}: ` : ''}${escText(m.description)}</p>${lines ? `<ul>${lines}</ul>` : ''}
-      ${m.source ? `<p>Source: ${escText(m.source)}</p>` : ''}</details>`;
-  };
-  const melCards = mels.map(m => {
-    const steps = (m.steps || (m.procedures || []).map(stripMO)).map((text, k) => step(`${m.id}#${k}`, text)).join('');
-    return `<div class="tech-card"><div class="tech-card-head"><b>${techItemName(m)}</b>${techSide(m)}${fixTag(m)}</div>
-      <p>${escText(m.plain || m.description)}</p>${steps ? `<ul class="tech-steps">${steps}</ul>` : `<p class="tech-applied">${escText(m.dispatch_consequence || '')}</p>`}
-      ${official(m)}</div>`;
-  });
-  const cdlCards = cdl.map(c => {
-    const e = c.effects || {};
-    const lines = c.steps || [e.fuel_burn_pct ? `Burns ${e.fuel_burn_pct}% more fuel: already added to your plan` : '',
-      e.weight_penalty_kg ? `Maximum take-off and landing weights are ${e.weight_penalty_kg} kg lower` : '', c.note || ''].filter(Boolean);
-    return `<div class="tech-card"><div class="tech-card-head"><b>${techItemName(c)}</b><span class="tech-tag">MISSING PANEL</span></div>
-      <p>${escText(c.plain || c.description)}</p>${lines.length ? `<ul class="tech-steps">${lines.map((t, k) => step(`${c.id}#${k}`, t)).join('')}</ul>` : ''}</div>`;
-  });
-  const checks = leg.tech && leg.tech.checks && leg.tech.checks.length
-    ? `<ul class="tech-checks" style="margin-bottom:12px;">${leg.tech.checks.map(c => `<li class="${c.level}">${escText(c.text)}</li>`).join('')}</ul>` : '';
-  const applied = techAppliedText(leg);
-  return `${checks}${melCards.join('')}${cdlCards.join('')}${applied ? `<p class="tech-applied">${applied}</p>` : ''}
-    <p class="tech-note">Tick each step as you prepare the flight. Based on the official MEL, simplified for simulation</p>`;
 }
 function toggleTechStep(i, key, input) {
   const flight = loadActiveFlight(); if (!flight) return;
@@ -1970,21 +1978,6 @@ async function swapAircraft(key) {
     alert('Could not swap the aircraft. Check the connection and retry');
     if (btn) btn.disabled = false;
   }
-}
-
-function legOfpTable(ofp) {
-  if (!ofp) return '';
-  const unit = ofp.weight_unit || 'KG';
-  return `
-        <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">SIMBRIEF OFP</td><td class="v">${escText(ofp.callsign || 'N/A')} &mdash; ${escText(ofp.registration || 'REG N/A')} (${escText(ofp.icao_type || 'TYPE N/A')})</td></tr>
-          <tr><td class="k">ROUTE</td><td class="v">${escText(ofp.route || 'N/A')}</td></tr>
-          <tr><td class="k">COST INDEX (OFP)</td><td class="v">${ofp.cost_index !== '' ? fmtNum(ofp.cost_index) : 'N/A'}</td></tr>
-          <tr><td class="k">BLOCK FUEL</td><td class="v">${ofp.block_fuel !== '' ? fmtNum(ofp.block_fuel) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EZFW</td><td class="v">${ofp.est_zfw !== '' ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EFOB</td><td class="v">${ofp.efob !== '' ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EPAX</td><td class="v">${ofp.epax !== '' ? fmtNum(ofp.epax) : 'N/A'}</td></tr>
-        </table>`;
 }
 
 function buildDetailHtml(data, key, carriers, ownedAircraft) {
@@ -2030,15 +2023,10 @@ async function confirmFlight(key) {
     if (!selectData) {
       selectData = await (await fetch('/select?flights=' + encodeURIComponent(key))).json();
     }
-    // The first leg's load decides which last-minute changes are possible
-    const first = (selectData.legs || [])[0];
-    const full = first && first.pax_count >= first.seat_capacity ? 1 : 0;
-    const confirmData = await (await fetch('/confirm?flights=' + encodeURIComponent(key) + '&full=' + full)).json();
+    const confirmData = await (await fetch('/confirm?flights=' + encodeURIComponent(key))).json();
     if (selectData.error || confirmData.error) throw new Error(selectData.error || confirmData.error);
     const activeFlight = {
       callsigns: confirmData.callsigns,
-      dangerous_goods: confirmData.dangerous_goods,
-      lmc_event: confirmData.lmc_event,
       legs: selectData.legs,
       leg_status: confirmData.leg_status,
       leg_state: selectData.legs.map(() => ({
@@ -2129,122 +2117,81 @@ function initRouteMap(id, leg, ofp, opts = {}) {
   if (window.ResizeObserver) new ResizeObserver(() => { if (el.isConnected) { map.invalidateSize(); fit(); } }).observe(el);
 }
 
-function legLmcDgBlock(flight) {
-  const lmc = flight.lmc_event
-    ? `<span class="status-chip status-warn">LMC</span> ${flight.lmc_event.description} ${flight.lmc_event.delta > 0 ? '+' : ''}${flight.lmc_event.delta} ${flight.lmc_event.unit.toUpperCase()}`
-    : `<span class="status-chip status-ok">NO LMC</span>`;
-  const dg = flight.dangerous_goods
-    ? `<span class="status-chip ${flight.dangerous_goods.informational_only ? 'status-ok' : 'status-warn'}">DG</span> ${flight.dangerous_goods.label}`
-    : `<span class="status-chip status-ok">NO DG</span>`;
-  return `<p class="placeholder-text" style="margin-top:8px; margin-bottom:0;">${lmc}<br>${dg}</p>`;
-}
-
-// A workflow step changed: show the leg now in progress, on its next step.
+// A workflow step changed: show the leg now in progress, on the tab of its
+// next step.
 function saveAndRender(flight) {
   recapLegIndex = null;
-  recapTab = 'next';
+  recapTab = null;
   saveActiveFlight(flight);
   renderRecap(flight);
 }
 
-// Active flight page: leg tabs, progress and the leg's route + schedule,
-// with the rest in tabs (NEXT STEP, BRIEFING, WEATHER, SIMBRIEF OFP).
-// Which leg and tab are shown survives re-renders of the same flight.
+// Active flight page: leg tabs and the four steps on top (SimBrief, OFP,
+// loadsheet, PIREP), the route and schedule on the left, and three tabs on
+// the right: BRIEFING, LOADSHEET and PIREP. Which leg and tab are shown
+// survives re-renders of the same flight.
 let recapLegIndex = null;     // null = the leg in progress
-let recapTab = 'next';
+let recapTab = null;          // null = the tab of that leg's next step
 let recapFlightKey = '';
-const RECAP_TABS = [['next', 'NEXT STEP'], ['briefing', 'BRIEFING'], ['tech', 'MEL / CDL'], ['weather', 'WEATHER'], ['ofp', 'SIMBRIEF OFP']];
+const RECAP_TABS = [['briefing', 'BRIEFING'], ['loadsheet', 'LOADSHEET'], ['pirep', 'PIREP']];
 
 function legProgress(flight, i) {
   const done = flight.leg_status[i].status === 'done';
   const current = !done && flight.leg_status.slice(0, i).every(s => s.status === 'done');
   return { done, current };
 }
-
-function legStepsHtml(state, done) {
-  const steps = [
-    ['SIMBRIEF', done || state.simbrief !== 'not_sent'],
-    ['OFP', done || state.simbrief === 'available'],
-    ['LOADSHEET', done || state.loadsheet_signed],
-    ['PIREP', done || !!state.pirep],
-  ];
-  const nowIndex = steps.findIndex(([, ok]) => !ok);
-  return `<ol class="af-steps" aria-label="Leg progress">${steps.map(([label, ok], k) =>
-    `<li class="${ok ? 'done' : k === nowIndex ? 'now' : ''}"${k === nowIndex ? ' aria-current="step"' : ''}><span aria-hidden="true">${ok ? '&#10003;' : k + 1}</span>${label}</li>`).join('')}</ol>`;
-}
-
-function recapNextStepHtml(flight, i, allDone) {
-  const leg = flight.legs[i];
-  const state = flight.leg_state[i];
+// Where a leg stands: waiting, simbrief, ofp, loadsheet, pirep or done
+function legStage(flight, i) {
   const { done, current } = legProgress(flight, i);
-  const unit = (state.ofp && state.ofp.weight_unit) || 'KG';
-  const ofp = state.ofp || {};
-  const loadsheetLine = state.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(state.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(state.loadsheet.fob)} ${unit} &middot; ${fmtNum(state.loadsheet.pax)} PAX &middot; ${fmtNum(state.loadsheet.crew)} CREW</div>` : '';
-  const pirepLine = state.pirep ? `<div class="placeholder-text">PIREP: AOBT ${state.pirep.aobt}Z &middot; ATOT ${state.pirep.atot}Z &middot; ALDT ${state.pirep.aldt}Z &middot; ABIT ${state.pirep.abit}Z &middot; AFAD ${fmtNum(state.pirep.afad)} ${unit}${pirepDelayCodesText(state.pirep)}</div>` : '';
-  const mismatch = state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '';
-
-  if (done) {
-    return `<h3 class="af-step-title">Leg completed</h3><p class="af-step-text">The PIREP for this leg has been filed</p>${loadsheetLine}${pirepLine}
-      ${allDone ? `<div class="af-step-end"><p class="af-step-text">ALL LEGS COMPLETED THROUGH PIREP. Start a new flight to begin another dispatch</p><button class="action" onclick="startNewFlight()">NEW FLIGHT</button></div>` : ''}`;
-  }
-  if (!current) {
-    return `<h3 class="af-step-title">Waiting for the previous leg</h3><p class="af-step-text">This leg opens once the PIREP for leg ${i} has been filed</p>`;
-  }
-  if (state.simbrief === 'not_sent') {
-    return `<h3 class="af-step-title">Plan the flight on SimBrief</h3>
-      <p class="af-step-text">Send this leg to SimBrief: the flight number, callsign, aircraft, cost index, passengers and expected off-block time are filled in for you. Generate the OFP there, then come back to fetch it</p>
-      ${techAppliedText(leg) ? `<p class="af-step-text">${techAppliedText(leg)}. Check the MEL / CDL tab before you fly</p>` : ''}
-      <button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button>`;
-  }
-  if (state.simbrief === 'sent') {
-    return `<h3 class="af-step-title">Waiting for the OFP</h3>
-      <p class="af-step-text">Generate the OFP in the SimBrief tab that opened, then fetch it here</p>
-      <div class="af-step-actions"><button class="action" onclick="fetchOfp(${i})">FETCH OFP FROM SIMBRIEF</button><button class="ghost" type="button" onclick="prepareLeg(${i})">RE-SEND TO SIMBRIEF</button></div>`;
-  }
-  if (!state.loadsheet_signed) {
-    return `<h3 class="af-step-title">Sign the loadsheet</h3>${mismatch}
-      <div class="loadsheet-form" id="loadsheet-${i}">
-        <table class="kv" style="margin-bottom:0;">
-          <tr><td class="k">EZFW (OFP)</td><td class="v">${ofp.est_zfw ? fmtNum(ofp.est_zfw) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">ETOW (OFP)</td><td class="v">${ofp.est_tow ? fmtNum(ofp.est_tow) + ' ' + unit : 'N/A'}</td></tr>
-          <tr><td class="k">EFOB (OFP)</td><td class="v">${ofp.efob ? fmtNum(ofp.efob) + ' ' + unit : 'N/A'}</td></tr>
-        </table>
-        ${legLmcDgBlock(flight)}
-        <div class="fields-row">
-          <label>ZFW (${unit})<input id="ls-zfw-${i}" type="number" min="0" required></label>
-          <label>FOB (${unit})<input id="ls-fob-${i}" type="number" min="0" required></label>
-          <label>PAX<input id="ls-pax-${i}" type="number" min="0" step="1" required></label>
-          <label>CREW<input id="ls-crew-${i}" type="number" min="0" step="1" required></label>
-          <button class="action small" onclick="submitLoadsheet(${i})">SIGN LOADSHEET</button>
-        </div>
-      </div>`;
-  }
-  return `<h3 class="af-step-title">Fly, then file the PIREP</h3>${loadsheetLine}
-      <div class="pirep-form" id="pirep-${i}">
-        ${timeFieldHtml(`aobt-${i}`, 'AOBT (ZULU, BLOCK OFF)', `updateDelayCoding(${i})`)}
-        ${timeFieldHtml(`atot-${i}`, 'ATOT (ZULU, TAKEOFF)')}
-        ${timeFieldHtml(`aldt-${i}`, 'ALDT (ZULU, LANDING)')}
-        ${timeFieldHtml(`abit-${i}`, 'ABIT (ZULU, BLOCK IN)')}
-        <label>AFAD (${unit})<input id="afad-${i}" type="number" min="0" required></label>
-        <div class="delay-coding" id="delaycoding-${i}"></div>
-        <label class="checkbox-row"><input id="normal-${i}" type="checkbox"> I certify that this flight was conducted with no new defects, MEL items, or non-normal/abnormal occurrences requiring entry in the aircraft technical log</label>
-        <button class="action small" onclick="submitPirep(${i})">SUBMIT PIREP</button>
-      </div>`;
+  const st = flight.leg_state[i];
+  if (done) return 'done';
+  if (!current) return 'waiting';
+  if (st.simbrief === 'not_sent') return 'simbrief';
+  if (st.simbrief !== 'available') return 'ofp';
+  return st.loadsheet_signed ? 'pirep' : 'loadsheet';
 }
+function stageTab(stage) {
+  return stage === 'loadsheet' ? 'loadsheet' : stage === 'pirep' || stage === 'done' ? 'pirep' : 'briefing';
+}
+
+// The four steps double as the controls for the first two; the last two
+// open their tab.
+function afStepsHtml(flight, i) {
+  const st = flight.leg_state[i], stage = legStage(flight, i);
+  const live = stage !== 'waiting' && stage !== 'done' && !st.loadsheet_signed;
+  const steps = [
+    { label: 'SEND TO SIMBRIEF', done: stage === 'done' || st.simbrief !== 'not_sent', now: stage === 'simbrief', on: live, act: `prepareLeg(${i})`,
+      title: st.simbrief !== 'not_sent' ? 'Send this leg to SimBrief again' : 'Open SimBrief with this leg filled in' },
+    { label: 'FETCH OFP', done: stage === 'done' || st.simbrief === 'available', now: stage === 'ofp', on: live && st.simbrief !== 'not_sent', act: `fetchOfp(${i})`,
+      title: st.simbrief === 'available' ? 'Fetch the OFP again' : 'Fetch the OFP you generated on SimBrief' },
+    { label: 'SIGN LOADSHEET', done: stage === 'done' || st.loadsheet_signed, now: stage === 'loadsheet', on: true, act: `selectRecapTab('loadsheet')`, title: 'Open the loadsheet' },
+    { label: 'FILE PIREP', done: !!st.pirep, now: stage === 'pirep', on: true, act: `selectRecapTab('pirep')`, title: 'Open the PIREP' },
+  ];
+  return `<ol class="af-steps" aria-label="Leg progress">${steps.map((s, k) => `<li>
+    <button type="button" class="af-step${s.done ? ' done' : ''}${s.now ? ' now' : ''}" onclick="${s.act}"${s.on ? '' : ' disabled'}${s.now ? ' aria-current="step"' : ''} title="${s.title}">
+      <span class="af-step-n" aria-hidden="true">${s.done ? '&#10003;' : k + 1}</span><span class="af-step-l">${s.label}</span></button></li>`).join('')}</ol>`;
+}
+const STAGE_HINTS = {
+  simbrief: 'Next: send this leg to SimBrief and generate the OFP there',
+  ofp: 'Next: generate the OFP in the SimBrief tab, then fetch it',
+  loadsheet: 'Next: ask for the loadsheet, sort out any changes and sign it',
+  pirep: 'Next: fly the leg, then fill in and sign the PIREP',
+  done: 'PIREP filed: this leg is complete',
+};
 
 function renderRecap(flight) {
   setAppNav('flight');
   setPageFit(true);
   if (!flight.leg_state) flight.leg_state = flight.legs.map(() => ({simbrief:'not_sent', simbrief_static_id:null, ofp:null, loadsheet_signed:false, loadsheet:null, pirep:null}));
   const flightKey = flight.legs.map(l => l.flight_number).join(',');
-  if (flightKey !== recapFlightKey) { recapFlightKey = flightKey; recapLegIndex = null; recapTab = 'next'; }
+  if (flightKey !== recapFlightKey) { recapFlightKey = flightKey; recapLegIndex = null; recapTab = null; }
   const allDone = flight.leg_status.every(s => s.status === 'done');
   const inProgress = flight.legs.findIndex((_, k) => legProgress(flight, k).current);
   const shownDefault = inProgress >= 0 ? inProgress : flight.legs.length - 1;
   const i = recapLegIndex != null && recapLegIndex < flight.legs.length ? recapLegIndex : shownDefault;
   const leg = flight.legs[i];
   const state = flight.leg_state[i];
-  const { done, current } = legProgress(flight, i);
+  const stage = legStage(flight, i);
   const callsign = flight.callsigns ? flight.callsigns[i] : '';
 
   const legTabs = flight.legs.map((l, k) => {
@@ -2253,36 +2200,32 @@ function renderRecap(flight) {
     return `<button type="button" class="af-leg${k === i ? ' on' : ''}${pr.done ? ' done' : ''}" onclick="selectRecapLeg(${k})" aria-pressed="${k === i}">
       <b>LEG ${k + 1}</b> ${l.flight_number} &middot; ${l.departure_info.icao} &rarr; ${l.arrival_info.icao}<small>${status}</small></button>`;
   }).join('');
-  const statusChip = done ? '<span class="status-chip status-ok">PIREP FILED &mdash; COMPLETE</span>'
-    : !current ? '<span class="status-chip status-warn">WAITING FOR PREVIOUS LEG</span>'
-    : state.simbrief === 'not_sent' ? '<span class="status-chip status-warn">READY TO PLAN</span>'
-    : state.simbrief === 'sent' ? '<span class="status-chip status-warn">SENT TO SIMBRIEF &mdash; AWAITING OFP</span>'
-    : !state.loadsheet_signed ? '<span class="status-chip status-ok">OFP RECEIVED</span>'
-    : '<span class="status-chip status-ok">LOADSHEET SIGNED</span>';
-  const skip = current ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
+  const hint = stage === 'waiting' ? `Opens once the PIREP for leg ${i} is filed` : STAGE_HINTS[stage];
+  const actions = allDone
+    ? `<span class="status-chip status-ok">ALL LEGS COMPLETE</span><button class="action small" onclick="startNewFlight()">NEW FLIGHT</button>`
+    : stage !== 'waiting' && stage !== 'done' ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
+  const mismatch = state.aircraft_type_mismatch && state.ofp ? `<div class="notice-banner">The OFP's aircraft type (${escText(state.ofp.icao_type)}) doesn't match the ${escText(leg.aircraft_type)} assigned to this leg. Double-check the aircraft on SimBrief before flying this OFP</div>` : '';
 
-  const briefing = `${legLoadTable(leg)}${legDelayMelBlock(leg)}${opsConstraintsHtml(flight.legs, i, flight.leg_state)}${legLmcDgBlock(flight)}`;
-  const ofpBody = state.ofp
-    ? legOfpTable(state.ofp) + (state.aircraft_type_mismatch ? `<div class="notice-banner">The OFP's aircraft type (${escAttr(state.ofp.icao_type)}) doesn't match the ${escAttr(leg.aircraft_type)} assigned to this leg. Double-check the Aircraft Info on SimBrief before flying this OFP</div>` : '')
-    : `<div class="empty-state">No OFP yet for this leg. It appears here once it's fetched from SimBrief</div>`;
-  const panes = { next: recapNextStepHtml(flight, i, allDone), briefing, tech: techCardsHtml(flight, i), weather: legWeatherBlock(leg), ofp: ofpBody };
-  const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : 'next';
+  const panes = { briefing: briefingHtml(flight, i), loadsheet: loadsheetPaneHtml(flight, i), pirep: pirepPaneHtml(flight, i) };
+  const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : stageTab(stage);
+  recapTab = tab;
 
   const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
   activeSyncNotice = '';
   document.getElementById('mainContent').innerHTML = `${syncNotice}${simbriefNoticeHtml()}
     <div class="panel af-top">
       <div class="af-legs">${legTabs}</div>
-      ${legStepsHtml(state, done)}
-      <div class="af-status">${statusChip}${skip}</div>
+      ${afStepsHtml(flight, i)}
+      <div class="af-status"><span class="af-hint">${hint}</span>${actions}</div>
     </div>
+    ${mismatch}
     <div class="af-cols">
       <div class="panel af-route">
         <div class="panel-header"><span>${leg.flight_number}${callsign ? ' &mdash; ' + escText(callsign) : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}</span></div>
         <div class="panel-body">
           <div class="af-route-names">${escText(leg.departure_info.name || '')} &rarr; ${escText(leg.arrival_info.name || '')}</div>
           ${routeMapDiv(leg, `map-recap-${i}`)}
-          <p class="af-map-note">${routeMapNote(leg, state, current ? i : null)}</p>
+          <p class="af-map-note">${routeMapNote(leg, state, stage !== 'waiting' && stage !== 'done' ? i : null)}</p>
           ${legScheduleTable(leg)}
         </div>
       </div>
@@ -2293,10 +2236,12 @@ function renderRecap(flight) {
       </div>
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
+  if (tab === 'pirep' && document.getElementById('delaycoding-' + i)) updateDelayCoding(i);
 }
 
 function selectRecapLeg(index) {
   recapLegIndex = index;
+  recapTab = null;
   const flight = loadActiveFlight();
   if (flight) renderRecap(flight);
 }
@@ -2311,6 +2256,386 @@ function selectRecapTab(key) {
     btn.setAttribute('aria-selected', k === key ? 'true' : 'false');
     pane.hidden = k !== key;
   });
+}
+
+// ---- BRIEFING: everything about the leg, the OFP figures once fetched ----
+function briefSection(title, body, note = '') {
+  return `<section class="brief-sec"><h4>${title}${note ? `<small>${note}</small>` : ''}</h4>${body}</section>`;
+}
+function kvRows(rows) {
+  return `<table class="kv">${rows.map(([k, v]) => `<tr><td class="k">${k}</td><td class="v">${v}</td></tr>`).join('')}</table>`;
+}
+function ofpUnit(ofp) { return /lb/i.test((ofp && ofp.weight_unit) || '') ? 'LB' : 'KG'; }
+function ofpNum(value) {
+  if (value === '' || value == null) return null;
+  const x = Number(value);
+  return Number.isFinite(x) ? x : null;
+}
+function briefingHtml(flight, i) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp;
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+  const flightRows = [
+    ['FLIGHT / CALLSIGN', `${escText(leg.flight_number)}${callsign ? ' &middot; ' + escText(callsign) : ''}`],
+    ['AIRCRAFT', `${escText(leg.aircraft_type || 'N/A')}${ofp && ofp.registration ? ' &middot; ' + escText(ofp.registration) : ''}`],
+    ['PASSENGERS', `${fmtNum(leg.pax_count)} of ${fmtNum(leg.seat_capacity)} seats (${Math.round((leg.load_factor || 0) * 100)}%)`],
+    ['BAGS (EXPECTED)', `${fmtNum(leg.cargo_weight_kg)} KG`],
+    ['COST INDEX', fmtNum(leg.cost_index)],
+  ];
+  const ops = opsConstraintsHtml(flight.legs, i, flight.leg_state);
+  return briefSection('FLIGHT', kvRows(flightRows))
+    + briefSection('DELAYS AND SLOT', `<div class="brief-list">${legDelayRows(leg).join('')}</div>`)
+    + (ops ? briefSection('OPERATIONS', ops, 'curfews and crew duty') : '')
+    + briefSection('TECHNICAL LOG', techLogHtml(flight, i), 'deferred defects and missing panels')
+    + briefSection('SIMBRIEF OFP', ofpSectionHtml(leg, st), ofp ? '' : 'not fetched yet')
+    + briefSection('WEATHER', legWeatherBlock(leg));
+}
+function ofpSectionHtml(leg, st) {
+  const ofp = st.ofp;
+  if (!ofp) return `<p class="brief-empty">The route, fuel and weights appear here once the OFP is fetched from SimBrief</p>`;
+  const unit = ofpUnit(ofp), w = v => ofpNum(v) != null ? `${fmtNum(v)} ${unit}` : 'N/A';
+  const fl = ofpNum(ofp.initial_altitude_ft);
+  return kvRows([
+    ['ROUTE', `<span class="mono">${escText(ofp.route || 'N/A')}</span>`],
+    ['INITIAL CRUISE', fl ? `FL${Math.round(fl / 100)}` : 'N/A'],
+    ['COST INDEX', ofp.cost_index !== '' ? fmtNum(ofp.cost_index) : 'N/A'],
+    ['BLOCK FUEL', w(ofp.block_fuel)],
+    ['TRIP FUEL', w(ofp.trip_fuel || ofp.plan_trip_fuel)],
+    ['TAKE-OFF FUEL', w(ofp.takeoff_fuel)],
+    ['EZFW / ETOW / ELDW', `${w(ofp.est_zfw)} / ${w(ofp.est_tow)} / ${w(ofp.est_ldw)}`],
+    ['PASSENGERS (OFP)', ofp.epax !== '' ? fmtNum(ofp.epax) : 'N/A'],
+  ]);
+}
+// Technical log: one entry per defect, with what to do as a checklist
+function techLogHtml(flight, i) {
+  const leg = flight.legs[i], mels = legMels(leg), cdl = legCdl(leg);
+  if (!mels.length && !cdl.length) return `<div class="brief-list">${briefRow('TECH LOG', 'No deferred defects or missing panels', 'ok')}</div>`;
+  const done = (flight.leg_state[i] && flight.leg_state[i].tech_done) || {};
+  const step = (key, text) => `<li><label><input type="checkbox" ${done[key] ? 'checked' : ''} onchange="toggleTechStep(${i}, '${escAttr(key)}', this)"><span class="${done[key] ? 'done' : ''}">${escText(text)}</span></label></li>`;
+  const official = m => {
+    const lines = (m.procedures || []).map(t => `<li>${escText(stripMO(t))}</li>`).join('');
+    if (!lines && !m.description) return '';
+    return `<details class="tech-official"><summary>Official MEL wording</summary>
+      <p>${escText(m.description)}</p>${lines ? `<ul>${lines}</ul>` : ''}
+      ${m.source ? `<p>Source: ${escText(m.source)}</p>` : ''}</details>`;
+  };
+  const card = (ref, m, steps, extra) => `<div class="tech-card">
+      <div class="tech-card-head"><span class="tech-ref">${ref}</span><b>${techTitle(m)}</b></div>
+      <p>${escText(m.plain || m.description)}${extra ? ` <span class="brief-note">${extra}</span>` : ''}</p>
+      ${steps.length ? `<ul class="tech-steps">${steps.map((t, k) => step(`${m.id}#${k}`, t)).join('')}</ul>` : ''}
+      ${official(m)}</div>`;
+  const melCards = mels.map(m => card(`MEL ${techRef(m)}`, m, m.steps || (m.procedures || []).map(stripMO), fixText(m)));
+  const cdlCards = cdl.map(c => {
+    const e = c.effects || {};
+    const steps = c.steps || [e.fuel_burn_pct ? `Burns ${e.fuel_burn_pct}% more fuel: already in the flight plan` : '',
+      e.weight_penalty_kg ? `Maximum take-off and landing weights reduced by ${e.weight_penalty_kg} kg` : ''].filter(Boolean);
+    return card(`CDL ${techRef(c)}`, c, steps, '');
+  });
+  const applied = techAppliedText(leg);
+  return `${techChecksHtml(leg)}${melCards.join('')}${cdlCards.join('')}${applied ? `<p class="tech-applied">${applied}</p>` : ''}
+    <p class="tech-note">Tick each step as you prepare the flight. Based on the official MEL, simplified for simulation</p>`;
+}
+
+// ---- LOADSHEET ----
+// Asked for once the OFP is in. Only then do the last-minute changes and
+// dangerous goods turn up; the captain accepts or declines what can be
+// declined, and signs once everything is sorted and within limits.
+const STD_BAG_KG = 15;
+function kgToUnit(unit, kg) { return unit === 'LB' ? Math.round(kg * 2.20462) : Math.round(kg); }
+function unitToKg(unit, v) { return unit === 'LB' ? Math.round(v * 0.45359237) : Math.round(v); }
+
+// The loadsheet before any change, from the OFP. null when the OFP has no
+// usable weights.
+function loadsheetBase(flight, i) {
+  const leg = flight.legs[i], ofp = flight.leg_state[i].ofp || {}, unit = ofpUnit(ofp);
+  const zfwOfp = ofpNum(ofp.est_zfw), towOfp = ofpNum(ofp.est_tow);
+  const pax = ofpNum(ofp.epax) != null ? ofpNum(ofp.epax) : leg.pax_count;
+  const paxW = ofpNum(ofp.pax_weight) || kgToUnit(unit, 84);
+  let payload = ofpNum(ofp.payload), dow = ofpNum(ofp.dow);
+  if (payload == null && zfwOfp != null && dow != null) payload = zfwOfp - dow;
+  if (payload == null) payload = pax * paxW + kgToUnit(unit, leg.cargo_weight_kg || 0);
+  if (dow == null && zfwOfp != null) dow = zfwOfp - payload;
+  if (dow == null) return null;
+  let tof = ofpNum(ofp.takeoff_fuel);
+  if (tof == null && zfwOfp != null && towOfp != null) tof = towOfp - zfwOfp;
+  if (tof == null && ofpNum(ofp.block_fuel) != null) tof = ofpNum(ofp.block_fuel) - (ofpNum(ofp.taxi_fuel) || 0);
+  if (tof == null) return null;
+  let trip = ofpNum(ofp.trip_fuel) != null ? ofpNum(ofp.trip_fuel) : ofpNum(ofp.plan_trip_fuel);
+  if (trip == null && towOfp != null && ofpNum(ofp.est_ldw) != null) trip = towOfp - ofpNum(ofp.est_ldw);
+  const penalty = kgToUnit(unit, (leg.tech && leg.tech.weight_penalty_kg) || 0);
+  const paxLoad = Math.round(pax * paxW);
+  return {
+    unit, pax, paxW, dow, tof, trip, taxi: ofpNum(ofp.taxi_fuel) || 0, paxLoad, hold: Math.max(0, Math.round(payload - paxLoad)),
+    maxZfw: ofpNum(ofp.max_zfw), maxTow: ofpNum(ofp.max_tow) != null ? ofpNum(ofp.max_tow) - penalty : null,
+    maxLdw: ofpNum(ofp.max_ldw) != null ? ofpNum(ofp.max_ldw) - penalty : null, penalty,
+    seats: leg.seat_capacity, cabinCrew: Math.max(1, Math.ceil((leg.seat_capacity || 0) / 50)),
+  };
+}
+// Weights with a set of changes applied, and the margin to the limits
+function loadsheetFigures(b, changes) {
+  const sum = key => changes.reduce((a, c) => a + (c[key] || 0), 0);
+  const pax = b.pax + sum('pax'), paxLoad = b.paxLoad + sum('paxLoad'), hold = Math.max(0, b.hold + sum('hold'));
+  const tof = b.tof + sum('fuel');
+  const zfw = b.dow + paxLoad + hold, tow = zfw + tof, lw = b.trip != null ? tow - b.trip : null;
+  const limits = [];
+  if (b.maxZfw != null) limits.push(['Z', b.maxZfw + tof]);
+  if (b.maxTow != null) limits.push(['T', b.maxTow]);
+  if (b.maxLdw != null && b.trip != null) limits.push(['L', b.maxLdw + b.trip]);
+  const lim = limits.length ? limits.reduce((a, c) => (c[1] < a[1] ? c : a)) : null;
+  return { pax, paxLoad, hold, tof, zfw, tow, lw, limitBy: lim ? lim[0] : '', underload: lim ? Math.round(lim[1] - tow) : null };
+}
+function isNoDg(dg) { return !dg || /^no dangerous goods/i.test(dg.label || ''); }
+// What the captain has to deal with before signing. Each item: a tag, the
+// text, its choices and what each choice does to the load.
+function loadsheetItems(flight, i, b) {
+  const leg = flight.legs[i], ls = flight.leg_state[i].ls || {}, unit = b.unit, items = [];
+  const lmc = ls.lmc_event;
+  if (lmc) {
+    const pax = lmc.type === 'pax_change';
+    let d = lmc.delta;
+    if (pax && d > 0) d = Math.min(d, Math.max(0, (b.seats || b.pax) - b.pax));
+    if (d) {
+      const paxLoad = pax ? Math.round(d * b.paxW) : 0;
+      const hold = pax ? (d < 0 ? kgToUnit(unit, d * STD_BAG_KG) : 0) : kgToUnit(unit, d);
+      const change = { label: pax ? (d > 0 ? 'LATE PAX' : 'PAX OFFLOAD') : (d > 0 ? 'EXTRA BAGS' : 'BAGS OFFLOAD'), pax: pax ? d : 0, paxLoad, hold, weight: paxLoad + hold };
+      const amount = pax ? `${d > 0 ? '+' : ''}${d} passenger${Math.abs(d) === 1 ? '' : 's'}${d < 0 ? ' and their bags' : ''}` : `${d > 0 ? '+' : ''}${fmtNum(kgToUnit(unit, d))} ${unit} in the hold`;
+      items.push(d > 0
+        ? { key: 'lmc', tag: 'LMC', text: `${escText(lmc.description)}: <b>${amount}</b> (${fmtNum(change.weight)} ${unit})`, choices: [['accept', 'ACCEPT'], ['decline', 'DECLINE']], change: { accept: change } }
+        : { key: 'lmc', tag: 'LMC', text: `${escText(lmc.description)}: <b>${amount}</b> (${fmtNum(change.weight)} ${unit}). Unaccompanied bags always come off the aircraft`, choices: [['ack', 'ACKNOWLEDGE']], change: { ack: change } });
+    }
+  }
+  const dg = ls.dangerous_goods;
+  if (!isNoDg(dg)) {
+    if (dg.notoc) {
+      const w = kgToUnit(unit, dg.weight_kg || 0);
+      items.push({ key: 'dg', tag: 'NOTOC', text: `Dangerous goods for the hold: <b>${escText(dg.label)}</b>. Accept and sign the NOTOC, or refuse and have it offloaded`,
+        choices: [['accept', 'ACCEPT NOTOC'], ['refuse', 'REFUSE']], change: { accept: { label: `DG ${dg.un || ''}`.trim(), hold: w, weight: w } } });
+    } else {
+      items.push({ key: 'dg', tag: 'DG INFO', text: `${escText(dg.label)}. Carried within the passenger allowances: the captain is informed, nothing to sign`, choices: [['ack', 'ACKNOWLEDGE']], change: {} });
+    }
+  }
+  // MEL fuel limits (see techlog.py): fuel-pump minimums, centre tank empty
+  const tech = leg.tech || {};
+  if (tech.min_takeoff_fuel_kg && unitToKg(unit, b.tof) < tech.min_takeoff_fuel_kg) {
+    const add = Math.ceil((kgToUnit(unit, tech.min_takeoff_fuel_kg) - b.tof) / 100) * 100;
+    items.push({ key: 'fuelmin', tag: 'MEL FUEL', text: `Take-off fuel ${fmtNum(b.tof)} ${unit} is below the MEL minimum of ${fmtNum(kgToUnit(unit, tech.min_takeoff_fuel_kg))} ${unit} (fuel pump inoperative). Uplift ${fmtNum(add)} ${unit} more`,
+      choices: [['ack', 'UPLIFT FUEL']], change: { ack: { label: 'FUEL UPLIFT', fuel: add, weight: add } } });
+  }
+  if (tech.max_fuel_kg && unitToKg(unit, b.tof + b.taxi) > tech.max_fuel_kg) {
+    const cut = Math.ceil((b.tof + b.taxi - kgToUnit(unit, tech.max_fuel_kg)) / 100) * 100;
+    items.push({ key: 'fuelmax', tag: 'MEL FUEL', text: `Block fuel is above the ${fmtNum(kgToUnit(unit, tech.max_fuel_kg))} ${unit} the main tanks hold (centre tank unusable). Defuel ${fmtNum(cut)} ${unit}`,
+      choices: [['ack', 'DEFUEL']], change: { ack: { label: 'FUEL DEFUEL', fuel: -cut, weight: -cut } } });
+  }
+  return items;
+}
+function loadsheetState(flight, i) {
+  const b = loadsheetBase(flight, i);
+  if (!b) return null;
+  const items = loadsheetItems(flight, i, b);
+  const decisions = (flight.leg_state[i].ls || {}).decisions || {};
+  const applied = items.map(it => it.change[decisions[it.key]]).filter(Boolean);
+  const fig = loadsheetFigures(b, applied);
+  const before = loadsheetFigures(b, []);
+  const pending = items.filter(it => !decisions[it.key]);
+  return { b, items, decisions, applied, fig, before, pending, over: fig.underload != null && fig.underload < 0 };
+}
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function opsDate(iso) {
+  const d = iso ? new Date(iso) : new Date();
+  return `${String(d.getUTCDate()).padStart(2, '0')}${MONTHS[d.getUTCMonth()]}${String(d.getUTCFullYear()).slice(2)}`;
+}
+function opsTime(iso) {
+  const d = iso ? new Date(iso) : new Date();
+  return String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0');
+}
+// The loadsheet as the printed document: fixed-width lines
+function loadsheetText(flight, i, s, signedAt) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, b = s.b, f = s.fig;
+  const pad = (t, w) => String(t).padEnd(w).slice(0, w), num = (v, w = 9) => (v == null ? 'N/A' : String(Math.round(v))).padStart(w);
+  const rule = '-'.repeat(64);
+  const edition = s.applied.length ? '02' : '01';
+  const max = (v, mark) => v == null ? '' : `   MAX ${num(v, 7)}${f.limitBy === mark ? '  L' : ''}`;
+  const fwd = Math.round(f.hold * 0.4);
+  const lines = [
+    `LOADSHEET           CHECKED     APPROVED                 EDNO`,
+    `ALL WEIGHTS IN ${b.unit}    VDISPATCH   ${pad(signedAt ? 'CAPT ' + opsTime(signedAt) + 'Z' : '', 25)}${edition}`,
+    '',
+    `FROM/TO   FLIGHT    A/C REG    VERSION  CREW  DATE     TIME`,
+    `${pad(leg.departure_info.icao + '/' + leg.arrival_info.icao, 10)}${pad(leg.flight_number, 10)}${pad(ofp.registration || 'N/A', 11)}${pad('Y' + (b.seats || ''), 9)}${pad('2/' + b.cabinCrew, 6)}${pad(opsDate(st.ls && st.ls.requested_at), 9)}${opsTime(st.ls && st.ls.requested_at)}`,
+    '',
+    `                          WEIGHT    DISTRIBUTION`,
+    `LOAD IN COMPARTMENTS   ${num(f.hold)}    FWD/${fwd} AFT/${f.hold - fwd}`,
+    `PASSENGER/CABIN BAG    ${num(f.paxLoad)}    ${f.pax} PAX   TTL ${f.pax}`,
+    rule,
+    `TOTAL TRAFFIC LOAD     ${num(f.paxLoad + f.hold)}`,
+    `DRY OPERATING WEIGHT   ${num(b.dow)}`,
+    `ZERO FUEL WEIGHT ACT   ${num(f.zfw)}${max(b.maxZfw, 'Z')}`,
+    `TAKE OFF FUEL          ${num(f.tof)}`,
+    `TAKE OFF WEIGHT ACT    ${num(f.tow)}${max(b.maxTow, 'T')}`,
+    `TRIP FUEL              ${num(b.trip)}`,
+    `LANDING WEIGHT ACT     ${num(f.lw)}${max(b.maxLdw, 'L')}`,
+    rule,
+    `UNDERLOAD BEFORE LMC   ${num(s.before.underload)}`,
+    `UNDERLOAD AFTER LMC    ${num(f.underload)}${s.over ? '   LIMITS EXCEEDED' : ''}`,
+    rule,
+    `LAST MINUTE CHANGES`,
+    `DEST  SPECIFICATION              +/-         WEIGHT`,
+  ];
+  s.items.forEach(it => {
+    const dec = s.decisions[it.key], ch = it.change[dec];
+    const spec = it.change.accept ? it.change.accept.label : it.change.ack ? it.change.ack.label : it.tag;
+    if (!dec) lines.push(`${pad(leg.arrival_info.icao, 6)}${pad(spec, 25)}PENDING CAPTAIN DECISION`);
+    else if (ch && ch.weight) lines.push(`${pad(leg.arrival_info.icao, 6)}${pad(ch.label, 25)}${ch.weight > 0 ? '+' : '-'}${num(Math.abs(ch.weight), 16)}`);
+    else lines.push(`${pad(leg.arrival_info.icao, 6)}${pad(spec, 25)}${dec === 'ack' ? 'NOTED' : 'DECLINED'}`);
+  });
+  if (!s.items.length) lines.push('NIL');
+  const lmcTotal = s.applied.reduce((a, c) => a + (c.weight || 0), 0);
+  lines.push(`LMC TOTAL                        ${lmcTotal >= 0 ? '+' : '-'}${num(Math.abs(lmcTotal), 16)}`, rule,
+    'LOADMESSAGE AND CAPTAINS INFORMATION');
+  const dg = st.ls && st.ls.dangerous_goods;
+  if (isNoDg(dg)) lines.push('SI NOTOC: NIL');
+  else if (dg.notoc) lines.push(`SI NOTOC: ${dg.un} CL ${dg['class']} ${kgToUnit(b.unit, dg.weight_kg)} ${b.unit} HOLD ${dg.hold}${s.decisions.dg === 'refuse' ? ' OFFLOADED' : s.decisions.dg ? ' ACCEPTED' : ''}`);
+  else lines.push(`SI INFO: ${dg.label.toUpperCase()}`);
+  legMels(leg).forEach(m => lines.push(`   MEL ${m.ata || ''} ${String(m.description || '').toUpperCase()}`));
+  legCdl(leg).forEach(c => lines.push(`   CDL ${c.ata || ''} ${String(c.part || c.description || '').toUpperCase()}`));
+  if (b.penalty) lines.push(`   MTOW AND MLW REDUCED BY ${b.penalty} ${b.unit} (CDL)`);
+  lines.push(rule, signedAt ? `SIGNED BY THE CAPTAIN ${opsDate(signedAt)} ${opsTime(signedAt)}Z` : 'CAPTAINS SIGNATURE ............');
+  return lines.join('\n');
+}
+
+function docEmpty(title, text, button) {
+  return `<div class="doc-empty"><h3>${title}</h3><p>${text}</p>${button}</div>`;
+}
+function loadsheetPaneHtml(flight, i) {
+  const st = flight.leg_state[i], stage = legStage(flight, i);
+  if (st.loadsheet_signed && st.loadsheet && st.loadsheet.text) {
+    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>`;
+  }
+  if (st.loadsheet_signed) {   // signed before loadsheets were documents
+    const l = st.loadsheet || {};
+    return kvRows([['ZFW', fmtNum(l.zfw)], ['FUEL ON BOARD', fmtNum(l.fob)], ['PASSENGERS', fmtNum(l.pax)], ['CREW', fmtNum(l.crew)]]);
+  }
+  if (stage === 'waiting') return docEmpty('No loadsheet yet', `This leg opens once the PIREP for leg ${i} is filed`, '');
+  if (st.simbrief !== 'available') return docEmpty('No loadsheet yet', 'The loadsheet is prepared from the OFP: send the leg to SimBrief and fetch the OFP first', '<button class="action" disabled>ASK FOR LOADSHEET</button>');
+  if (!st.ls) return docEmpty('Ready for the loadsheet', 'Load control prepares it from your OFP. Last-minute changes and dangerous goods, if any, turn up with it', `<button class="action" onclick="askForLoadsheet(${i})">ASK FOR LOADSHEET</button>`);
+  const s = loadsheetState(flight, i);
+  if (!s) return docEmpty('No weights in this OFP', 'SimBrief sent no weights with this OFP. Fetch the OFP again, then ask for the loadsheet', `<button class="action" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>`);
+  const itemsHtml = s.items.map(it => {
+    const dec = s.decisions[it.key];
+    const buttons = it.choices.map(([id, label]) => {
+      const trial = it.change[id] ? loadsheetFigures(s.b, s.items.filter(o => o.key !== it.key).map(o => o.change[s.decisions[o.key]]).filter(Boolean).concat(it.change[id])) : null;
+      const tooHeavy = trial && trial.underload != null && trial.underload < 0 && (it.change[id].weight || 0) > 0;
+      return `<button type="button" class="${dec === id ? 'action' : 'ghost'} small" onclick="decideLoadsheetItem(${i}, '${it.key}', '${id}')"${tooHeavy ? ' disabled title="Over the weight limits: not possible"' : ''}>${label}</button>`;
+    }).join('');
+    return `<div class="ls-item${dec ? ' done' : ''}"><span class="brief-tag">${it.tag}</span><div class="ls-item-body"><p>${it.text}</p><div class="ls-item-actions">${buttons}${dec ? '<span class="ls-item-ok">&#10003; sorted</span>' : ''}</div></div></div>`;
+  }).join('');
+  const blocker = s.pending.length ? `${s.pending.length} item${s.pending.length > 1 ? 's' : ''} still to sort out` : s.over ? 'The load is over the weight limits' : '';
+  return `<pre class="doc-sheet" id="loadsheet-${i}">${escText(loadsheetText(flight, i, s, null))}</pre>
+    ${s.items.length ? `<h4 class="ls-items-title">CAPTAIN'S DECISIONS</h4><div class="ls-items">${itemsHtml}</div>` : '<p class="brief-empty">No last-minute changes and no dangerous goods to sign for</p>'}
+    <div class="doc-actions"><button class="action" id="signLoadsheetBtn-${i}" onclick="signLoadsheet(${i})"${blocker ? ' disabled' : ''}>SIGN LOADSHEET</button>${blocker ? `<span class="doc-blocker">${blocker}</span>` : ''}</div>`;
+}
+async function askForLoadsheet(i) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const leg = flight.legs[i];
+  const full = leg.pax_count >= leg.seat_capacity ? 1 : 0;
+  try {
+    const res = await (await fetch(`/loadsheet/extras?flight=${encodeURIComponent(leg.flight_number)}&full=${full}`)).json();
+    if (res.error) throw new Error(res.error);
+    flight.leg_state[i].ls = { requested_at: new Date().toISOString(), lmc_event: res.lmc_event, dangerous_goods: res.dangerous_goods, decisions: {} };
+    recapTab = 'loadsheet';
+    saveActiveFlight(flight);
+    renderRecap(flight);
+  } catch (err) {
+    alert('Could not get the loadsheet. Check the connection and retry');
+  }
+}
+function decideLoadsheetItem(i, key, choice) {
+  const flight = loadActiveFlight(); if (!flight || !flight.leg_state[i].ls) return;
+  flight.leg_state[i].ls.decisions[key] = choice;
+  recapTab = 'loadsheet';
+  saveActiveFlight(flight);
+  renderRecap(flight);
+}
+function signLoadsheet(i) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const s = loadsheetState(flight, i);
+  if (!s || s.pending.length || s.over) return;
+  const signedAt = new Date().toISOString(), leg = flight.legs[i], f = s.fig;
+  flight.leg_state[i].loadsheet = {
+    edition: s.applied.length ? 2 : 1, unit: s.b.unit, zfw: f.zfw, tow: f.tow, lw: f.lw, tof: f.tof, fob: f.tof,
+    pax: f.pax, crew: 2 + s.b.cabinCrew, hold: f.hold, underload: f.underload,
+    changes: s.applied.map(c => ({ label: c.label, weight: c.weight })), decisions: { ...s.decisions },
+    signed_at: signedAt, text: loadsheetText(flight, i, s, signedAt),
+  };
+  flight.leg_state[i].loadsheet_signed = true;
+  // The flown load, for the logbook
+  leg.pax_count = f.pax;
+  if (leg.seat_capacity) leg.load_factor = Math.round((f.pax / leg.seat_capacity) * 100) / 100;
+  saveAndRender(flight);
+}
+
+// ---- PIREP ----
+function pirepTimeRow(id, label, ref, onInput) {
+  const handler = onInput ? ` oninput="${onInput}"` : '';
+  return `<div class="doc-row"><label class="dk" for="${id}-hh">${label}</label>
+    <span class="doc-time"><input id="${id}-hh" type="number" min="0" max="23" placeholder="HH" inputmode="numeric" aria-label="${label} hours"${handler}>:<input id="${id}-mm" type="number" min="0" max="59" placeholder="MM" inputmode="numeric" aria-label="${label} minutes"${handler}>Z</span>
+    <span class="dh">${ref}</span></div>`;
+}
+function pirepDocHead(flight, i) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {};
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+  return `<div class="doc-head"><b>PILOT REPORT</b><span>${escText(leg.flight_number)}${callsign ? ' / ' + escText(callsign) : ''}</span></div>
+    <div class="doc-meta">${leg.departure_info.icao}/${leg.arrival_info.icao} &middot; ${opsDate(st.loadsheet && st.loadsheet.signed_at)} &middot; ${escText(leg.aircraft_type || '')}${ofp.registration ? ' ' + escText(ofp.registration) : ''}</div>`;
+}
+function pirepPaneHtml(flight, i) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, unit = ofpUnit(st.ofp);
+  if (st.pirep) return pirepFiledHtml(flight, i);
+  if (!st.loadsheet_signed) return docEmpty('No PIREP yet', 'The PIREP opens once the loadsheet for this leg is signed', '<button class="action" disabled>FILL PIREP</button>');
+  if (!st.pirep_open) return docEmpty('Ready for the PIREP', 'Fly the leg, then report your actual times and the fuel left at the destination', `<button class="action" onclick="openPirep(${i})">FILL PIREP</button>`);
+  const exp = (s, e) => `SCHED ${s || 'N/A'} &middot; EXP ${e || 'N/A'}`;
+  const slot = leg.atfm ? ` &middot; SLOT ${escText(leg.atfm.ctot)}` : '';
+  const planFuel = ofpNum(ofp.plan_landing_fuel) != null ? `PLAN ${fmtNum(ofp.plan_landing_fuel)} ${unit}` : '';
+  return `<div class="doc pirep-doc" id="pirep-${i}">
+    ${pirepDocHead(flight, i)}
+    <div class="doc-rows">
+      ${pirepTimeRow(`aobt-${i}`, 'BLOCK OFF  AOBT', exp(leg.sobt, leg.eobt), `updateDelayCoding(${i})`)}
+      ${pirepTimeRow(`atot-${i}`, 'TAKE OFF   ATOT', exp(leg.stot, leg.etot) + slot)}
+      ${pirepTimeRow(`aldt-${i}`, 'LANDING    ALDT', exp(leg.sldt, leg.eldt))}
+      ${pirepTimeRow(`abit-${i}`, 'BLOCK ON   AIBT', exp(leg.sibt, leg.eibt))}
+      <div class="doc-row"><label class="dk" for="afad-${i}">FUEL AT DEST AFAD</label>
+        <span class="doc-time"><input id="afad-${i}" class="wide" type="number" min="0" inputmode="numeric">${unit}</span><span class="dh">${planFuel}</span></div>
+    </div>
+    <div class="delay-coding" id="delaycoding-${i}"></div>
+    <label class="doc-check"><input id="normal-${i}" type="checkbox"> NO NEW DEFECTS, MEL ITEMS OR NON-NORMAL OCCURRENCES TO ENTER IN THE TECH LOG</label>
+    <label class="doc-remarks" for="remarks-${i}">PILOT REMARKS</label>
+    <textarea id="remarks-${i}" class="doc-textarea" maxlength="500" rows="3" placeholder="Anything worth noting about this flight (optional)"></textarea>
+    <div class="doc-actions"><button class="action" onclick="submitPirep(${i})">SIGN PIREP</button>
+      <button class="ghost" type="button" onclick="sendToAircraftSoon(${i})" title="Coming soon">SEND TO AIRCRAFT <span class="soon-tag">SOON</span></button>
+      <span class="doc-blocker" id="sta-note-${i}" hidden>Coming soon: the PIREP will go to and from the aircraft directly</span></div>
+  </div>`;
+}
+function pirepFiledHtml(flight, i) {
+  const st = flight.leg_state[i], p = st.pirep, unit = ofpUnit(st.ofp);
+  const rows = [['BLOCK OFF  AOBT', `${p.aobt}Z`], ['TAKE OFF   ATOT', `${p.atot}Z`], ['LANDING    ALDT', `${p.aldt}Z`], ['BLOCK ON   AIBT', `${p.abit}Z`],
+    ['FUEL AT DEST AFAD', `${fmtNum(p.afad)} ${unit}`]];
+  if (p.delay_codes && p.delay_codes.length) rows.push(['DELAY CODES', p.delay_codes.map(c => `${escText(c.code)}/${c.minutes}`).join('  ')]);
+  if (p.slot) rows.push(['ATC SLOT', `${p.slot.met ? 'MET' : 'MISSED'} (${p.slot.delta >= 0 ? '+' : ''}${p.slot.delta} MIN ON CTOT ${escText(p.slot.ctot)})`]);
+  rows.push(['TECH LOG', p.no_new_mel_or_non_normal ? 'NIL NEW DEFECTS' : 'N/A']);
+  return `<div class="doc pirep-doc filed">${pirepDocHead(flight, i)}
+    <div class="doc-rows">${rows.map(([k, v]) => `<div class="doc-row"><span class="dk">${k}</span><span>${v}</span></div>`).join('')}</div>
+    ${p.remarks ? `<div class="doc-remarks">PILOT REMARKS</div><p class="doc-remarks-text">${escText(p.remarks)}</p>` : ''}
+    <div class="doc-meta">SIGNED ${opsDate(p.submitted_at)} ${opsTime(p.submitted_at)}Z</div></div>`;
+}
+function openPirep(i) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  flight.leg_state[i].pirep_open = true;
+  recapTab = 'pirep';
+  saveActiveFlight(flight);
+  renderRecap(flight);
+}
+function sendToAircraftSoon(i) {
+  const note = document.getElementById('sta-note-' + i);
+  if (note) note.hidden = false;
 }
 
 const SIMBRIEF_NOTICE_DISMISSED_KEY = 'simdispatch_simbrief_aircraft_notice_dismissed';
@@ -2359,8 +2684,9 @@ async function doPrepareLeg(index) {
   if (leg.tech) {
     if (leg.tech.max_fl) qs.set('max_fl', leg.tech.max_fl);
     if (leg.tech.extra_fuel_min) qs.set('extra_fuel_min', leg.tech.extra_fuel_min);
-    if (leg.tech.remarks) qs.set('remarks', leg.tech.remarks);
   }
+  const remarks = simbriefRemarks(leg);
+  if (remarks) qs.set('remarks', remarks);
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
     const data = await resp.json();
@@ -2408,39 +2734,6 @@ async function ofpAircraftTypeMismatch(leg, ofp) {
   } catch (err) {
     return false;
   }
-}
-function submitLoadsheet(index) {
-  const zfw = Number(document.getElementById('ls-zfw-' + index).value);
-  const fob = Number(document.getElementById('ls-fob-' + index).value);
-  const pax = Number(document.getElementById('ls-pax-' + index).value);
-  const crew = Number(document.getElementById('ls-crew-' + index).value);
-  if (!Number.isFinite(zfw) || !Number.isFinite(fob) || zfw < 0 || fob < 0
-      || !Number.isInteger(pax) || pax < 0 || !Number.isInteger(crew) || crew < 0) {
-    alert('Enter ZFW, FOB (any non-negative number), and whole-number PAX and CREW to sign the loadsheet');
-    return;
-  }
-  const flight = loadActiveFlight(); if (!flight) return;
-  // MEL fuel limits (see techlog.py): fuel-pump minimums, centre tank empty
-  const tech = flight.legs[index].tech || {};
-  const ofp = flight.leg_state[index].ofp || {};
-  const fobKg = /lb/i.test(ofp.weight_unit || '') ? Math.round(fob * 0.45359237) : fob;
-  const problems = [];
-  if (tech.min_takeoff_fuel_kg && fobKg < tech.min_takeoff_fuel_kg) problems.push(`below the MEL take-off minimum of ${fmtNum(tech.min_takeoff_fuel_kg)} kg`);
-  if (tech.max_fuel_kg && fobKg > tech.max_fuel_kg) problems.push(`above the ${fmtNum(tech.max_fuel_kg)} kg the main tanks hold with the centre tank empty`);
-  if (problems.length && !confirm(`FOB ${fmtNum(fobKg)} kg is ${problems.join(' and ')}. Sign the loadsheet anyway?`)) return;
-  flight.leg_state[index].loadsheet = {zfw, fob, pax, crew, signed_at: new Date().toISOString()};
-  flight.leg_state[index].loadsheet_signed = true;
-  saveAndRender(flight);
-}
-// A plain <input type="time"> renders AM/PM in some browser locales,
-// which doesn't match how a Zulu time is ever written in dispatch.
-// Two side-by-side number inputs (HH/MM) sidestep locale formatting
-// entirely - what's typed is exactly what's stored.
-function timeFieldHtml(id, label, onInput) {
-  const handler = onInput ? ` oninput="${onInput}"` : '';
-  return `<label>${label}<span style="display:flex; align-items:center; gap:3px;">
-    <input id="${id}-hh" type="number" min="0" max="23" placeholder="HH" style="width:46px;" required${handler}>:<input id="${id}-mm" type="number" min="0" max="59" placeholder="MM" style="width:46px;" required${handler}>
-  </span></label>`;
 }
 // "HH:MM" / "HH:MMZ" / "HH:MMZ (+1d)" -> minutes of day, or null.
 function zuluMinutes(text) {
@@ -2508,10 +2801,11 @@ function updateDelayCoding(i) {
   if (r) rows.push(['93', r]);
   if (d - r > 0) rows.push([leg.aircraft_change ? '46' : leg.delay ? leg.delay.iata_code : '', d - r]);
   while (rows.length < 2) rows.push(['', '']);
-  box.innerHTML = `<p>You went off-block <strong>${d} min</strong> late. Code the delay as crews do: up to two reasons, totalling ${d} min</p>
-    ${rows.map(([code, mins], k) => `<div class="delay-code-row">
-      <label>${k ? 'SECOND CODE (OPTIONAL)' : 'MAIN CODE'}<select id="dc-code-${i}-${k}" onchange="checkDelaySum(${i})">${delayCodeOptions(code)}</select></label>
-      <label>MINUTES<input id="dc-min-${i}-${k}" type="number" min="1" step="1" value="${mins}" oninput="checkDelaySum(${i})"></label>
+  box.innerHTML = `<div class="doc-sub">DEPARTURE DELAY ${d} MIN: CODE IT AS CREWS DO, UP TO TWO IATA CODES TOTALLING ${d} MIN</div>
+    ${rows.map(([code, mins], k) => `<div class="doc-row delay-code-row">
+      <label class="dk" for="dc-code-${i}-${k}">${k ? 'DELAY CODE 2' : 'DELAY CODE 1'}</label>
+      <select id="dc-code-${i}-${k}" onchange="checkDelaySum(${i})" aria-label="${k ? 'Second delay code (optional)' : 'Main delay code'}">${delayCodeOptions(code)}</select>
+      <span class="doc-time"><input id="dc-min-${i}-${k}" type="number" min="1" step="1" value="${mins}" oninput="checkDelaySum(${i})" aria-label="Minutes">MIN</span>
     </div>`).join('')}
     <p class="delay-sum" id="dc-sum-${i}"></p>`;
   box.classList.add('open');
@@ -2525,7 +2819,7 @@ function checkDelaySum(i) {
   const box = document.getElementById('delaycoding-' + i), out = document.getElementById('dc-sum-' + i);
   if (!box || !out) return;
   const d = Number(box.dataset.delay), sum = delayCodingRows(i).reduce((a, row) => a + (row.minutes || 0), 0);
-  out.textContent = sum === d ? `Coded ${sum} of ${d} minutes` : `Coded ${sum} of ${d} minutes: the minutes must add up to the delay`;
+  out.textContent = sum === d ? `CODED ${sum} OF ${d} MIN` : `CODED ${sum} OF ${d} MIN: THE MINUTES MUST ADD UP TO THE DELAY`;
   out.classList.toggle('bad', sum !== d);
 }
 function readDelayCoding(i, leg, aobt) {
@@ -2562,7 +2856,7 @@ async function submitPirep(index) {
   const afad = Number(document.getElementById('afad-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
   if (!aobt || !atot || !aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
-    alert('Enter AOBT, ATOT, ALDT, ABIT (as HH and MM, 24-hour) and AFAD, then confirm no new MELs or non-normal occurrences');
+    alert('Enter AOBT, ATOT, ALDT, AIBT (as HH and MM, 24-hour) and AFAD, then confirm the tech log entry');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
@@ -2571,6 +2865,8 @@ async function submitPirep(index) {
   const coded = readDelayCoding(index, leg, aobt);
   if (coded.error) { alert(coded.error); return; }
   const pirep = {aobt, atot, aldt, abit, afad, no_new_mel_or_non_normal: true, submitted_at: new Date().toISOString()};
+  const remarks = (document.getElementById('remarks-' + index) || {}).value || '';
+  if (remarks.trim()) pirep.remarks = remarks.trim().slice(0, 500);
   if (coded.codes.length) pirep.delay_codes = coded.codes;
   if (leg.atfm) {
     const delta = clockDiff(zuluMinutes(leg.atfm.ctot), zuluMinutes(atot));
@@ -3146,8 +3442,8 @@ function lmcSettingsRow(l) {
   return {
     item: `<b>${pax ? 'Passengers' : 'Bags and cargo'}</b>`, description: escText(l.description),
     effect: `${range} ${escText(l.unit)} after the loadsheet is ready${when}`,
-    actions: pax ? ['Update the passenger numbers before you sign the loadsheet', 'Check the weights against your flight plan']
-                 : ['Update the hold load before you sign the loadsheet', 'Check the weights against your flight plan'],
+    actions: l.delta_range[1] > 0 ? ['Accept or decline it on the loadsheet before you sign', 'Extra load over the weight limits can only be declined']
+                 : ['Acknowledge it on the loadsheet: offloaded passengers and bags always come off'],
   };
 }
 function melEffectLines(e) {
@@ -3166,7 +3462,7 @@ function melSettingsRow(m) {
   const out = melEffectLines(m.effects || {});
   if (!out.length) out.push('No effect on how you fly');
   return {
-    item: `<b>${escText(m.name || m.system)}</b>${fixTag(m)}`,
+    item: `<b>${escText(m.name || m.system)}</b>${fixText(m) ? `<span class="tech-tag cat">${fixText(m)}</span>` : ''}`,
     description: escText(m.plain || m.description),
     effect: out.join('<br>'),
     actions: (m.steps || (m.procedures || []).map(stripMO)).map(escText),
@@ -3309,10 +3605,11 @@ function buildPirepDetailHtml(r) {
     ${legScheduleTable(leg)}
     ${legLoadTable(leg)}
     ${legWeatherBlock(leg)}
-    ${legOfpTable(r.ofp)}
+    ${r.ofp ? ofpSectionHtml(leg, { ofp: r.ofp }) : ''}
     ${legDelayMelBlock(leg)}
-    ${r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
-    ${r.pirep ? `<div class="placeholder-text">PIREP: AOBT ${r.pirep.aobt || 'N/A'}Z &middot; ATOT ${r.pirep.atot || 'N/A'}Z &middot; ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}${pirepDelayCodesText(r.pirep)}</div>` : ''}`;
+    ${r.loadsheet && r.loadsheet.text ? `<pre class="doc-sheet">${escText(r.loadsheet.text)}</pre>` : r.loadsheet ? `<div class="placeholder-text">LOADSHEET: ZFW ${fmtNum(r.loadsheet.zfw)} ${unit} &middot; FOB ${fmtNum(r.loadsheet.fob)} ${unit} &middot; ${fmtNum(r.loadsheet.pax)} PAX &middot; ${fmtNum(r.loadsheet.crew)} CREW</div>` : ''}
+    ${r.pirep ? `<div class="placeholder-text">PIREP: AOBT ${r.pirep.aobt || 'N/A'}Z &middot; ATOT ${r.pirep.atot || 'N/A'}Z &middot; ALDT ${r.pirep.aldt}Z &middot; ABIT ${r.pirep.abit}Z &middot; AFAD ${fmtNum(r.pirep.afad)} ${unit}${pirepDelayCodesText(r.pirep)}</div>` : ''}
+    ${r.pirep && r.pirep.remarks ? `<div class="placeholder-text">PILOT REMARKS: ${escText(r.pirep.remarks)}</div>` : ''}`;
 }
 
 function togglePirepRecord(id) {

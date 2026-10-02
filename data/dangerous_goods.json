@@ -7,9 +7,14 @@
   },
   {
     "id": "dg-02",
-    "label": "Dry ice (for perishable cargo, ventilated stowage)",
-    "informational_only": true,
-    "weight": 2
+    "label": "Dry ice (UN1845, class 9), 40 kg for perishable cargo, hold 1",
+    "informational_only": false,
+    "weight": 2,
+    "notoc": true,
+    "un": "UN1845",
+    "class": "9",
+    "weight_kg": 40,
+    "hold": "1"
   },
   {
     "id": "dg-03",
@@ -28,5 +33,47 @@
     "label": "No dangerous goods on this sector",
     "informational_only": true,
     "weight": 6
+  },
+  {
+    "id": "dg-06",
+    "label": "Lithium ion batteries (UN3480, class 9), 25 kg packed alone, hold 4",
+    "informational_only": false,
+    "notoc": true,
+    "un": "UN3480",
+    "class": "9",
+    "weight_kg": 25,
+    "hold": "4",
+    "weight": 2
+  },
+  {
+    "id": "dg-07",
+    "label": "Paint (UN1263, class 3 flammable liquid), 18 kg, hold 4",
+    "informational_only": false,
+    "notoc": true,
+    "un": "UN1263",
+    "class": "3",
+    "weight_kg": 18,
+    "hold": "4",
+    "weight": 1
+  },
+  {
+    "id": "dg-08",
+    "label": "Biological substance, category B (UN3373, class 6.2), 4 kg, hold 1",
+    "informational_only": false,
+    "notoc": true,
+    "un": "UN3373",
+    "class": "6.2",
+    "weight_kg": 4,
+    "hold": "1",
+    "weight": 1
+  },
+  {
+    "id": "dg-09",
+    "label": "Battery-powered wheelchair (UN3171), passenger mobility aid, battery attached, hold 1",
+    "informational_only": true,
+    "un": "UN3171",
+    "class": "9",
+    "hold": "1",
+    "weight": 2
   }
 ]
