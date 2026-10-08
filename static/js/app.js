@@ -3402,6 +3402,26 @@ async function renderAccountSettings() {
     </div>
 
     <div class="panel" style="margin-top:14px;">
+      <div class="panel-header">ACARS (HOPPIE)</div>
+      <div class="panel-body">
+        <p class="placeholder-text acars-intro">Lets VirtualDispatch send messages such as your loadsheet straight to the aircraft over Hoppie's ACARS network. Use the same logon code you enter in the aircraft's ACARS settings. It's free: get one at <a href="https://www.hoppie.nl/acars/" target="_blank" rel="noopener">hoppie.nl</a></p>
+        <div class="acars-row">
+          <div class="field">
+            <label for="acarsLogon">HOPPIE LOGON CODE <span class="hint" id="acarsSaved"></span></label>
+            <input type="password" id="acarsLogon" autocomplete="off" spellcheck="false" maxlength="40" placeholder="Paste your logon code">
+            <div class="field-error" id="acarsLogonError">6 TO 40 LETTERS AND NUMBERS</div>
+          </div>
+          <div class="acars-actions">
+            <button class="action" type="button" onclick="saveAcarsLogon()">SAVE</button>
+            <button class="ghost" type="button" id="acarsTestBtn" onclick="testAcars()" disabled>TEST CONNECTION</button>
+            <button class="ghost" type="button" id="acarsRemoveBtn" onclick="removeAcarsLogon()" hidden>REMOVE</button>
+          </div>
+        </div>
+        <p class="acars-status" id="acarsStatus" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
       <div class="panel-header">AIRCRAFT YOU FLY</div>
       <div class="panel-body">
         <p class="placeholder-text">Tell us which aircraft you actually fly/have installed in the simulator - it affects which aircraft gets assigned to your flights (a carrier that flies more than one type, like easyJet, picks between your selections; leave all unchecked for no preference). You can change this any time</p>
@@ -3432,6 +3452,7 @@ async function renderAccountSettings() {
     </div>`;
 
   attachAirportDropdown('profilePreferredBase', 'profilePreferredBaseDropdown', '/airports/search/world');
+  loadAcarsStatus();
 }
 
 function renderDeleteAccountPage() {
@@ -3709,6 +3730,71 @@ async function saveGenerationSettings() {
   } catch (err) {
     alert('Could not save these settings. Check the connection (and that a database is configured) and retry');
   }
+}
+
+// ---- ACARS (Hoppie) logon code: saved on the server, never shown back ----
+function paintAcars(status) {
+  const saved = document.getElementById('acarsSaved');
+  if (!saved) return;
+  saved.textContent = status.configured ? `(saved: ${status.hint})` : '(not set)';
+  document.getElementById('acarsTestBtn').disabled = !status.configured;
+  document.getElementById('acarsRemoveBtn').hidden = !status.configured;
+}
+
+function acarsMessage(text, kind) {
+  const el = document.getElementById('acarsStatus');
+  el.textContent = text;
+  el.className = 'acars-status' + (kind ? ' ' + kind : '');
+}
+
+async function loadAcarsStatus() {
+  try {
+    const resp = await fetch('/acars/settings');
+    if (resp.ok) paintAcars(await resp.json());
+  } catch (e) { /* the panel stays as "not set" */ }
+}
+
+async function saveAcarsLogon() {
+  const input = document.getElementById('acarsLogon');
+  const code = input.value.trim();
+  const valid = /^[A-Za-z0-9]{6,40}$/.test(code);
+  document.getElementById('acarsLogonError').classList.toggle('show', !valid);
+  if (!valid) return;
+  acarsMessage('Saving...');
+  try {
+    const resp = await fetch('/acars/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ logon: code }) });
+    const data = await resp.json();
+    if (!resp.ok) { acarsMessage(data.error || 'Not saved', 'bad'); return; }
+    input.value = '';
+    paintAcars(data);
+    acarsMessage('Saved. Test the connection to check the code', 'ok');
+  } catch (e) {
+    acarsMessage('Not saved: the server can\'t be reached', 'bad');
+  }
+}
+
+async function removeAcarsLogon() {
+  if (!confirm('Remove your Hoppie logon code from VirtualDispatch?')) return;
+  try {
+    const resp = await fetch('/acars/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ logon: '' }) });
+    if (resp.ok) { paintAcars(await resp.json()); acarsMessage('Removed'); }
+  } catch (e) {
+    acarsMessage('Not removed: the server can\'t be reached', 'bad');
+  }
+}
+
+async function testAcars() {
+  const btn = document.getElementById('acarsTestBtn');
+  btn.disabled = true;
+  acarsMessage('Contacting Hoppie...');
+  try {
+    const resp = await fetch('/acars/test', { method: 'POST' });
+    const data = await resp.json();
+    acarsMessage(data.ok ? 'Connected: Hoppie accepted your logon code' : (data.error || 'Test failed'), data.ok ? 'ok' : 'bad');
+  } catch (e) {
+    acarsMessage('Test failed: the server can\'t be reached', 'bad');
+  }
+  btn.disabled = false;
 }
 
 async function savePilotProfile() {

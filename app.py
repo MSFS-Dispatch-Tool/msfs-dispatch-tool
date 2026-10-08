@@ -22,6 +22,7 @@ import webperf
 import demo
 import techlog
 import notams
+import acars
 import ops
 import generator
 from generator import (
@@ -1823,6 +1824,58 @@ def _simbrief_latest(username):
             _simbrief_cache.clear()
         _simbrief_cache[key] = (now, data)
     return data
+
+
+# ---- ACARS (Hoppie): the pilot's logon code and a connection check ----
+# The code is a credential: the browser can set or remove it, and is told
+# whether one is saved (with its last characters), but never gets it back.
+ACARS_TEST_INTERVAL_SECONDS = 5
+_acars_last_test = {}
+
+
+def _acars_status(user_id):
+    code = (db.get_acars(user_id) or {}).get("logon") or ""
+    return {"configured": bool(code), "hint": acars.mask(code), "station": acars.STATION}
+
+
+@app.route("/acars/settings", methods=["GET"])
+def acars_settings_get():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    return jsonify(_acars_status(current_user_id()))
+
+
+@app.route("/acars/settings", methods=["POST"])
+def acars_settings_save():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    code = str((request.get_json(silent=True) or {}).get("logon") or "").strip()
+    if code and not acars.valid_logon(code):
+        return jsonify({"error": "A Hoppie logon code is 6 to 40 letters and numbers"}), 400
+    db.save_acars({"logon": code} if code else {}, current_user_id())
+    return jsonify(_acars_status(current_user_id()))
+
+
+@app.route("/acars/test", methods=["POST"])
+def acars_test():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    user_id = current_user_id()
+    code = (db.get_acars(user_id) or {}).get("logon")
+    if not code:
+        return jsonify({"ok": False, "error": "Save your Hoppie logon code first"}), 400
+    now = time.time()
+    if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
+        return jsonify({"ok": False, "error": "One moment: wait a few seconds before testing again"}), 429
+    _acars_last_test[user_id] = now
+    try:
+        acars.ping(code)
+    except acars.AcarsError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify({"ok": True})
 
 
 @app.route("/simbrief/ofp")

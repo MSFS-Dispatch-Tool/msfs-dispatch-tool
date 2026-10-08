@@ -50,6 +50,25 @@ async def main():
         check("REALISTIC resets to the default (null)", all(st[k]["probability"] is None for k in ("mel", "delay", "lmc")))
         await page.evaluate("document.querySelectorAll('.leg-block details').forEach(d => d.open = true)")
         await page.locator("#gen-cdl-items input.gen-item").first.check(); await page.click("button[onclick*=saveGenerationSettings]"); await page.wait_for_timeout(800)
+        # ACARS: the logon code is saved on the server, shown masked, never sent back
+        await page.fill("#acarsLogon", "bad code")
+        await page.click("button[onclick*=saveAcarsLogon]")
+        check("an invalid Hoppie code is refused", await page.is_visible("#acarsLogonError"))
+        await page.fill("#acarsLogon", "WRONGCODE9")
+        await page.click("button[onclick*=saveAcarsLogon]"); await page.wait_for_timeout(600)
+        await page.click("#acarsTestBtn"); await page.wait_for_timeout(800)
+        check("a code Hoppie rejects is reported", "doesn't recognise" in await page.text_content("#acarsStatus"))
+        await page.wait_for_timeout(5200)                                     # the test is rate limited
+        await page.fill("#acarsLogon", "TESTLOGON1")
+        await page.click("button[onclick*=saveAcarsLogon]"); await page.wait_for_timeout(600)
+        saved = await page.text_content("#acarsSaved")
+        await page.click("#acarsTestBtn"); await page.wait_for_timeout(800)
+        check("a good code is saved masked and the test connects",
+              "N1" in saved and "TESTLOG" not in saved and "Connected" in await page.text_content("#acarsStatus"), saved)
+        raw = urllib.request.urlopen(BASE + "/settings").read().decode() + urllib.request.urlopen(BASE + "/acars/settings").read().decode()
+        check("the code never comes back to the browser", "TESTLOGON1" not in raw)
+        await page.locator(".panel:has(#acarsLogon)").screenshot(path=shot("settings_acars.png"))
+
         mob = await b.new_page(viewport={"width": 390, "height": 844}); await prepare(mob)
         await mob.goto(BASE + "/app"); await mob.wait_for_timeout(1200); await mob.evaluate("renderAccountSettings()"); await mob.wait_for_timeout(1500)
         await mob.evaluate("document.querySelectorAll('.leg-block details').forEach(d => d.open = true)")

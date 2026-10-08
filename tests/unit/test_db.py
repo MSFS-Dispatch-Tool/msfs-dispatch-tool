@@ -28,6 +28,16 @@ def test_settings_merge_with_defaults(database):
     assert saved["generation"]["delay"] == db.DEFAULT_SETTINGS["generation"]["delay"]
 
 
+def test_acars_logon_is_kept_apart_from_settings(database):
+    db.save_acars({"logon": "ABC123xyz"}, database)                         # before any other settings
+    assert db.get_acars(database) == {"logon": "ABC123xyz"}
+    db.save_settings({"profile": {"username": "pilot"}, "generation": {}}, database)
+    assert db.get_acars(database) == {"logon": "ABC123xyz"}                  # a profile save keeps it
+    assert "acars" not in db.get_settings(database)                          # and /settings never shows it
+    db.save_acars({}, database)
+    assert db.get_acars(database) == {} and db.get_settings(database)["profile"]["username"] == "pilot"
+
+
 def test_active_flight_revisions_reject_stale_writes(database):
     assert db.get_active_flight(database) == {"flight": None, "rev": 0}
     ok, current = db.save_active_flight(database, {"legs": [1]}, 0)
