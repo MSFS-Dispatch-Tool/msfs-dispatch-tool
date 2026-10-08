@@ -998,6 +998,17 @@
 .acars-status.ok { color: var(--green); font-weight: 600; }
 .acars-status.bad { color: var(--red); font-weight: 600; }
 
+/* Loadsheet: the ACARS version, on an MCDU-like screen in both themes */
+.acars-preview { margin-top: 14px; }
+.acars-preview summary { cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--titlebar); }
+.acars-preview summary span { margin-left: 6px; font-weight: 500; letter-spacing: 0; color: var(--text-muted); }
+.acars-screen {
+  width: max-content; max-width: 100%; margin: 10px 0 0; padding: 14px 18px; overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.45; white-space: pre;
+  background: #050807; color: #7CF0A6; border-radius: 8px; text-shadow: 0 0 5px rgba(70,219,134,0.4);
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.9), 0 0 0 4px #1B2128, 0 0 0 5px #2E3842;
+}
+
 /* ==== Night mode: a flight deck with the panel lights on ====
    Charcoal panels, legends in warm backlit white with a faint glow, and
    the cockpit display colours for meaning: cyan for what can be acted on,
