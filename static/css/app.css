@@ -1009,6 +1009,20 @@
   box-shadow: inset 0 0 24px rgba(0,0,0,0.9), 0 0 0 4px #1B2128, 0 0 0 5px #2E3842;
 }
 
+/* Loadsheet: SEND TO AIRCRAFT over ACARS */
+.acars-send { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--white); }
+.acars-send-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; font-size: 12.5px; }
+.acars-send-head b { letter-spacing: 0.04em; }
+.acars-send-head > span { color: var(--text-muted); }
+.acars-send-note { margin: 6px 0 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.45; }
+.acars-send .doc-actions { margin-top: 10px; }
+.acars-send .doc-actions [hidden] { display: none; }
+.acars-send-status { font-size: 12.5px; color: var(--text-muted); }
+.acars-send-status.ok { color: var(--green); font-weight: 600; }
+.acars-send-status.bad { color: var(--red); font-weight: 600; }
+.acars-send-status a { color: inherit; }
+:root[data-theme="dark"] .acars-send { background: #12161B; }
+
 /* ==== Night mode: a flight deck with the panel lights on ====
    Charcoal panels, legends in warm backlit white with a faint glow, and
    the cockpit display colours for meaning: cyan for what can be acted on,

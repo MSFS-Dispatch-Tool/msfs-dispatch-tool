@@ -1,8 +1,7 @@
 """The real app for the browser suites, with only what can't be tested
 against the live world replaced: weather comes from fixed samples (so runs
 are repeatable and need no aviationweather.gov access), Hoppie's ACARS
-network is a fake that accepts the logon code TESTLOGON1 and reports every
-aircraft as online, and a scenario can pin the random rolls a suite
+network is a fake (TESTLOGON1: every aircraft online; TESTLOGON2: none), and a scenario can pin the random rolls a suite
 depends on.
 
     python tests/e2e/server.py --seed                  # reset the test pilot's data
@@ -98,10 +97,14 @@ class _HoppieAnswer:
 
 
 def patch_hoppie():
+    # TESTLOGON1: every aircraft online; TESTLOGON2: accepted, nobody online
     def post(url, data=None, timeout=None):
-        if data.get("logon") != "TESTLOGON1":
+        logon = data.get("logon")
+        if logon not in ("TESTLOGON1", "TESTLOGON2"):
             return _HoppieAnswer("error {illegal logon code}")
-        return _HoppieAnswer("ok {" + data.get("packet", "") + "}" if data.get("type") == "ping" else "ok")
+        if data.get("type") == "ping":
+            return _HoppieAnswer("ok {" + (data.get("packet", "") if logon == "TESTLOGON1" else "") + "}")
+        return _HoppieAnswer("ok")
     acars.requests.post = post
 
 

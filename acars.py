@@ -33,6 +33,20 @@ class AcarsError(Exception):
     or couldn't be reached. The message is safe to show the pilot."""
 
 
+MAX_LINES = 40
+MAX_LINE = 40
+_UNSAFE = re.compile(r"[^A-Z0-9 .,:;/()+\-*]")
+
+
+def clean_message(text):
+    """Plain ACARS text: uppercase, a safe character set, at most MAX_LINES
+    lines of MAX_LINE characters. Line breaks are kept."""
+    lines = [_UNSAFE.sub(" ", line.upper()).rstrip()[:MAX_LINE] for line in str(text or "").splitlines()]
+    while lines and not lines[-1]:
+        lines.pop()
+    return "\n".join(lines[:MAX_LINES])
+
+
 def valid_logon(code):
     return bool(LOGON_RE.match(code or ""))
 

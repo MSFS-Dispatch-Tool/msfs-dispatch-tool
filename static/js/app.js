@@ -2716,6 +2716,56 @@ function acarsPreviewHtml(text) {
     <pre class="acars-screen">${escText(text)}</pre></details>`;
 }
 
+// SEND TO AIRCRAFT: the signed loadsheet over Hoppie's ACARS to the leg's
+// callsign. The server checks the aircraft is logged on first; if it
+// isn't, the pilot is told which callsign to log on with, or can send
+// anyway. Each send is recorded on the loadsheet.
+function acarsSendHtml(flight, i) {
+  const ls = flight.leg_state[i].loadsheet || {}, callsign = flight.callsigns ? flight.callsigns[i] : '';
+  if (!callsign) return '';
+  const sent = (ls.acars_sent || []).slice(-1)[0];
+  const last = sent ? `Sent to the aircraft ${opsTime(sent.at)}Z, edition ${String(sent.edition).padStart(2, '0')}` : '';
+  return `<div class="acars-send" id="acarsSend-${i}">
+    <div class="acars-send-head"><b>SEND TO AIRCRAFT</b><span>ACARS to <span class="mono">${escText(callsign)}</span></span></div>
+    <p class="acars-send-note">In the aircraft, log on to ACARS with your Hoppie logon code as <b class="mono">${escText(callsign)}</b>, then send. The loadsheet arrives as a company message</p>
+    <div class="doc-actions">
+      <button class="action" type="button" id="acarsSendBtn-${i}" onclick="sendLoadsheetToAircraft(${i}, true)">${sent ? 'SEND AGAIN' : 'SEND TO AIRCRAFT'}</button>
+      <button class="ghost" type="button" id="acarsSendAnyway-${i}" onclick="sendLoadsheetToAircraft(${i}, false)" hidden>SEND ANYWAY</button>
+      <span class="acars-send-status${sent ? ' ok' : ''}" id="acarsSendStatus-${i}" aria-live="polite">${last}</span>
+    </div>
+  </div>`;
+}
+async function sendLoadsheetToAircraft(i, checkOnline) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const st = flight.leg_state[i], ls = st.loadsheet || {};
+  const status = document.getElementById(`acarsSendStatus-${i}`), btn = document.getElementById(`acarsSendBtn-${i}`), anyway = document.getElementById(`acarsSendAnyway-${i}`);
+  const say = (html, kind) => { status.innerHTML = html; status.className = 'acars-send-status' + (kind ? ' ' + kind : ''); };
+  const s = ls.acars_text ? null : loadsheetState(flight, i);
+  const text = ls.acars_text || (s ? acarsLoadsheetText(flight, i, s, ls.signed_at) : '');
+  btn.disabled = true; anyway.hidden = true;
+  say(checkOnline ? 'Checking the aircraft is logged on...' : 'Sending...');
+  try {
+    const resp = await fetch('/acars/send', { method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ callsign: flight.callsigns[i], text, check_online: checkOnline }) });
+    const data = await resp.json();
+    if (data.ok) {
+      const fresh = loadActiveFlight();
+      const entry = { at: data.sent_at, edition: ls.edition || 1 };
+      fresh.leg_state[i].loadsheet.acars_sent = (fresh.leg_state[i].loadsheet.acars_sent || []).concat(entry);
+      recapTab = 'loadsheet';
+      saveActiveFlight(fresh);
+      renderRecap(fresh);
+      return;
+    }
+    if (data.no_logon) say(`${escText(data.error)}: <a href="#" onclick="renderAccountSettings(); return false;">open settings</a>`, 'bad');
+    else say(escText(data.error || 'Not sent'), 'bad');
+    if (data.offline) anyway.hidden = false;
+  } catch (e) {
+    say('Not sent: the server can\'t be reached', 'bad');
+  }
+  btn.disabled = false;
+}
+
 function docEmpty(title, text, button) {
   return `<div class="doc-empty"><h3>${title}</h3><p>${text}</p>${button}</div>`;
 }
@@ -2724,7 +2774,7 @@ function loadsheetPaneHtml(flight, i) {
   if (st.loadsheet_signed && st.loadsheet && st.loadsheet.text) {
     const s = st.loadsheet.acars_text ? null : loadsheetState(flight, i);
     const acarsText = st.loadsheet.acars_text || (s ? acarsLoadsheetText(flight, i, s, st.loadsheet.signed_at) : '');
-    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>${acarsText ? acarsPreviewHtml(acarsText) : ''}`;
+    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>${acarsText ? acarsSendHtml(flight, i) + acarsPreviewHtml(acarsText) : ''}`;
   }
   if (st.loadsheet_signed) {   // signed before loadsheets were documents
     const l = st.loadsheet || {};
