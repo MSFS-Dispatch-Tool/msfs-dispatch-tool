@@ -1858,6 +1858,48 @@ def acars_settings_save():
     return jsonify(_acars_status(current_user_id()))
 
 
+ACARS_SEND_INTERVAL_SECONDS = 15
+_acars_last_send = {}
+
+
+@app.route("/acars/send", methods=["POST"])
+def acars_send():
+    """Sends a message (the signed loadsheet) to one of the active flight's
+    own callsigns. With check_online, nothing is sent if that callsign isn't
+    logged on to Hoppie: the answer says so, and the pilot can send anyway."""
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    user_id = current_user_id()
+    payload = request.get_json(silent=True) or {}
+    code = (db.get_acars(user_id) or {}).get("logon")
+    if not code:
+        return jsonify({"ok": False, "no_logon": True, "error": "Add your Hoppie logon code in Account settings first"}), 400
+    callsign = str(payload.get("callsign") or "").strip().upper()
+    flight = db.get_active_flight(user_id).get("flight") or {}
+    if callsign not in [str(c).upper() for c in (flight.get("callsigns") or [])]:
+        return jsonify({"ok": False, "error": "That callsign isn't part of your active flight"}), 400
+    text = acars.clean_message(payload.get("text"))
+    if not text:
+        return jsonify({"ok": False, "error": "Nothing to send"}), 400
+    now = time.time()
+    if now - _acars_last_send.get(user_id, 0) < ACARS_SEND_INTERVAL_SECONDS:
+        return jsonify({"ok": False, "error": "Just sent: wait a few seconds before sending again"}), 429
+    try:
+        if payload.get("check_online"):
+            if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
+                return jsonify({"ok": False, "error": "One moment: wait a few seconds and try again"}), 429
+            _acars_last_test[user_id] = now
+            if not acars.ping(code, [callsign]):
+                return jsonify({"ok": False, "offline": True,
+                                "error": f"{callsign} isn't logged on to ACARS. Log on in the aircraft as {callsign}, or send anyway"}), 409
+        acars.send_telex(code, callsign, text)
+    except acars.AcarsError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    _acars_last_send[user_id] = now
+    return jsonify({"ok": True, "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")})
+
+
 @app.route("/acars/test", methods=["POST"])
 def acars_test():
     unavailable = _require_db()

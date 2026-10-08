@@ -131,7 +131,28 @@ async def main():
         ls = fl["leg_state"][0]["loadsheet"]
         check("signed loadsheet keeps its figures and text", fl["leg_state"][0]["loadsheet_signed"] and ls["zfw"] == 58190 and "SIGNED BY THE CAPTAIN" in ls["text"], str({k: ls.get(k) for k in ("zfw", "tow", "edition")}))
         check("the signed ACARS loadsheet is kept, FINAL and signed", ls["acars_text"].startswith("LOADSHEET FINAL") and "SIGNED CAPT" in ls["acars_text"])
+
         check("step 4 FILE PIREP is next, on the PIREP tab", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "FILE PIREP" and await page.locator("#af-pane-pirep").is_visible())
+
+        # SEND TO AIRCRAFT over ACARS (the e2e server's Hoppie is a fake)
+        await page.evaluate("selectRecapTab('loadsheet')")
+        await page.click("#acarsSendBtn-0"); await page.wait_for_timeout(500)
+        check("without a Hoppie code, sending points to settings", "Account settings" in await page.text_content("#acarsSendStatus-0"))
+        await page.evaluate("fetch('/acars/settings', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({logon: 'TESTLOGON2'})})")
+        await page.wait_for_timeout(300)
+        await page.click("#acarsSendBtn-0"); await page.wait_for_timeout(500)
+        callsign = fl["callsigns"][0]
+        check("an aircraft not logged on is reported, with the callsign to use", f"{callsign} isn't logged on" in await page.text_content("#acarsSendStatus-0")
+              and await page.is_visible("#acarsSendAnyway-0"))
+        await page.click("#acarsSendAnyway-0"); await page.wait_for_timeout(600)
+        sent = await page.evaluate("loadActiveFlight().leg_state[0].loadsheet.acars_sent || []")
+        check("SEND ANYWAY sends and records the edition", len(sent) == 1 and sent[0]["edition"] == ls["edition"]
+              and "Sent to the aircraft" in await page.text_content("#acarsSendStatus-0") and await page.is_visible("#af-pane-loadsheet"), sent)
+        await page.click("#acarsSendBtn-0"); await page.wait_for_timeout(500)
+        check("sending again straight away is held back", "wait a few seconds" in await page.text_content("#acarsSendStatus-0"))
+        await page.locator("#acarsSend-0").screenshot(path=shot("af_acars_send.png"))
+        await page.evaluate("fetch('/acars/settings', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({logon: ''})})")
+        await page.evaluate("selectRecapTab('pirep')")
 
         await page.click("#af-pane-pirep button:has-text('FILL PIREP')")
         await page.wait_for_timeout(300)

@@ -61,6 +61,13 @@ def test_logon_codes_are_checked_and_masked():
     assert acars.mask("abcDEF123").endswith("123") and "abcDEF" not in acars.mask("abcDEF123")
 
 
+def test_messages_are_cleaned_to_plain_acars_text():
+    text = "Loadsheet final\nZFW  58190 <b>€</b>\n" + "x" * 60 + "\n\n\n"
+    assert acars.clean_message(text).split("\n") == ["LOADSHEET FINAL", "ZFW  58190  B   /B", "X" * acars.MAX_LINE]
+    assert len(acars.clean_message("A\n" * 100).split("\n")) == acars.MAX_LINES
+
+
 def test_acars_routes_need_the_database(client):
     assert client.get("/acars/settings").status_code == 502
     assert client.post("/acars/test").status_code == 502
+    assert client.post("/acars/send", json={"callsign": "EZY45KP", "text": "X"}).status_code == 502
