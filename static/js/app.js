@@ -2644,13 +2644,87 @@ function loadsheetText(flight, i, s, signedAt) {
   return lines.join('\n');
 }
 
+// The loadsheet as an ACARS uplink: what SEND TO AIRCRAFT transmits.
+// Short labels as on real uplinked loadsheets (TOF take-off fuel, TIF trip
+// fuel, LAW landing weight, UNDLD underload), plain uppercase ASCII and at
+// most ACARS_COLS characters a line, so it fits an MCDU page and an ACARS
+// printer without wrapping. PRELIM until every item is sorted out.
+const ACARS_COLS = 24;
+function acarsClean(text) {
+  return String(text).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9 .,:;/()+\-*]/g, ' ').replace(/ {2,}/g, ' ').trim();
+}
+function acarsWrap(text, indent = '') {
+  const out = [];
+  let line = '';
+  acarsClean(text).split(' ').forEach(word => {
+    while (word.length > ACARS_COLS) { if (line) { out.push(line); line = ''; } out.push(word.slice(0, ACARS_COLS)); word = word.slice(ACARS_COLS); }
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > ACARS_COLS) { out.push(line); line = indent + word; } else line = next;
+  });
+  if (line) out.push(line);
+  return out;
+}
+function acarsLoadsheetText(flight, i, s, signedAt) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, b = s.b, f = s.fig;
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+  const n = (v, w = 6) => (v == null ? 'N/A' : String(Math.round(v))).padStart(w);
+  const max = (label, v, lim, mark) => `${label} ${n(v)}` + (lim == null ? '' : ` MAX ${n(lim)}`) + (f.limitBy === mark ? ' L' : '');
+  const final = !s.pending.length;
+  const when = signedAt || (st.ls && st.ls.requested_at);
+  const lines = [
+    `LOADSHEET ${final ? 'FINAL' : 'PRELIM'} ${opsTime(when)}Z`,
+    `EDNO ${s.applied.length ? '02' : '01'}`,
+    acarsClean(`${leg.flight_number} ${callsign} ${opsDate(when)}`),
+    acarsClean(`${leg.departure_info.icao}-${leg.arrival_info.icao} ${ofp.registration || ''}`),
+    acarsClean(`${leg.aircraft_type || ''} Y${b.seats || ''} CREW 2/${b.cabinCrew}`),
+    `ALL WEIGHTS IN ${b.unit}`,
+    '-'.repeat(ACARS_COLS),
+    `PAX ${n(f.pax, 4)}  TTL ${f.pax}`,
+    `BAG/CGO ${n(f.hold)}`,
+    `TTL LOAD ${n(f.paxLoad + f.hold)}`,
+    `DOW ${n(b.dow)}`,
+    max('ZFW', f.zfw, b.maxZfw, 'Z'),
+    `TOF ${n(f.tof)}`,
+    max('TOW', f.tow, b.maxTow, 'T'),
+    `TIF ${n(b.trip)}`,
+    max('LAW', f.lw, b.maxLdw, 'L'),
+    `UNDLD ${n(f.underload)}${s.over ? ' OVER' : ''}`,
+    '-'.repeat(ACARS_COLS),
+  ];
+  const changes = [];
+  s.items.forEach(it => {
+    const dec = s.decisions[it.key], ch = it.change[dec];
+    const spec = it.change.accept ? it.change.accept.label : it.change.ack ? it.change.ack.label : it.tag;
+    if (!dec) changes.push(`${spec} PENDING`);
+    else if (ch && ch.weight) changes.push(`${ch.label} ${ch.weight > 0 ? '+' : '-'}${Math.round(Math.abs(ch.weight))}`);
+    else changes.push(`${spec} ${dec === 'ack' ? 'NOTED' : 'DECLINED'}`);
+  });
+  lines.push(changes.length ? 'LMC' : 'LMC NIL');
+  changes.forEach(c => lines.push(...acarsWrap(c, ' ')));
+  const dg = st.ls && st.ls.dangerous_goods;
+  if (isNoDg(dg)) lines.push('NOTOC NIL');
+  else if (dg.notoc) lines.push(...acarsWrap(`NOTOC ${dg.un} CL${dg['class']} ${kgToUnit(b.unit, dg.weight_kg)}${b.unit} HOLD ${dg.hold}${s.decisions.dg === 'refuse' ? ' OFFLOADED' : s.decisions.dg ? ' ACCEPTED' : ''}`, ' '));
+  else lines.push(...acarsWrap(`SI ${dg.label}`, ' '));
+  legMels(leg).forEach(m => lines.push(...acarsWrap(`MEL ${m.ata || ''} ${m.description || ''}`, ' ')));
+  legCdl(leg).forEach(c => lines.push(...acarsWrap(`CDL ${c.ata || ''} ${c.part || c.description || ''}`, ' ')));
+  if (b.penalty) lines.push(...acarsWrap(`MTOW/MLW -${b.penalty} ${b.unit} CDL`));
+  lines.push('-'.repeat(ACARS_COLS), signedAt ? acarsClean(`SIGNED CAPT ${opsTime(signedAt)}Z`) : 'NOT SIGNED', 'END');
+  return lines.map(l => l.slice(0, ACARS_COLS)).join('\n');
+}
+function acarsPreviewHtml(text) {
+  return `<details class="acars-preview"><summary>ACARS VERSION <span>what SEND TO AIRCRAFT transmits</span></summary>
+    <pre class="acars-screen">${escText(text)}</pre></details>`;
+}
+
 function docEmpty(title, text, button) {
   return `<div class="doc-empty"><h3>${title}</h3><p>${text}</p>${button}</div>`;
 }
 function loadsheetPaneHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i);
   if (st.loadsheet_signed && st.loadsheet && st.loadsheet.text) {
-    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>`;
+    const s = st.loadsheet.acars_text ? null : loadsheetState(flight, i);
+    const acarsText = st.loadsheet.acars_text || (s ? acarsLoadsheetText(flight, i, s, st.loadsheet.signed_at) : '');
+    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>${acarsText ? acarsPreviewHtml(acarsText) : ''}`;
   }
   if (st.loadsheet_signed) {   // signed before loadsheets were documents
     const l = st.loadsheet || {};
@@ -2673,6 +2747,7 @@ function loadsheetPaneHtml(flight, i) {
   const blocker = s.pending.length ? `${s.pending.length} item${s.pending.length > 1 ? 's' : ''} still to sort out` : s.over ? 'The load is over the weight limits' : '';
   return `<pre class="doc-sheet" id="loadsheet-${i}">${escText(loadsheetText(flight, i, s, null))}</pre>
     ${s.items.length ? `<h4 class="ls-items-title">CAPTAIN'S DECISIONS</h4><div class="ls-items">${itemsHtml}</div>` : '<p class="brief-empty">No last-minute changes and no dangerous goods to sign for</p>'}
+    ${acarsPreviewHtml(acarsLoadsheetText(flight, i, s, null))}
     <div class="doc-actions"><button class="action" id="signLoadsheetBtn-${i}" onclick="signLoadsheet(${i})"${blocker ? ' disabled' : ''}>SIGN LOADSHEET</button>${blocker ? `<span class="doc-blocker">${blocker}</span>` : ''}</div>`;
 }
 async function askForLoadsheet(i) {
@@ -2706,7 +2781,7 @@ function signLoadsheet(i) {
     edition: s.applied.length ? 2 : 1, unit: s.b.unit, zfw: f.zfw, tow: f.tow, lw: f.lw, tof: f.tof, fob: f.tof,
     pax: f.pax, crew: 2 + s.b.cabinCrew, hold: f.hold, underload: f.underload,
     changes: s.applied.map(c => ({ label: c.label, weight: c.weight })), decisions: { ...s.decisions },
-    signed_at: signedAt, text: loadsheetText(flight, i, s, signedAt),
+    signed_at: signedAt, text: loadsheetText(flight, i, s, signedAt), acars_text: acarsLoadsheetText(flight, i, s, signedAt),
   };
   flight.leg_state[i].loadsheet_signed = true;
   // The flown load, for the logbook

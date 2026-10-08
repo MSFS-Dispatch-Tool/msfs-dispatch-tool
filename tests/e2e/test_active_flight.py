@@ -109,6 +109,12 @@ async def main():
         sheet = await page.inner_text("#loadsheet-0")
         check("declined bags stay off, the accepted NOTOC goes on", line("ZERO FUEL WEIGHT ACT") == "58190" and "DECLINED" in sheet and "UN1845 CL 9 40 KG HOLD 1 ACCEPTED" in sheet, sheet)
         check("a change makes it edition 02", "02\n" in sheet.split("FROM/TO")[0])
+        acars = await page.evaluate("document.querySelector('#af-pane-loadsheet .acars-screen').textContent")
+        alines = acars.split("\n")
+        check("the ACARS version fits a 24-column MCDU, plain uppercase", max(map(len, alines)) <= 24
+              and acars == acars.upper() and all(ord(c) < 128 for c in acars), max(alines, key=len))
+        check("the ACARS version has the same figures", "ZFW  58190 MAX" in acars and "EDNO 02" in acars
+              and "BAGS DECLINED" in acars.replace("EXTRA ", "") and "NOTOC UN1845" in acars and "PRELIM" not in acars, acars)
         await page.screenshot(path=shot("af_loadsheet.png"))
 
         # A late change heavier than the margin can't be accepted
@@ -124,6 +130,7 @@ async def main():
         fl = await page.evaluate("loadActiveFlight()")
         ls = fl["leg_state"][0]["loadsheet"]
         check("signed loadsheet keeps its figures and text", fl["leg_state"][0]["loadsheet_signed"] and ls["zfw"] == 58190 and "SIGNED BY THE CAPTAIN" in ls["text"], str({k: ls.get(k) for k in ("zfw", "tow", "edition")}))
+        check("the signed ACARS loadsheet is kept, FINAL and signed", ls["acars_text"].startswith("LOADSHEET FINAL") and "SIGNED CAPT" in ls["acars_text"])
         check("step 4 FILE PIREP is next, on the PIREP tab", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "FILE PIREP" and await page.locator("#af-pane-pirep").is_visible())
 
         await page.click("#af-pane-pirep button:has-text('FILL PIREP')")
