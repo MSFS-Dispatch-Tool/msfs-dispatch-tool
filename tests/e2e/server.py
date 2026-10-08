@@ -1,7 +1,9 @@
 """The real app for the browser suites, with only what can't be tested
 against the live world replaced: weather comes from fixed samples (so runs
-are repeatable and need no aviationweather.gov access), and a scenario can
-pin the random rolls a suite depends on.
+are repeatable and need no aviationweather.gov access), Hoppie's ACARS
+network is a fake that accepts the logon code TESTLOGON1 and reports every
+aircraft as online, and a scenario can pin the random rolls a suite
+depends on.
 
     python tests/e2e/server.py --seed                  # reset the test pilot's data
     python tests/e2e/server.py --scenario mel --port 5055
@@ -29,6 +31,7 @@ sys.path.insert(0, ROOT)
 for var in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"):
     os.environ.pop(var, None)
 
+import acars  # noqa: E402
 import app  # noqa: E402
 import db  # noqa: E402
 import techlog  # noqa: E402
@@ -82,6 +85,24 @@ def patch_weather():
     wxmap.metar_categories = lambda icaos, ua: {"updated": "2026-09-28T10:50Z", "stale": False, "stations": {
         i: {"cat": _category(sample_metar(i)), "raw": sample_metar(i), "obs": "2026-09-28T10:50Z"} for i in icaos}}
     wxmap.current_sigmets = lambda ua: {"updated": "2026-09-28T10:52Z", "stale": False, "sigmets": SIGMETS}
+
+
+class _HoppieAnswer:
+    status_code = 200
+
+    def __init__(self, text):
+        self.text = text
+
+    def raise_for_status(self):
+        pass
+
+
+def patch_hoppie():
+    def post(url, data=None, timeout=None):
+        if data.get("logon") != "TESTLOGON1":
+            return _HoppieAnswer("error {illegal logon code}")
+        return _HoppieAnswer("ok {" + data.get("packet", "") + "}" if data.get("type") == "ping" else "ok")
+    acars.requests.post = post
 
 
 def scenario_mel():
@@ -162,6 +183,7 @@ def main():
         return
     clear_active_flight()
     patch_weather()
+    patch_hoppie()
     SCENARIOS[args.scenario]()
     app.app.run(port=args.port, debug=False)
 

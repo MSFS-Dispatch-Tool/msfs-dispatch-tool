@@ -329,11 +329,34 @@ def get_settings(user_id):
 
 
 def save_settings(data, user_id):
+    """Replaces the profile and generation settings; anything else stored
+    alongside them (the ACARS logon code) is kept."""
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO app_settings (id, data) VALUES (%s, %s)
-                ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
+                ON CONFLICT (id) DO UPDATE
+                    SET data = (app_settings.data - 'profile' - 'generation') || EXCLUDED.data
             """, (user_id, Json(data)))
         conn.commit()
     return get_settings(user_id)
+
+
+def get_acars(user_id):
+    """The pilot's ACARS settings ({"logon": ...}), stored with their other
+    settings but never part of what /settings sends to the browser."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data -> 'acars' FROM app_settings WHERE id = %s", (user_id,))
+            row = cur.fetchone()
+    return (row[0] if row and isinstance(row[0], dict) else None) or {}
+
+
+def save_acars(acars, user_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO app_settings (id, data) VALUES (%s, jsonb_build_object('acars', %s::jsonb))
+                ON CONFLICT (id) DO UPDATE SET data = app_settings.data || jsonb_build_object('acars', %s::jsonb)
+            """, (user_id, Json(acars), Json(acars)))
+        conn.commit()

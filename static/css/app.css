@@ -988,6 +988,16 @@
 .time-filters { display: flex; gap: 6px; }
 .time-filters select { flex: 1 1 0; min-width: 0; }
 
+/* Settings: ACARS logon code */
+.acars-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 14px; margin-top: 10px; }
+.acars-row .field { flex: 1 1 260px; max-width: 420px; }
+.acars-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 22px; }
+.acars-actions [hidden] { display: none; }
+.acars-intro a { color: var(--titlebar); font-weight: 600; }
+.acars-status { margin: 10px 0 0; min-height: 1.4em; font-size: 12.5px; color: var(--text-muted); }
+.acars-status.ok { color: var(--green); font-weight: 600; }
+.acars-status.bad { color: var(--red); font-weight: 600; }
+
 /* ==== Night mode: a flight deck with the panel lights on ====
    Charcoal panels, legends in warm backlit white with a faint glow, and
    the cockpit display colours for meaning: cyan for what can be acted on,
