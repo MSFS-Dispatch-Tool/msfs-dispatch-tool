@@ -49,9 +49,6 @@ Optional settings:
 
 - `VD_E2E_PORT`: server port (default 5055)
 - `VD_E2E_CHROMIUM`: a Chromium binary to use instead of Playwright's own
-- `VD_E2E_ASSETS`: a folder holding Leaflet (`package/dist/...`) and the Inter
-  font (`inter/package/files/...`) from npm, for machines that can't reach
-  cdnjs and Google Fonts
 - `VD_E2E_OUT`: where screenshots go (default: a temp folder)
 
 Some browser checks name real flights from the schedule data (e.g. U2765

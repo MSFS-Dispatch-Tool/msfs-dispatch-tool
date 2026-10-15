@@ -175,3 +175,18 @@ def test_a_revoked_sign_in_is_removed(app_module, fake_navigraph, store):
     assert gone.value.reconnect and store["local"] == {}
     with pytest.raises(navigraph.NavigraphError, match="Sign in with Navigraph"):
         app_module.navigraph_access_token("local")
+
+
+def test_deleting_the_account_revokes_the_sign_in_at_navigraph(client, app_module, fake_navigraph, store, monkeypatch):
+    calls, _ = fake_navigraph
+    store["u1"] = {"name": "jdoe", "refresh": app_module._navigraph_box.seal("ref-9")}
+    deleted = []
+    monkeypatch.setattr(app_module.auth, "admin_available", lambda: True)
+    monkeypatch.setattr(app_module.auth, "sign_in", lambda email, password: {})
+    monkeypatch.setattr(app_module.auth, "admin_delete_user", lambda user_id: None)
+    monkeypatch.setattr(app_module.db, "delete_user_data", lambda user_id: deleted.append(user_id))
+    with client.session_transaction() as s:
+        s["user"] = {"id": "u1", "email": "p@example.com"}
+    assert client.post("/account/delete", data={"password": "pw"}).get_json() == {"ok": True}
+    assert calls[-1][0].endswith("/connect/revocation") and calls[-1][1]["token"] == "ref-9"
+    assert store["u1"] == {} and deleted == ["u1"]

@@ -7,9 +7,7 @@
 {% include "_favicons.html" %}
 {% include "_theme_head.html" %}
 {% include "_error_watch.html" %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 {% if turnstile_site_key %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>{% endif %}
 <style>
   :root {
@@ -91,7 +89,9 @@
 
   .switch { margin-top: var(--sp-5); font-size: 13.5px; text-align: center; color: var(--text-muted); }
   .switch a { color: var(--titlebar); font-weight: 500; text-decoration: none; }
-  .switch a:hover { text-decoration: underline; }
+  .switch a:hover, .switch .link-button:hover { text-decoration: underline; }
+  .inline-form { display: inline; }
+  .switch .link-button { font: inherit; color: var(--titlebar); font-weight: 500; background: none; border: 0; padding: 0; cursor: pointer; }
 
   .forgot { margin-top: var(--sp-3); font-size: 12.5px; text-align: right; }
   .forgot a { color: var(--titlebar); text-decoration: underline; }
@@ -108,7 +108,7 @@
       {% elif mode == "restricted" %}
       <p class="notice" style="margin-bottom:var(--sp-3);">This account doesn't have access yet</p>
       <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in a private preview, open to invited pilots only. You're signed in as <strong>{{ signup_email }}</strong></p>
-      <div class="switch"><a href="{{ url_for('logout') }}">Sign out</a> &middot; <a href="{{ url_for('index') }}">Back to the website</a></div>
+      <div class="switch"><form class="inline-form" method="post" action="{{ url_for('logout') }}"><button class="link-button" type="submit">Sign out</button></form> &middot; <a href="{{ url_for('index') }}">Back to the website</a></div>
       {% elif just_signed_up %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
       <p class="notice" style="margin-bottom:var(--sp-3);">Thank you for choosing to join VirtualDispatch &mdash; we're glad to have you on board!</p>

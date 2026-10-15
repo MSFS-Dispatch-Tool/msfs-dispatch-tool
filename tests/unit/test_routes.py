@@ -49,6 +49,9 @@ def test_loadsheet_extras_respect_the_full_flag(client):
 @pytest.mark.parametrize("next_url, safe", [
     ("/app", True), ("/app?from=EGKK", True), ("https://evil.example", False), ("//evil.example", False),
     ("/\\evil.example", False), ("", False), (None, False),
+    # Browsers drop tabs and line breaks, and read "\\" as "/", so each of these is "//evil.example"
+    ("/\t/evil.example", False), ("/\n/evil.example", False), ("/\r/evil.example", False),
+    ("/x\\..\\\\evil.example", False), ("/ /evil.example", False),
 ])
 def test_login_redirect_stays_on_site(app_module, next_url, safe):
     assert (app_module._safe_next(next_url) is not None) is safe
@@ -143,3 +146,67 @@ def test_responses_are_gzipped_and_static_files_versioned(client):
     assert "/static/" in page
     resp = client.get("/static/js/app.js", headers={"Accept-Encoding": "gzip"})
     assert resp.headers.get("Content-Encoding") == "gzip" and "max-age=31536000" in resp.headers.get("Cache-Control", "")
+
+
+def test_a_crafted_login_link_lands_on_the_app(client, app_module, monkeypatch):
+    # The link's "next" arrives URL-decoded: %09 is a tab
+    monkeypatch.setattr(app_module.auth, "sign_in", lambda email, password: {
+        "access_token": "a", "refresh_token": "r", "expires_in": 3600, "user": {"id": "u1", "email": "p@example.com"}})
+    monkeypatch.setattr(app_module, "_verify_turnstile_from_form", lambda: True)
+    monkeypatch.setattr(app_module, "_needs_onboarding", lambda user_id: False)
+    resp = client.post("/login?next=/%09/evil.example", data={"email": "p@example.com", "password": "x"})
+    assert resp.status_code == 302 and resp.location == "/app"
+
+
+def test_production_refuses_to_start_without_its_settings(app_module):
+    full = {name: "x" for name in app_module.PRODUCTION_SETTINGS}
+    app_module.check_production_settings({**full, "RENDER": "true"})
+    app_module.check_production_settings({})                       # a development checkout runs without them
+    for name in app_module.PRODUCTION_SETTINGS:
+        with pytest.raises(RuntimeError, match=name):
+            app_module.check_production_settings({**full, name: "", "RENDER": "true"})
+
+
+@pytest.mark.parametrize("path", ["/", "/app", "/static/css/app.css", "/privacy"])
+def test_every_response_carries_the_security_headers(client, app_module, path, monkeypatch):
+    resp = client.get(path)
+    for name, value in app_module.SECURITY_HEADERS.items():
+        assert resp.headers.get(name) == value, (path, name)
+    assert "Strict-Transport-Security" not in resp.headers          # only on Render, where it's HTTPS
+    monkeypatch.setenv("RENDER", "true")
+    assert client.get(path).headers.get("Strict-Transport-Security") == app_module.HSTS_HEADER
+
+
+def test_signing_out_takes_a_post(client):
+    with client.session_transaction() as s:
+        s["user"] = {"id": "u1", "email": "p@example.com"}
+    assert client.get("/logout").status_code == 405          # a link or an image on another site does nothing
+    with client.session_transaction() as s:
+        assert s.get("user")
+    assert client.post("/logout").status_code == 302
+    with client.session_transaction() as s:
+        assert not s.get("user")
+
+
+@pytest.mark.parametrize("data, content_type, ok", [
+    (b"\xff\xd8\xff\xe0" + b"x" * 20, "image/jpeg", True),
+    (b"\x89PNG\r\n\x1a\n" + b"x" * 20, "image/png", True),
+    (b"RIFF\x10\x00\x00\x00WEBPVP8 ", "image/webp", True),
+    (b"<html><script>alert(1)</script>", "image/png", False),
+    (b"\x89PNG\r\n\x1a\n" + b"x" * 20, "image/jpeg", False),
+])
+def test_photo_uploads_must_really_be_images(app_module, data, content_type, ok):
+    import io
+    from werkzeug.datastructures import FileStorage
+    photo = FileStorage(io.BytesIO(data), filename="me.img", content_type=content_type)
+    with app_module.app.test_request_context():
+        url, error = app_module._handle_photo_upload(photo)
+    assert (error is None) is ok, error
+
+
+def test_health_check_answers_without_signing_in(client, monkeypatch):
+    import auth
+    monkeypatch.setattr(auth, "auth_available", lambda: True)      # sign-in on, nobody signed in
+    resp = client.get("/healthz")
+    assert resp.status_code == 200 and resp.get_json() == {"ok": True}
+    assert client.get("/app").status_code == 302                     # the app itself still needs a sign-in

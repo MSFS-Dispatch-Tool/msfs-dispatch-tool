@@ -71,6 +71,8 @@
   }
   .app-link:hover { background: var(--face-dark); }
   .app-link { white-space: nowrap; }
+  .app-logout { display: contents; }
+  .app-logout .app-link { font-family: inherit; line-height: inherit; cursor: pointer; }
   .app-help { font-family: inherit; line-height: inherit; width: 34px; padding-left: 0; padding-right: 0; cursor: pointer; }
   .app-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; cursor: pointer; }
   .app-icon-btn svg { width: 15px; height: 15px; }
