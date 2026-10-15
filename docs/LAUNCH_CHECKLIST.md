@@ -5,9 +5,10 @@ them off here as they're done.
 
 ## Legal and contact
 
-- [ ] Make sure privacy@virtualdispatch.app and legal@virtualdispatch.app
+- [x] Make sure privacy@virtualdispatch.app and legal@virtualdispatch.app
       receive mail: the Privacy Policy, Cookie Policy and Terms of Service
       give them as the contact addresses.
+      Done with Cloudflare Email Routing: both forward to the owner's inbox.
 - [ ] Have the Privacy Policy, Cookie Policy and Terms of Service reviewed
       once by someone qualified in GDPR (the operator is in Italy).
 
