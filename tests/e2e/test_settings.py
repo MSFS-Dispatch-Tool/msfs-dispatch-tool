@@ -1,7 +1,10 @@
 """Generation settings: the item tables, probability sliders and what they do to /select."""
 import asyncio
 import json
+import os
 import urllib.request
+
+import psycopg2
 
 from playwright.async_api import async_playwright
 
@@ -89,6 +92,31 @@ async def main():
               await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphStatus") == "Disconnected")
         await page.goto(BASE + "/app?navigraph=cancelled"); await page.wait_for_selector("#navigraphStatus:not(:empty)")
         check("a cancelled sign-in is reported", "cancelled" in await page.text_content("#navigraphStatus"))
+
+        # Report a problem, from the header: the message reaches the database with the page and recent errors
+        await page.evaluate("""window.dispatchEvent(new ErrorEvent('error', {message: 'TypeError: e2e is broken',
+            filename: location.origin + '/static/js/app.js', lineno: 12, colno: 3}))""")
+        await page.evaluate("window.dispatchEvent(new ErrorEvent('error', {message: 'extension noise', filename: 'chrome-extension://x/y.js'}))")
+        await page.click(".app-report")
+        check("the report form opens, without the flight option when there's no flight",
+              await page.is_visible("#reportMessage") and not await page.is_visible("#reportFlightRow"))
+        await page.select_option("#reportCategory", "bug")
+        await page.fill("#reportMessage", "short")
+        await page.click("#reportSend")
+        check("a too-short report is refused", "at least 10" in await page.text_content("#reportStatus"))
+        await page.fill("#reportMessage", "The MEL list in settings doesn't scroll on my laptop")
+        await page.locator(".report-modal").screenshot(path=shot("report_form.png"))
+        await page.click("#reportSend")
+        await page.wait_for_selector("#reportStatus.ok")
+        reference = (await page.text_content("#reportStatus")).split()[-1]
+        with psycopg2.connect(os.environ["DATABASE_URL"]) as conn, conn.cursor() as cur:
+            cur.execute("SELECT category, message, context FROM problem_reports WHERE upper(left(id, 6)) = %s", (reference,))
+            row = cur.fetchone()
+        check("the report is stored with the page and our own errors only",
+              row and row[0] == "bug" and row[2]["view"] == "profile" and row[2]["errors"] and "e2e is broken" in row[2]["errors"][0]
+              and len(row[2]["errors"]) == 1 and row[2]["user_agent"], row)
+        await page.keyboard.press("Escape")
+        check("Escape closes the form", not await page.is_visible("#reportMessage"))
 
         mob = await b.new_page(viewport={"width": 390, "height": 844}); await prepare(mob)
         await mob.goto(BASE + "/app"); await mob.wait_for_timeout(1200); await mob.evaluate("renderAccountSettings()"); await mob.wait_for_timeout(1500)

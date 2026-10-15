@@ -6,6 +6,7 @@
 <title>VirtualDispatch</title>
 {% include "_favicons.html" %}
 {% include "_theme_head.html" %}
+{% include "_error_watch.html" %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,10 +46,13 @@
   </nav>
   <div class="app-header-right">
     <div class="app-clock" id="clock">--:--:--Z</div>
-    {% if is_admin %}<a class="app-link" href="/admin/users" title="Manage users">ADMIN</a>{% endif %}
+    {% if is_admin %}<a class="app-link" href="{{ '/admin/reports' if new_reports else '/admin/users' }}" title="Users and problem reports">ADMIN{% if new_reports %} <span class="app-badge">{{ new_reports }}</span>{% endif %}</a>{% endif %}
     <button class="app-link app-icon-btn app-theme" type="button" onclick="vdToggleTheme()" title="Day / night" aria-label="Switch between day and night mode">
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <button class="app-link app-icon-btn app-report" type="button" onclick="openReport()" title="Report a problem" aria-label="Report a problem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4.5"/><path d="M4 4.5c5-3 9 3 15 0v9c-6 3-10-3-15 0"/></svg>
     </button>
     <button class="app-link app-help" type="button" onclick="openGlossary()" title="Dispatch terms: what the abbreviations mean" aria-label="Dispatch terms">?</button>
     {% if auth_enabled %}<a class="app-link" href="/logout">LOG OUT</a>{% endif %}
@@ -60,6 +64,36 @@
 <footer>
   DATASET: {{ counts.routes }} ROUTES &middot; {{ counts.mels }} MEL SCENARIOS &middot; {{ counts.delay_codes }} DELAY CODES
 </footer>
+
+<div class="glossary-overlay" id="reportOverlay" onclick="if(event.target===this) closeReport()">
+  <div class="glossary-modal report-modal" role="dialog" aria-labelledby="reportTitle">
+    <div class="panel-header"><span id="reportTitle">REPORT A PROBLEM</span><button class="home-btn" onclick="closeReport()" title="Close">&times;</button></div>
+    <div class="panel-body">
+      <form id="reportForm" onsubmit="sendReport(event)">
+        <div class="field">
+          <label for="reportCategory">WHAT KIND OF PROBLEM?</label>
+          <select id="reportCategory" required>
+            <option value="">&mdash;</option>
+            <option value="bug">Something doesn't work</option>
+            <option value="data">Wrong or odd data (a route, the weather, a loadsheet...)</option>
+            <option value="idea">An idea or a suggestion</option>
+            <option value="other">Something else</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="reportMessage">WHAT HAPPENED?</label>
+          <textarea id="reportMessage" rows="6" maxlength="4000" required placeholder="What you did, what you expected, and what happened instead"></textarea>
+        </div>
+        <label class="checkbox-row" id="reportFlightRow"><input type="checkbox" id="reportFlight" checked> Attach my active flight, so the problem can be reproduced</label>
+        <p class="field-note report-note">The report also carries the page you're on, your browser and any recent errors on this page. Nothing else</p>
+        <div class="report-actions">
+          <button class="action" type="submit" id="reportSend">SEND REPORT</button>
+          <span class="acars-status" id="reportStatus" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="glossary-overlay" id="glossaryOverlay" onclick="if(event.target===this) closeGlossary()">
   <div class="glossary-modal">

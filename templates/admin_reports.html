@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VirtualDispatch &mdash; Problem reports</title>
+{% include "_favicons.html" %}
+{% include "_theme_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --face: #FFFFFF; --face-dark: #F3F4F6; --titlebar: #1D4ED8; --titlebar-2: #2563EB;
+    --white: #FFFFFF; --shadow-dk: #D0D5DD; --shadow-md: #E4E7EC;
+    --text: #101828; --text-muted: #667085; --red: #B42318; --red-bg: #FEF3F2; --green: #067647;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--face-dark); color: var(--text);
+         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+         font-size: 14px; padding: 20px; }
+  .panel { max-width: 1100px; margin: 0 auto; background: var(--face); border: 1px solid var(--shadow-md);
+           border-radius: 10px; box-shadow: 0 1px 2px rgba(16,24,40,0.06); overflow: hidden; }
+  .panel + .panel { margin-top: 18px; }
+  .panel-header { background: var(--titlebar); color: #fff;
+                  padding: 14px 18px; font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .panel-header a { color: #fff; font-size: 13px; text-decoration: none; opacity: 0.9; margin-left: 14px; }
+  .panel-header a:hover { opacity: 1; text-decoration: underline; }
+  .panel-body { padding: 18px; overflow-x: auto; }
+  .filters { display: flex; gap: 6px; margin-bottom: 12px; }
+  .filters button.on { background: var(--text); color: var(--face); border-color: var(--text); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--shadow-md); padding: 9px 10px; text-align: left; vertical-align: top; }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  td.nowrap { white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover, tbody tr.open { background: var(--face-dark); }
+  .msg { max-width: 330px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st { font-weight: 600; font-size: 12px; }
+  .st-new { color: var(--red); }
+  .st-fixed { color: var(--green); }
+  .err-count { color: var(--red); font-weight: 600; }
+  button { font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 10px; cursor: pointer;
+           border: 1px solid var(--shadow-dk); border-radius: 6px; background: var(--face); color: var(--text); }
+  button:hover { background: var(--face-dark); }
+  .detail h3 { margin: 0 0 4px; font-size: 15px; }
+  .detail .meta { color: var(--text-muted); font-size: 12.5px; margin-bottom: 12px; }
+  .detail .message { white-space: pre-wrap; line-height: 1.5; padding: 12px; border: 1px solid var(--shadow-md); border-radius: 8px; margin-bottom: 14px; }
+  .detail dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; margin: 0 0 14px; font-size: 13px; }
+  .detail dt { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; padding-top: 1px; }
+  .detail dd { margin: 0; word-break: break-word; }
+  .detail pre { margin: 0; white-space: pre-wrap; font-size: 12px; color: var(--red); }
+  .detail .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .empty-state, .error-state { padding: 14px 0; }
+  .error-state { color: var(--red); }
+</style>
+</head>
+<body class="vd-plain">
+  <div class="panel">
+    <div class="panel-header">
+      <span>VirtualDispatch &mdash; Problem reports</span>
+      <span><a href="/admin/users">User management</a><a href="/app">&larr; Back to app</a></span>
+    </div>
+    <div class="panel-body">
+      <div class="filters" id="filters">
+        <button type="button" data-f="open" class="on">Open</button>
+        <button type="button" data-f="new">New</button>
+        <button type="button" data-f="all">All</button>
+      </div>
+      <div id="list">Loading&hellip;</div>
+    </div>
+  </div>
+  <div class="panel" id="detailPanel" hidden>
+    <div class="panel-header"><span>Report</span></div>
+    <div class="panel-body detail" id="detail"></div>
+  </div>
+<script>
+const CATEGORIES = { bug: "Doesn't work", data: 'Wrong data', idea: 'Idea', other: 'Other' };
+let reports = [], filter = 'open', openId = null;
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmt(s) { return s ? new Date(s).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'; }
+
+async function load() {
+  const list = document.getElementById('list');
+  try {
+    const resp = await fetch('/admin/api/reports');
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Failed to load reports');
+    reports = data.reports;
+    paint();
+  } catch (err) {
+    list.innerHTML = `<div class="error-state">${esc(err.message)}</div>`;
+  }
+}
+
+function paint() {
+  const shown = reports.filter(r => filter === 'all' || (filter === 'new' ? r.status === 'new' : r.status !== 'fixed'));
+  const list = document.getElementById('list');
+  if (!shown.length) { list.innerHTML = '<div class="empty-state">No reports here</div>'; return; }
+  list.innerHTML = `<table>
+    <thead><tr><th>Received</th><th>Pilot</th><th>Kind</th><th>Message</th><th>Page</th><th>Errors</th><th>Flight</th><th>Status</th></tr></thead>
+    <tbody>${shown.map(r => `<tr data-id="${esc(r.id)}" class="${r.id === openId ? 'open' : ''}">
+      <td class="nowrap">${fmt(r.created_at)}</td>
+      <td class="nowrap">${esc(r.email || r.user_id)}</td>
+      <td class="nowrap">${esc(CATEGORIES[r.category] || r.category)}</td>
+      <td><div class="msg">${esc(r.message)}</div></td>
+      <td class="nowrap">${esc(r.context.view || '—')}</td>
+      <td class="${(r.context.errors || []).length ? 'err-count' : ''}">${(r.context.errors || []).length || '—'}</td>
+      <td>${r.has_flight ? 'Yes' : '—'}</td>
+      <td class="st st-${esc(r.status)}">${esc(r.status.toUpperCase())}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function openReport(id) {
+  openId = id;
+  paint();
+  const panel = document.getElementById('detailPanel'), detail = document.getElementById('detail');
+  panel.hidden = false;
+  detail.textContent = 'Loading…';
+  const resp = await fetch(`/admin/api/reports/${encodeURIComponent(id)}`);
+  const r = await resp.json();
+  if (!resp.ok) { detail.innerHTML = `<div class="error-state">${esc(r.error)}</div>`; return; }
+  // Opening a new report marks it seen
+  if (r.status === 'new') {
+    await setStatus(r.id, 'seen');
+    r.status = 'seen';
+    const row = reports.find(x => x.id === r.id);
+    if (row) row.status = 'seen';
+    paint();
+  }
+  const c = r.context || {};
+  detail.innerHTML = `
+    <h3>${esc(CATEGORIES[r.category] || r.category)} &middot; reference ${esc(r.id.slice(0, 6).toUpperCase())}</h3>
+    <div class="meta">${esc(r.email || r.user_id)} &middot; ${fmt(r.created_at)} &middot; status ${esc(r.status)}</div>
+    <div class="message">${esc(r.message)}</div>
+    <dl>
+      <dt>Page</dt><dd>${esc(c.view || '—')} &middot; ${esc(c.path || '')}</dd>
+      <dt>Browser</dt><dd>${esc(c.user_agent || '—')}</dd>
+      <dt>Screen</dt><dd>${esc(c.viewport || '—')} &middot; ${esc(c.theme || '')} theme</dd>
+      <dt>Pilot's clock</dt><dd>${esc(c.client_time || '—')}</dd>
+      <dt>Recent errors</dt><dd>${(c.errors || []).length ? `<pre>${esc(c.errors.join('\n'))}</pre>` : 'None'}</dd>
+      <dt>Active flight</dt><dd>${r.flight ? 'Attached' : 'Not attached'}</dd>
+    </dl>
+    <div class="acts">
+      ${r.flight ? '<button type="button" id="dlFlight">Download flight (JSON)</button>' : ''}
+      ${['new', 'seen', 'fixed'].filter(s => s !== r.status).map(s => `<button type="button" data-status="${s}">Mark ${s}</button>`).join('')}
+    </div>`;
+  if (r.flight) document.getElementById('dlFlight').onclick = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(r.flight, null, 2)], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: `report-${r.id.slice(0, 6)}-flight.json` });
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  detail.querySelectorAll('[data-status]').forEach(b => b.onclick = async () => {
+    await setStatus(r.id, b.dataset.status);
+    await load();
+    openReport(r.id);
+  });
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setStatus(id, status) {
+  return fetch(`/admin/api/reports/${encodeURIComponent(id)}/status`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }),
+  });
+}
+
+document.getElementById('list').addEventListener('click', e => {
+  const row = e.target.closest('tr[data-id]');
+  if (row) openReport(row.dataset.id);
+});
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('button[data-f]');
+  if (!b) return;
+  filter = b.dataset.f;
+  document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('on', x === b));
+  paint();
+});
+load();
+</script>
+{% include "_theme_toggle.html" %}
+</body>
+</html>

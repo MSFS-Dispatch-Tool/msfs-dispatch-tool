@@ -4140,6 +4140,57 @@ function filterGlossary(query) {
   document.getElementById('glossaryNoMatch').style.display = anyVisible ? 'none' : 'block';
 }
 
+// ---- Report a problem: a message plus what's needed to reproduce it
+// (the page, the browser, recent errors and, if the pilot agrees, the
+// active flight as this browser has it) ----
+function openReport() {
+  const hasFlight = !!loadActiveFlight();
+  document.getElementById('reportFlightRow').hidden = !hasFlight;
+  document.getElementById('reportFlight').checked = hasFlight;
+  document.getElementById('reportStatus').textContent = '';
+  document.getElementById('reportSend').disabled = false;
+  document.getElementById('reportOverlay').classList.add('open');
+  document.getElementById('reportCategory').focus();
+}
+function closeReport() {
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('reportOverlay')?.classList.contains('open')) closeReport();
+});
+
+async function sendReport(event) {
+  event.preventDefault();
+  const status = document.getElementById('reportStatus');
+  const say = (text, kind) => { status.textContent = text; status.className = 'acars-status' + (kind ? ' ' + kind : ''); };
+  const message = document.getElementById('reportMessage').value.trim();
+  if (message.length < 10) { say('Tell us a little more: at least 10 characters', 'bad'); return; }
+  const body = {
+    category: document.getElementById('reportCategory').value,
+    message,
+    context: {
+      view: currentAppSection || '', path: location.pathname + location.search,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      theme: document.documentElement.dataset.theme || '', client_time: new Date().toISOString(),
+      errors: window.vdRecentErrors || [],
+    },
+    flight: document.getElementById('reportFlight').checked ? loadActiveFlight() : null,
+  };
+  const btn = document.getElementById('reportSend');
+  btn.disabled = true;
+  say('Sending...');
+  try {
+    const resp = await fetch('/reports', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!resp.ok) { say(data.error || 'Not sent', 'bad'); btn.disabled = false; return; }
+    document.getElementById('reportForm').reset();
+    say(`Sent, thank you. Reference ${data.reference}`, 'ok');
+  } catch (e) {
+    say('Not sent: the server can\'t be reached', 'bad');
+    btn.disabled = false;
+  }
+}
+
 function startNewFlight() {
   if (!confirm('Are you sure? This will discard the current flight')) return;
   clearActiveFlight();

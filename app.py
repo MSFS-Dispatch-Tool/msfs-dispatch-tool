@@ -544,6 +544,115 @@ def admin_demo_account_route():
     return jsonify({"ok": True, "email": email, **result})
 
 
+# ---- Report a problem: what pilots send from the app's header, read on
+# the admin page. Besides the message, the report carries the page, the
+# browser and recent errors, and the active flight if the pilot attaches it.
+REPORT_CATEGORIES = ("bug", "data", "idea", "other")
+REPORT_MIN_CHARS, REPORT_MAX_CHARS = 10, 4000
+REPORT_MAX_FLIGHT_BYTES = 1_000_000
+REPORT_WINDOW_SECONDS, REPORT_MAX_PER_WINDOW = 600, 5
+_report_times = {}
+
+
+def _clip(value, limit):
+    return str(value or "")[:limit]
+
+
+def _report_context(raw):
+    """Only the known context fields, each size-capped, whatever a client sends."""
+    raw = raw if isinstance(raw, dict) else {}
+    errors = raw.get("errors") if isinstance(raw.get("errors"), list) else []
+    return {
+        "view": _clip(raw.get("view"), 40),
+        "path": _clip(raw.get("path"), 300),
+        "viewport": _clip(raw.get("viewport"), 20),
+        "theme": _clip(raw.get("theme"), 10),
+        "client_time": _clip(raw.get("client_time"), 40),
+        "errors": [_clip(e, 600) for e in errors[:10]],
+        "user_agent": _clip(request.headers.get("User-Agent"), 300),
+    }
+
+
+@app.route("/reports", methods=["POST"])
+def create_report_route():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    payload = request.get_json(silent=True) or {}
+    category = payload.get("category")
+    if category not in REPORT_CATEGORIES:
+        return jsonify({"error": "Pick what kind of problem it is"}), 400
+    message = str(payload.get("message") or "").strip()
+    if len(message) < REPORT_MIN_CHARS:
+        return jsonify({"error": "Tell us a little more: at least 10 characters"}), 400
+    user_id = current_user_id()
+    now = time.time()
+    recent = [t for t in _report_times.get(user_id, []) if now - t < REPORT_WINDOW_SECONDS]
+    if len(recent) >= REPORT_MAX_PER_WINDOW:
+        return jsonify({"error": "You've sent several reports just now. Try again in a few minutes"}), 429
+    flight = payload.get("flight") if isinstance(payload.get("flight"), dict) else None
+    if flight is not None and len(json.dumps(flight)) > REPORT_MAX_FLIGHT_BYTES:
+        flight = {"note": "The active flight was too large to attach"}
+    user = current_user()
+    report_id = db.create_report(user_id, user["email"] if user else "", category, message[:REPORT_MAX_CHARS],
+                                 _report_context(payload.get("context")), flight)
+    _report_times[user_id] = recent + [now]
+    return jsonify({"ok": True, "reference": report_id[:6].upper()})
+
+
+@app.route("/admin/reports")
+def admin_reports_page():
+    if not auth.auth_available() or not _is_admin():
+        return redirect(url_for("dispatch_app"))
+    return render_template("admin_reports.html")
+
+
+@app.route("/admin/api/reports", methods=["GET"])
+def admin_list_reports_route():
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    return jsonify({"reports": db.list_reports()})
+
+
+@app.route("/admin/api/reports/<report_id>", methods=["GET"])
+def admin_get_report_route(report_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    report = db.get_report(report_id)
+    return jsonify(report) if report else (jsonify({"error": "No such report"}), 404)
+
+
+@app.route("/admin/api/reports/<report_id>/status", methods=["POST"])
+def admin_report_status_route(report_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    status = (request.get_json(silent=True) or {}).get("status")
+    if status not in db.REPORT_STATUSES:
+        return jsonify({"error": "Unknown status"}), 400
+    if not db.set_report_status(report_id, status):
+        return jsonify({"error": "No such report"}), 404
+    return jsonify({"ok": True, "status": status})
+
+
+def _new_report_count():
+    """For the admin link in the header; never stops the app from loading."""
+    if not _is_admin() or not db.db_available():
+        return 0
+    try:
+        return db.count_new_reports()
+    except Exception:
+        return 0
+
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
@@ -823,6 +932,7 @@ def dispatch_app():
     }
     user = current_user()
     return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin(),
+                           new_reports=_new_report_count(),
                             current_user_email=(user["email"] if user else ""), countries=countries,
                            iata_delay_codes=iata_delay_codes, min_turnaround_minutes=MIN_TURNAROUND_MINUTES)
 

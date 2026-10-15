@@ -1,0 +1,23 @@
+<script>
+  // Errors on this page, kept for Report a problem (window.vdRecentErrors).
+  // Only the page's own scripts count: a browser extension's errors, or
+  // another site's (reported only as "Script error."), are not ours.
+  (function () {
+    var seen = {};
+    window.vdRecentErrors = [];
+    function note(text) {
+      if (!text || seen[text]) return;
+      seen[text] = true;
+      window.vdRecentErrors.push(new Date().toISOString().slice(11, 19) + 'Z ' + text);
+      if (window.vdRecentErrors.length > 10) window.vdRecentErrors.shift();
+    }
+    window.addEventListener('error', function (e) {
+      if (!e.filename || e.filename.indexOf(location.origin) !== 0) return;
+      note((e.message || 'Error') + ' at ' + e.filename.replace(location.origin, '') + ':' + e.lineno + ':' + e.colno);
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason;
+      note('Unhandled: ' + (r && (r.stack || r.message) || String(r)).slice(0, 400));
+    });
+  })();
+</script>

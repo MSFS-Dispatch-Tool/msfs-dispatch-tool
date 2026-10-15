@@ -183,6 +183,10 @@ async def main():
               any((r.get("pirep") or {}).get("remarks") and (r.get("loadsheet") or {}).get("text") for r in log))
         await page.evaluate("selectRecapLeg(0); selectRecapTab('pirep')")
         check("the filed PIREP reads back as a document", "PILOT REMARKS" in await page.inner_text("#af-pane-pirep"))
+        await page.click(".app-report")
+        check("with a flight in progress, Report a problem offers to attach it",
+              await page.is_visible("#reportFlightRow") and await page.is_checked("#reportFlight"))
+        await page.evaluate("closeReport()")
         check.done(page)
         await browser.close()
 
