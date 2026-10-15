@@ -42,8 +42,10 @@ them off here as they're done.
 - [x] Render: a start command sized for the plan, e.g.
       `gunicorn app:app --workers 2 --threads 4 --timeout 60` (each worker
       takes about 90 MB).
-- [ ] Supabase: backups that can actually be restored (the free plan has
-      none to rely on; Pro has daily backups), and a plan that doesn't pause
-      the project after a week without use.
+- [ ] Supabase: move to Pro when VirtualDispatch's paid plan goes live
+      (decided 15 Oct 2026). Pro keeps daily backups for 7 days and never
+      pauses the project. Until then, accepted risks: no backups to restore
+      from, and the project pauses after about a week without use (restore it
+      from the Supabase dashboard; the data is kept).
 - [ ] Supabase: DATABASE_URL points at the connection pooler, not a direct
       connection, so the workers don't run out of database connections.
