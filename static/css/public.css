@@ -544,6 +544,28 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .cta-band p { font-size: 19px; color: var(--text-muted); margin: 0 0 32px; }
 .cta-band .btn { width: 230px; height: 52px; display: inline-flex; align-items: center; justify-content: center; }
 @media (max-width: 560px) { .cta-band { padding: 80px 0; } .cta-band h2 { font-size: 34px; } }
+/* Waitlist (in the call to action while sign-ups are invitation-only) */
+.waitlist { max-width: 520px; margin: 0 auto; text-align: left; }
+.waitlist[hidden] { display: none; }
+.waitlist-row { display: flex; gap: 10px; }
+.waitlist-row input {
+  flex: 1; min-width: 0; height: 52px; padding: 0 16px; font: inherit; font-size: 16px; color: var(--text);
+  background: var(--face); border: 1px solid var(--shadow-dk); border-radius: var(--radius-pill);
+}
+.waitlist-row input:focus { outline: none; border-color: var(--titlebar); box-shadow: 0 0 0 3px var(--accent-bg); }
+.cta-band .waitlist-row .btn { width: auto; padding: 0 26px; flex: none; }
+.waitlist-consent { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-muted); }
+.waitlist-consent input { margin-top: 3px; flex: none; }
+.waitlist-consent a { color: inherit; text-decoration: underline; }
+.waitlist-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.cta-band .waitlist-status { min-height: 1.5em; margin: 16px 0 0; font-size: 15px; }
+.cta-band .waitlist-status.ok { color: #067647; font-weight: 600; }
+.cta-band .waitlist-status.bad { color: #B42318; font-weight: 600; }
+:root[data-theme="dark"] .cta-band .waitlist-status.ok { color: #46DB86; }
+:root[data-theme="dark"] .cta-band .waitlist-status.bad { color: #FF6259; }
+.cta-band .waitlist-invited { margin: 18px 0 0; font-size: 14px; }
+.cta-band .waitlist-invited a { color: var(--titlebar); font-weight: 600; }
+@media (max-width: 560px) { .waitlist-row { flex-direction: column; } .cta-band .waitlist-row .btn { width: 100%; } }
 
 /* ---- Coming soon ---- */
 .soon { padding: 104px 0 120px; }

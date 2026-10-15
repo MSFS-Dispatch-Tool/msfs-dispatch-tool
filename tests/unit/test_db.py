@@ -38,6 +38,20 @@ def test_every_app_table_has_row_security_and_the_owner_still_reads_it(database)
         conn.rollback()
 
 
+def test_allowed_pilots_and_the_waitlist(database):
+    email = database + "@example.com"
+    assert db.join_waitlist(email.upper(), "consent text") and not db.join_waitlist(email, "other text")
+    assert next(w for w in db.list_waitlist() if w["email"] == email)["consent"] == "consent text"
+    db.add_allowed_pilot(" " + email.upper(), "tester", "boss@example.com")
+    assert email in db.allowed_pilot_emails()
+    assert all(w["email"] != email for w in db.list_waitlist())            # off the waitlist once allowed
+    db.add_allowed_pilot(email, "renamed", "boss@example.com")
+    assert next(p for p in db.list_allowed_pilots() if p["email"] == email)["note"] == "renamed"
+    assert db.remove_allowed_pilot(email) and not db.remove_allowed_pilot(email)
+    db.join_waitlist(email, "consent text")
+    assert db.remove_from_waitlist(email) and not db.remove_from_waitlist(email)
+
+
 def test_settings_merge_with_defaults(database):
     assert db.get_settings(database) == db.DEFAULT_SETTINGS
     saved = db.save_settings({"profile": {"username": "pilot"}, "generation": {"mel": {"probability": 40}}}, database)

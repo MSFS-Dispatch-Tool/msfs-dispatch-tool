@@ -1,7 +1,9 @@
 """Static assets, the profile page, the landing page video, the legal pages
 and the glossary."""
 import asyncio
+import os
 
+import psycopg2
 from playwright.async_api import async_playwright
 
 from common import BASE, Checks, launch, prepare, shot
@@ -88,6 +90,22 @@ async def main():
         inter = await own.evaluate("document.fonts.check('600 14px Inter') && [...document.fonts].some(f => f.family.replace(/\"/g, '') === 'Inter' && f.status === 'loaded')")
         check("pages load nothing from other servers, and the Inter font is served by the app", not outside and inter, outside[:3])
         await ctx.close()
+
+        # The waitlist, in the website's closing section while sign-ups are invitation-only
+        await page.goto(BASE + "/#waitlist")
+        await page.fill("#waitlistForm input[name=email]", "e2e.waitlist@example.com")
+        await page.click("#waitlistForm button")
+        check("joining the waitlist needs the consent box", await page.text_content("#waitlistStatus") == "" and await page.is_visible("#waitlistForm"))
+        await page.check("#waitlistForm input[name=consent]")
+        await page.click("#waitlistForm button")
+        await page.wait_for_selector("#waitlistStatus.ok")
+        with psycopg2.connect(os.environ["DATABASE_URL"]) as conn, conn.cursor() as cur:
+            cur.execute("SELECT consent FROM waitlist WHERE email = 'e2e.waitlist@example.com'")
+            row = cur.fetchone()
+            cur.execute("DELETE FROM waitlist WHERE email = 'e2e.waitlist@example.com'")
+        check("the waitlist keeps the email with the consent given", row and "join VirtualDispatch" in row[0]
+              and not await page.is_visible("#waitlistForm"), row)
+        await page.locator(".cta-band").screenshot(path=shot("waitlist.png"))
 
         await page.goto(BASE + "/privacy")
         html = await page.content()

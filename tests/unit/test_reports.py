@@ -59,7 +59,7 @@ def test_admin_endpoints_are_for_admins_only(client, app_module, reports, monkey
 
     # Signed in, but not on the admin list
     monkeypatch.setattr(auth, "auth_available", lambda: True)
-    monkeypatch.setattr(auth, "email_allowed", lambda email: True)
+    monkeypatch.setattr(auth, "email_allowed", lambda email, extra=(): True)
     monkeypatch.setattr(auth, "ADMIN_EMAILS", {"boss@example.com"})
     with client.session_transaction() as s:
         s["user"] = {"id": "u1", "email": "pilot@example.com"}

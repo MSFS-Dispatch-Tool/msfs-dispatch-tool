@@ -74,6 +74,7 @@
     color: var(--red); font-size: 13px; margin: 0 0 var(--sp-5);
     padding: var(--sp-3); background: #FEF3F2; border: 1px solid #FDA29B; border-radius: var(--radius);
   }
+  .notice a { color: inherit; font-weight: 600; }
   .notice {
     color: var(--green); font-size: 13px; margin: 0 0 var(--sp-5);
     padding: var(--sp-3); background: #ECFDF3; border: 1px solid #A6F4C5; border-radius: var(--radius);
@@ -99,15 +100,11 @@
 </head>
 <body class="vd-plain">
   <div class="panel">
-    <div class="panel-header">VirtualDispatch &mdash; {{ "Create account" if mode in ("signup", "signup_closed") else "Access restricted" if mode == "restricted" else "Sign in" }}</div>
+    <div class="panel-header">VirtualDispatch &mdash; {{ "Create account" if mode == "signup" else "Access restricted" if mode == "restricted" else "Sign in" }}</div>
     <div class="panel-body">
-      {% if mode == "signup_closed" %}
-      <p class="notice" style="margin-bottom:var(--sp-3);">New accounts are closed for now</p>
-      <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in a private preview. Registrations will open again soon</p>
-      <div class="switch">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></div>
-      {% elif mode == "restricted" %}
+      {% if mode == "restricted" %}
       <p class="notice" style="margin-bottom:var(--sp-3);">This account doesn't have access yet</p>
-      <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in a private preview, open to invited pilots only. You're signed in as <strong>{{ signup_email }}</strong></p>
+      <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in a private preview, open to invited pilots only. You're signed in as <strong>{{ signup_email }}</strong>. <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a> to be invited</p>
       <div class="switch"><form class="inline-form" method="post" action="{{ url_for('logout') }}"><button class="link-button" type="submit">Sign out</button></form> &middot; <a href="{{ url_for('index') }}">Back to the website</a></div>
       {% elif just_signed_up %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
@@ -122,6 +119,7 @@
       {% else %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
       {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
+      {% if mode == "signup" and invite_only and not error %}<p class="notice">VirtualDispatch is in a private preview: create your account with the email address you were invited with. Not invited yet? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a></p>{% endif %}
       <form method="POST" action="{{ url_for('signup') if mode == 'signup' else url_for('login', next=request.args.get('next')) }}" id="authForm">
         <div class="field">
           <label for="email">Email</label>
@@ -168,7 +166,7 @@
         {% elif signups_open %}
           New here? <a href="{{ url_for('signup') }}">Create an account</a>
         {% else %}
-          New accounts are closed for now
+          Invited? <a href="{{ url_for('signup') }}">Create your account</a> &middot; Not yet? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a>
         {% endif %}
       </div>
       {% endif %}
