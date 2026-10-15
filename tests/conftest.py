@@ -5,7 +5,8 @@ weather lookups return nothing unless a test supplies reports."""
 import os
 import sys
 
-for var in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "DATABASE_URL", "TURNSTILE_SECRET_KEY"):
+for var in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "DATABASE_URL", "TURNSTILE_SECRET_KEY",
+            "SENTRY_DSN"):
     os.environ.pop(var, None)
 os.environ.setdefault("FLASK_SECRET_KEY", "unit-tests")
 

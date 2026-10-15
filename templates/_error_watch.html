@@ -1,0 +1,33 @@
+<script>
+  // Errors from this page's own scripts: kept for Report a problem
+  // (window.vdRecentErrors) and sent to the server's error monitoring, at
+  // most 5 per page. A browser extension's errors, or another site's
+  // (reported only as "Script error."), are not ours and are ignored.
+  (function () {
+    var seen = {}, sent = 0;
+    window.vdRecentErrors = [];
+    function note(text, report) {
+      if (!text || seen[text]) return;
+      seen[text] = true;
+      window.vdRecentErrors.push(new Date().toISOString().slice(11, 19) + 'Z ' + text);
+      if (window.vdRecentErrors.length > 10) window.vdRecentErrors.shift();
+      if (sent >= 5 || !window.fetch) return;
+      sent++;
+      report.page = location.pathname;
+      fetch('/client-errors', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(report) }).catch(function () {});
+    }
+    window.addEventListener('error', function (e) {
+      if (!e.filename || e.filename.indexOf(location.origin) !== 0) return;
+      var source = e.filename.replace(location.origin, '').split('?')[0] + ':' + e.lineno + ':' + e.colno;
+      var message = e.message || 'Error';
+      note(message + ' at ' + source, { message: message, source: source, stack: (e.error && e.error.stack) || '' });
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason, stack = (r && r.stack) || '';
+      if (stack && stack.indexOf(location.origin) < 0) return;   // not from our scripts
+      var message = 'Unhandled: ' + ((r && r.message) || String(r)).slice(0, 300);
+      note(message, { message: message, source: '', stack: stack });
+    });
+  })();
+</script>

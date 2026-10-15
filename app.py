@@ -23,6 +23,7 @@ import demo
 import techlog
 import notams
 import acars
+import monitoring
 import navigraph
 import ops
 import generator
@@ -38,6 +39,9 @@ from timeutils import (
 
 app = Flask(__name__)
 webperf.init_app(app)  # gzip + fingerprinted, long-cached static files
+
+# Error monitoring (Sentry), on when SENTRY_DSN is set - see monitoring.py
+monitoring.init()
 
 # Session signing key - set FLASK_SECRET_KEY in the environment so
 # sessions (and therefore logins) survive a restart/redeploy. Without
@@ -57,7 +61,7 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 # vars unset), the gate is off entirely - matches the old APP_PASSWORD-
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
-PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted",
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors",
                     "resend_verification_route", "request_password_reset_route", "static",
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
@@ -88,6 +92,14 @@ def current_user_id():
     same as it did before this migration."""
     user = current_user()
     return user["id"] if user else "local"
+
+
+@app.before_request
+def tag_monitoring_user():
+    """Errors during this request are filed under the account's id."""
+    user = current_user()
+    if user:
+        monitoring.set_user(user["id"])
 
 
 @app.before_request
@@ -544,6 +556,146 @@ def admin_demo_account_route():
     return jsonify({"ok": True, "email": email, **result})
 
 
+# ---- Report a problem: what pilots send from the app's header, read on
+# the admin page. Besides the message, the report carries the page, the
+# browser and recent errors, and the active flight if the pilot attaches it.
+REPORT_CATEGORIES = ("bug", "data", "idea", "other")
+REPORT_MIN_CHARS, REPORT_MAX_CHARS = 10, 4000
+REPORT_MAX_FLIGHT_BYTES = 1_000_000
+REPORT_WINDOW_SECONDS, REPORT_MAX_PER_WINDOW = 600, 5
+_report_times = {}
+
+
+def _clip(value, limit):
+    return str(value or "")[:limit]
+
+
+def _report_context(raw):
+    """Only the known context fields, each size-capped, whatever a client sends."""
+    raw = raw if isinstance(raw, dict) else {}
+    errors = raw.get("errors") if isinstance(raw.get("errors"), list) else []
+    return {
+        "view": _clip(raw.get("view"), 40),
+        "path": _clip(raw.get("path"), 300),
+        "viewport": _clip(raw.get("viewport"), 20),
+        "theme": _clip(raw.get("theme"), 10),
+        "client_time": _clip(raw.get("client_time"), 40),
+        "errors": [_clip(e, 600) for e in errors[:10]],
+        "user_agent": _clip(request.headers.get("User-Agent"), 300),
+    }
+
+
+@app.route("/reports", methods=["POST"])
+def create_report_route():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    payload = request.get_json(silent=True) or {}
+    category = payload.get("category")
+    if category not in REPORT_CATEGORIES:
+        return jsonify({"error": "Pick what kind of problem it is"}), 400
+    message = str(payload.get("message") or "").strip()
+    if len(message) < REPORT_MIN_CHARS:
+        return jsonify({"error": "Tell us a little more: at least 10 characters"}), 400
+    user_id = current_user_id()
+    now = time.time()
+    recent = [t for t in _report_times.get(user_id, []) if now - t < REPORT_WINDOW_SECONDS]
+    if len(recent) >= REPORT_MAX_PER_WINDOW:
+        return jsonify({"error": "You've sent several reports just now. Try again in a few minutes"}), 429
+    flight = payload.get("flight") if isinstance(payload.get("flight"), dict) else None
+    if flight is not None and len(json.dumps(flight)) > REPORT_MAX_FLIGHT_BYTES:
+        flight = {"note": "The active flight was too large to attach"}
+    user = current_user()
+    report_id = db.create_report(user_id, user["email"] if user else "", category, message[:REPORT_MAX_CHARS],
+                                 _report_context(payload.get("context")), flight)
+    _report_times[user_id] = recent + [now]
+    return jsonify({"ok": True, "reference": report_id[:6].upper()})
+
+
+@app.route("/admin/reports")
+def admin_reports_page():
+    if not auth.auth_available() or not _is_admin():
+        return redirect(url_for("dispatch_app"))
+    return render_template("admin_reports.html")
+
+
+@app.route("/admin/api/reports", methods=["GET"])
+def admin_list_reports_route():
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    return jsonify({"reports": db.list_reports()})
+
+
+@app.route("/admin/api/reports/<report_id>", methods=["GET"])
+def admin_get_report_route(report_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    report = db.get_report(report_id)
+    return jsonify(report) if report else (jsonify({"error": "No such report"}), 404)
+
+
+@app.route("/admin/api/reports/<report_id>/status", methods=["POST"])
+def admin_report_status_route(report_id):
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    status = (request.get_json(silent=True) or {}).get("status")
+    if status not in db.REPORT_STATUSES:
+        return jsonify({"error": "Unknown status"}), 400
+    if not db.set_report_status(report_id, status):
+        return jsonify({"error": "No such report"}), 404
+    return jsonify({"ok": True, "status": status})
+
+
+# ---- Browser errors (see templates/_error_watch.html): every page posts
+# its own scripts' errors here, for monitoring.browser_error. Open to
+# visitors too, since the website has scripts of its own, so it's capped
+# per visitor and per server process.
+CLIENT_ERROR_WINDOW_SECONDS = 600
+CLIENT_ERROR_MAX_PER_VISITOR, CLIENT_ERROR_MAX_TOTAL = 20, 300
+_client_error_times = {}
+
+
+@app.route("/client-errors", methods=["POST"])
+def client_errors():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not str(payload.get("message") or "").strip():
+        return "", 204
+    user = current_user()
+    visitor = user["id"] if user else (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    now = time.time()
+    cutoff = now - CLIENT_ERROR_WINDOW_SECONDS
+    for key in [k for k, times in _client_error_times.items() if times[-1] < cutoff]:
+        del _client_error_times[key]
+    mine = [t for t in _client_error_times.get(visitor, []) if t >= cutoff]
+    total = sum(1 for times in _client_error_times.values() for t in times if t >= cutoff)
+    if len(mine) >= CLIENT_ERROR_MAX_PER_VISITOR or total >= CLIENT_ERROR_MAX_TOTAL:
+        return "", 204
+    _client_error_times[visitor] = mine + [now]
+    monitoring.browser_error({"message": _clip(payload.get("message"), 300), "source": _clip(payload.get("source"), 300),
+                              "stack": _clip(payload.get("stack"), 2000), "page": _clip(payload.get("page"), 60)},
+                             user["id"] if user else None, _clip(request.headers.get("User-Agent"), 300))
+    return "", 204
+
+
+def _new_report_count():
+    """For the admin link in the header; never stops the app from loading."""
+    if not _is_admin() or not db.db_available():
+        return 0
+    try:
+        return db.count_new_reports()
+    except Exception:
+        return 0
+
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
@@ -823,6 +975,7 @@ def dispatch_app():
     }
     user = current_user()
     return render_template("index.html", counts=counts, auth_enabled=auth.auth_available(), is_admin=_is_admin(),
+                           new_reports=_new_report_count(),
                             current_user_email=(user["email"] if user else ""), countries=countries,
                            iata_delay_codes=iata_delay_codes, min_turnaround_minutes=MIN_TURNAROUND_MINUTES)
 

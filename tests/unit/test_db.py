@@ -51,6 +51,20 @@ def test_navigraph_link_is_kept_apart_from_settings(database):
     assert db.get_navigraph(database) == {}
 
 
+def test_problem_reports_list_newest_first_and_go_with_the_account(database):
+    first = db.create_report(database, "p@example.com", "bug", "The map is blank", {"view": "search"}, None)
+    second = db.create_report(database, "p@example.com", "data", "Wrong runway", {"errors": ["x"]}, {"legs": [1]})
+    listed = [r for r in db.list_reports() if r["user_id"] == database]
+    assert [r["id"] for r in listed] == [second, first] and "flight" not in listed[0]
+    assert listed[0]["has_flight"] and not listed[1]["has_flight"] and listed[0]["created_at"].endswith("Z")
+    assert db.get_report(second)["flight"] == {"legs": [1]} and db.get_report("missing") is None
+    new = db.count_new_reports()
+    assert db.set_report_status(first, "fixed") and db.count_new_reports() == new - 1
+    assert not db.set_report_status("missing", "seen")
+    db.delete_user_data(database)
+    assert db.get_report(first) is None and db.get_report(second) is None
+
+
 def test_active_flight_revisions_reject_stale_writes(database):
     assert db.get_active_flight(database) == {"flight": None, "rev": 0}
     ok, current = db.save_active_flight(database, {"legs": [1]}, 0)

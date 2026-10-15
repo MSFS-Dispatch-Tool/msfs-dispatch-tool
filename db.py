@@ -174,6 +174,23 @@ def init_db():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            # Problems pilots report from the app (Report a problem), read
+            # on the admin page. context: the page, browser and recent
+            # errors; flight: the active flight, if the pilot attached it.
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS problem_reports (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT,
+                    email TEXT,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                    category TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    context JSONB,
+                    flight JSONB,
+                    status TEXT NOT NULL DEFAULT 'new'
+                )
+            """)
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_problem_reports_created ON problem_reports (created_at DESC)")
         conn.commit()
 
 
@@ -267,7 +284,7 @@ def delete_pirep(pirep_id, user_id):
 
 def delete_user_data(user_id):
     """Removes every row this app itself stores for an account (PIREPs,
-    settings) - called when an account is deleted, so closing the
+    settings, problem reports) - called when an account is deleted, so closing the
     Supabase Auth user doesn't leave orphaned rows behind here."""
     with get_connection() as conn:
         with conn.cursor() as cur:
@@ -275,6 +292,7 @@ def delete_user_data(user_id):
             cur.execute("DELETE FROM app_settings WHERE id = %s", (user_id,))
             cur.execute("DELETE FROM active_flights WHERE user_id = %s", (user_id,))
             cur.execute("DELETE FROM demo_accounts WHERE user_id = %s", (user_id,))
+            cur.execute("DELETE FROM problem_reports WHERE user_id = %s", (user_id,))
         conn.commit()
 
 
@@ -396,3 +414,61 @@ def save_acars(acars, user_id):
                 ON CONFLICT (id) DO UPDATE SET data = app_settings.data || jsonb_build_object('acars', %s::jsonb)
             """, (user_id, Json(acars), Json(acars)))
         conn.commit()
+
+
+REPORT_STATUSES = ("new", "seen", "fixed")
+
+
+def create_report(user_id, email, category, message, context, flight):
+    report_id = uuid.uuid4().hex
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO problem_reports (id, user_id, email, category, message, context, flight)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (report_id, user_id, email, category, message, Json(context),
+                  Json(flight) if flight is not None else None))
+    return report_id
+
+
+def _report_row(row, with_flight=False):
+    report = {"id": row[0], "user_id": row[1], "email": row[2],
+              "created_at": row[3].astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+              "category": row[4], "message": row[5], "context": row[6] or {}, "status": row[7], "has_flight": row[8]}
+    if with_flight:
+        report["flight"] = row[9]
+    return report
+
+
+_REPORT_COLUMNS = "id, user_id, email, created_at, category, message, context, status, flight IS NOT NULL"
+
+
+def list_reports(limit=200):
+    """Newest first, without the attached flights (fetch one with get_report)."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT {_REPORT_COLUMNS} FROM problem_reports ORDER BY created_at DESC LIMIT %s", (limit,))
+            rows = cur.fetchall()
+    return [_report_row(r) for r in rows]
+
+
+def get_report(report_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT {_REPORT_COLUMNS}, flight FROM problem_reports WHERE id = %s", (report_id,))
+            row = cur.fetchone()
+    return _report_row(row, with_flight=True) if row else None
+
+
+def set_report_status(report_id, status):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE problem_reports SET status = %s WHERE id = %s", (status, report_id))
+            return cur.rowcount > 0
+
+
+def count_new_reports():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM problem_reports WHERE status = 'new'")
+            return cur.fetchone()[0]
