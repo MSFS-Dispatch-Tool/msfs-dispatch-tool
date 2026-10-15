@@ -3540,7 +3540,7 @@ async function renderAccountSettings() {
         <p class="placeholder-text acars-intro">Sign in with your Navigraph account so VirtualDispatch can create your <a href="https://www.simbrief.com" target="_blank" rel="noopener">SimBrief</a> flight plans without leaving the app. A free <a href="https://navigraph.com" target="_blank" rel="noopener">Navigraph</a> account is enough: no subscription needed</p>
         <div class="ng-row">
           <span class="ng-state" id="navigraphState">Not connected</span>
-          <a class="ng-signin" id="navigraphSignIn" href="/auth/navigraph/start">Sign in with Navigraph</a>
+          <a class="ng-signin" id="navigraphSignIn" href="/auth/navigraph/start"><img src="${escAttr(VD_CONFIG.navigraphMarkUrl)}" alt="" width="20" height="20">Sign in with Navigraph</a>
           <button class="ghost" type="button" id="navigraphDisconnect" onclick="disconnectNavigraph()" hidden>DISCONNECT</button>
         </div>
         <p class="acars-status" id="navigraphStatus" aria-live="polite"></p>

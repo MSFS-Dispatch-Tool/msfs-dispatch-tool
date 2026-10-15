@@ -72,6 +72,8 @@ async def main():
         # Sign in with Navigraph (a fake one): the account shows by name, its tokens stay on the server
         check("the Navigraph panel offers the sign-in",
               await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphState") == "Not connected")
+        check("the sign-in button carries Navigraph's mark",
+              await page.evaluate("document.querySelector('#navigraphSignIn img').naturalWidth > 0"))
         await page.locator("#navigraphPanel").screenshot(path=shot("settings_navigraph_off.png"))
         await page.click("#navigraphSignIn")
         await page.wait_for_selector("#navigraphDisconnect:not([hidden])")

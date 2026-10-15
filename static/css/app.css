@@ -1002,9 +1002,10 @@
 .ng-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 12px; }
 .ng-state { font-size: 13px; color: var(--text); }
 .ng-signin {
-  display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 6px;
+  display: inline-flex; align-items: center; gap: 9px; padding: 8px 16px 8px 12px; border-radius: 6px;
   background: #0B0F14; border: 1px solid #0B0F14; color: #FFFFFF; font-size: 13px; font-weight: 600; text-decoration: none;
 }
+.ng-signin img { display: block; flex: none; }
 .ng-signin:hover { background: #1F2731; }
 :root[data-theme="dark"] .ng-signin { border-color: #3A444F; }
 
