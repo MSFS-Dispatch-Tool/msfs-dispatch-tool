@@ -194,6 +194,22 @@ def init_db():
         conn.commit()
 
 
+APP_TABLES = ("pireps", "app_settings", "active_flights", "demo_accounts", "problem_reports")
+
+
+def enable_row_security():
+    """Row-level security on, with no policies, on every table of the app.
+    Supabase also serves the public schema through its automatic data API
+    to anyone holding the project's public key; with row security on and no
+    policy allowing anything, that API returns nothing from these tables.
+    This server is unaffected: it connects as the tables' owner, which row
+    security doesn't apply to."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            for table in APP_TABLES:
+                cur.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+
+
 def _row_to_record(row):
     """Flattens a DB row (flat columns + a detail JSONB blob) back into
     the shape the frontend expects: leg/ofp/loadsheet/pirep alongside

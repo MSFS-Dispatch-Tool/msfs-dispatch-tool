@@ -77,9 +77,22 @@ async def main():
         fewer = await page.evaluate("+document.querySelector('#demoKpis .kpi b').textContent")
         check("the logbook's range narrows the stats", 0 < fewer < flights, (flights, fewer))
         await page.screenshot(path=shot("landing_features.png"), full_page=True)
+        # Every page loads its font and map library from this site: nothing goes to another server
+        ctx = await browser.new_context(viewport={"width": 1400, "height": 900})
+        own = await prepare(await ctx.new_page())
+        outside = []
+        own.on("request", lambda r: outside.append(r.url) if not r.url.startswith(BASE) and not r.url.startswith("data:")
+               and "tile.openstreetmap.org" not in r.url else None)
+        for path in ("/", "/app", "/login", "/privacy"):
+            await own.goto(BASE + path, wait_until="networkidle")
+        inter = await own.evaluate("document.fonts.check('600 14px Inter') && [...document.fonts].some(f => f.family.replace(/\"/g, '') === 'Inter' && f.status === 'loaded')")
+        check("pages load nothing from other servers, and the Inter font is served by the app", not outside and inter, outside[:3])
+        await ctx.close()
+
         await page.goto(BASE + "/privacy")
         html = await page.content()
-        check("privacy policy lists the data and services", all(k in html for k in ("SimBrief", "Turnstile", "profile photo", "OpenStreetMap")))
+        check("privacy policy lists the data and services", all(k in html for k in ("SimBrief", "Turnstile", "profile photo", "OpenStreetMap", "Sentry"))
+              and "Google Fonts" not in html)
 
         # Day / night: the app's header switch repaints the map in place, and
         # the choice follows the visitor to the website and the sign-in page.

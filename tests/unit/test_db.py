@@ -20,6 +20,24 @@ def database(monkeypatch):
     db.delete_user_data(user)
 
 
+def test_every_app_table_has_row_security_and_the_owner_still_reads_it(database):
+    db.enable_row_security()
+    with db.get_connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT relname FROM pg_class WHERE relname = ANY(%s) AND relrowsecurity", (list(db.APP_TABLES),))
+        assert sorted(r[0] for r in cur.fetchall()) == sorted(db.APP_TABLES)
+    db.save_settings({"profile": {"username": "pilot"}, "generation": {}}, database)
+    assert db.get_settings(database)["profile"]["username"] == "pilot"
+    # A role granted access to the table, like Supabase's public API roles, sees no rows
+    with db.get_connection() as conn, conn.cursor() as cur:
+        cur.execute("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'vd_api_probe') "
+                    "THEN CREATE ROLE vd_api_probe; END IF; END $$")
+        cur.execute("GRANT SELECT ON app_settings TO vd_api_probe")
+        cur.execute("SET LOCAL ROLE vd_api_probe")
+        cur.execute("SELECT count(*) FROM app_settings")
+        assert cur.fetchone()[0] == 0
+        conn.rollback()
+
+
 def test_settings_merge_with_defaults(database):
     assert db.get_settings(database) == db.DEFAULT_SETTINGS
     saved = db.save_settings({"profile": {"username": "pilot"}, "generation": {"mel": {"probability": 40}}}, database)

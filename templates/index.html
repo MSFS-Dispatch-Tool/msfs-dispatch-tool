@@ -7,11 +7,9 @@
 {% include "_favicons.html" %}
 {% include "_theme_head.html" %}
 {% include "_error_watch.html" %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet-1.9.4/leaflet.css') }}">
+<script src="{{ url_for('static', filename='vendor/leaflet-1.9.4/leaflet.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
@@ -55,7 +53,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4.5"/><path d="M4 4.5c5-3 9 3 15 0v9c-6 3-10-3-15 0"/></svg>
     </button>
     <button class="app-link app-help" type="button" onclick="openGlossary()" title="Dispatch terms: what the abbreviations mean" aria-label="Dispatch terms">?</button>
-    {% if auth_enabled %}<a class="app-link" href="/logout">LOG OUT</a>{% endif %}
+    {% if auth_enabled %}<form class="app-logout" method="post" action="/logout"><button class="app-link" type="submit">LOG OUT</button></form>{% endif %}
   </div>
 </header>
 

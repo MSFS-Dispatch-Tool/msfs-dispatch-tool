@@ -49,6 +49,23 @@ monitoring.init()
 # it, a random key is generated at boot and every existing session is
 # invalidated the next time the process restarts.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+
+# Settings production can't run without. Without the Supabase ones the app
+# would treat everyone as the single local pilot of a development checkout,
+# with no sign-in at all; without FLASK_SECRET_KEY each worker would sign
+# sessions, and derive the keys for stored credentials, with its own random
+# key. On Render (which sets RENDER) the app refuses to start instead: the
+# deploy fails and the previous version keeps running.
+PRODUCTION_SETTINGS = ("FLASK_SECRET_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY", "DATABASE_URL")
+
+
+def check_production_settings(env):
+    missing = [name for name in PRODUCTION_SETTINGS if not env.get(name)]
+    if env.get("RENDER") and missing:
+        raise RuntimeError("Missing settings for production: " + ", ".join(missing))
+
+
+check_production_settings(os.environ)
 app.permanent_session_lifetime = timedelta(days=30)
 # The session cookie never rides along on cross-site POSTs, and on Render
 # (always HTTPS; Render sets RENDER) it's never sent over plain HTTP.
@@ -62,7 +79,7 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 # vars unset), the gate is off entirely - matches the old APP_PASSWORD-
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
-PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors",
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors", "healthz",
                     "resend_verification_route", "request_password_reset_route", "static",
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
@@ -127,6 +144,30 @@ def require_login():
         if request.accept_mimetypes.best == "application/json" or request.method != "GET":
             return jsonify({"error": "This account doesn't have access to VirtualDispatch yet."}), 403
         return redirect(url_for("access_restricted"))
+
+
+# Security headers on every response: no page of ours may be shown inside
+# another site's frame (a hidden frame could trick a pilot into clicking
+# SEND TO AIRCRAFT), browsers must take content types as given, other sites
+# see only our domain as the referrer, and the browser features we never
+# use stay off. On Render, browsers are also told to use HTTPS only.
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "frame-ancestors 'none'",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+}
+HSTS_HEADER = "max-age=31536000"
+
+
+@app.after_request
+def add_security_headers(response):
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    if os.environ.get("RENDER"):
+        response.headers.setdefault("Strict-Transport-Security", HSTS_HEADER)
+    return response
 
 
 def _has_access(user):
@@ -220,10 +261,15 @@ def _needs_onboarding(user_id):
 
 def _safe_next(next_url):
     """Only a path on this site: "/app" yes, "https://elsewhere" or
-    "//elsewhere" no, so a crafted login link can't send the pilot away."""
-    if next_url and next_url.startswith("/") and not next_url.startswith(("//", "/\\")):
-        return next_url
-    return None
+    "//elsewhere" no, so a crafted login link can't send the pilot away.
+    Browsers drop tabs and line breaks from a URL and read a backslash as
+    a slash, so "/<tab>/elsewhere" would become "//elsewhere": any of
+    those, or any other control character or space, rules a path out."""
+    if not next_url or not next_url.startswith("/") or next_url.startswith("//"):
+        return None
+    if "\\" in next_url or any(ord(ch) <= 0x20 or ord(ch) == 0x7F for ch in next_url):
+        return None
+    return next_url
 
 
 def _post_login_redirect(user_id, next_url=None):
@@ -297,8 +343,10 @@ def login():
                             turnstile_site_key=auth.TURNSTILE_SITE_KEY)
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
+    """A POST from the sign-out buttons, so another site can't sign a pilot
+    out with a link or an image."""
     session.clear()
     return redirect(url_for("login"))
 
@@ -367,6 +415,18 @@ def auth_session():
 
 _USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,20}$")
 _ALLOWED_PHOTO_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+
+
+def _photo_matches_type(data, content_type):
+    """The file really is the image type the browser claims, judged by its
+    first bytes: the type is only the browser's word for it."""
+    if content_type == "image/jpeg":
+        return data[:3] == b"\xff\xd8\xff"
+    if content_type == "image/png":
+        return data[:8] == b"\x89PNG\r\n\x1a\n"
+    if content_type == "image/webp":
+        return data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+    return False
 _MAX_PHOTO_BYTES = 2 * 1024 * 1024
 
 
@@ -392,6 +452,8 @@ def _handle_photo_upload(photo_file):
     data = photo_file.read()
     if len(data) > _MAX_PHOTO_BYTES:
         return None, "Photo must be 2MB or smaller."
+    if not _photo_matches_type(data, content_type):
+        return None, "Photo must be a JPEG, PNG, or WebP image."
     if not auth.admin_available():
         return None, None
     try:
@@ -663,6 +725,14 @@ def admin_report_status_route(report_id):
 CLIENT_ERROR_WINDOW_SECONDS = 600
 CLIENT_ERROR_MAX_PER_VISITOR, CLIENT_ERROR_MAX_TOTAL = 20, 300
 _client_error_times = {}
+
+
+@app.route("/healthz")
+def healthz():
+    """For Render's health check (Settings > Health Check Path): the app is
+    up and answering. It doesn't touch the database or any other service,
+    so an outage elsewhere never gets the app restarted for nothing."""
+    return jsonify({"ok": True})
 
 
 @app.route("/client-errors", methods=["POST"])
@@ -1533,6 +1603,10 @@ if db.db_available():
         db.init_db()
     except Exception as exc:
         print(f"[pireps] DATABASE_URL is set but init failed: {exc}")
+    try:
+        db.enable_row_security()
+    except Exception as exc:
+        print(f"[db] could not turn on row-level security: {exc}")
 
 if auth.admin_available():
     try:
@@ -1737,6 +1811,7 @@ def account_delete_route():
         return jsonify({"error": exc.message}), 502
     if db.db_available():
         try:
+            _revoke_navigraph(user["id"])   # at Navigraph too, not just here
             db.delete_user_data(user["id"])
         except Exception:
             pass  # the auth account is already gone; don't block on cleanup
@@ -2232,11 +2307,17 @@ def navigraph_disconnect():
     if unavailable:
         return unavailable
     user_id = current_user_id()
+    _revoke_navigraph(user_id)
+    return jsonify(_navigraph_status(user_id))
+
+
+def _revoke_navigraph(user_id):
+    """Deletes the pilot's Navigraph link and, best effort, revokes its
+    refresh token at Navigraph, so it can't be used from anywhere."""
     refresh_token = _navigraph_box.open(db.get_navigraph(user_id).get("refresh") or "")
     db.save_navigraph({}, user_id)
     if refresh_token and navigraph.configured():
         navigraph.revoke(refresh_token)
-    return jsonify(_navigraph_status(user_id))
 
 
 @app.route("/simbrief/ofp")

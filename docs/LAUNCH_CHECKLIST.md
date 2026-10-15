@@ -29,8 +29,21 @@ them off here as they're done.
 
 ## Services
 
-- [ ] SENTRY_DSN set in Render; error retention at most 90 days (the
+- [x] SENTRY_DSN set in Render; error retention at most 90 days (the
       Privacy Policy says so).
 - [ ] NAVIGRAPH_CLIENT_ID and NAVIGRAPH_CLIENT_SECRET set in Render.
 - [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens and Hoppie
       codes are encrypted with keys derived from it.
+
+## Hosting
+
+- [ ] Render: Settings > Health Check Path set to `/healthz`, so a deploy
+      that doesn't start never replaces the running one.
+- [ ] Render: a start command sized for the plan, e.g.
+      `gunicorn app:app --workers 2 --threads 4 --timeout 60` (each worker
+      takes about 90 MB).
+- [ ] Supabase: backups that can actually be restored (the free plan has
+      none to rely on; Pro has daily backups), and a plan that doesn't pause
+      the project after a week without use.
+- [ ] Supabase: DATABASE_URL points at the connection pooler, not a direct
+      connection, so the workers don't run out of database connections.
