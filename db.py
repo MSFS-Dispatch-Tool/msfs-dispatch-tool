@@ -371,7 +371,7 @@ def get_acars(user_id):
 
 
 def get_navigraph(user_id):
-    """The pilot's Navigraph link ({"sub", "name", "access", "refresh",
+    """The pilot's Navigraph link ({"name", "access", "refresh",
     "expires_at", "connected_at"}, tokens encrypted), stored with their
     other settings but never part of what /settings sends to the browser."""
     with get_connection() as conn:
@@ -404,6 +404,21 @@ def locked_navigraph(user_id):
                 cur.execute("UPDATE app_settings SET data = data || jsonb_build_object('navigraph', %s::jsonb) WHERE id = %s",
                             (Json(link), user_id))
             yield (row[0] if row and isinstance(row[0], dict) else None) or {}, save
+
+
+def seal_plain_acars_logons(seal, logon_pattern):
+    """Encrypts the Hoppie logon codes saved before codes were encrypted:
+    a stored value that is still a plain code (logon_pattern) is replaced by
+    seal(code). Returns how many were encrypted."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, data -> 'acars' ->> 'logon' FROM app_settings "
+                        "WHERE data -> 'acars' ->> 'logon' ~ %s FOR UPDATE", (logon_pattern,))
+            rows = cur.fetchall()
+            for user_id, code in rows:
+                cur.execute("UPDATE app_settings SET data = jsonb_set(data, '{acars,logon}', to_jsonb(%s::text)) WHERE id = %s",
+                            (seal(code), user_id))
+    return len(rows)
 
 
 def save_acars(acars, user_id):

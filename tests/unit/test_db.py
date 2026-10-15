@@ -38,6 +38,15 @@ def test_acars_logon_is_kept_apart_from_settings(database):
     assert db.get_acars(database) == {} and db.get_settings(database)["profile"]["username"] == "pilot"
 
 
+def test_plain_logon_codes_are_encrypted_once(database):
+    import acars
+    db.save_acars({"logon": "PLAIN123abc"}, database)
+    assert db.seal_plain_acars_logons(lambda code: "sealed:" + code, acars.LOGON_RE.pattern) >= 1
+    assert db.get_acars(database) == {"logon": "sealed:PLAIN123abc"}
+    db.seal_plain_acars_logons(lambda code: "sealed:" + code, acars.LOGON_RE.pattern)
+    assert db.get_acars(database) == {"logon": "sealed:PLAIN123abc"}      # already sealed: left alone
+
+
 def test_navigraph_link_is_kept_apart_from_settings(database):
     db.save_navigraph({"name": "jdoe", "refresh": "sealed"}, database)
     db.save_settings({"profile": {"username": "pilot"}, "generation": {}}, database)
