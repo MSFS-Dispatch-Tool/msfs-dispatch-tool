@@ -47,5 +47,7 @@ them off here as they're done.
       pauses the project. Until then, accepted risks: no backups to restore
       from, and the project pauses after about a week without use (restore it
       from the Supabase dashboard; the data is kept).
-- [ ] Supabase: DATABASE_URL points at the connection pooler, not a direct
-      connection, so the workers don't run out of database connections.
+- [x] Supabase: DATABASE_URL points at the connection pooler, not a direct
+      connection, so the workers don't run out of database connections
+      (transaction mode, port 6543: the app uses no prepared statements,
+      session settings or advisory locks, which that mode doesn't support).
