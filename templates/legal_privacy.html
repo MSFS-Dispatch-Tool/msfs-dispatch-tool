@@ -14,10 +14,12 @@
     <h2>2. What data we collect</h2>
     <ul>
       <li><strong>Account data:</strong> the email address and password you provide when creating an account. Passwords are never stored by us in readable form &mdash; account authentication is handled by our identity provider, Supabase Auth, which stores only a salted hash.</li>
-      <li><strong>Profile data:</strong> optional profile fields you choose to fill in (first name, last name, birth date, nationality, preferred base, SimBrief username, the aircraft you own in the simulator) and, if you upload one, a profile photo.</li>
+      <li><strong>Profile data:</strong> optional profile fields you choose to fill in (first name, last name, birth date, nationality, preferred base, the aircraft you own in the simulator) and, if you upload one, a profile photo. If you enter a SimBrief username, it is kept in your browser and sent to our server only when we fetch your flight plan from SimBrief.</li>
       <li><strong>Service usage data:</strong> the PIREPs you file (times, fuel, delay codes and the dispatch data of each flight), the flight you are currently working on (kept on our servers so you can continue it on another device), your generation settings (which delays, defects and last-minute changes are enabled, and their chances), and the flying statistics derived from your PIREPs &mdash; all tied to your account and visible only to you. Profile photos are stored in a storage bucket whose files can be opened by anyone who has the link.</li>
       <li><strong>Problem reports:</strong> when you use Report a problem, we keep your message with your account email, the page you were on, your browser and screen size, recent errors on that page and, if you choose to attach it, your active flight, so we can investigate. Reports are read only by the people who run the Service and are deleted with your account.</li>
+      <li><strong>Connected services:</strong> if you choose to connect them in Account settings, your Hoppie ACARS logon code, and the name of your Navigraph account with the sign-in tokens Navigraph issues for it. The logon code is stored on our servers and never shown back to your browser in full; the Navigraph tokens are stored encrypted. Removing the code or disconnecting Navigraph deletes them.</li>
       <li><strong>Technical data:</strong> standard web server logs (IP address, browser user agent, request timestamps) collected automatically by our hosting provider for security and reliability purposes.</li>
+      <li><strong>Error reports:</strong> when something breaks, on our server or in our pages' own code in your browser, we record the error and where it happened in our code, the page address without its parameters, your browser type and, if you're signed in, your account's internal identifier. We use them only to find and fix faults.</li>
       <li><strong>Cookies:</strong> see our <a href="/cookies">Cookie Policy</a> for details.</li>
     </ul>
 
@@ -25,6 +27,8 @@
     <ul>
       <li>To create and manage your account, and to provide the core functionality of the Service (contract performance).</li>
       <li>To send you account-related emails: email verification, password reset, and important service notices (contract performance / legitimate interest).</li>
+      <li>To connect the Service to SimBrief (Navigraph) and Hoppie's ACARS network when you ask it to, and to act on them only when you press the corresponding button (contract performance).</li>
+      <li>To investigate the problems you report and to detect and fix errors in the Service (legitimate interest in providing a working service).</li>
       <li>To maintain the security and integrity of the Service, including preventing abuse (legitimate interest).</li>
       <li>With your consent, to understand how the Service is used through analytics, where enabled (consent &mdash; see our <a href="/cookies">Cookie Policy</a>).</li>
     </ul>
@@ -49,7 +53,8 @@
     <p>These providers may process data on infrastructure located outside the European Economic Area. Where this is the case, they provide appropriate safeguards (such as Standard Contractual Clauses) for the transfer. We do not sell your personal data to third parties, and we do not share it for third-party advertising purposes.</p>
 
     <h2>5. How long we keep your data</h2>
-    <p>We keep your account and associated data for as long as your account remains active. If you delete your account (or ask us to), we will delete your associated data within a reasonable time, except where we are required to retain certain records by law.</p>
+    <p>We keep your account and associated data for as long as your account remains active. If you delete your account (or ask us to), we will delete your associated data within a reasonable time, except where we are required to retain certain records by law. Deleting your account also deletes your problem reports and any connected-service credentials.</p>
+    <p>Error reports are kept by Sentry for a limited period (no more than 90 days) and then deleted automatically; they are not removed when you delete your account, but they contain no email address or other details that identify you directly. Server logs are kept by our hosting provider for a short period for security and troubleshooting.</p>
 
     <h2>6. Your rights</h2>
     <p>Under the GDPR, you have the right to access, correct, delete, restrict, or port your personal data, and to object to certain processing. To exercise any of these rights, contact us at <a href="mailto:privacy@virtualdispatch.app">privacy@virtualdispatch.app</a>. You also have the right to lodge a complaint with the Italian data protection authority, the <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>, or with your own country's supervisory authority.</p>
