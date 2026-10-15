@@ -330,7 +330,7 @@ def get_settings(user_id):
 
 def save_settings(data, user_id):
     """Replaces the profile and generation settings; anything else stored
-    alongside them (the ACARS logon code) is kept."""
+    alongside them (the ACARS logon code, the Navigraph link) is kept."""
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -350,6 +350,42 @@ def get_acars(user_id):
             cur.execute("SELECT data -> 'acars' FROM app_settings WHERE id = %s", (user_id,))
             row = cur.fetchone()
     return (row[0] if row and isinstance(row[0], dict) else None) or {}
+
+
+def get_navigraph(user_id):
+    """The pilot's Navigraph link ({"sub", "name", "access", "refresh",
+    "expires_at", "connected_at"}, tokens encrypted), stored with their
+    other settings but never part of what /settings sends to the browser."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data -> 'navigraph' FROM app_settings WHERE id = %s", (user_id,))
+            row = cur.fetchone()
+    return (row[0] if row and isinstance(row[0], dict) else None) or {}
+
+
+def save_navigraph(link, user_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO app_settings (id, data) VALUES (%s, jsonb_build_object('navigraph', %s::jsonb))
+                ON CONFLICT (id) DO UPDATE SET data = app_settings.data || jsonb_build_object('navigraph', %s::jsonb)
+            """, (user_id, Json(link), Json(link)))
+
+
+@contextlib.contextmanager
+def locked_navigraph(user_id):
+    """The pilot's Navigraph link, row-locked until the block ends, so two
+    requests (on any worker) never refresh the same tokens at once: a
+    refresh token may only be good for one use. Yields (link, save)."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data -> 'navigraph' FROM app_settings WHERE id = %s FOR UPDATE", (user_id,))
+            row = cur.fetchone()
+
+            def save(link):
+                cur.execute("UPDATE app_settings SET data = data || jsonb_build_object('navigraph', %s::jsonb) WHERE id = %s",
+                            (Json(link), user_id))
+            yield (row[0] if row and isinstance(row[0], dict) else None) or {}, save
 
 
 def save_acars(acars, user_id):

@@ -38,6 +38,19 @@ def test_acars_logon_is_kept_apart_from_settings(database):
     assert db.get_acars(database) == {} and db.get_settings(database)["profile"]["username"] == "pilot"
 
 
+def test_navigraph_link_is_kept_apart_from_settings(database):
+    db.save_navigraph({"name": "jdoe", "refresh": "sealed"}, database)
+    db.save_settings({"profile": {"username": "pilot"}, "generation": {}}, database)
+    assert db.get_navigraph(database) == {"name": "jdoe", "refresh": "sealed"}   # a profile save keeps it
+    assert "navigraph" not in db.get_settings(database)
+    with db.locked_navigraph(database) as (link, save):
+        assert link["refresh"] == "sealed"
+        save({**link, "refresh": "sealed-2"})
+    assert db.get_navigraph(database)["refresh"] == "sealed-2"
+    db.save_navigraph({}, database)
+    assert db.get_navigraph(database) == {}
+
+
 def test_active_flight_revisions_reject_stale_writes(database):
     assert db.get_active_flight(database) == {"flight": None, "rev": 0}
     ok, current = db.save_active_flight(database, {"legs": [1]}, 0)

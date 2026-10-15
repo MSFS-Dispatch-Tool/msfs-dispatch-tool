@@ -171,7 +171,8 @@
     countries: {{ countries|tojson }},
     iataDelayCodes: {{ iata_delay_codes|tojson }},
     minTurnaroundMinutes: {{ min_turnaround_minutes|tojson }},
-    basemapUrl: {{ url_for('static', filename='data/basemap.json')|tojson }}
+    basemapUrl: {{ url_for('static', filename='data/basemap.json')|tojson }},
+    navigraphMarkUrl: {{ url_for('static', filename='img/navigraph-mark.svg')|tojson }}
   };
 </script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>

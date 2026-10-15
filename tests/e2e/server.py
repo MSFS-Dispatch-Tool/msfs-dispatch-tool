@@ -1,7 +1,8 @@
 """The real app for the browser suites, with only what can't be tested
 against the live world replaced: weather comes from fixed samples (so runs
 are repeatable and need no aviationweather.gov access), Hoppie's ACARS
-network is a fake (TESTLOGON1: every aircraft online; TESTLOGON2: none), and a scenario can pin the random rolls a suite
+network is a fake (TESTLOGON1: every aircraft online; TESTLOGON2: none), so
+is Navigraph's sign-in (it signs in "e2e_pilot" at once), and a scenario can pin the random rolls a suite
 depends on.
 
     python tests/e2e/server.py --seed                  # reset the test pilot's data
@@ -19,20 +20,26 @@ pilot's PIREPs and settings) and no Supabase variables, so the app runs
 signed in as the single local pilot.
 """
 import argparse
+import base64
 import hashlib
+import json
 import os
 import random
 import sys
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, ROOT)
 for var in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"):
     os.environ.pop(var, None)
 
+import flask  # noqa: E402
+
 import acars  # noqa: E402
 import app  # noqa: E402
 import db  # noqa: E402
+import navigraph  # noqa: E402
 import techlog  # noqa: E402
 import wxmap  # noqa: E402
 
@@ -106,6 +113,37 @@ def patch_hoppie():
             return _HoppieAnswer("ok {" + (data.get("packet", "") if logon == "TESTLOGON1" else "") + "}")
         return _HoppieAnswer("ok")
     acars.requests.post = post
+
+
+class _JsonAnswer:
+    def __init__(self, body):
+        self.body, self.status_code = body, 200
+
+    def json(self):
+        return self.body
+
+
+def patch_navigraph(port):
+    """Navigraph's sign-in page answers at once for the pilot "e2e_pilot";
+    its token endpoint hands out tokens for any code."""
+    navigraph.CLIENT_ID, navigraph.CLIENT_SECRET = "vd-e2e", "e2e-secret"
+    navigraph.IDENTITY_URL = f"http://localhost:{port}/__navigraph"
+    claims = base64.urlsafe_b64encode(json.dumps({"sub": "e2e-1", "preferred_username": "e2e_pilot"}).encode()).decode().rstrip("=")
+    others = navigraph.requests.post   # Hoppie's fake: both patch the same requests module
+
+    def post(url, data=None, timeout=None):
+        if not url.startswith(navigraph.IDENTITY_URL):
+            return others(url, data=data, timeout=timeout)
+        if url.endswith("/connect/token"):
+            return _JsonAnswer({"access_token": "e2e-access", "refresh_token": "e2e-refresh", "expires_in": 3600,
+                                "id_token": f"e30.{claims}.sig"})
+        return _JsonAnswer({})
+    navigraph.requests.post = post
+
+    def authorize():
+        q = flask.request.args
+        return flask.redirect(f"{q['redirect_uri']}?{urlencode({'code': 'e2e-code', 'state': q['state']})}")
+    app.app.add_url_rule("/__navigraph/connect/authorize", "fake_navigraph_authorize", authorize)
 
 
 def scenario_mel():
@@ -187,6 +225,7 @@ def main():
     clear_active_flight()
     patch_weather()
     patch_hoppie()
+    patch_navigraph(args.port)
     SCENARIOS[args.scenario]()
     app.app.run(port=args.port, debug=False)
 
