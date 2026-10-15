@@ -37,9 +37,9 @@ them off here as they're done.
 
 ## Hosting
 
-- [ ] Render: Settings > Health Check Path set to `/healthz`, so a deploy
+- [x] Render: Settings > Health Check Path set to `/healthz`, so a deploy
       that doesn't start never replaces the running one.
-- [ ] Render: a start command sized for the plan, e.g.
+- [x] Render: a start command sized for the plan, e.g.
       `gunicorn app:app --workers 2 --threads 4 --timeout 60` (each worker
       takes about 90 MB).
 - [ ] Supabase: backups that can actually be restored (the free plan has
