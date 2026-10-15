@@ -11,6 +11,7 @@ import pytest
 import requests
 
 import navigraph
+import sealing
 
 
 class Answer:
@@ -87,16 +88,19 @@ def test_token_errors_become_plain_messages(fake_navigraph):
         navigraph.refresh("old")
 
 
-def test_identity_comes_from_the_id_token():
-    assert navigraph.identity({"id_token": id_token({"sub": "abc-1", "preferred_username": "jdoe"})}) == {"sub": "abc-1", "name": "jdoe"}
-    assert navigraph.identity({"id_token": "not a jwt"}) == {"sub": "", "name": ""}
+def test_only_the_account_name_comes_from_the_id_token():
+    claims = {"sub": "abc-1", "preferred_username": "jdoe", "email": "j@example.com"}
+    assert navigraph.account_name({"id_token": id_token(claims)}) == "jdoe"
+    assert navigraph.account_name({"id_token": id_token({"sub": "abc-1", "email": "j@example.com"})}) == ""
+    assert navigraph.account_name({"id_token": "not a jwt"}) == ""
 
 
 def test_tokens_are_stored_encrypted():
-    box = navigraph.TokenBox("key one")
+    box = sealing.SecretBox("key one", "navigraph-tokens")
     sealed = box.seal("refresh-123")
     assert "refresh-123" not in sealed and box.open(sealed) == "refresh-123"
-    assert navigraph.TokenBox("key two").open(sealed) is None   # a new app secret: sign in again
+    assert sealing.SecretBox("key two", "navigraph-tokens").open(sealed) is None   # a new app secret: sign in again
+    assert sealing.SecretBox("key one", "hoppie-logon").open(sealed) is None       # a key per kind of credential
 
 
 def test_sign_in_round_trip(client, app_module, fake_navigraph, store):
@@ -119,6 +123,7 @@ def test_sign_in_round_trip(client, app_module, fake_navigraph, store):
     assert challenge == q["code_challenge"]
 
     link = store["local"]
+    assert set(link) == {"name", "access", "refresh", "expires_at", "connected_at"}
     assert link["name"] == "jdoe" and "ref-1" not in json.dumps(link) and "acc-1" not in json.dumps(link)
     status = client.get("/navigraph/status").get_json()
     assert status["connected"] and status["name"] == "jdoe" and "ref-1" not in json.dumps(status)
@@ -150,7 +155,7 @@ def test_off_without_credentials(client, monkeypatch, store):
 def test_access_token_is_refreshed_before_it_expires(app_module, fake_navigraph, store):
     calls, replies = fake_navigraph
     box = app_module._navigraph_box
-    store["local"] = {"sub": "abc-1", "name": "jdoe", "access": box.seal("acc-old"), "refresh": box.seal("ref-old"),
+    store["local"] = {"name": "jdoe", "access": box.seal("acc-old"), "refresh": box.seal("ref-old"),
                       "expires_at": app_module._now_ts() + 30, "connected_at": "2026-10-15T10:00:00Z"}
     replies.append(Answer({"access_token": "acc-new", "refresh_token": "ref-new", "expires_in": 3600}))
     assert app_module.navigraph_access_token("local") == "acc-new"

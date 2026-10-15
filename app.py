@@ -26,6 +26,7 @@ import acars
 import monitoring
 import navigraph
 import ops
+import sealing
 import generator
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
@@ -1981,14 +1982,39 @@ def _simbrief_latest(username):
 
 
 # ---- ACARS (Hoppie): the pilot's logon code and a connection check ----
-# The code is a credential: the browser can set or remove it, and is told
-# whether one is saved (with its last characters), but never gets it back.
+# The code is a credential: it's stored encrypted (see sealing.py), and the
+# browser can set or remove it and is told whether one is saved (with its
+# last characters), but never gets it back.
 ACARS_TEST_INTERVAL_SECONDS = 5
 _acars_last_test = {}
+_hoppie_box = sealing.SecretBox(app.secret_key, "hoppie-logon")
+
+
+def _hoppie_logon(user_id):
+    """The pilot's logon code, or "" if none is saved (or it can't be read
+    after a change of the app's secret key: the pilot enters it again)."""
+    stored = (db.get_acars(user_id) or {}).get("logon") or ""
+    if acars.valid_logon(stored):
+        # Saved before codes were encrypted, and missed at start-up
+        _save_hoppie_logon(stored, user_id)
+        return stored
+    return (_hoppie_box.open(stored) or "") if stored else ""
+
+
+def _save_hoppie_logon(code, user_id):
+    db.save_acars({"logon": _hoppie_box.seal(code)} if code else {}, user_id)
+
+
+# Codes saved before they were encrypted are encrypted once, at start-up
+if db.db_available():
+    try:
+        db.seal_plain_acars_logons(_hoppie_box.seal, acars.LOGON_RE.pattern)
+    except Exception as exc:
+        print(f"[acars] could not encrypt saved logon codes: {exc}")
 
 
 def _acars_status(user_id):
-    code = (db.get_acars(user_id) or {}).get("logon") or ""
+    code = _hoppie_logon(user_id)
     return {"configured": bool(code), "hint": acars.mask(code), "station": acars.STATION}
 
 
@@ -2008,7 +2034,7 @@ def acars_settings_save():
     code = str((request.get_json(silent=True) or {}).get("logon") or "").strip()
     if code and not acars.valid_logon(code):
         return jsonify({"error": "A Hoppie logon code is 6 to 40 letters and numbers"}), 400
-    db.save_acars({"logon": code} if code else {}, current_user_id())
+    _save_hoppie_logon(code, current_user_id())
     return jsonify(_acars_status(current_user_id()))
 
 
@@ -2026,7 +2052,7 @@ def acars_send():
         return unavailable
     user_id = current_user_id()
     payload = request.get_json(silent=True) or {}
-    code = (db.get_acars(user_id) or {}).get("logon")
+    code = _hoppie_logon(user_id)
     if not code:
         return jsonify({"ok": False, "no_logon": True, "error": "Add your Hoppie logon code in Account settings first"}), 400
     callsign = str(payload.get("callsign") or "").strip().upper()
@@ -2060,7 +2086,7 @@ def acars_test():
     if unavailable:
         return unavailable
     user_id = current_user_id()
-    code = (db.get_acars(user_id) or {}).get("logon")
+    code = _hoppie_logon(user_id)
     if not code:
         return jsonify({"ok": False, "error": "Save your Hoppie logon code first"}), 400
     now = time.time()
@@ -2077,7 +2103,7 @@ def acars_test():
 # ---- Sign in with Navigraph: the pilot's link to SimBrief's API v2 ----
 # (see navigraph.py). The browser starts the sign-in and is told whether a
 # link exists and whose account it is; the tokens never leave the server.
-_navigraph_box = navigraph.TokenBox(app.secret_key)
+_navigraph_box = sealing.SecretBox(app.secret_key, "navigraph-tokens")
 NAVIGRAPH_SIGNIN_MAX_SECONDS = 600     # from the sign-in link to the pilot coming back
 NAVIGRAPH_EXPIRY_MARGIN_SECONDS = 60   # refresh an access token this close to expiring
 
@@ -2096,14 +2122,13 @@ def _navigraph_link(tokens, previous=None):
     A refresh may not repeat the ID token or a refresh token: then the
     previous ones are kept."""
     previous = previous or {}
-    who = navigraph.identity(tokens) if tokens.get("id_token") else {}
+    name = navigraph.account_name(tokens) if tokens.get("id_token") else ""
     try:
         lifetime = int(tokens.get("expires_in") or 3600)
     except (TypeError, ValueError):
         lifetime = 3600
     return {
-        "sub": who.get("sub") or previous.get("sub", ""),
-        "name": who.get("name") or previous.get("name", ""),
+        "name": name or previous.get("name", ""),
         "access": _navigraph_box.seal(tokens["access_token"]),
         "refresh": _navigraph_box.seal(tokens["refresh_token"]) if tokens.get("refresh_token") else previous.get("refresh"),
         "expires_at": _now_ts() + lifetime,

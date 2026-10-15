@@ -9,7 +9,7 @@ keeps the link alive. The flow is OAuth's authorization code with PKCE:
 
     https://developers.navigraph.com/docs/authentication/authorization-code
 
-Both tokens are stored encrypted (TokenBox) and never reach the browser.
+Both tokens are stored encrypted (see sealing.py) and never reach the browser.
 A free Navigraph account is enough; no subscription is needed.
 
 Environment:
@@ -25,7 +25,6 @@ import secrets
 from urllib.parse import urlencode
 
 import requests
-from cryptography.fernet import Fernet, InvalidToken
 
 IDENTITY_URL = (os.environ.get("NAVIGRAPH_IDENTITY_URL") or "https://identity.api.navigraph.com").rstrip("/")
 CLIENT_ID = os.environ.get("NAVIGRAPH_CLIENT_ID") or ""
@@ -105,35 +104,17 @@ def revoke(refresh_token):
         pass
 
 
-def identity(tokens):
-    """{"sub", "name"} of the signed-in account, read from the ID token.
-    It came straight from Navigraph's token endpoint over HTTPS, so its
-    signature needn't be checked again (OpenID Connect Core 3.1.3.7)."""
+def account_name(tokens):
+    """The signed-in account's user name, read from the ID token, to show
+    the pilot which account is connected. It's the only thing kept from it:
+    Navigraph's Developer Terms (4.4c) rule out building a user database
+    from what Navigraph provides. The token came straight from Navigraph's
+    token endpoint over HTTPS, so its signature needn't be checked again
+    (OpenID Connect Core 3.1.3.7)."""
     try:
         payload = tokens["id_token"].split(".")[1]
         claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
     except (KeyError, IndexError, ValueError, AttributeError):
         claims = {}
-    sub = str(claims.get("sub") or "")
-    name = claims.get("preferred_username") or claims.get("name") or claims.get("email") or ""
-    return {"sub": sub, "name": str(name)[:60]}
+    return str(claims.get("preferred_username") or claims.get("name") or "")[:60]
 
-
-class TokenBox:
-    """Encrypts tokens for storage with a key derived from the app's secret
-    key. If that key changes, stored tokens can't be read any more and the
-    pilot simply signs in with Navigraph again."""
-
-    def __init__(self, secret):
-        key = hashlib.sha256(b"virtualdispatch/navigraph-tokens/" + str(secret).encode()).digest()
-        self._fernet = Fernet(base64.urlsafe_b64encode(key))
-
-    def seal(self, text):
-        return self._fernet.encrypt(text.encode()).decode()
-
-    def open(self, sealed):
-        """The token, or None if it can't be decrypted."""
-        try:
-            return self._fernet.decrypt(sealed.encode()).decode()
-        except (InvalidToken, AttributeError, ValueError):
-            return None
