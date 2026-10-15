@@ -23,6 +23,7 @@ import demo
 import techlog
 import notams
 import acars
+import navigraph
 import ops
 import generator
 from generator import (
@@ -63,7 +64,7 @@ PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_
 
 # The date the privacy, cookie and terms pages last changed. Update it
 # whenever one of them does.
-LEGAL_UPDATED = "October 1, 2026"
+LEGAL_UPDATED = "October 15, 2026"
 
 
 @app.context_processor
@@ -1918,6 +1919,146 @@ def acars_test():
     except acars.AcarsError as exc:
         return jsonify({"ok": False, "error": str(exc)}), 502
     return jsonify({"ok": True})
+
+
+# ---- Sign in with Navigraph: the pilot's link to SimBrief's API v2 ----
+# (see navigraph.py). The browser starts the sign-in and is told whether a
+# link exists and whose account it is; the tokens never leave the server.
+_navigraph_box = navigraph.TokenBox(app.secret_key)
+NAVIGRAPH_SIGNIN_MAX_SECONDS = 600     # from the sign-in link to the pilot coming back
+NAVIGRAPH_EXPIRY_MARGIN_SECONDS = 60   # refresh an access token this close to expiring
+
+
+def _navigraph_redirect_uri():
+    """Where Navigraph sends the pilot back: this host, over HTTPS except on
+    the developer's own machine. It has to match one of the redirect URIs
+    registered with Navigraph exactly."""
+    host = request.host
+    scheme = "http" if host.split(":")[0] in ("localhost", "127.0.0.1") else "https"
+    return f"{scheme}://{host}{url_for('navigraph_callback')}"
+
+
+def _navigraph_link(tokens, previous=None):
+    """What's stored for a signed-in pilot, from Navigraph's token answer.
+    A refresh may not repeat the ID token or a refresh token: then the
+    previous ones are kept."""
+    previous = previous or {}
+    who = navigraph.identity(tokens) if tokens.get("id_token") else {}
+    try:
+        lifetime = int(tokens.get("expires_in") or 3600)
+    except (TypeError, ValueError):
+        lifetime = 3600
+    return {
+        "sub": who.get("sub") or previous.get("sub", ""),
+        "name": who.get("name") or previous.get("name", ""),
+        "access": _navigraph_box.seal(tokens["access_token"]),
+        "refresh": _navigraph_box.seal(tokens["refresh_token"]) if tokens.get("refresh_token") else previous.get("refresh"),
+        "expires_at": _now_ts() + lifetime,
+        "connected_at": previous.get("connected_at")
+        or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+    }
+
+
+def _navigraph_fresh_access(link):
+    if _now_ts() < (link.get("expires_at") or 0) - NAVIGRAPH_EXPIRY_MARGIN_SECONDS:
+        return _navigraph_box.open(link.get("access") or "")
+    return None
+
+
+def navigraph_access_token(user_id):
+    """A current access token for the pilot's Navigraph account, for
+    SimBrief's API, refreshed when it's about to expire. Raises
+    navigraph.NavigraphError; with reconnect set, the link is gone (it's
+    removed here) and the pilot has to sign in with Navigraph again."""
+    token = _navigraph_fresh_access(db.get_navigraph(user_id))
+    if token:
+        return token
+    gone = None
+    with db.locked_navigraph(user_id) as (link, save):
+        # Another request may have refreshed it while this one waited
+        token = _navigraph_fresh_access(link)
+        if token:
+            return token
+        refresh_token = _navigraph_box.open(link.get("refresh") or "")
+        try:
+            if not refresh_token:
+                raise navigraph.NavigraphError("Sign in with Navigraph in Account settings first", reconnect=True)
+            tokens = navigraph.refresh(refresh_token)
+        except navigraph.NavigraphError as exc:
+            if not exc.reconnect:
+                raise
+            if link:
+                save({})
+            gone = exc
+        else:
+            save(_navigraph_link(tokens, link))
+            return tokens["access_token"]
+    raise gone
+
+
+def _navigraph_status(user_id):
+    link = db.get_navigraph(user_id) if db.db_available() else {}
+    connected = bool(link.get("refresh"))
+    return {"available": navigraph.configured() and db.db_available(), "connected": connected,
+            "name": link.get("name", "") if connected else "",
+            "connected_at": link.get("connected_at") if connected else None}
+
+
+@app.route("/navigraph/status")
+def navigraph_status():
+    return jsonify(_navigraph_status(current_user_id()))
+
+
+@app.route("/auth/navigraph/start")
+def navigraph_start():
+    if not navigraph.configured() or not db.db_available():
+        return redirect(url_for("dispatch_app", navigraph="unavailable"))
+    verifier, challenge = navigraph.new_pkce()
+    state = secrets.token_urlsafe(24)
+    session["navigraph_signin"] = {"state": state, "verifier": verifier, "at": _now_ts()}
+    return redirect(navigraph.authorize_url(_navigraph_redirect_uri(), state, challenge))
+
+
+@app.route("/auth/navigraph/callback")
+def navigraph_callback():
+    """Navigraph sends the pilot back here with a one-time code (or an
+    error, if they cancelled). The state must match the sign-in this
+    browser started, so nobody can link their account to someone else's."""
+    pending = session.pop("navigraph_signin", None) or {}
+
+    def back(result):
+        return redirect(url_for("dispatch_app", navigraph=result))
+
+    if request.args.get("error"):
+        return back("cancelled" if request.args.get("error") == "access_denied" else "failed")
+    state = str(request.args.get("state") or "")
+    if (not pending.get("state") or not secrets.compare_digest(state, pending["state"])
+            or _now_ts() - pending.get("at", 0) > NAVIGRAPH_SIGNIN_MAX_SECONDS):
+        return back("expired")
+    code = request.args.get("code")
+    if not code or not navigraph.configured() or not db.db_available():
+        return back("failed")
+    try:
+        tokens = navigraph.exchange_code(code, pending["verifier"], _navigraph_redirect_uri())
+    except navigraph.NavigraphError:
+        return back("failed")
+    if not tokens.get("refresh_token"):
+        return back("failed")
+    db.save_navigraph(_navigraph_link(tokens), current_user_id())
+    return back("connected")
+
+
+@app.route("/navigraph/disconnect", methods=["POST"])
+def navigraph_disconnect():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    user_id = current_user_id()
+    refresh_token = _navigraph_box.open(db.get_navigraph(user_id).get("refresh") or "")
+    db.save_navigraph({}, user_id)
+    if refresh_token and navigraph.configured():
+        navigraph.revoke(refresh_token)
+    return jsonify(_navigraph_status(user_id))
 
 
 @app.route("/simbrief/ofp")

@@ -69,6 +69,25 @@ async def main():
         check("the code never comes back to the browser", "TESTLOGON1" not in raw)
         await page.locator(".panel:has(#acarsLogon)").screenshot(path=shot("settings_acars.png"))
 
+        # Sign in with Navigraph (a fake one): the account shows by name, its tokens stay on the server
+        check("the Navigraph panel offers the sign-in",
+              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphState") == "Not connected")
+        await page.locator("#navigraphPanel").screenshot(path=shot("settings_navigraph_off.png"))
+        await page.click("#navigraphSignIn")
+        await page.wait_for_selector("#navigraphDisconnect:not([hidden])")
+        check("back from Navigraph: connected by name, in Account settings",
+              page.url.endswith("/app") and "e2e_pilot" in await page.text_content("#navigraphState")
+              and "Connected" in await page.text_content("#navigraphStatus"), page.url)
+        raw = urllib.request.urlopen(BASE + "/navigraph/status").read().decode() + urllib.request.urlopen(BASE + "/settings").read().decode()
+        check("Navigraph tokens never reach the browser", "e2e_pilot" in raw and "e2e-refresh" not in raw and "e2e-access" not in raw)
+        await page.locator("#navigraphPanel").screenshot(path=shot("settings_navigraph.png"))
+        page.once("dialog", lambda d: asyncio.ensure_future(d.accept()))
+        await page.click("#navigraphDisconnect"); await page.wait_for_timeout(600)
+        check("disconnecting offers the sign-in again",
+              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphStatus") == "Disconnected")
+        await page.goto(BASE + "/app?navigraph=cancelled"); await page.wait_for_selector("#navigraphStatus:not(:empty)")
+        check("a cancelled sign-in is reported", "cancelled" in await page.text_content("#navigraphStatus"))
+
         mob = await b.new_page(viewport={"width": 390, "height": 844}); await prepare(mob)
         await mob.goto(BASE + "/app"); await mob.wait_for_timeout(1200); await mob.evaluate("renderAccountSettings()"); await mob.wait_for_timeout(1500)
         await mob.evaluate("document.querySelectorAll('.leg-block details').forEach(d => d.open = true)")

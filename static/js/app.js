@@ -51,6 +51,14 @@ async function boot() {
   document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING&hellip;</div></div></div>`;
   await Promise.race([pullActiveFlight(), new Promise(resolve => setTimeout(resolve, 4000))]);
   updateActiveFlightButtonState();
+  // Back from signing in with Navigraph: show how it went, in Account settings
+  const navigraph = new URLSearchParams(location.search).get('navigraph');
+  if (navigraph) {
+    history.replaceState(null, '', location.pathname);
+    navigraphResult = navigraph;
+    renderAccountSettings();
+    return;
+  }
   const active = loadActiveFlight();
   if (active && isFlightLive(active)) renderRecap(active);
   else renderSearchUI();
@@ -3526,6 +3534,19 @@ async function renderAccountSettings() {
       </div>
     </div>
 
+    <div class="panel" id="navigraphPanel" style="margin-top:14px;" hidden>
+      <div class="panel-header">SIMBRIEF (NAVIGRAPH)</div>
+      <div class="panel-body">
+        <p class="placeholder-text acars-intro">Sign in with your Navigraph account so VirtualDispatch can create your <a href="https://www.simbrief.com" target="_blank" rel="noopener">SimBrief</a> flight plans without leaving the app. A free <a href="https://navigraph.com" target="_blank" rel="noopener">Navigraph</a> account is enough: no subscription needed</p>
+        <div class="ng-row">
+          <span class="ng-state" id="navigraphState">Not connected</span>
+          <a class="ng-signin" id="navigraphSignIn" href="/auth/navigraph/start">Sign in with Navigraph</a>
+          <button class="ghost" type="button" id="navigraphDisconnect" onclick="disconnectNavigraph()" hidden>DISCONNECT</button>
+        </div>
+        <p class="acars-status" id="navigraphStatus" aria-live="polite"></p>
+      </div>
+    </div>
+
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">ACARS (HOPPIE)</div>
       <div class="panel-body">
@@ -3578,6 +3599,7 @@ async function renderAccountSettings() {
 
   attachAirportDropdown('profilePreferredBase', 'profilePreferredBaseDropdown', '/airports/search/world');
   loadAcarsStatus();
+  loadNavigraphStatus();
 }
 
 function renderDeleteAccountPage() {
@@ -3854,6 +3876,60 @@ async function saveGenerationSettings() {
     document.getElementById('generationSaveStatus').textContent = 'SAVED.';
   } catch (err) {
     alert('Could not save these settings. Check the connection (and that a database is configured) and retry');
+  }
+}
+
+// ---- Sign in with Navigraph: the link to the pilot's SimBrief account.
+// The sign-in happens on navigraph.com, which sends the pilot back to the
+// app with ?navigraph=<result>; the tokens stay on the server. ----
+const NAVIGRAPH_RESULTS = {
+  connected: ['Connected: VirtualDispatch can now reach your SimBrief account', 'ok'],
+  cancelled: ['Sign-in cancelled on Navigraph', ''],
+  expired: ['The sign-in took too long or was started in another browser. Try again', 'bad'],
+  failed: ['Navigraph didn\'t complete the sign-in. Try again in a minute', 'bad'],
+  unavailable: ['Sign in with Navigraph isn\'t available yet', 'bad'],
+};
+let navigraphResult = '';
+
+function navigraphMessage(text, kind) {
+  const el = document.getElementById('navigraphStatus');
+  el.textContent = text;
+  el.className = 'acars-status' + (kind ? ' ' + kind : '');
+}
+
+function paintNavigraph(status) {
+  const panel = document.getElementById('navigraphPanel');
+  if (!panel) return;
+  panel.hidden = !status.available && !status.connected;
+  document.getElementById('navigraphState').innerHTML = status.connected
+    ? `Connected as <strong>${escText(status.name || 'your Navigraph account')}</strong>` : 'Not connected';
+  document.getElementById('navigraphSignIn').hidden = status.connected || !status.available;
+  document.getElementById('navigraphDisconnect').hidden = !status.connected;
+}
+
+async function loadNavigraphStatus() {
+  try {
+    const resp = await fetch('/navigraph/status');
+    if (resp.ok) paintNavigraph(await resp.json());
+  } catch (e) { /* the panel stays hidden */ }
+  const result = NAVIGRAPH_RESULTS[navigraphResult];
+  navigraphResult = '';
+  if (result && document.getElementById('navigraphPanel')) {
+    document.getElementById('navigraphPanel').hidden = false;
+    navigraphMessage(...result);
+    document.getElementById('navigraphPanel').scrollIntoView({ block: 'center' });
+  }
+}
+
+async function disconnectNavigraph() {
+  if (!confirm('Disconnect your Navigraph account from VirtualDispatch?')) return;
+  try {
+    const resp = await fetch('/navigraph/disconnect', { method: 'POST' });
+    if (!resp.ok) throw new Error('disconnect failed');
+    paintNavigraph(await resp.json());
+    navigraphMessage('Disconnected');
+  } catch (e) {
+    navigraphMessage('Not disconnected: the server can\'t be reached', 'bad');
   }
 }
 
