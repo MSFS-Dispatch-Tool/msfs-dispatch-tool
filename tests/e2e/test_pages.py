@@ -45,6 +45,8 @@ async def main():
             await lp.goto(BASE + "/")
             await lp.wait_for_timeout(1500)
             src = await lp.evaluate("document.getElementById('heroVideo').getAttribute('src')")
+            fill = await lp.evaluate("[innerHeight, Math.round(document.querySelector('.hero').getBoundingClientRect().height)]")
+            check(f"the hero video fills the whole window at {width}px", fill[1] >= fill[0], fill)
             if expect is None:
                 ok = src is None
             else:

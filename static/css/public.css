@@ -132,9 +132,12 @@ img { max-width: 100%; }
 
 /* ---- Hero / sections ---- */
 
+/* The hero, and its video, fill the whole window: nothing of the next
+   section shows until you scroll. (On phones 100vh is the height with the
+   browser's bars hidden, so the video also runs under them.) */
 .hero {
   position: relative; overflow: hidden; text-align: center;
-  min-height: 92vh; display: flex; align-items: center;
+  min-height: 100vh; display: flex; align-items: center;
   padding: 112px 0 88px; color: var(--text);
 }
 .hero-media { position: absolute; inset: 0; z-index: 0; background: #0A0E1A; }
@@ -152,7 +155,7 @@ img { max-width: 100%; }
 .hero .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 .hero .actions .btn { width: 230px; }
 @media (max-width: 560px) {
-  .hero { padding: 96px 0 72px; min-height: 84vh; }
+  .hero { padding: 96px 0 72px; }
   .hero p.lead { font-size: 17px; }
   .hero .actions .btn { width: min(300px, 100%); }
 }
