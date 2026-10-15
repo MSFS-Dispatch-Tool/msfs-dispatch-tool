@@ -5,9 +5,10 @@ them off here as they're done.
 
 ## Legal and contact
 
-- [ ] Make sure privacy@virtualdispatch.app and legal@virtualdispatch.app
+- [x] Make sure privacy@virtualdispatch.app and legal@virtualdispatch.app
       receive mail: the Privacy Policy, Cookie Policy and Terms of Service
       give them as the contact addresses.
+      Done with Cloudflare Email Routing: both forward to the owner's inbox.
 - [ ] Have the Privacy Policy, Cookie Policy and Terms of Service reviewed
       once by someone qualified in GDPR (the operator is in Italy).
 
@@ -37,13 +38,17 @@ them off here as they're done.
 
 ## Hosting
 
-- [ ] Render: Settings > Health Check Path set to `/healthz`, so a deploy
+- [x] Render: Settings > Health Check Path set to `/healthz`, so a deploy
       that doesn't start never replaces the running one.
-- [ ] Render: a start command sized for the plan, e.g.
+- [x] Render: a start command sized for the plan, e.g.
       `gunicorn app:app --workers 2 --threads 4 --timeout 60` (each worker
       takes about 90 MB).
-- [ ] Supabase: backups that can actually be restored (the free plan has
-      none to rely on; Pro has daily backups), and a plan that doesn't pause
-      the project after a week without use.
-- [ ] Supabase: DATABASE_URL points at the connection pooler, not a direct
-      connection, so the workers don't run out of database connections.
+- [ ] Supabase: move to Pro when VirtualDispatch's paid plan goes live
+      (decided 15 Oct 2026). Pro keeps daily backups for 7 days and never
+      pauses the project. Until then, accepted risks: no backups to restore
+      from, and the project pauses after about a week without use (restore it
+      from the Supabase dashboard; the data is kept).
+- [x] Supabase: DATABASE_URL points at the connection pooler, not a direct
+      connection, so the workers don't run out of database connections
+      (transaction mode, port 6543: the app uses no prepared statements,
+      session settings or advisory locks, which that mode doesn't support).

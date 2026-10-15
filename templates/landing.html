@@ -250,11 +250,28 @@
   </div>
 </section>
 
-<section class="cta-band">
+<section class="cta-band" id="waitlist">
   <div class="container cta-band-inner">
+    {% if signups_open %}
     <h2>Not convinced yet?</h2>
     <p>Create an account and try it for free.</p>
     <a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>
+    {% else %}
+    <h2>Want to fly with it?</h2>
+    <p>VirtualDispatch is in a private beta. Leave your email and we'll invite you as places open up.</p>
+    {% set joined = request.args.get('waitlist') == 'joined' %}
+    <form class="waitlist" id="waitlistForm" action="{{ url_for('join_waitlist') }}" method="post"{% if joined %} hidden{% endif %}>
+      <div class="waitlist-row">
+        <input type="email" name="email" required maxlength="254" autocomplete="email" placeholder="you@example.com" aria-label="Your email address">
+        <button type="submit" class="btn btn-primary">Join the waitlist</button>
+      </div>
+      {# Hidden from people; a bot that fills it in is quietly ignored #}
+      <input type="text" name="website" class="waitlist-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="waitlist-consent"><input type="checkbox" name="consent" value="1" required> <span>{{ waitlist_consent }} See our <a href="{{ url_for('legal_privacy') }}">Privacy Policy</a>.</span></label>
+    </form>
+    <p class="waitlist-status{% if joined %} ok{% elif request.args.get('waitlist') == 'error' %} bad{% endif %}" id="waitlistStatus" role="status">{% if joined %}Thanks, you're on the list. We'll email you when your invitation is ready{% elif request.args.get('waitlist') == 'error' %}That didn't work: check your email address and the box, then try again{% endif %}</p>
+    <p class="waitlist-invited">Already invited? <a href="{{ url_for('signup') }}">Create your account</a></p>
+    {% endif %}
   </div>
 </section>
 
@@ -288,6 +305,33 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
+<script>
+  // Waitlist: sent in the background, with the answer shown in place (the
+  // form also works without this script, as a plain post)
+  (function () {
+    var form = document.getElementById('waitlistForm');
+    if (!form || !window.fetch) return;
+    var status = document.getElementById('waitlistStatus');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      var button = form.querySelector('button');
+      button.disabled = true;
+      fetch(form.action, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email.value, consent: form.consent.checked, website: form.website.value })
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        status.textContent = data.message;
+        status.className = 'waitlist-status ' + (data.ok ? 'ok' : 'bad');
+        if (data.ok) form.hidden = true; else button.disabled = false;
+      }).catch(function () {
+        status.textContent = "That didn't go through: check your connection and try again";
+        status.className = 'waitlist-status bad';
+        button.disabled = false;
+      });
+    });
+  })();
+</script>
 <script>
   (function () {
     var hasIO = 'IntersectionObserver' in window;

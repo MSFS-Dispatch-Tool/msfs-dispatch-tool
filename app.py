@@ -79,7 +79,7 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 # vars unset), the gate is off entirely - matches the old APP_PASSWORD-
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
-PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors", "healthz",
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors", "healthz", "join_waitlist",
                     "resend_verification_route", "request_password_reset_route", "static",
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
@@ -96,6 +96,7 @@ def inject_template_globals():
         "current_year": today.year,
         "signups_open": auth.signups_open(),
         "legal_updated": LEGAL_UPDATED,
+        "waitlist_consent": WAITLIST_CONSENT,
     }
 
 
@@ -171,9 +172,30 @@ def add_security_headers(response):
 
 
 def _has_access(user):
-    """The access lock: allowlisted emails, plus demo accounts created from
-    the admin page (checked only when the email isn't allowlisted)."""
-    return auth.email_allowed(user.get("email")) or demo.is_demo_account(user.get("id"))
+    """The access lock: allowlisted emails (Render's lists and the admin
+    page's), plus demo accounts created from the admin page (checked only
+    when the email isn't allowlisted)."""
+    return auth.email_allowed(user.get("email"), _allowed_pilots()) or demo.is_demo_account(user.get("id"))
+
+
+# The admin page's allowed pilots, read at most every ALLOWED_CACHE_SECONDS
+# per worker (every request checks access); a change made on this worker
+# applies at once, on the others within that time.
+ALLOWED_CACHE_SECONDS = 30
+_allowed_cache = {"at": 0.0, "emails": frozenset()}
+
+
+def _allowed_pilots(refresh=False):
+    if auth.signups_open() or not db.db_available():
+        return frozenset()
+    now = time.time()
+    if refresh or now - _allowed_cache["at"] > ALLOWED_CACHE_SECONDS:
+        try:
+            _allowed_cache["emails"] = frozenset(db.allowed_pilot_emails())
+            _allowed_cache["at"] = now
+        except Exception:
+            pass  # keep the last list rather than lock everyone out over a database blip
+    return _allowed_cache["emails"]
 
 
 def _now_ts():
@@ -291,16 +313,17 @@ def access_restricted():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     error = None
-    if not auth.signups_open():
-        # Closed while access is locked (auth.OPEN_ACCESS): no form, and a
-        # POST sent anyway creates nothing.
-        return render_template("login.html", mode="signup_closed"), (403 if request.method == "POST" else 200)
+    # While access is locked (auth.OPEN_ACCESS unset), only invited pilots,
+    # those on the allowed lists, can create an account
+    invite_only = not auth.signups_open()
     if request.method == "POST":
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
         confirm = request.form.get("password_confirm") or ""
         if not _verify_turnstile_from_form():
             error = "Captcha verification failed. Please try again."
+        elif invite_only and not auth.email_allowed(email, _allowed_pilots(refresh=True)):
+            error = INVITE_ONLY_ERROR
         else:
             error = _validate_password(password, confirm)
         if not error:
@@ -317,8 +340,12 @@ def signup():
                                             turnstile_site_key=auth.TURNSTILE_SITE_KEY)
             except auth.AuthError as exc:
                 error = exc.message
-    return render_template("login.html", mode="signup", error=error,
-                            turnstile_site_key=auth.TURNSTILE_SITE_KEY)
+    return render_template("login.html", mode="signup", error=error, invite_only=invite_only,
+                            turnstile_site_key=auth.TURNSTILE_SITE_KEY), (403 if error == INVITE_ONLY_ERROR else 200)
+
+
+INVITE_ONLY_ERROR = ("This email isn't on the invitation list yet. Use the address you were invited with, "
+                     "or join the waitlist on our website")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -755,6 +782,113 @@ def client_errors():
                               "stack": _clip(payload.get("stack"), 2000), "page": _clip(payload.get("page"), 60)},
                              user["id"] if user else None, _clip(request.headers.get("User-Agent"), 300))
     return "", 204
+
+
+# ---- Allowed pilots (admin page): who may use the app, and create an
+# account, while access is locked ----
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _admin_guard():
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    return _require_db()
+
+
+@app.route("/admin/api/allowed", methods=["GET"])
+def admin_allowed_list_route():
+    blocked = _admin_guard()
+    if blocked:
+        return blocked
+    return jsonify({"pilots": db.list_allowed_pilots(),
+                    "from_settings": sorted(auth.ADMIN_EMAILS | auth.ALLOWED_EMAILS),
+                    "open_access": auth.signups_open()})
+
+
+@app.route("/admin/api/allowed", methods=["POST"])
+def admin_allowed_add_route():
+    blocked = _admin_guard()
+    if blocked:
+        return blocked
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email") or "").strip().lower()
+    if len(email) > 254 or not _EMAIL_RE.match(email):
+        return jsonify({"error": "Enter a valid email address"}), 400
+    db.add_allowed_pilot(email, str(payload.get("note") or "").strip()[:200], current_user()["email"])
+    _allowed_pilots(refresh=True)
+    return jsonify({"ok": True, "email": email, "signup_url": request.url_root.rstrip("/") + url_for("signup")})
+
+
+@app.route("/admin/api/allowed/<path:email>", methods=["DELETE"])
+def admin_allowed_remove_route(email):
+    blocked = _admin_guard()
+    if blocked:
+        return blocked
+    if not db.remove_allowed_pilot(email):
+        return jsonify({"error": "Not on the list"}), 404
+    _allowed_pilots(refresh=True)
+    return jsonify({"ok": True})
+
+
+# ---- Waitlist: visitors leave their email on the website, while sign-ups
+# are invitation-only, to be invited later ----
+WAITLIST_CONSENT = ("I'd like an email when I can join VirtualDispatch. "
+                    "My address is used for nothing else, and I can ask for it to be deleted at any time.")
+WAITLIST_WINDOW_SECONDS, WAITLIST_MAX_PER_VISITOR, WAITLIST_MAX_TOTAL = 3600, 5, 200
+_waitlist_times = {}
+
+
+@app.route("/waitlist", methods=["POST"])
+def join_waitlist():
+    """From the website's form (JSON from its script, or a plain form post).
+    The answer is the same whether the email was new or already listed."""
+    payload = request.get_json(silent=True) if request.is_json else request.form
+    payload = payload or {}
+
+    def answer(ok, message, status=200):
+        if request.is_json:
+            return jsonify({"ok": ok, "message": message}), status
+        return redirect(url_for("index", waitlist="joined" if ok else "error") + "#waitlist")
+
+    # A hidden field people never see: anything in it means a bot
+    if str(payload.get("website") or "").strip():
+        return answer(True, "Thanks, you're on the list")
+    email = str(payload.get("email") or "").strip().lower()
+    if len(email) > 254 or not _EMAIL_RE.match(email):
+        return answer(False, "Enter a valid email address", 400)
+    if str(payload.get("consent") or "").lower() not in ("1", "true", "on", "yes"):
+        return answer(False, "Tick the box so we can email you the invitation", 400)
+    if not db.db_available():
+        return answer(False, "The waitlist isn't available right now. Try again later", 503)
+    visitor = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    now = time.time()
+    cutoff = now - WAITLIST_WINDOW_SECONDS
+    for key in [k for k, times in _waitlist_times.items() if times[-1] < cutoff]:
+        del _waitlist_times[key]
+    mine = [t for t in _waitlist_times.get(visitor, []) if t >= cutoff]
+    if len(mine) >= WAITLIST_MAX_PER_VISITOR or sum(len(t) for t in _waitlist_times.values()) >= WAITLIST_MAX_TOTAL:
+        return answer(False, "Too many sign-ups just now. Try again later", 429)
+    _waitlist_times[visitor] = mine + [now]
+    db.join_waitlist(email, WAITLIST_CONSENT)
+    return answer(True, "Thanks, you're on the list. We'll email you when your invitation is ready")
+
+
+@app.route("/admin/api/waitlist", methods=["GET"])
+def admin_waitlist_route():
+    blocked = _admin_guard()
+    if blocked:
+        return blocked
+    return jsonify({"waitlist": db.list_waitlist()})
+
+
+@app.route("/admin/api/waitlist/<path:email>", methods=["DELETE"])
+def admin_waitlist_remove_route(email):
+    blocked = _admin_guard()
+    if blocked:
+        return blocked
+    if not db.remove_from_waitlist(email):
+        return jsonify({"error": "Not on the waitlist"}), 404
+    return jsonify({"ok": True})
 
 
 def _new_report_count():
@@ -1813,6 +1947,8 @@ def account_delete_route():
         try:
             _revoke_navigraph(user["id"])   # at Navigraph too, not just here
             db.delete_user_data(user["id"])
+            db.remove_allowed_pilot(user["email"])
+            db.remove_from_waitlist(user["email"])
         except Exception:
             pass  # the auth account is already gone; don't block on cleanup
     session.clear()

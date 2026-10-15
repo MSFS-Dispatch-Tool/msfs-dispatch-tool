@@ -191,10 +191,29 @@ def init_db():
                 )
             """)
             cur.execute("CREATE INDEX IF NOT EXISTS idx_problem_reports_created ON problem_reports (created_at DESC)")
+            # Pilots allowed into the app while access is locked, managed on
+            # the admin page (on top of ADMIN_EMAILS / ALLOWED_EMAILS).
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS allowed_pilots (
+                    email TEXT PRIMARY KEY,
+                    note TEXT NOT NULL DEFAULT '',
+                    added_by TEXT NOT NULL DEFAULT '',
+                    added_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
+            # Visitors waiting for an invitation, from the website's form,
+            # with the consent text they ticked and when.
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS waitlist (
+                    email TEXT PRIMARY KEY,
+                    consent TEXT NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
         conn.commit()
 
 
-APP_TABLES = ("pireps", "app_settings", "active_flights", "demo_accounts", "problem_reports")
+APP_TABLES = ("pireps", "app_settings", "active_flights", "demo_accounts", "problem_reports", "allowed_pilots", "waitlist")
 
 
 def enable_row_security():
@@ -503,3 +522,67 @@ def count_new_reports():
         with conn.cursor() as cur:
             cur.execute("SELECT count(*) FROM problem_reports WHERE status = 'new'")
             return cur.fetchone()[0]
+
+
+def _iso(ts):
+    return ts.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def list_allowed_pilots():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email, note, added_by, added_at FROM allowed_pilots ORDER BY added_at DESC")
+            rows = cur.fetchall()
+    return [{"email": r[0], "note": r[1], "added_by": r[2], "added_at": _iso(r[3])} for r in rows]
+
+
+def allowed_pilot_emails():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email FROM allowed_pilots")
+            return {r[0] for r in cur.fetchall()}
+
+
+def add_allowed_pilot(email, note, added_by):
+    """Adds (or updates the note of) an allowed pilot; email lower-cased.
+    Their waitlist entry, if any, is removed: they're in."""
+    email = email.strip().lower()
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO allowed_pilots (email, note, added_by) VALUES (%s, %s, %s)
+                ON CONFLICT (email) DO UPDATE SET note = EXCLUDED.note
+            """, (email, note, added_by))
+            cur.execute("DELETE FROM waitlist WHERE email = %s", (email,))
+
+
+def remove_allowed_pilot(email):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM allowed_pilots WHERE email = %s", (email.strip().lower(),))
+            return cur.rowcount > 0
+
+
+def join_waitlist(email, consent):
+    """Adds a visitor to the waitlist. Signing up again changes nothing
+    (the first consent stays on record). Returns True if it's new."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO waitlist (email, consent) VALUES (%s, %s) ON CONFLICT (email) DO NOTHING",
+                        (email.strip().lower(), consent))
+            return cur.rowcount > 0
+
+
+def list_waitlist():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email, consent, created_at FROM waitlist ORDER BY created_at")
+            rows = cur.fetchall()
+    return [{"email": r[0], "consent": r[1], "created_at": _iso(r[2])} for r in rows]
+
+
+def remove_from_waitlist(email):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM waitlist WHERE email = %s", (email.strip().lower(),))
+            return cur.rowcount > 0

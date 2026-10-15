@@ -46,9 +46,19 @@
   .demo-form button:hover { background: var(--titlebar-2); }
   .demo-form button:disabled { opacity: 0.6; cursor: wait; }
   #demoResult { margin-top: 12px; }
+  #allowResult { margin: 12px 0; }
+  #allowResult.ok { color: var(--green); }
+  #allowResult.error-state { padding: 0; }
   #demoResult.ok { color: var(--green); }
   #demoResult.error-state { padding: 0; }
   @media (max-width: 720px) { .demo-form { grid-template-columns: 1fr 1fr; } }
+  .allow-form { grid-template-columns: 2fr 2fr auto; }
+  @media (max-width: 720px) { .allow-form { grid-template-columns: 1fr; } }
+  .note-muted { color: var(--text-muted); }
+  .sub-h { margin: 18px 0 6px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .invite-link { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .invite-link code { font-size: 12.5px; padding: 5px 8px; border: 1px solid var(--shadow-md); border-radius: 6px; }
+  .panel-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
 </style>
 </head>
 <body class="vd-plain">
@@ -58,6 +68,26 @@
       <span><a href="/admin/reports">Problem reports</a> &nbsp; <a href="/app">&larr; Back to app</a></span>
     </div>
     <div class="panel-body" id="body">Loading&hellip;</div>
+  </div>
+  <div class="panel" id="allowedPanel">
+    <div class="panel-header"><span>Allowed pilots</span></div>
+    <div class="panel-body">
+      <p class="demo-intro" id="allowedIntro">While access is locked, only these pilots can create an account and use the app. Adding someone gives them access straight away: then send them the sign-up link</p>
+      <form class="demo-form allow-form" id="allowForm">
+        <label>Email <input type="email" name="email" required placeholder="pilot@example.com"></label>
+        <label>Note <input type="text" name="note" maxlength="200" placeholder="Optional, e.g. Discord tester"></label>
+        <button type="submit">Allow</button>
+      </form>
+      <div id="allowResult"></div>
+      <div id="allowedList">Loading&hellip;</div>
+    </div>
+  </div>
+  <div class="panel" id="waitlistPanel">
+    <div class="panel-header"><span>Waitlist</span></div>
+    <div class="panel-body">
+      <p class="demo-intro">Visitors who left their email on the website to be invited. Allow moves them to the allowed pilots</p>
+      <div id="waitlistList">Loading&hellip;</div>
+    </div>
   </div>
   <div class="panel">
     <div class="panel-header"><span>Demo account</span></div>
@@ -134,7 +164,82 @@ document.getElementById('demoForm').addEventListener('submit', async (e) => {
     out.className = 'error-state'; out.textContent = err.message;
   } finally { btn.disabled = false; }
 });
+// ---- Allowed pilots and waitlist ----
+async function api(url, options) {
+  const resp = await fetch(url, options);
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+function allowResult(html, kind) {
+  const out = document.getElementById('allowResult');
+  out.className = kind || '';
+  out.innerHTML = html;
+}
+async function loadAllowed() {
+  const box = document.getElementById('allowedList');
+  try {
+    const data = await api('/admin/api/allowed');
+    if (data.open_access) document.getElementById('allowedIntro').textContent = 'Access is open to everyone (OPEN_ACCESS is set in Render), so this list has no effect right now';
+    const rows = data.pilots.map(p => `<tr>
+      <td>${esc(p.email)}</td><td class="note-muted">${esc(p.note || '')}</td><td>${fmt(p.added_at)}</td>
+      <td><button type="button" data-remove="${esc(p.email)}">Remove</button></td></tr>`).join('');
+    box.innerHTML = (data.pilots.length ? `<table><thead><tr><th>Email</th><th>Note</th><th>Added</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+                                        : '<div class="empty-state">Nobody added here yet</div>')
+      + (data.from_settings.length ? `<div class="sub-h">Also allowed, set in Render (ADMIN_EMAILS, ALLOWED_EMAILS)</div><div class="note-muted">${data.from_settings.map(esc).join(', ')}</div>` : '');
+    box.querySelectorAll('[data-remove]').forEach(b => b.onclick = async () => {
+      if (!confirm(`Remove ${b.dataset.remove}? They lose access to the app within a minute`)) return;
+      try { await api('/admin/api/allowed/' + encodeURIComponent(b.dataset.remove), { method: 'DELETE' }); loadAllowed(); }
+      catch (err) { allowResult(esc(err.message), 'error-state'); }
+    });
+  } catch (err) {
+    box.innerHTML = `<div class="error-state">${esc(err.message)}</div>`;
+  }
+}
+async function allow(email, note) {
+  const data = await api('/admin/api/allowed', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, note }),
+  });
+  allowResult(`${esc(data.email)} can now create an account. Send them this link:
+    <div class="invite-link"><code>${esc(data.signup_url)}</code><button type="button" id="copyInvite">Copy</button></div>`, 'ok');
+  document.getElementById('copyInvite').onclick = e => { navigator.clipboard.writeText(data.signup_url); e.target.textContent = 'Copied'; };
+  loadAllowed();
+  loadWaitlist();
+}
+document.getElementById('allowForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target, btn = form.querySelector('button');
+  btn.disabled = true;
+  try { await allow(form.email.value.trim(), form.note.value.trim()); form.reset(); }
+  catch (err) { allowResult(esc(err.message), 'error-state'); }
+  finally { btn.disabled = false; }
+});
+async function loadWaitlist() {
+  const box = document.getElementById('waitlistList');
+  try {
+    const data = await api('/admin/api/waitlist');
+    if (!data.waitlist.length) { box.innerHTML = '<div class="empty-state">Nobody on the waitlist</div>'; return; }
+    const rows = data.waitlist.map(w => `<tr><td>${esc(w.email)}</td><td>${fmt(w.created_at)}</td>
+      <td><button type="button" data-allow="${esc(w.email)}">Allow</button><button type="button" data-drop="${esc(w.email)}">Remove</button></td></tr>`).join('');
+    box.innerHTML = `<div class="panel-tools"><span class="note-muted">${data.waitlist.length} waiting</span><button type="button" id="copyWaitlist">Copy all emails</button></div>
+      <table><thead><tr><th>Email</th><th>Joined</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById('copyWaitlist').onclick = e => { navigator.clipboard.writeText(data.waitlist.map(w => w.email).join(', ')); e.target.textContent = 'Copied'; };
+    box.querySelectorAll('[data-allow]').forEach(b => b.onclick = async () => {
+      try { await allow(b.dataset.allow, 'From the waitlist'); document.getElementById('allowedPanel').scrollIntoView({ behavior: 'smooth' }); }
+      catch (err) { allowResult(esc(err.message), 'error-state'); }
+    });
+    box.querySelectorAll('[data-drop]').forEach(b => b.onclick = async () => {
+      if (!confirm(`Remove ${b.dataset.drop} from the waitlist?`)) return;
+      try { await api('/admin/api/waitlist/' + encodeURIComponent(b.dataset.drop), { method: 'DELETE' }); loadWaitlist(); }
+      catch (err) { box.insertAdjacentHTML('afterbegin', `<div class="error-state">${esc(err.message)}</div>`); }
+    });
+  } catch (err) {
+    box.innerHTML = `<div class="error-state">${esc(err.message)}</div>`;
+  }
+}
 load();
+loadAllowed();
+loadWaitlist();
 </script>
 {% include "_theme_toggle.html" %}
 </body>

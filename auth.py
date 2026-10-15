@@ -67,9 +67,10 @@ ADMIN_EMAILS = {
     if e.strip()
 }
 
-# Access lock. Until OPEN_ACCESS is set ("1"/"true"/"yes"/"on"), new
-# sign-ups are closed and the app is limited to ADMIN_EMAILS plus
-# ALLOWED_EMAILS (comma-separated, case-insensitive). The landing page,
+# Access lock. Until OPEN_ACCESS is set ("1"/"true"/"yes"/"on"), the app is
+# limited to ADMIN_EMAILS, ALLOWED_EMAILS (comma-separated,
+# case-insensitive) and the allowed pilots added on the admin page, and
+# only those emails can create an account. The landing page,
 # blog and legal pages stay public either way. If neither list is set,
 # existing accounts keep access (only sign-ups close), so turning the
 # lock on can never shut the owner out; set ALLOWED_EMAILS to lock those
@@ -86,11 +87,12 @@ def signups_open():
     return OPEN_ACCESS
 
 
-def email_allowed(email):
-    """Whether this account may use the app while access is locked."""
+def email_allowed(email, extra=frozenset()):
+    """Whether this account may use the app while access is locked. extra:
+    more allowed emails, lower-cased (the admin page's list)."""
     if OPEN_ACCESS:
         return True
-    allowed = ADMIN_EMAILS | ALLOWED_EMAILS
+    allowed = ADMIN_EMAILS | ALLOWED_EMAILS | set(extra)
     if not allowed:
         return True
     return (email or "").strip().lower() in allowed
