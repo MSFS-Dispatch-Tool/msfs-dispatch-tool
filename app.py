@@ -23,6 +23,7 @@ import demo
 import techlog
 import notams
 import acars
+import monitoring
 import navigraph
 import ops
 import generator
@@ -38,6 +39,9 @@ from timeutils import (
 
 app = Flask(__name__)
 webperf.init_app(app)  # gzip + fingerprinted, long-cached static files
+
+# Error monitoring (Sentry), on when SENTRY_DSN is set - see monitoring.py
+monitoring.init()
 
 # Session signing key - set FLASK_SECRET_KEY in the environment so
 # sessions (and therefore logins) survive a restart/redeploy. Without
@@ -57,7 +61,7 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 # vars unset), the gate is off entirely - matches the old APP_PASSWORD-
 # unset behavior, so a fresh checkout without secrets configured still
 # runs locally.
-PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted",
+PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors",
                     "resend_verification_route", "request_password_reset_route", "static",
                     "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
 
@@ -88,6 +92,14 @@ def current_user_id():
     same as it did before this migration."""
     user = current_user()
     return user["id"] if user else "local"
+
+
+@app.before_request
+def tag_monitoring_user():
+    """Errors during this request are filed under the account's id."""
+    user = current_user()
+    if user:
+        monitoring.set_user(user["id"])
 
 
 @app.before_request
@@ -641,6 +653,37 @@ def admin_report_status_route(report_id):
     if not db.set_report_status(report_id, status):
         return jsonify({"error": "No such report"}), 404
     return jsonify({"ok": True, "status": status})
+
+
+# ---- Browser errors (see templates/_error_watch.html): every page posts
+# its own scripts' errors here, for monitoring.browser_error. Open to
+# visitors too, since the website has scripts of its own, so it's capped
+# per visitor and per server process.
+CLIENT_ERROR_WINDOW_SECONDS = 600
+CLIENT_ERROR_MAX_PER_VISITOR, CLIENT_ERROR_MAX_TOTAL = 20, 300
+_client_error_times = {}
+
+
+@app.route("/client-errors", methods=["POST"])
+def client_errors():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not str(payload.get("message") or "").strip():
+        return "", 204
+    user = current_user()
+    visitor = user["id"] if user else (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    now = time.time()
+    cutoff = now - CLIENT_ERROR_WINDOW_SECONDS
+    for key in [k for k, times in _client_error_times.items() if times[-1] < cutoff]:
+        del _client_error_times[key]
+    mine = [t for t in _client_error_times.get(visitor, []) if t >= cutoff]
+    total = sum(1 for times in _client_error_times.values() for t in times if t >= cutoff)
+    if len(mine) >= CLIENT_ERROR_MAX_PER_VISITOR or total >= CLIENT_ERROR_MAX_TOTAL:
+        return "", 204
+    _client_error_times[visitor] = mine + [now]
+    monitoring.browser_error({"message": _clip(payload.get("message"), 300), "source": _clip(payload.get("source"), 300),
+                              "stack": _clip(payload.get("stack"), 2000), "page": _clip(payload.get("page"), 60)},
+                             user["id"] if user else None, _clip(request.headers.get("User-Agent"), 300))
+    return "", 204
 
 
 def _new_report_count():

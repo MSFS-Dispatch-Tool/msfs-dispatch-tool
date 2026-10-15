@@ -94,9 +94,14 @@ async def main():
         check("a cancelled sign-in is reported", "cancelled" in await page.text_content("#navigraphStatus"))
 
         # Report a problem, from the header: the message reaches the database with the page and recent errors
+        posted = []
+        page.on("request", lambda r: posted.append(r.post_data) if r.url.endswith("/client-errors") else None)
         await page.evaluate("""window.dispatchEvent(new ErrorEvent('error', {message: 'TypeError: e2e is broken',
             filename: location.origin + '/static/js/app.js', lineno: 12, colno: 3}))""")
         await page.evaluate("window.dispatchEvent(new ErrorEvent('error', {message: 'extension noise', filename: 'chrome-extension://x/y.js'}))")
+        await page.wait_for_timeout(500)
+        check("our own script errors go to error monitoring, an extension's don't",
+              len(posted) == 1 and json.loads(posted[0])["source"] == "/static/js/app.js:12:3", posted)
         await page.click(".app-report")
         check("the report form opens, without the flight option when there's no flight",
               await page.is_visible("#reportMessage") and not await page.is_visible("#reportFlightRow"))

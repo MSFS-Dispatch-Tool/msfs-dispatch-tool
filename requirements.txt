@@ -4,3 +4,4 @@ requests==2.32.3
 psycopg2-binary==2.9.13
 Markdown==3.7
 cryptography==43.0.3
+sentry-sdk==2.19.2
