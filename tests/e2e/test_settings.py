@@ -72,6 +72,22 @@ async def main():
         check("the code never comes back to the browser", "TESTLOGON1" not in raw)
         await page.locator(".panel:has(#acarsLogon)").screenshot(path=shot("settings_acars.png"))
 
+        # ACARS through SayIntentions: the network choice, the key (kept on the server) and a test telex
+        await page.click("#acarsNetworkRow label:has-text('SAYINTENTIONS')"); await page.wait_for_timeout(500)
+        check("choosing SayIntentions shows its key field instead of Hoppie's",
+              await page.is_visible("#siKey") and not await page.is_visible("#acarsLogon"))
+        await page.fill("#siKey", "TESTSIKEY0255")
+        await page.click("button[onclick*=saveSiKey]"); await page.wait_for_timeout(600)
+        await page.wait_for_timeout(5200)                                     # the test is rate limited
+        await page.click("#siTestBtn"); await page.wait_for_timeout(800)
+        raw = urllib.request.urlopen(BASE + "/acars/settings").read().decode()
+        check("the SayIntentions key is saved masked, never sent back, and the test telex goes",
+              "255" in await page.text_content("#siSaved") and "TESTSIKEY0255" not in raw
+              and "test telex" in await page.text_content("#acarsStatus"), await page.text_content("#acarsStatus"))
+        await page.locator(".panel:has(#siKey)").screenshot(path=shot("settings_acars_si.png"))
+        await page.click("#acarsNetworkRow label:has-text('HOPPIE')"); await page.wait_for_timeout(500)
+        check("back on Hoppie, its code is still there", await page.is_visible("#acarsLogon") and "N1" in await page.text_content("#acarsSaved"))
+
         # Sign in with Navigraph (a fake one): the account shows by name, its tokens stay on the server
         check("the Navigraph panel offers the sign-in",
               await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphState") == "Not connected")
