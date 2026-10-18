@@ -2,6 +2,7 @@
 against the live world replaced: weather comes from fixed samples (so runs
 are repeatable and need no aviationweather.gov access), Hoppie's ACARS
 network is a fake (TESTLOGON1: every aircraft online; TESTLOGON2: none), so
+is SayIntentions (TESTSIKEY0255 / TESTSIKEY0128: aircraft taking 255 / 128 characters), so
 is Navigraph's sign-in (it signs in "e2e_pilot" at once), and a scenario can pin the random rolls a suite
 depends on.
 
@@ -40,6 +41,7 @@ import acars  # noqa: E402
 import app  # noqa: E402
 import db  # noqa: E402
 import navigraph  # noqa: E402
+import sayintentions  # noqa: E402
 import techlog  # noqa: E402
 import wxmap  # noqa: E402
 
@@ -121,6 +123,38 @@ class _JsonAnswer:
 
     def json(self):
         return self.body
+
+
+class _TextAnswer:
+    status_code = 200
+
+    def __init__(self, text):
+        self.text = text
+
+    def json(self):
+        raise ValueError("not JSON")
+
+
+# Fake SayIntentions pilot keys, each standing for an aircraft's message limit
+SAYINTENTIONS_LIMITS = {"TESTSIKEY0255": 255, "TESTSIKEY0128": 128}
+
+
+def patch_sayintentions():
+    """SayIntentions' sayAs, as it answers: HTTP 200 with "OK", or with an
+    error naming the aircraft's limit; unknown pilot keys are refused."""
+    sayintentions.DEVELOPER_KEY = "e2e-developer-key"
+    others = sayintentions.requests.get
+
+    def get(url, params=None, headers=None, timeout=None, **kwargs):
+        if url != sayintentions.URL:
+            return others(url, params=params, headers=headers, timeout=timeout, **kwargs)
+        limit = SAYINTENTIONS_LIMITS.get(params.get("api_key"))
+        if limit is None:
+            return _JsonAnswer({"error": "Invalid API key"})
+        if len(params["message"]) > limit:
+            return _JsonAnswer({"error": f"Message too long: {len(params['message'])} characters. Maximum is {limit} characters."})
+        return _TextAnswer("OK")
+    sayintentions.requests.get = get
 
 
 def patch_navigraph(port):
@@ -226,6 +260,7 @@ def main():
     patch_weather()
     patch_hoppie()
     patch_navigraph(args.port)
+    patch_sayintentions()
     SCENARIOS[args.scenario]()
     app.app.run(port=args.port, debug=False)
 

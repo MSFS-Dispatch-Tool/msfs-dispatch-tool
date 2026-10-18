@@ -26,6 +26,7 @@ import acars
 import monitoring
 import navigraph
 import ops
+import sayintentions
 import sealing
 import generator
 from generator import (
@@ -2192,13 +2193,29 @@ def _simbrief_latest(username):
     return data
 
 
-# ---- ACARS (Hoppie): the pilot's logon code and a connection check ----
-# The code is a credential: it's stored encrypted (see sealing.py), and the
-# browser can set or remove it and is told whether one is saved (with its
-# last characters), but never gets it back.
+# ---- ACARS: the pilot's network (Hoppie or SayIntentions), its credential
+# and a connection check ----
+# Stored with the pilot's settings as {"network", "logon", "si_key"}: the
+# Hoppie logon code and the SayIntentions API key are credentials, stored
+# encrypted (see sealing.py). The browser can set or remove them and is
+# told whether one is saved (with its last characters), but never gets
+# them back.
 ACARS_TEST_INTERVAL_SECONDS = 5
+ACARS_NETWORKS = ("hoppie", "sayintentions")
 _acars_last_test = {}
 _hoppie_box = sealing.SecretBox(app.secret_key, "hoppie-logon")
+_si_box = sealing.SecretBox(app.secret_key, "sayintentions-key")
+
+
+def _update_acars(user_id, **changes):
+    """Changes some of the pilot's ACARS settings, keeping the others."""
+    stored = dict(db.get_acars(user_id) or {})
+    for key, value in changes.items():
+        if value in (None, ""):
+            stored.pop(key, None)
+        else:
+            stored[key] = value
+    db.save_acars(stored, user_id)
 
 
 def _hoppie_logon(user_id):
@@ -2213,7 +2230,19 @@ def _hoppie_logon(user_id):
 
 
 def _save_hoppie_logon(code, user_id):
-    db.save_acars({"logon": _hoppie_box.seal(code)} if code else {}, user_id)
+    _update_acars(user_id, logon=_hoppie_box.seal(code) if code else None)
+
+
+def _si_key(user_id):
+    stored = (db.get_acars(user_id) or {}).get("si_key") or ""
+    return (_si_box.open(stored) or "") if stored else ""
+
+
+def _acars_network(user_id):
+    """The network SEND TO AIRCRAFT uses: SayIntentions only when the pilot
+    chose it and the app can use it (developer key set)."""
+    chosen = (db.get_acars(user_id) or {}).get("network")
+    return "sayintentions" if chosen == "sayintentions" and sayintentions.configured() else "hoppie"
 
 
 # Codes saved before they were encrypted are encrypted once, at start-up
@@ -2225,8 +2254,10 @@ if db.db_available():
 
 
 def _acars_status(user_id):
-    code = _hoppie_logon(user_id)
-    return {"configured": bool(code), "hint": acars.mask(code), "station": acars.STATION}
+    code, si_key = _hoppie_logon(user_id), _si_key(user_id)
+    return {"configured": bool(code), "hint": acars.mask(code), "station": acars.STATION,
+            "network": _acars_network(user_id), "si_available": sayintentions.configured(),
+            "si_configured": bool(si_key), "si_hint": acars.mask(si_key)}
 
 
 @app.route("/acars/settings", methods=["GET"])
@@ -2239,6 +2270,7 @@ def acars_settings_get():
 
 @app.route("/acars/settings", methods=["POST"])
 def acars_settings_save():
+    """The Hoppie logon code ("" removes it)."""
     unavailable = _require_db()
     if unavailable:
         return unavailable
@@ -2249,23 +2281,71 @@ def acars_settings_save():
     return jsonify(_acars_status(current_user_id()))
 
 
+@app.route("/acars/sayintentions", methods=["POST"])
+def acars_sayintentions_save():
+    """The pilot's SayIntentions API key ("" removes it)."""
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    key = str((request.get_json(silent=True) or {}).get("api_key") or "").strip()
+    if key and not sayintentions.valid_key(key):
+        return jsonify({"error": "That doesn't look like a SayIntentions API key: copy it again from your pilot portal"}), 400
+    _update_acars(current_user_id(), si_key=_si_box.seal(key) if key else None)
+    return jsonify(_acars_status(current_user_id()))
+
+
+@app.route("/acars/network", methods=["POST"])
+def acars_network_save():
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    network = (request.get_json(silent=True) or {}).get("network")
+    if network not in ACARS_NETWORKS or (network == "sayintentions" and not sayintentions.configured()):
+        return jsonify({"error": "Unknown network"}), 400
+    _update_acars(current_user_id(), network=network)
+    return jsonify(_acars_status(current_user_id()))
+
+
 ACARS_SEND_INTERVAL_SECONDS = 15
 _acars_last_send = {}
+
+
+def _send_via_sayintentions(api_key, texts):
+    """Sends the longest of texts the pilot's aircraft takes, in one message.
+    SayIntentions' limit depends on the aircraft (255 characters on the
+    Fenix, 128 on the PMDG 737) and its refusal names it, so a too-long
+    first try is followed at once by the longest text within that limit;
+    the refused one never reaches the aircraft. Returns the text sent."""
+    texts = sorted(set(texts), key=len, reverse=True)
+    try:
+        sayintentions.send_telex(api_key, texts[0])
+        return texts[0]
+    except sayintentions.MessageTooLong as exc:
+        fitting = [t for t in texts if len(t) <= exc.maximum]
+        if not fitting:
+            raise
+        sayintentions.send_telex(api_key, fitting[0])
+        return fitting[0]
 
 
 @app.route("/acars/send", methods=["POST"])
 def acars_send():
     """Sends a message (the signed loadsheet) to one of the active flight's
-    own callsigns. With check_online, nothing is sent if that callsign isn't
-    logged on to Hoppie: the answer says so, and the pilot can send anyway."""
+    own callsigns, over the pilot's network. Through Hoppie, with
+    check_online, nothing is sent if that callsign isn't logged on: the
+    answer says so, and the pilot can send anyway. Through SayIntentions the
+    message goes to the pilot's aircraft; "variants" are shorter versions of
+    "text", for aircraft that take fewer characters."""
     unavailable = _require_db()
     if unavailable:
         return unavailable
     user_id = current_user_id()
     payload = request.get_json(silent=True) or {}
-    code = _hoppie_logon(user_id)
-    if not code:
-        return jsonify({"ok": False, "no_logon": True, "error": "Add your Hoppie logon code in Account settings first"}), 400
+    network = _acars_network(user_id)
+    credential = _si_key(user_id) if network == "sayintentions" else _hoppie_logon(user_id)
+    if not credential:
+        missing = "SayIntentions API key" if network == "sayintentions" else "Hoppie logon code"
+        return jsonify({"ok": False, "no_logon": True, "error": f"Add your {missing} in Account settings first"}), 400
     callsign = str(payload.get("callsign") or "").strip().upper()
     flight = db.get_active_flight(user_id).get("flight") or {}
     if callsign not in [str(c).upper() for c in (flight.get("callsigns") or [])]:
@@ -2277,38 +2357,54 @@ def acars_send():
     if now - _acars_last_send.get(user_id, 0) < ACARS_SEND_INTERVAL_SECONDS:
         return jsonify({"ok": False, "error": "Just sent: wait a few seconds before sending again"}), 429
     try:
-        if payload.get("check_online"):
-            if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
-                return jsonify({"ok": False, "error": "One moment: wait a few seconds and try again"}), 429
-            _acars_last_test[user_id] = now
-            if not acars.ping(code, [callsign]):
-                return jsonify({"ok": False, "offline": True,
-                                "error": f"{callsign} isn't logged on to ACARS. Log on in the aircraft as {callsign}, or send anyway"}), 409
-        acars.send_telex(code, callsign, text)
-    except acars.AcarsError as exc:
+        if network == "sayintentions":
+            variants = payload.get("variants") if isinstance(payload.get("variants"), list) else []
+            texts = [text] + [t for t in (acars.clean_message(v) for v in variants[:4]) if t]
+            sent = _send_via_sayintentions(credential, texts)
+        else:
+            if payload.get("check_online"):
+                if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
+                    return jsonify({"ok": False, "error": "One moment: wait a few seconds and try again"}), 429
+                _acars_last_test[user_id] = now
+                if not acars.ping(credential, [callsign]):
+                    return jsonify({"ok": False, "offline": True,
+                                    "error": f"{callsign} isn't logged on to ACARS. Log on in the aircraft as {callsign}, or send anyway"}), 409
+            acars.send_telex(credential, callsign, text)
+            sent = text
+    except (acars.AcarsError, sayintentions.SayIntentionsError) as exc:
         return jsonify({"ok": False, "error": str(exc)}), 502
     _acars_last_send[user_id] = now
-    return jsonify({"ok": True, "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")})
+    return jsonify({"ok": True, "network": network, "lines": sent.count("\n") + 1, "chars": len(sent),
+                    "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")})
 
 
 @app.route("/acars/test", methods=["POST"])
 def acars_test():
+    """Hoppie: checks the logon code (nothing is sent). SayIntentions: sends
+    a short test telex, since that's the only way to check the key."""
     unavailable = _require_db()
     if unavailable:
         return unavailable
     user_id = current_user_id()
-    code = _hoppie_logon(user_id)
-    if not code:
-        return jsonify({"ok": False, "error": "Save your Hoppie logon code first"}), 400
+    network = (request.get_json(silent=True) or {}).get("network") or _acars_network(user_id)
+    if network == "sayintentions" and not sayintentions.configured():
+        return jsonify({"ok": False, "error": "SayIntentions isn't available right now"}), 400
+    credential = _si_key(user_id) if network == "sayintentions" else _hoppie_logon(user_id)
+    if not credential:
+        missing = "SayIntentions API key" if network == "sayintentions" else "Hoppie logon code"
+        return jsonify({"ok": False, "error": f"Save your {missing} first"}), 400
     now = time.time()
     if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
         return jsonify({"ok": False, "error": "One moment: wait a few seconds before testing again"}), 429
     _acars_last_test[user_id] = now
     try:
-        acars.ping(code)
-    except acars.AcarsError as exc:
+        if network == "sayintentions":
+            sayintentions.send_telex(credential, "VIRTUALDISPATCH\nCONNECTION TEST OK")
+        else:
+            acars.ping(credential)
+    except (acars.AcarsError, sayintentions.SayIntentionsError) as exc:
         return jsonify({"ok": False, "error": str(exc)}), 502
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "network": network})
 
 
 # ---- Sign in with Navigraph: the pilot's link to SimBrief's API v2 ----

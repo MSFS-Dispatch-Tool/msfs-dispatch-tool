@@ -49,7 +49,7 @@ function escAttr(value) {
 // confirmed on another device opens here too.
 async function boot() {
   document.getElementById('mainContent').innerHTML = `<div class="panel"><div class="panel-body"><div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING&hellip;</div></div></div>`;
-  await Promise.race([pullActiveFlight(), new Promise(resolve => setTimeout(resolve, 4000))]);
+  await Promise.race([Promise.all([pullActiveFlight(), loadAcarsNetwork()]), new Promise(resolve => setTimeout(resolve, 4000))]);
   updateActiveFlightButtonState();
   // Back from signing in with Navigraph: show how it went, in Account settings
   const navigraph = new URLSearchParams(location.search).get('navigraph');
@@ -2719,7 +2719,70 @@ function acarsLoadsheetText(flight, i, s, signedAt) {
   lines.push('-'.repeat(ACARS_COLS), signedAt ? acarsClean(`SIGNED CAPT ${opsTime(signedAt)}Z`) : 'NOT SIGNED', 'END');
   return lines.map(l => l.slice(0, ACARS_COLS)).join('\n');
 }
-function acarsPreviewHtml(text) {
+// The loadsheet as one SayIntentions telex, within an aircraft's limit
+// (SayIntentions takes 255 characters on some aircraft, 128 on others):
+// the roomiest layout that fits, dropping the least important lines first
+// and never splitting it into several messages.
+function acarsShortLoadsheet(flight, i, s, signedAt, limit) {
+  const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, b = s.b, f = s.fig;
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+  const r = v => (v == null ? 'N/A' : String(Math.round(v)));
+  const head = `LOADSHEET ${s.pending.length ? 'PRELIM' : 'FINAL'}`, ed = `EDNO ${s.applied.length ? '02' : '01'}`;
+  const signed = signedAt ? 'CAPT SIGNED' : 'NOT SIGNED';
+  const route = `${leg.departure_info.icao}-${leg.arrival_info.icao}`;
+  const dg = st.ls && st.ls.dangerous_goods;
+  const notoc = isNoDg(dg) ? '' : dg.notoc ? `NOTOC ${dg.un || ''} CL${dg['class'] || ''}${s.decisions.dg === 'refuse' ? ' OFFLD' : ''}` : 'SI DG ON BOARD';
+  const lmc = s.applied.map(c => `${c.label} ${c.weight > 0 ? '+' : '-'}${Math.round(Math.abs(c.weight))}`);
+  const mels = legMels(leg).length;
+  const MUST = Infinity;
+  const roomy = withMax => [
+    [`${head} ${opsTime(signedAt)}Z`, MUST], [`${ed} ${callsign}`, MUST],
+    [`${route} ${ofp.registration || ''} ${leg.aircraft_type || ''}`, MUST],
+    [`PAX ${f.pax} BAG/CGO ${r(f.hold)}`, MUST],
+    [`ZFW ${r(f.zfw)}${withMax && b.maxZfw ? ' MAX ' + r(b.maxZfw) : ''}`, MUST], [`TOF ${r(f.tof)}`, MUST],
+    [`TOW ${r(f.tow)}${withMax && b.maxTow ? ' MAX ' + r(b.maxTow) : ''}`, MUST], [`TIF ${r(b.trip)}`, MUST],
+    [`LAW ${r(f.lw)}${withMax && b.maxLdw ? ' MAX ' + r(b.maxLdw) : ''}`, MUST], [`UNDLD ${r(f.underload)}`, MUST],
+    ...(lmc.length ? lmc.map(c => [`LMC ${c}`, 3]) : []),
+    [lmc.length || notoc ? notoc : 'LMC NIL NOTOC NIL', 4],
+    [mels ? `MEL ${mels} ITEM${mels > 1 ? 'S' : ''}` : '', 2],
+    [signed, MUST],
+  ];
+  const tight = [
+    [`${head} ${ed}`, MUST], [`${callsign} ${route}`, MUST],
+    [`ZFW ${r(f.zfw)} TOW ${r(f.tow)}`, MUST], [`LAW ${r(f.lw)} TOF ${r(f.tof)}`, MUST],
+    [`TIF ${r(b.trip)} UNDLD ${r(f.underload)}`, MUST], [`PAX ${f.pax} ${signed}`, MUST],
+    // Markers only: dangerous goods first, as the more important
+    [notoc ? 'NOTOC' : '', 4], [lmc.length ? 'LMC' : '', 3],
+  ];
+  // Lines with a priority below dropBelow may go, the least important first
+  const fit = (lines, dropBelow) => {
+    let keep = lines.map(([t, p]) => [acarsClean(t).slice(0, ACARS_COLS), p]).filter(([t]) => t);
+    const size = () => keep.map(([t]) => t).join('\n').length;
+    while (size() > limit) {
+      const optional = keep.filter(([, p]) => p < dropBelow);
+      if (!optional.length) break;
+      const drop = optional.reduce((a, c) => (c[1] < a[1] ? c : a));
+      keep = keep.filter(l => l !== drop);
+    }
+    return size() <= limit ? keep.map(([t]) => t).join('\n') : null;
+  };
+  // Keep the extras (changes, dangerous goods) with the MAX figures if
+  // possible, then without them; else the six-line layout
+  return fit(roomy(true), 3) || fit(roomy(false), 3) || fit(roomy(false), MUST) || fit(tight, MUST)
+    || tight.slice(0, 6).map(([t]) => acarsClean(t).slice(0, ACARS_COLS)).join('\n').slice(0, limit);
+}
+// Shorter versions of the ACARS loadsheet, for SayIntentions' limits
+const SAYINTENTIONS_LIMITS = [255, 128];
+function acarsVariants(flight, i, s, signedAt) {
+  return SAYINTENTIONS_LIMITS.map(limit => acarsShortLoadsheet(flight, i, s, signedAt, limit));
+}
+function acarsPreviewHtml(text, variants) {
+  if (acarsNetwork === 'sayintentions' && variants && variants.length) {
+    const labels = ['Up to 255 characters, e.g. Fenix A320', 'Up to 128 characters, e.g. PMDG 737'];
+    return `<details class="acars-preview"><summary>ACARS VERSIONS <span>SayIntentions sends the longest one the aircraft takes, as one message</span></summary>
+      <div class="acars-versions">${variants.map((v, k) => `<div><div class="acars-version-label">${escText(labels[k] || '')} &middot; ${v.length} characters</div>
+        <pre class="acars-screen">${escText(v)}</pre></div>`).join('')}</div></details>`;
+  }
   return `<details class="acars-preview"><summary>ACARS VERSION <span>what SEND TO AIRCRAFT transmits</span></summary>
     <pre class="acars-screen">${escText(text)}</pre></details>`;
 }
@@ -2728,18 +2791,26 @@ function acarsPreviewHtml(text) {
 // callsign. The server checks the aircraft is logged on first; if it
 // isn't, the pilot is told which callsign to log on with, or can send
 // anyway. Each send is recorded on the loadsheet.
+function acarsSentLine(sent) {
+  if (!sent) return '';
+  const via = sent.network === 'sayintentions' ? ` via SayIntentions${sent.lines ? `, ${sent.lines}-line version` : ''}` : '';
+  return `Sent to the aircraft ${opsTime(sent.at)}Z, edition ${String(sent.edition).padStart(2, '0')}${via}`;
+}
 function acarsSendHtml(flight, i) {
   const ls = flight.leg_state[i].loadsheet || {}, callsign = flight.callsigns ? flight.callsigns[i] : '';
   if (!callsign) return '';
   const sent = (ls.acars_sent || []).slice(-1)[0];
-  const last = sent ? `Sent to the aircraft ${opsTime(sent.at)}Z, edition ${String(sent.edition).padStart(2, '0')}` : '';
+  const si = acarsNetwork === 'sayintentions';
+  const note = si
+    ? 'In the aircraft, set ACARS to SayIntentions and have SayIntentions connected, then send. The loadsheet arrives as a telex (company message), in one message: on aircraft that take fewer characters, such as the PMDG 737, a shorter version'
+    : `In the aircraft, log on to ACARS with your Hoppie logon code as <b class="mono">${escText(callsign)}</b>, then send. The loadsheet arrives as a company message`;
   return `<div class="acars-send" id="acarsSend-${i}">
-    <div class="acars-send-head"><b>SEND TO AIRCRAFT</b><span>ACARS to <span class="mono">${escText(callsign)}</span></span></div>
-    <p class="acars-send-note">In the aircraft, log on to ACARS with your Hoppie logon code as <b class="mono">${escText(callsign)}</b>, then send. The loadsheet arrives as a company message</p>
+    <div class="acars-send-head"><b>SEND TO AIRCRAFT</b><span>${si ? 'ACARS via SayIntentions' : `ACARS to <span class="mono">${escText(callsign)}</span>`}</span></div>
+    <p class="acars-send-note">${note}</p>
     <div class="doc-actions">
       <button class="action" type="button" id="acarsSendBtn-${i}" onclick="sendLoadsheetToAircraft(${i}, true)">${sent ? 'SEND AGAIN' : 'SEND TO AIRCRAFT'}</button>
       <button class="ghost" type="button" id="acarsSendAnyway-${i}" onclick="sendLoadsheetToAircraft(${i}, false)" hidden>SEND ANYWAY</button>
-      <span class="acars-send-status${sent ? ' ok' : ''}" id="acarsSendStatus-${i}" aria-live="polite">${last}</span>
+      <span class="acars-send-status${sent ? ' ok' : ''}" id="acarsSendStatus-${i}" aria-live="polite">${acarsSentLine(sent)}</span>
     </div>
   </div>`;
 }
@@ -2748,17 +2819,18 @@ async function sendLoadsheetToAircraft(i, checkOnline) {
   const st = flight.leg_state[i], ls = st.loadsheet || {};
   const status = document.getElementById(`acarsSendStatus-${i}`), btn = document.getElementById(`acarsSendBtn-${i}`), anyway = document.getElementById(`acarsSendAnyway-${i}`);
   const say = (html, kind) => { status.innerHTML = html; status.className = 'acars-send-status' + (kind ? ' ' + kind : ''); };
-  const s = ls.acars_text ? null : loadsheetState(flight, i);
+  const s = ls.acars_text && ls.acars_variants ? null : loadsheetState(flight, i);
   const text = ls.acars_text || (s ? acarsLoadsheetText(flight, i, s, ls.signed_at) : '');
+  const variants = ls.acars_variants || (s ? acarsVariants(flight, i, s, ls.signed_at) : []);
   btn.disabled = true; anyway.hidden = true;
-  say(checkOnline ? 'Checking the aircraft is logged on...' : 'Sending...');
+  say(checkOnline && acarsNetwork !== 'sayintentions' ? 'Checking the aircraft is logged on...' : 'Sending...');
   try {
     const resp = await fetch('/acars/send', { method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ callsign: flight.callsigns[i], text, check_online: checkOnline }) });
+      body: JSON.stringify({ callsign: flight.callsigns[i], text, variants, check_online: checkOnline }) });
     const data = await resp.json();
     if (data.ok) {
       const fresh = loadActiveFlight();
-      const entry = { at: data.sent_at, edition: ls.edition || 1 };
+      const entry = { at: data.sent_at, edition: ls.edition || 1, network: data.network, lines: data.lines };
       fresh.leg_state[i].loadsheet.acars_sent = (fresh.leg_state[i].loadsheet.acars_sent || []).concat(entry);
       recapTab = 'loadsheet';
       saveActiveFlight(fresh);
@@ -2780,9 +2852,10 @@ function docEmpty(title, text, button) {
 function loadsheetPaneHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i);
   if (st.loadsheet_signed && st.loadsheet && st.loadsheet.text) {
-    const s = st.loadsheet.acars_text ? null : loadsheetState(flight, i);
+    const s = st.loadsheet.acars_text && st.loadsheet.acars_variants ? null : loadsheetState(flight, i);
     const acarsText = st.loadsheet.acars_text || (s ? acarsLoadsheetText(flight, i, s, st.loadsheet.signed_at) : '');
-    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>${acarsText ? acarsSendHtml(flight, i) + acarsPreviewHtml(acarsText) : ''}`;
+    const variants = st.loadsheet.acars_variants || (s ? acarsVariants(flight, i, s, st.loadsheet.signed_at) : []);
+    return `<pre class="doc-sheet">${escText(st.loadsheet.text)}</pre>${acarsText ? acarsSendHtml(flight, i) + acarsPreviewHtml(acarsText, variants) : ''}`;
   }
   if (st.loadsheet_signed) {   // signed before loadsheets were documents
     const l = st.loadsheet || {};
@@ -2840,6 +2913,7 @@ function signLoadsheet(i) {
     pax: f.pax, crew: 2 + s.b.cabinCrew, hold: f.hold, underload: f.underload,
     changes: s.applied.map(c => ({ label: c.label, weight: c.weight })), decisions: { ...s.decisions },
     signed_at: signedAt, text: loadsheetText(flight, i, s, signedAt), acars_text: acarsLoadsheetText(flight, i, s, signedAt),
+    acars_variants: acarsVariants(flight, i, s, signedAt),
   };
   flight.leg_state[i].loadsheet_signed = true;
   // The flown load, for the logbook
@@ -3548,19 +3622,42 @@ async function renderAccountSettings() {
     </div>
 
     <div class="panel" style="margin-top:14px;">
-      <div class="panel-header">ACARS (HOPPIE)</div>
+      <div class="panel-header">ACARS</div>
       <div class="panel-body">
-        <p class="placeholder-text acars-intro">Lets VirtualDispatch send messages such as your loadsheet straight to the aircraft over Hoppie's ACARS network. Use the same logon code you enter in the aircraft's ACARS settings. It's free: get one at <a href="https://www.hoppie.nl/acars/" target="_blank" rel="noopener">hoppie.nl</a></p>
-        <div class="acars-row">
-          <div class="field">
-            <label for="acarsLogon">HOPPIE LOGON CODE <span class="hint" id="acarsSaved"></span></label>
-            <input type="password" id="acarsLogon" autocomplete="off" spellcheck="false" maxlength="40" placeholder="Paste your logon code">
-            <div class="field-error" id="acarsLogonError">6 TO 40 LETTERS AND NUMBERS</div>
+        <p class="placeholder-text acars-intro">Lets VirtualDispatch send messages such as your loadsheet straight to the aircraft. Use the network your aircraft's ACARS is set to: an aircraft is on one network at a time</p>
+        <fieldset class="seg-control acars-network" id="acarsNetworkRow" hidden>
+          <legend>SEND MESSAGES VIA</legend>
+          <label><input type="radio" name="acarsNetwork" value="hoppie" checked onchange="saveAcarsNetwork(this.value)"><span>HOPPIE</span></label>
+          <label><input type="radio" name="acarsNetwork" value="sayintentions" onchange="saveAcarsNetwork(this.value)"><span>SAYINTENTIONS</span></label>
+        </fieldset>
+        <div id="acarsHoppieBlock">
+          <p class="placeholder-text acars-intro">Hoppie's ACARS network: use the same logon code you enter in the aircraft's ACARS settings. It's free: get one at <a href="https://www.hoppie.nl/acars/" target="_blank" rel="noopener">hoppie.nl</a></p>
+          <div class="acars-row">
+            <div class="field">
+              <label for="acarsLogon">HOPPIE LOGON CODE <span class="hint" id="acarsSaved"></span></label>
+              <input type="password" id="acarsLogon" autocomplete="off" spellcheck="false" maxlength="40" placeholder="Paste your logon code">
+              <div class="field-error" id="acarsLogonError">6 TO 40 LETTERS AND NUMBERS</div>
+            </div>
+            <div class="acars-actions">
+              <button class="action" type="button" onclick="saveAcarsLogon()">SAVE</button>
+              <button class="ghost" type="button" id="acarsTestBtn" onclick="testAcars('hoppie')" disabled>TEST CONNECTION</button>
+              <button class="ghost" type="button" id="acarsRemoveBtn" onclick="removeAcarsLogon()" hidden>REMOVE</button>
+            </div>
           </div>
-          <div class="acars-actions">
-            <button class="action" type="button" onclick="saveAcarsLogon()">SAVE</button>
-            <button class="ghost" type="button" id="acarsTestBtn" onclick="testAcars()" disabled>TEST CONNECTION</button>
-            <button class="ghost" type="button" id="acarsRemoveBtn" onclick="removeAcarsLogon()" hidden>REMOVE</button>
+        </div>
+        <div id="acarsSiBlock" hidden>
+          <p class="placeholder-text acars-intro">For pilots flying with SayIntentions' AI controllers, with the aircraft's ACARS set to SayIntentions. Your API key is on the account page of your <a href="https://www.sayintentions.ai" target="_blank" rel="noopener">SayIntentions</a> pilot portal</p>
+          <div class="acars-row">
+            <div class="field">
+              <label for="siKey">SAYINTENTIONS API KEY <span class="hint" id="siSaved"></span></label>
+              <input type="password" id="siKey" autocomplete="off" spellcheck="false" maxlength="128" placeholder="Paste your API key">
+              <div class="field-error" id="siKeyError">PASTE THE KEY FROM YOUR PILOT PORTAL</div>
+            </div>
+            <div class="acars-actions">
+              <button class="action" type="button" onclick="saveSiKey()">SAVE</button>
+              <button class="ghost" type="button" id="siTestBtn" onclick="testAcars('sayintentions')" disabled>SEND TEST MESSAGE</button>
+              <button class="ghost" type="button" id="siRemoveBtn" onclick="removeSiKey()" hidden>REMOVE</button>
+            </div>
           </div>
         </div>
         <p class="acars-status" id="acarsStatus" aria-live="polite"></p>
@@ -3934,12 +4031,66 @@ async function disconnectNavigraph() {
 }
 
 // ---- ACARS (Hoppie) logon code: saved on the server, never shown back ----
+// The pilot's ACARS network ('hoppie' or 'sayintentions'), for SEND TO
+// AIRCRAFT; read at start and whenever the settings change
+let acarsNetwork = 'hoppie';
+async function loadAcarsNetwork() {
+  try {
+    const resp = await fetch('/acars/settings');
+    if (resp.ok) acarsNetwork = (await resp.json()).network || 'hoppie';
+  } catch (e) { /* stays on Hoppie */ }
+}
+
 function paintAcars(status) {
+  acarsNetwork = status.network || 'hoppie';
   const saved = document.getElementById('acarsSaved');
   if (!saved) return;
   saved.textContent = status.configured ? `(saved: ${status.hint})` : '(not set)';
   document.getElementById('acarsTestBtn').disabled = !status.configured;
   document.getElementById('acarsRemoveBtn').hidden = !status.configured;
+  const si = status.si_available, onSi = si && status.network === 'sayintentions';
+  document.getElementById('acarsNetworkRow').hidden = !si;
+  document.querySelectorAll('input[name=acarsNetwork]').forEach(r => { r.checked = r.value === (onSi ? 'sayintentions' : 'hoppie'); });
+  document.getElementById('acarsHoppieBlock').hidden = onSi;
+  document.getElementById('acarsSiBlock').hidden = !onSi;
+  document.getElementById('siSaved').textContent = status.si_configured ? `(saved: ${status.si_hint})` : '(not set)';
+  document.getElementById('siTestBtn').disabled = !status.si_configured;
+  document.getElementById('siRemoveBtn').hidden = !status.si_configured;
+}
+
+async function postAcars(url, body, okText) {
+  try {
+    const resp = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    const data = await resp.json();
+    if (!resp.ok) { acarsMessage(data.error || 'Not saved', 'bad'); return false; }
+    paintAcars(data);
+    if (okText) acarsMessage(okText, 'ok');
+    return true;
+  } catch (e) {
+    acarsMessage('Not saved: the server can\'t be reached', 'bad');
+    return false;
+  }
+}
+
+async function saveAcarsNetwork(network) {
+  acarsMessage('');
+  await postAcars('/acars/network', { network },
+    network === 'sayintentions' ? 'Messages now go via SayIntentions' : 'Messages now go via Hoppie');
+}
+
+async function saveSiKey() {
+  const input = document.getElementById('siKey');
+  const key = input.value.trim();
+  const valid = /^[A-Za-z0-9_-]{8,128}$/.test(key);
+  document.getElementById('siKeyError').classList.toggle('show', !valid);
+  if (!valid) return;
+  acarsMessage('Saving...');
+  if (await postAcars('/acars/sayintentions', { api_key: key }, 'Saved. Send a test message to check it reaches the aircraft')) input.value = '';
+}
+
+async function removeSiKey() {
+  if (!confirm('Remove your SayIntentions API key from VirtualDispatch?')) return;
+  if (await postAcars('/acars/sayintentions', { api_key: '' })) acarsMessage('Removed');
 }
 
 function acarsMessage(text, kind) {
@@ -3984,14 +4135,16 @@ async function removeAcarsLogon() {
   }
 }
 
-async function testAcars() {
-  const btn = document.getElementById('acarsTestBtn');
+async function testAcars(network = 'hoppie') {
+  const si = network === 'sayintentions';
+  const btn = document.getElementById(si ? 'siTestBtn' : 'acarsTestBtn');
   btn.disabled = true;
-  acarsMessage('Contacting Hoppie...');
+  acarsMessage(si ? 'Sending a test message through SayIntentions...' : 'Contacting Hoppie...');
   try {
-    const resp = await fetch('/acars/test', { method: 'POST' });
+    const resp = await fetch('/acars/test', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ network }) });
     const data = await resp.json();
-    acarsMessage(data.ok ? 'Connected: Hoppie accepted your logon code' : (data.error || 'Test failed'), data.ok ? 'ok' : 'bad');
+    const ok = si ? 'Sent: with SayIntentions connected, the aircraft receives a test telex' : 'Connected: Hoppie accepted your logon code';
+    acarsMessage(data.ok ? ok : (data.error || 'Test failed'), data.ok ? 'ok' : 'bad');
   } catch (e) {
     acarsMessage('Test failed: the server can\'t be reached', 'bad');
   }

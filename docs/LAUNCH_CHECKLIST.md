@@ -33,8 +33,10 @@ them off here as they're done.
 - [x] SENTRY_DSN set in Render; error retention at most 90 days (the
       Privacy Policy says so).
 - [ ] NAVIGRAPH_CLIENT_ID and NAVIGRAPH_CLIENT_SECRET set in Render.
-- [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens and Hoppie
-      codes are encrypted with keys derived from it.
+- [ ] SAYINTENTIONS_DEVELOPER_KEY set in Render (SEND TO AIRCRAFT through
+      SayIntentions; the option stays hidden without it).
+- [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens, Hoppie codes
+      and SayIntentions keys are encrypted with keys derived from it.
 
 ## Hosting
 

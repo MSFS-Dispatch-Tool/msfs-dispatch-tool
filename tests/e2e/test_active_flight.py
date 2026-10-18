@@ -151,6 +151,31 @@ async def main():
         await page.click("#acarsSendBtn-0"); await page.wait_for_timeout(500)
         check("sending again straight away is held back", "wait a few seconds" in await page.text_content("#acarsSendStatus-0"))
         await page.locator("#acarsSend-0").screenshot(path=shot("af_acars_send.png"))
+
+        # The same loadsheet through SayIntentions (a fake): one message, the longest the aircraft takes
+        variants = ls["acars_variants"]
+        check("SayIntentions versions fit 255 and 128 characters on 24 columns, with the figures",
+              len(variants) == 2 and len(variants[0]) <= 255 and len(variants[1]) <= 128
+              and all(max(map(len, v.split("\n"))) <= 24 for v in variants)
+              and "ZFW 58190" in variants[0] and "NOTOC UN1845" in variants[0] and "LMC" in variants[0]
+              and "ZFW 58190 TOW" in variants[1] and "EDNO 02" in variants[1] and "\nNOTOC" in variants[1], variants)
+        await page.evaluate("""fetch('/acars/sayintentions', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({api_key: 'TESTSIKEY0128'})})
+            .then(() => fetch('/acars/network', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({network: 'sayintentions'})}))
+            .then(() => loadAcarsNetwork()).then(() => { renderRecap(loadActiveFlight()); selectRecapTab('loadsheet'); })""")
+        await page.wait_for_timeout(15500)                                    # the send interval since the Hoppie send
+        check("SEND TO AIRCRAFT says it goes via SayIntentions", "via SayIntentions" in await page.text_content("#acarsSend-0"))
+        await page.click("#acarsSendBtn-0")
+        await page.wait_for_function("(loadActiveFlight().leg_state[0].loadsheet.acars_sent || []).length === 2")
+        sent = await page.evaluate("loadActiveFlight().leg_state[0].loadsheet.acars_sent")
+        check("an aircraft taking 128 characters gets the short version, in one message",
+              sent[-1]["network"] == "sayintentions" and sent[-1]["lines"] == variants[1].count("\n") + 1
+              and "via SayIntentions" in await page.text_content("#acarsSendStatus-0"), sent[-1])
+        await page.evaluate("document.querySelector('#af-pane-loadsheet .acars-preview').open = true")
+        await page.locator("#acarsSend-0").screenshot(path=shot("af_acars_send_si.png"))
+        await page.locator("#af-pane-loadsheet .acars-preview").screenshot(path=shot("af_acars_versions_si.png"))
+        await page.evaluate("""fetch('/acars/network', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({network: 'hoppie'})})
+            .then(() => fetch('/acars/sayintentions', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({api_key: ''})}))
+            .then(() => loadAcarsNetwork())""")
         await page.evaluate("fetch('/acars/settings', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({logon: ''})})")
         await page.evaluate("selectRecapTab('pirep')")
 
