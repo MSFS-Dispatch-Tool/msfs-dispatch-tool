@@ -1,6 +1,5 @@
 """SayIntentions as the ACARS network: the client, the pilot's settings and
 SEND TO AIRCRAFT, against a fake SayIntentions (no network, no database)."""
-import contextlib
 
 import pytest
 import requests

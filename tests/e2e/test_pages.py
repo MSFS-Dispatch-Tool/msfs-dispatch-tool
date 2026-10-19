@@ -21,6 +21,28 @@ async def main():
         check("app.js and app.css load with a content version",
               any("/static/js/app.js?v=" in u for u in requests) and any("/static/css/app.css?v=" in u for u in requests))
 
+        # Day palette: secondary text easy to read, cards and fields with edges you can see
+        contrast = await page.evaluate("""(() => {
+            const rgb = c => c.match(/\\d+(\\.\\d+)?/g).slice(0, 3).map(Number);
+            const lum = c => { const [r, g, b] = rgb(c).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+                               return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+            const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+            const css = getComputedStyle(document.documentElement), page = getComputedStyle(document.body).backgroundColor;
+            const panel = getComputedStyle(document.querySelector('.panel'));
+            return {muted: ratio(css.getPropertyValue('--text-muted').trim().replace(/^#(..)(..)(..)$/, (m, r, g, b) => `rgb(${parseInt(r, 16)},${parseInt(g, 16)},${parseInt(b, 16)})`), 'rgb(255,255,255)'),
+                    cardOnPage: ratio(panel.backgroundColor, page), border: ratio(panel.borderTopColor, page),
+                    field: ratio(getComputedStyle(document.querySelector('.field input')).borderTopColor, 'rgb(255,255,255)')};
+        })()""")
+        check("day palette: secondary text at least 7:1, cards stand off the page, field edges visible",
+              contrast["muted"] >= 7 and contrast["cardOnPage"] >= 1.25 and contrast["border"] >= 1.1 and contrast["field"] >= 2.3, contrast)
+        narrow = await prepare(await browser.new_page(viewport={"width": 1280, "height": 800}))
+        await narrow.goto(BASE + "/app?from=EGKK&legs=RT", wait_until="networkidle")
+        await narrow.wait_for_function("searchStatus === 'ready'")
+        lines = await narrow.evaluate("""[...document.querySelectorAll('tr.itin-row')].slice(0, 5).map(r =>
+            new Set([...r.querySelectorAll('td:nth-child(4), td.via-cell:not(.no-via), td:nth-child(6)')].map(td => Math.round(td.getBoundingClientRect().top))).size)""")
+        check("at 1280px each flight's route reads on one line", lines and all(n == 1 for n in lines), lines)
+        await narrow.close()
+
         requests.clear()
         await page.evaluate("renderUserPage()")
         await page.wait_for_timeout(2500)
