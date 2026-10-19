@@ -9,16 +9,16 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 <style>
   :root {
-    --face: #FFFFFF; --face-dark: #F3F4F6; --titlebar: #1D4ED8; --titlebar-2: #2563EB;
-    --white: #FFFFFF; --shadow-dk: #D0D5DD; --shadow-md: #E4E7EC;
-    --text: #101828; --text-muted: #667085; --red: #B42318; --red-bg: #FEF3F2; --green: #067647;
+    --face: #FFFFFF; --face-dark: #EEF0F3; --page: #DFE2E7; --titlebar: #1D4ED8; --titlebar-2: #2563EB;
+    --white: #FFFFFF; --shadow-dk: #A3A9B3; --shadow-md: #CDD1D8;
+    --text: #101828; --text-muted: #475467; --red: #B42318; --red-bg: #FEF3F2; --green: #067647;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--face-dark); color: var(--text);
+  body { margin: 0; background: var(--page); color: var(--text);
          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
          font-size: 14px; padding: 20px; }
   .panel { max-width: 960px; margin: 0 auto; background: var(--face); border: 1px solid var(--shadow-md);
-           border-radius: 10px; box-shadow: 0 1px 2px rgba(16,24,40,0.06); overflow: hidden; }
+           border-radius: 4px; box-shadow: 0 1px 3px rgba(16,24,40,0.12); overflow: hidden; }
   .panel-header { background: var(--titlebar); color: #fff;
                   padding: 14px 18px; font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
   .panel-header a { color: #fff; font-size: 13px; text-decoration: none; opacity: 0.9; }
