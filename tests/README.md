@@ -45,6 +45,11 @@ python tests/e2e/run.py            # all suites
 python tests/e2e/run.py mel ops    # only suites whose file name contains "mel" or "ops"
 ```
 
+GitHub runs every suite on each pull request and push to main (the
+`browser` job in `.github/workflows/tests.yml`). When one fails, the run
+keeps its screenshots and server logs for 7 days as the
+`e2e-screenshots-and-logs` artifact.
+
 Optional settings:
 
 - `VD_E2E_PORT`: server port (default 5055)
