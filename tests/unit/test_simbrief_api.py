@@ -214,3 +214,8 @@ def test_the_admin_tries_a_format_and_sees_the_ofp(client, app_module, monkeypat
     sent = calls[-1]
     assert sent["data"] is None and sent["json"]["dephour"] == 14 * 3600 and sent["json"]["depmin"] == 5 * 60
     assert not got["ok"] and got["status"] == 422 and "dep_time" in got["text"] and got["keys"] == ["error"]
+
+    # The departure time inside the date, as SimBrief shows it
+    client.post("/admin/api/simbrief/try-generate", json={**FORM, "time_format": "datetime"})
+    sent = calls[-1]["data"]
+    assert sent["date"].endswith(" - 14:05") and "deph" not in sent and "dephour" not in sent
