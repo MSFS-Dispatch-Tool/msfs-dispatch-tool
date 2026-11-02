@@ -2511,24 +2511,34 @@ def navigraph_callback():
     browser started, so nobody can link their account to someone else's."""
     pending = session.pop("navigraph_signin", None) or {}
 
-    def back(result):
-        return redirect(url_for("dispatch_app", navigraph=result))
+    def back(result, why=""):
+        # A failure says why, as Navigraph's error code (invalid_client,
+        # invalid_scope...), on the page and in the server log, so a broken
+        # setup can be told apart from a passing glitch
+        if why:
+            navigraph.log.warning("Navigraph sign-in failed: %s", why)
+        return redirect(url_for("dispatch_app", navigraph=result, **({"why": why} if why else {})))
 
-    if request.args.get("error"):
-        return back("cancelled" if request.args.get("error") == "access_denied" else "failed")
+    error = request.args.get("error")
+    if error:
+        if error == "access_denied":
+            return back("cancelled")
+        navigraph.log.warning("Navigraph sign-in error description: %s", str(request.args.get("error_description") or "")[:200])
+        return back("failed", navigraph.error_code(error) or "unknown_error")
     state = str(request.args.get("state") or "")
     if (not pending.get("state") or not secrets.compare_digest(state, pending["state"])
             or _now_ts() - pending.get("at", 0) > NAVIGRAPH_SIGNIN_MAX_SECONDS):
         return back("expired")
     code = request.args.get("code")
     if not code or not navigraph.configured() or not db.db_available():
-        return back("failed")
+        return back("failed", "no_code" if not code else "not_configured")
     try:
         tokens = navigraph.exchange_code(code, pending["verifier"], _navigraph_redirect_uri())
-    except navigraph.NavigraphError:
-        return back("failed")
+    except navigraph.NavigraphError as exc:
+        return back("failed", exc.code)
     if not tokens.get("refresh_token"):
-        return back("failed")
+        # No refresh token: the offline_access scope wasn't granted
+        return back("failed", "no_refresh_token")
     db.save_navigraph(_navigraph_link(tokens), current_user_id())
     return back("connected")
 

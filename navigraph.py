@@ -20,19 +20,24 @@ Environment:
 import base64
 import hashlib
 import json
+import logging
 import os
+import re
 import secrets
 from urllib.parse import urlencode
 
 import requests
 
 IDENTITY_URL = (os.environ.get("NAVIGRAPH_IDENTITY_URL") or "https://identity.api.navigraph.com").rstrip("/")
-CLIENT_ID = os.environ.get("NAVIGRAPH_CLIENT_ID") or ""
-CLIENT_SECRET = os.environ.get("NAVIGRAPH_CLIENT_SECRET") or ""
+# Stripped: a space or line break pasted along with a value would make
+# Navigraph refuse every sign-in as an unknown client
+CLIENT_ID = (os.environ.get("NAVIGRAPH_CLIENT_ID") or "").strip()
+CLIENT_SECRET = (os.environ.get("NAVIGRAPH_CLIENT_SECRET") or "").strip()
 # SimBrief's flight plans (simbrief) and plan generation (ofp); a refresh
 # token (offline_access) so the pilot signs in once, not every hour
 SCOPES = "openid offline_access simbrief ofp"
 TIMEOUT_SECONDS = 15
+log = logging.getLogger("vd.navigraph")
 
 
 class NavigraphError(Exception):
@@ -40,9 +45,17 @@ class NavigraphError(Exception):
     show the pilot; reconnect means the link is gone (revoked, expired) and
     the pilot has to sign in with Navigraph again."""
 
-    def __init__(self, message, reconnect=False):
+    def __init__(self, message, reconnect=False, code=""):
         super().__init__(message)
         self.reconnect = reconnect
+        self.code = code   # Navigraph's own error code, e.g. invalid_client
+
+
+def error_code(value):
+    """An OAuth error code (invalid_client, invalid_scope...) safe to log and
+    to show, or "" for anything that doesn't look like one."""
+    value = str(value or "")
+    return value if re.fullmatch(r"[a-z_]{1,40}", value) else ""
 
 
 def configured():
@@ -69,17 +82,22 @@ def _token_request(fields):
         resp = requests.post(IDENTITY_URL + "/connect/token", timeout=TIMEOUT_SECONDS,
                              data={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, **fields})
     except requests.RequestException:
-        raise NavigraphError("Navigraph can't be reached right now. Try again in a minute")
+        raise NavigraphError("Navigraph can't be reached right now. Try again in a minute", code="unreachable")
     try:
         body = resp.json()
     except ValueError:
         body = {}
     if resp.status_code == 200 and body.get("access_token"):
         return body
+    code = error_code(body.get("error")) or f"http_{resp.status_code}"
+    # Navigraph's explanation goes to the server log only: it can name the
+    # client or the redirect address, which the pilot has no use for
+    log.warning("Navigraph token request (%s) refused: %s %s", fields.get("grant_type"), code,
+                str(body.get("error_description") or "")[:200])
     # invalid_grant: the code or refresh token is used up, expired or revoked
-    if body.get("error") == "invalid_grant":
-        raise NavigraphError("Your Navigraph sign-in has expired. Sign in with Navigraph again", reconnect=True)
-    raise NavigraphError(f"Navigraph refused the sign-in ({body.get('error') or resp.status_code})")
+    if code == "invalid_grant":
+        raise NavigraphError("Your Navigraph sign-in has expired. Sign in with Navigraph again", reconnect=True, code=code)
+    raise NavigraphError(f"Navigraph refused the sign-in ({code})", code=code)
 
 
 def exchange_code(code, verifier, redirect_uri):

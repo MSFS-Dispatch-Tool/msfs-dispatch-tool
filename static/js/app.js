@@ -52,10 +52,12 @@ async function boot() {
   await Promise.race([Promise.all([pullActiveFlight(), loadAcarsNetwork()]), new Promise(resolve => setTimeout(resolve, 4000))]);
   updateActiveFlightButtonState();
   // Back from signing in with Navigraph: show how it went, in Account settings
-  const navigraph = new URLSearchParams(location.search).get('navigraph');
+  const params = new URLSearchParams(location.search);
+  const navigraph = params.get('navigraph');
   if (navigraph) {
     history.replaceState(null, '', location.pathname);
     navigraphResult = navigraph;
+    navigraphWhy = /^[a-z0-9_]{1,40}$/.test(params.get('why') || '') ? params.get('why') : '';
     renderAccountSettings();
     return;
   }
@@ -3987,6 +3989,7 @@ const NAVIGRAPH_RESULTS = {
   unavailable: ['Sign in with Navigraph isn\'t available yet', 'bad'],
 };
 let navigraphResult = '';
+let navigraphWhy = '';   // Navigraph's error code when the sign-in failed, e.g. invalid_client
 
 function navigraphMessage(text, kind) {
   const el = document.getElementById('navigraphStatus');
@@ -4010,10 +4013,11 @@ async function loadNavigraphStatus() {
     if (resp.ok) paintNavigraph(await resp.json());
   } catch (e) { /* the panel stays hidden */ }
   const result = NAVIGRAPH_RESULTS[navigraphResult];
-  navigraphResult = '';
+  const why = navigraphWhy;
+  navigraphResult = navigraphWhy = '';
   if (result && document.getElementById('navigraphPanel')) {
     document.getElementById('navigraphPanel').hidden = false;
-    navigraphMessage(...result);
+    navigraphMessage(why ? `${result[0]} (reason: ${why})` : result[0], result[1]);
     document.getElementById('navigraphPanel').scrollIntoView({ block: 'center' });
   }
 }

@@ -146,6 +146,23 @@ def test_callback_needs_the_state_this_browser_started(client, fake_navigraph, s
     assert calls == [] and store == {}
 
 
+@pytest.mark.parametrize("navigraph_says, reply, why", [
+    ("error=invalid_scope&error_description=Unknown+scope", None, "invalid_scope"),
+    ("error=<script>", None, "unknown_error"),
+    ("code=c0de", Answer({"error": "invalid_client", "error_description": "Unknown client"}, 400), "invalid_client"),
+    ("code=c0de", Answer({}, 502), "http_502"),
+    ("code=c0de", Answer({"access_token": "acc-1", "expires_in": 3600}), "no_refresh_token"),
+])
+def test_a_failed_sign_in_says_why(client, fake_navigraph, store, navigraph_says, reply, why):
+    _, replies = fake_navigraph
+    if reply is not None:
+        replies.append(reply)
+    state = parse_qs(urlparse(client.get("/auth/navigraph/start").location).query)["state"][0]
+    back = client.get(f"/auth/navigraph/callback?{navigraph_says}&state={state}")
+    assert back.location.endswith(f"/app?navigraph=failed&why={why}"), back.location
+    assert store == {}
+
+
 def test_off_without_credentials(client, monkeypatch, store):
     monkeypatch.setattr(navigraph, "CLIENT_ID", "")
     assert client.get("/navigraph/status").get_json()["available"] is False
