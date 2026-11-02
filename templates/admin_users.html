@@ -45,7 +45,7 @@
                       border-color: var(--titlebar); margin: 0; }
   .demo-form button:hover { background: var(--titlebar-2); }
   .demo-form button:disabled { opacity: 0.6; cursor: wait; }
-  #demoResult { margin-top: 12px; }
+  #demoResult, #simbriefSampleResult { margin-top: 12px; }
   #allowResult { margin: 12px 0; }
   #allowResult.ok { color: var(--green); }
   #allowResult.error-state { padding: 0; }
@@ -87,6 +87,14 @@
     <div class="panel-body">
       <p class="demo-intro">Visitors who left their email on the website to be invited. Allow moves them to the allowed pilots</p>
       <div id="waitlistList">Loading&hellip;</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><span>SimBrief API sample</span></div>
+    <div class="panel-body">
+      <p class="demo-intro">Downloads your own latest SimBrief flight plan through SimBrief's API v2, with your Navigraph sign-in, as a file to map its fields from. Generate a plan on simbrief.com first. Nothing is stored</p>
+      <button type="button" id="simbriefSampleBtn">Download my latest plan</button>
+      <div id="simbriefSampleResult"></div>
     </div>
   </div>
   <div class="panel">
@@ -165,6 +173,27 @@ document.getElementById('demoForm').addEventListener('submit', async (e) => {
   } finally { btn.disabled = false; }
 });
 // ---- Allowed pilots and waitlist ----
+document.getElementById('simbriefSampleBtn').addEventListener('click', async () => {
+  const out = document.getElementById('simbriefSampleResult');
+  out.className = ''; out.textContent = 'Asking SimBrief\u2026';
+  try {
+    const resp = await fetch('/admin/api/simbrief/latest');
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data.error || `HTTP ${resp.status}`);
+    }
+    const name = (resp.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(await resp.blob());
+    link.download = name ? name[1] : 'simbrief-latest.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    out.className = 'ok'; out.textContent = 'Downloaded';
+  } catch (e) {
+    out.className = 'error-state'; out.textContent = e.message;
+  }
+});
+
 async function api(url, options) {
   const resp = await fetch(url, options);
   const data = await resp.json().catch(() => ({}));
