@@ -28,6 +28,7 @@ import navigraph
 import ops
 import sayintentions
 import sealing
+import simbrief_api
 import generator
 from generator import (
     resolve_airport, find_round_trip_pairs, find_itineraries, flight_number_digits,
@@ -701,6 +702,28 @@ def create_report_route():
                                  _report_context(payload.get("context")), flight)
     _report_times[user_id] = recent + [now]
     return jsonify({"ok": True, "reference": report_id[:6].upper()})
+
+
+@app.route("/admin/api/simbrief/latest")
+def admin_simbrief_latest_route():
+    """The admin's own latest SimBrief flight plan through the API v2, as a
+    file: a real sample to map its fields from. Read from the admin's own
+    account with their own Navigraph sign-in, and not stored."""
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    try:
+        plan = simbrief_api.latest_plan(navigraph_access_token(current_user_id()))
+    except navigraph.NavigraphError as exc:
+        return jsonify({"error": str(exc)}), 409
+    except simbrief_api.SimBriefError as exc:
+        return jsonify({"error": str(exc), "status": exc.status}), 502
+    body = json.dumps(plan, indent=2, ensure_ascii=False)
+    name = f"simbrief-latest-{datetime.now(timezone.utc):%Y%m%d-%H%M}.json"
+    return app.response_class(body, mimetype="application/json",
+                              headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
 
 @app.route("/admin/reports")
