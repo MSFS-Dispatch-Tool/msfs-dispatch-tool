@@ -5,6 +5,7 @@ app.navigraph_access_token keep it current), so it only ever reaches that
 pilot's own SimBrief account.
 
     GET  /v2/flightplans/latest   the pilot's most recent flight plan (OFP)
+    POST /v2/plan/generate        a new flight plan; answers with the OFP
 
 Navigraph's documentation: https://developers.navigraph.com/docs/simbrief
 """
@@ -48,3 +49,25 @@ def _get(path, access_token):
 def latest_plan(access_token):
     """The pilot's most recent flight plan, as SimBrief returns it."""
     return _get("/v2/flightplans/latest", access_token)
+
+
+def try_generate(access_token, params, as_json=False):
+    """Asks SimBrief to generate a plan and reports what came back, as
+    {"status", "ok", "data" (the parsed JSON, if any), "text" (the start of
+    the raw answer)}, without raising for a refusal: its request format
+    isn't published yet, so the admin page uses this to find out which
+    format it accepts."""
+    headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+    try:
+        if as_json:
+            resp = requests.post(BASE_URL + "/v2/plan/generate", json=params, headers=headers, timeout=60)
+        else:
+            resp = requests.post(BASE_URL + "/v2/plan/generate", data=params, headers=headers, timeout=60)
+    except requests.RequestException as exc:
+        return {"status": None, "ok": False, "data": None, "text": f"SimBrief can't be reached: {type(exc).__name__}"}
+    try:
+        data = resp.json()
+    except ValueError:
+        data = None
+    return {"status": resp.status_code, "ok": resp.status_code == 200 and isinstance(data, dict),
+            "data": data, "text": (getattr(resp, "text", "") or "")[:2000]}

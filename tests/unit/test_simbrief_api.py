@@ -148,3 +148,53 @@ def test_pilots_not_signed_in_with_navigraph_keep_the_username_route(client, app
     got = client.get("/simbrief/ofp?username=someone").get_json()
     assert got["source"] == "username" and got["est_time_enroute_sec"] == "3896" and calls == []
     assert client.get("/simbrief/ofp").status_code == 400
+
+
+# ---- Trying the plan generation format from the admin page ----
+
+class Posted(Answer):
+    def __init__(self, body=None, status=200, text=""):
+        super().__init__(body, status)
+        self.text = text
+
+
+@pytest.fixture
+def fake_generate(monkeypatch):
+    calls, replies = [], []
+
+    def post(url, data=None, json=None, headers=None, timeout=None):
+        calls.append({"url": url, "data": data, "json": json, "headers": headers})
+        return replies.pop(0) if replies else Posted({}, 200)
+    monkeypatch.setattr(simbrief_api.requests, "post", post)
+    return calls, replies
+
+
+FORM = {"orig": "EGKK", "dest": "EGAC", "type": "A320", "airline": "EZY", "fltnum": "1234", "dep": "14:05"}
+
+
+def test_the_admin_tries_a_format_and_sees_the_ofp(client, app_module, monkeypatch, fake_generate):
+    calls, replies = fake_generate
+    monkeypatch.setattr(app_module.db, "db_available", lambda: True)
+    monkeypatch.setattr(app_module, "navigraph_access_token", lambda user: "acc-1")
+    assert client.post("/admin/api/simbrief/try-generate", json=FORM).status_code == 403   # nobody signed in
+    sign_in(client, app_module, monkeypatch, "pilot@example.com")
+    assert client.post("/admin/api/simbrief/try-generate", json=FORM).status_code == 403   # not an admin
+    sign_in(client, app_module, monkeypatch, "boss@example.com")
+    assert client.post("/admin/api/simbrief/try-generate", json={**FORM, "orig": "EG"}).status_code == 400
+    assert calls == []
+
+    # Form fields, hours and minutes: SimBrief answers with the OFP
+    replies.append(Posted(API_SAMPLE, 200))
+    got = client.post("/admin/api/simbrief/try-generate", json=FORM).get_json()
+    sent = calls[-1]
+    assert sent["url"].endswith("/v2/plan/generate") and sent["headers"]["Authorization"] == "Bearer acc-1"
+    assert sent["json"] is None and sent["data"]["deph"] == "14" and sent["data"]["depm"] == "05"
+    assert sent["data"]["static_id"].startswith("VDTEST_") and "dephour" not in sent["data"]
+    assert got["ok"] and got["encoding"] == "form" and got["ofp"]["origin_icao"] == "LIRN" and got["ofp"]["navlog_fixes"] == 25
+
+    # JSON, seconds: SimBrief refuses, and its answer is shown
+    replies.append(Posted({"error": "Missing parameter: dep_time"}, 422, '{"error": "Missing parameter: dep_time"}'))
+    got = client.post("/admin/api/simbrief/try-generate", json={**FORM, "encoding": "json", "time_format": "seconds"}).get_json()
+    sent = calls[-1]
+    assert sent["data"] is None and sent["json"]["dephour"] == 14 * 3600 and sent["json"]["depmin"] == 5 * 60
+    assert not got["ok"] and got["status"] == 422 and "dep_time" in got["text"] and got["keys"] == ["error"]

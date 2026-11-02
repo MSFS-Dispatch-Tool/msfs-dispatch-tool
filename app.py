@@ -726,6 +726,55 @@ def admin_simbrief_latest_route():
                               headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
 
+@app.route("/admin/api/simbrief/try-generate", methods=["POST"])
+def admin_simbrief_try_generate_route():
+    """Asks SimBrief's API v2 to generate a plan on the admin's own account,
+    in the request format chosen on the admin page, and shows what came
+    back: SimBrief hasn't published that format yet, so this is how we find
+    out which one it accepts. The plan becomes the admin's latest OFP."""
+    if not auth.auth_available() or not _is_admin():
+        return jsonify({"error": "Forbidden."}), 403
+    unavailable = _require_db()
+    if unavailable:
+        return unavailable
+    body = request.get_json(silent=True) or {}
+    orig, dest = str(body.get("orig") or "").strip().upper(), str(body.get("dest") or "").strip().upper()
+    actype = str(body.get("type") or "").strip()
+    airline = str(body.get("airline") or "").strip().upper()
+    fltnum = str(body.get("fltnum") or "").strip()
+    dep = re.fullmatch(r"(\d{1,2}):(\d{2})", str(body.get("dep") or "").strip())
+    if not (re.fullmatch(r"[A-Z]{4}", orig) and re.fullmatch(r"[A-Z]{4}", dest) and re.fullmatch(r"[A-Za-z0-9_]{2,40}", actype)
+            and re.fullmatch(r"[A-Z0-9]{2,3}", airline) and re.fullmatch(r"\d{1,4}", fltnum) and dep):
+        return jsonify({"error": "Check the fields: ICAO airports, an aircraft type or profile ID, airline, flight number and HH:MM"}), 400
+    hour, minute = int(dep.group(1)), int(dep.group(2))
+    params = {"orig": orig, "dest": dest, "type": actype, "airline": airline, "fltnum": fltnum,
+              "date": simbrief_date_str(), "static_id": f"VDTEST_{int(time.time())}"}
+    if body.get("time_format") == "seconds":
+        params.update({"dephour": hour * 3600, "depmin": minute * 60})
+    else:
+        params.update({"deph": f"{hour:02d}", "depm": f"{minute:02d}"})
+    as_json = body.get("encoding") == "json"
+    try:
+        token = navigraph_access_token(current_user_id())
+    except navigraph.NavigraphError as exc:
+        return jsonify({"error": str(exc)}), 409
+    result = simbrief_api.try_generate(token, params, as_json=as_json)
+    navigraph.log.warning("SimBrief generate test (%s, %s): HTTP %s %s", "json" if as_json else "form",
+                          body.get("time_format") or "hours", result["status"], "" if result["ok"] else result["text"][:300])
+    answer = {"status": result["status"], "ok": result["ok"], "sent": params,
+              "encoding": "json" if as_json else "form"}
+    if result["ok"]:
+        summary = ofp_summary(result["data"])
+        answer["ofp"] = {k: summary[k] for k in ("static_id", "origin_icao", "destination_icao", "callsign", "route",
+                                                 "icao_type", "registration", "block_fuel", "weight_unit")}
+        answer["ofp"]["navlog_fixes"] = len(summary["navlog"])
+        answer["static_id_echoed"] = summary["static_id"] == params["static_id"]
+    else:
+        answer["text"] = result["text"]
+        answer["keys"] = sorted(result["data"])[:40] if isinstance(result["data"], dict) else None
+    return jsonify(answer)
+
+
 @app.route("/admin/reports")
 def admin_reports_page():
     if not auth.auth_available() or not _is_admin():
