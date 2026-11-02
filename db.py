@@ -456,6 +456,27 @@ def seal_plain_acars_logons(seal, logon_pattern):
     return len(rows)
 
 
+def get_simbrief(user_id):
+    """The pilot's SimBrief preferences ({"airframes": {"EZY:A320": "<airframe
+    internal ID>", ...}}: the saved airframe last chosen for each airline and
+    type, "" for SimBrief's standard one), stored with their other settings."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT data -> 'simbrief' FROM app_settings WHERE id = %s", (user_id,))
+            row = cur.fetchone()
+    return (row[0] if row and isinstance(row[0], dict) else None) or {}
+
+
+def save_simbrief(prefs, user_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO app_settings (id, data) VALUES (%s, jsonb_build_object('simbrief', %s::jsonb))
+                ON CONFLICT (id) DO UPDATE SET data = app_settings.data || jsonb_build_object('simbrief', %s::jsonb)
+            """, (user_id, Json(prefs), Json(prefs)))
+        conn.commit()
+
+
 def save_acars(acars, user_id):
     with get_connection() as conn:
         with conn.cursor() as cur:

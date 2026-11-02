@@ -15,6 +15,8 @@ Scenarios:
           thunderstorms forecast everywhere (a NO-GO to swap out of)
   mel738  737 boost pump (rear), centre tank pump and pack items
   ops     every first leg gets an ATFM delay (code 81, 25 min)
+  simbrief  SEND TO SIMBRIEF generates the plan through a fake SimBrief API,
+          with the pilot's saved airframes (on for everyone, not only admins)
 
 Needs DATABASE_URL (a throwaway database: --seed deletes the "local"
 pilot's PIREPs and settings) and no Supabase variables, so the app runs
@@ -42,6 +44,7 @@ import app  # noqa: E402
 import db  # noqa: E402
 import navigraph  # noqa: E402
 import sayintentions  # noqa: E402
+import simbrief_api  # noqa: E402
 import techlog  # noqa: E402
 import wxmap  # noqa: E402
 
@@ -180,6 +183,45 @@ def patch_navigraph(port):
     app.app.add_url_rule("/__navigraph/connect/authorize", "fake_navigraph_authorize", authorize)
 
 
+# The pilot's saved airframes on the fake SimBrief: one per easyJet type,
+# labelled the way pilots label them, and one of another airline
+SIMBRIEF_AIRFRAMES = [{"airframe_internal_id": f"900_{n}", "airframe_icao": t, "airframe_name": f"E2E {t}",
+                       "airframe_registration": f"G-EZ{n:02d}", "airframe_comments": f"EZY - {t}"}
+                      for n, t in enumerate(["A319", "A320", "A20N", "A21N"], start=1)] + [
+    {"airframe_internal_id": "900_9", "airframe_icao": "A320", "airframe_name": "E2E A320", "airframe_registration": "EI-ITA",
+     "airframe_comments": "ITA - A320"}]
+SIMBRIEF_SAMPLE = os.path.join(ROOT, "tests", "fixtures", "simbrief_api_latest.json")
+
+
+def scenario_simbrief():
+    """SimBrief's API as it answers plan generation: the OFP for the route,
+    airframe and static_id asked for. /__simbrief/last shows what the app
+    sent; POST /__simbrief/refuse makes the next generation fail."""
+    app.SIMBRIEF_API_GENERATE = "all"
+    seen = {"last": None, "refuse": False}
+    simbrief_api.user_airframes = lambda token: SIMBRIEF_AIRFRAMES
+
+    def generate(token, params):
+        seen["last"] = dict(params)
+        if seen["refuse"]:
+            seen["refuse"] = False
+            raise simbrief_api.SimBriefError("SimBrief didn't generate the plan (Invalid aircraft type)", status=400)
+        ofp = json.load(open(SIMBRIEF_SAMPLE))
+        frame = next((a for a in SIMBRIEF_AIRFRAMES if a["airframe_internal_id"] == params["type"]), None)
+        ofp["origin"]["icao_code"], ofp["destination"]["icao_code"] = params["orig"], params["dest"]
+        ofp["params"]["static_id"] = params.get("static_id", "")
+        ofp["aircraft"]["icao_code"] = frame["airframe_icao"] if frame else params["type"]
+        ofp["aircraft"]["reg"] = frame["airframe_registration"] if frame else "N320SB"
+        return ofp
+    simbrief_api.generate = generate
+    app.app.add_url_rule("/__simbrief/last", "fake_simbrief_last", lambda: flask.jsonify(seen["last"]))
+
+    def refuse():
+        seen["refuse"] = True
+        return flask.jsonify({"ok": True})
+    app.app.add_url_rule("/__simbrief/refuse", "fake_simbrief_refuse", refuse, methods=["POST"])
+
+
 def scenario_mel():
     base = app.fetch_weather_batch
     app.fetch_weather_batch = lambda icaos: {
@@ -208,7 +250,8 @@ def scenario_ops():
     app.roll_delay = forced_delay
 
 
-SCENARIOS = {"demo": lambda: None, "mel": scenario_mel, "mel738": scenario_mel738, "ops": scenario_ops}
+SCENARIOS = {"demo": lambda: None, "mel": scenario_mel, "mel738": scenario_mel738, "ops": scenario_ops,
+             "simbrief": scenario_simbrief}
 
 
 def seed():

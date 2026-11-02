@@ -39,16 +39,13 @@
   .demo-form { display: grid; grid-template-columns: 2fr 1.5fr 0.8fr 0.8fr auto; gap: 10px; align-items: end; }
   .demo-form label { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 600;
                      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
-  #simbriefTryForm { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  .demo-form input, .demo-form select { font-family: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid var(--shadow-dk);
+  .demo-form input { font-family: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid var(--shadow-dk);
                      border-radius: 6px; text-transform: none; letter-spacing: 0; color: var(--text); }
   .demo-form button { padding: 8px 14px; font-size: 13px; background: var(--titlebar); color: #fff;
                       border-color: var(--titlebar); margin: 0; }
   .demo-form button:hover { background: var(--titlebar-2); }
   .demo-form button:disabled { opacity: 0.6; cursor: wait; }
-  #demoResult, #simbriefSampleResult { margin-top: 12px; }
-  .sb-try { margin: 12px 0 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; max-height: 360px; overflow: auto; }
-  .sb-try:empty { display: none; }
+  #demoResult { margin-top: 12px; }
   #allowResult { margin: 12px 0; }
   #allowResult.ok { color: var(--green); }
   #allowResult.error-state { padding: 0; }
@@ -90,28 +87,6 @@
     <div class="panel-body">
       <p class="demo-intro">Visitors who left their email on the website to be invited. Allow moves them to the allowed pilots</p>
       <div id="waitlistList">Loading&hellip;</div>
-    </div>
-  </div>
-  <div class="panel">
-    <div class="panel-header"><span>SimBrief API sample</span></div>
-    <div class="panel-body">
-      <p class="demo-intro">Downloads your own latest SimBrief flight plan, or the airframes you've saved on SimBrief, through SimBrief's API v2 with your Navigraph sign-in, as a file to map its fields from. Nothing is stored</p>
-      <button type="button" class="sb-sample" data-kind="latest">Download my latest plan</button>
-      <button type="button" class="sb-sample" data-kind="airframes">Download my saved airframes</button>
-      <div id="simbriefSampleResult"></div>
-      <p class="demo-intro" style="margin-top:22px">Try generating a plan through the API, to find the request format it accepts (not published yet). It's a real plan on your SimBrief account and becomes your latest one. Type is an ICAO type (A320, B738) or one of your saved airframes' internal IDs. The result shows the off-block time SimBrief planned</p>
-      <form class="demo-form" id="simbriefTryForm">
-        <label>From <input name="orig" value="EGKK" maxlength="4" required></label>
-        <label>To <input name="dest" value="EGAC" maxlength="4" required></label>
-        <label>Type <input name="type" value="A320" required></label>
-        <label>Airline <input name="airline" value="EZY" maxlength="3" required></label>
-        <label>Flight <input name="fltnum" value="1234" maxlength="4" required></label>
-        <label>Off-block (UTC) <input name="dep" value="14:30" maxlength="5" required></label>
-        <label>Body <select name="encoding"><option value="form">Form fields</option><option value="json">JSON</option></select></label>
-        <label>Time <select name="time_format"><option value="hours">deph/depm, hours and minutes</option><option value="seconds">dephour/depmin, seconds</option><option value="datetime">In the date: 2 Nov 2026 - 14:30</option></select></label>
-        <button type="submit">Try generate</button>
-      </form>
-      <pre id="simbriefTryResult" class="sb-try"></pre>
     </div>
   </div>
   <div class="panel">
@@ -190,49 +165,6 @@ document.getElementById('demoForm').addEventListener('submit', async (e) => {
   } finally { btn.disabled = false; }
 });
 // ---- Allowed pilots and waitlist ----
-document.querySelectorAll('.sb-sample').forEach(button => button.addEventListener('click', async () => {
-  const out = document.getElementById('simbriefSampleResult');
-  out.className = ''; out.textContent = 'Asking SimBrief\u2026';
-  try {
-    const resp = await fetch('/admin/api/simbrief/' + button.dataset.kind);
-    if (!resp.ok) {
-      const data = await resp.json().catch(() => ({}));
-      throw new Error(data.error || `HTTP ${resp.status}`);
-    }
-    const name = (resp.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/);
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(await resp.blob());
-    link.download = name ? name[1] : `simbrief-${button.dataset.kind}.json`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-    out.className = 'ok'; out.textContent = 'Downloaded';
-  } catch (e) {
-    out.className = 'error-state'; out.textContent = e.message;
-  }
-}));
-
-document.getElementById('simbriefTryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const out = document.getElementById('simbriefTryResult');
-  const button = e.target.querySelector('button');
-  out.className = 'sb-try'; out.textContent = 'Asking SimBrief to generate the plan\u2026';
-  button.disabled = true;
-  try {
-    const resp = await fetch('/admin/api/simbrief/try-generate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.fromEntries(new FormData(e.target))),
-    });
-    const data = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
-    if (data.error) throw new Error(data.error);
-    out.className = 'sb-try ' + (data.ok ? 'ok' : 'error-state');
-    out.textContent = (data.ok ? 'Generated. ' : 'Refused. ') + JSON.stringify(data, null, 2);
-  } catch (err) {
-    out.className = 'sb-try error-state'; out.textContent = err.message;
-  } finally {
-    button.disabled = false;
-  }
-});
-
 async function api(url, options) {
   const resp = await fetch(url, options);
   const data = await resp.json().catch(() => ({}));

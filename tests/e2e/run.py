@@ -27,6 +27,7 @@ SUITES = [
     ("test_mel.py", "mel"),
     ("test_mel738.py", "mel738"),
     ("test_ops.py", "ops"),
+    ("test_simbrief_api.py", "simbrief"),
 ]
 
 

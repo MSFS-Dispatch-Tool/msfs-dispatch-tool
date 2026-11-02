@@ -940,6 +940,10 @@
 .ls-item-ok { font-size: 12px; font-weight: 600; color: var(--green); }
 .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
 .doc-blocker { font-size: 12px; color: var(--text-muted); }
+.sb-airframe:empty { display: none; }
+.sb-airframe-pick { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-muted); }
+.sb-airframe-pick select { font: inherit; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text); max-width: 340px;
+  padding: 6px 8px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm); background: var(--white); }
 .soon-tag { font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; padding: 1px 5px; margin-left: 4px; border-radius: 999px; background: var(--face-dark); color: var(--text-muted); vertical-align: 1px; }
 .doc { padding: 14px 16px; font-size: 12px; color: #1b1b1b; background: #FFFDF5; border: 1px solid #E8E2CC; border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
 .doc-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; letter-spacing: 0.04em; padding-bottom: 6px; border-bottom: 1px dashed #B9B29B; }

@@ -2200,10 +2200,11 @@ function afStepsHtml(flight, i) {
 function briefingActionsHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i);
   if (stage === 'waiting' || stage === 'done' || st.loadsheet_signed) return '';
-  if (st.simbrief === 'not_sent') return `<div class="doc-actions brief-actions"><button class="action" onclick="prepareLeg(${i})">SEND TO SIMBRIEF</button><span class="doc-blocker">Opens SimBrief with this leg filled in</span></div>`;
+  const picker = `<span class="sb-airframe" id="sbAirframe-${i}"></span>`;
+  if (st.simbrief === 'not_sent') return `<div class="doc-actions brief-actions">${picker}<button class="action" id="sbSendBtn-${i}" onclick="sendToSimbrief(${i})">SEND TO SIMBRIEF</button><span class="doc-blocker" id="sbSendNote-${i}">Opens SimBrief with this leg filled in</span></div>`;
   if (st.simbrief !== 'available') return `<div class="doc-actions brief-actions"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">Watching SimBrief: your OFP appears here as soon as you generate it</span></span>
-    <button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP NOW</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
-  return `<div class="doc-actions brief-actions"><button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button><button class="ghost" type="button" onclick="prepareLeg(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
+    <button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP NOW</button>${picker}<button class="ghost" type="button" id="sbSendBtn-${i}" onclick="sendToSimbrief(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
+  return `<div class="doc-actions brief-actions"><button class="ghost" type="button" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>${picker}<button class="ghost" type="button" id="sbSendBtn-${i}" onclick="sendToSimbrief(${i})">SEND TO SIMBRIEF AGAIN</button></div>`;
 }
 
 function renderRecap(flight) {
@@ -2261,6 +2262,7 @@ function renderRecap(flight) {
       </div>
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
+  if (document.getElementById('sbAirframe-' + i)) loadSimbriefAirframes(flight, i);
   // Waiting for this leg's OFP (also after a reload): watch for it
   const waiting = flight.leg_state.findIndex((s, k) => s.simbrief === 'sent' && legStage(flight, k) === 'ofp');
   if (waiting >= 0) { startOfpWatch(waiting); paintOfpWatch(); } else stopOfpWatch();
@@ -3015,28 +3017,32 @@ async function continueToSimbrief() {
   if (index != null) await doPrepareLeg(index);
 }
 
-async function doPrepareLeg(index) {
-  const flight = loadActiveFlight(); if (!flight) return;
+// The leg's SimBrief options, the same for the simbrief.com link and for
+// generating the plan through SimBrief's API
+function simbriefLegOptions(flight, index, staticId) {
   const leg = flight.legs[index];
-  const staticId = `simdispatch-${Date.now()}-${index}`;
-  const delayMinutes = legExpectedDelayMinutes(leg);
-  const qs = new URLSearchParams({
+  const options = {
     flights: leg.flight_number,
     civalue: leg.cost_index,
     pax: leg.pax_count,
     aircraft_type: leg.aircraft_type || '',
     static_id: staticId,
     callsign: flight.callsigns ? flight.callsigns[index] : '',
-    delay_minutes: delayMinutes,
+    delay_minutes: legExpectedDelayMinutes(leg),
     eobt: leg.eobt || '',
     taxi_out_minutes: leg.taxi_out_minutes
-  });
-  if (leg.tech) {
-    if (leg.tech.max_fl) qs.set('max_fl', leg.tech.max_fl);
-    if (leg.tech.extra_fuel_min) qs.set('extra_fuel_min', leg.tech.extra_fuel_min);
-  }
+  };
+  if (leg.tech && leg.tech.max_fl) options.max_fl = leg.tech.max_fl;
+  if (leg.tech && leg.tech.extra_fuel_min) options.extra_fuel_min = leg.tech.extra_fuel_min;
   const remarks = simbriefRemarks(leg);
-  if (remarks) qs.set('remarks', remarks);
+  if (remarks) options.remarks = remarks;
+  return options;
+}
+
+async function doPrepareLeg(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const staticId = `simdispatch-${Date.now()}-${index}`;
+  const qs = new URLSearchParams(simbriefLegOptions(flight, index, staticId));
   try {
     const resp = await fetch('/simbrief/redirect-url?' + qs.toString());
     const data = await resp.json();
@@ -3049,6 +3055,84 @@ async function doPrepareLeg(index) {
   } catch (err) {
     alert('Could not build the SimBrief dispatch link. Check the connection and retry');
   }
+}
+
+// ---- SEND TO SIMBRIEF through SimBrief's API (pilots signed in with
+// Navigraph, where it's switched on): the plan is generated with the pilot's
+// chosen saved airframe and the OFP comes straight back. Anything else, or
+// any refusal, opens simbrief.com as before. ----
+const simbriefApiLegs = {};   // per leg: {available, type, airframes, selected} from /simbrief/airframes
+function simbriefApiKey(flight, index) { return flight.legs.map(l => l.flight_number).join(',') + ':' + index; }
+
+async function loadSimbriefAirframes(flight, index) {
+  const key = simbriefApiKey(flight, index);
+  if (!simbriefApiLegs[key]) {
+    const leg = flight.legs[index];
+    simbriefApiLegs[key] = { loading: true };
+    try {
+      const qs = new URLSearchParams({ flight: leg.flight_number, aircraft_type: leg.aircraft_type || '' });
+      simbriefApiLegs[key] = await (await fetch('/simbrief/airframes?' + qs)).json();
+    } catch (e) {
+      simbriefApiLegs[key] = { available: false };
+    }
+  }
+  paintSimbriefAirframes(flight, index);
+}
+
+function paintSimbriefAirframes(flight, index) {
+  const el = document.getElementById('sbAirframe-' + index);
+  const info = simbriefApiLegs[simbriefApiKey(flight, index)];
+  if (!el || !info || info.loading) return;
+  if (!info.available) { el.innerHTML = ''; return; }
+  const options = [`<option value="">SimBrief standard ${escText(info.type)}</option>`].concat((info.airframes || []).map(a =>
+    `<option value="${escText(a.id)}"${a.id === info.selected ? ' selected' : ''}>${escText(a.name)} &middot; ${escText(a.reg)}${a.comments ? ` (${escText(a.comments)})` : ''}</option>`));
+  el.innerHTML = `<label class="sb-airframe-pick">AIRFRAME <select id="sbAirframeSel-${index}" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></label>`;
+  const note = document.getElementById('sbSendNote-' + index);
+  if (note) note.textContent = 'Generates the plan on SimBrief with this airframe: the OFP comes straight back';
+}
+
+function chooseSimbriefAirframe(index, value) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const info = simbriefApiLegs[simbriefApiKey(flight, index)];
+  if (info) info.selected = value;
+}
+
+async function sendToSimbrief(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const info = simbriefApiLegs[simbriefApiKey(flight, index)];
+  if (!info || !info.available) return prepareLeg(index);
+  const button = document.getElementById('sbSendBtn-' + index);
+  const note = document.getElementById('sbSendNote-' + index);
+  if (button) button.disabled = true;
+  if (note) note.textContent = 'Generating the plan on SimBrief\u2026';
+  const staticId = `simdispatch-${Date.now()}-${index}`;
+  let data = {};
+  try {
+    const resp = await fetch('/simbrief/generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...simbriefLegOptions(flight, index, staticId), airframe: info.selected || '' })
+    });
+    data = await resp.json();
+  } catch (e) {
+    data = { error: 'SimBrief can\'t be reached right now', fallback: true };
+  }
+  const fresh = loadActiveFlight(); if (!fresh) return;
+  if (data.error) {
+    if (button) button.disabled = false;
+    if (note) note.textContent = '';
+    if (data.fallback) {
+      alert(`${data.error}. Opening SimBrief instead: generate the plan there and it comes back here automatically`);
+      return prepareLeg(index);
+    }
+    return alert(data.error);
+  }
+  const state = fresh.leg_state[index];
+  state.ofp = data;
+  state.simbrief = 'available';
+  state.simbrief_static_id = staticId;
+  state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(fresh.legs[index], data);
+  stopOfpWatch();
+  saveAndRender(fresh);
 }
 
 // Fetches the leg's OFP. While waiting for the pilot to generate it the

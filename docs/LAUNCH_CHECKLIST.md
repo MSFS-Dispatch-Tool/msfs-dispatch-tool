@@ -32,7 +32,11 @@ them off here as they're done.
 
 - [x] SENTRY_DSN set in Render; error retention at most 90 days (the
       Privacy Policy says so).
-- [ ] NAVIGRAPH_CLIENT_ID and NAVIGRAPH_CLIENT_SECRET set in Render.
+- [x] NAVIGRAPH_CLIENT_ID and NAVIGRAPH_CLIENT_SECRET set in Render.
+- [ ] SEND TO SIMBRIEF through SimBrief's API (plan generated with the
+      pilot's saved airframe, OFP straight back) is on for admins only. Once
+      tried on a few legs, set SIMBRIEF_API_GENERATE=all in Render to turn it
+      on for every pilot signed in with Navigraph ("off" turns it off).
 - [ ] SAYINTENTIONS_DEVELOPER_KEY set in Render (SEND TO AIRCRAFT through
       SayIntentions; the option stays hidden without it).
 - [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens, Hoppie codes
