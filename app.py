@@ -2585,41 +2585,57 @@ def _revoke_navigraph(user_id):
         navigraph.revoke(refresh_token)
 
 
-@app.route("/simbrief/ofp")
-def simbrief_ofp():
-    """
-    Reads back the pilot's most recently generated OFP from SimBrief's
-    public fetch-back endpoint (json=v2, no API key). This always returns
-    whichever OFP is most recent for that SimBrief account - matching
-    static_id (echoed back inside the OFP's params block) against the one
-    this app sent to dispatch.php is how the frontend confirms it got the
-    OFP it just asked for, not a stale one from an earlier session.
-    """
-    username = request.args.get("username", default="", type=str).strip()
-    if not username:
-        return jsonify({"error": "SimBrief username is required."}), 400
-    # The browser checks for a new OFP every few seconds after sending a leg
-    # to SimBrief; with the dispatch's static_id, an older OFP comes back as
-    # a small {"pending": true} instead of the whole plan
-    expected = request.args.get("static_id", default="", type=str).strip()
+# Pilots signed in with Navigraph have their OFP read through SimBrief's
+# API v2 with their own sign-in; the others by their SimBrief username
+# through the public fetch-back endpoint. Both answer in the same format.
+_simbrief_api_cache = {}
 
-    data = _simbrief_latest(username)
-    if data is None:
-        return jsonify({"error": "Could not reach SimBrief, or no OFP is on file for this username."}), 502
+
+def _simbrief_latest_via_api(user_id):
+    """The pilot's latest OFP through SimBrief's API, or None when they
+    aren't signed in with Navigraph or the API didn't answer (the caller
+    then falls back to the username). Briefly cached, like the username
+    route, since the browser checks every few seconds while it waits."""
+    if not navigraph.configured() or not db.db_available() or not db.get_navigraph(user_id).get("refresh"):
+        return None
+    now = time.monotonic()
+    with _simbrief_lock:
+        hit = _simbrief_api_cache.get(user_id)
+        if hit and now - hit[0] < SIMBRIEF_CACHE_SECONDS:
+            return hit[1]
+    try:
+        data = simbrief_api.latest_plan(navigraph_access_token(user_id))
+    except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
+        navigraph.log.warning("SimBrief API read failed, falling back to the username: %s", exc)
+        return None
     if not isinstance(data, dict):
-        return jsonify({"error": "Unexpected response from SimBrief."}), 502
-    if expected:
-        got = data.get("params", {}).get("static_id", "") if isinstance(data.get("params"), dict) else ""
-        if got != expected:
-            return jsonify({"pending": True})
+        return None
+    with _simbrief_lock:
+        if len(_simbrief_api_cache) > 500:
+            _simbrief_api_cache.clear()
+        _simbrief_api_cache[user_id] = (now, data)
+    return data
 
+
+def _duration_seconds(value):
+    """SimBrief's time en route: seconds ("3896") from the fetch-back
+    endpoint, "HH:MM:SS" ("01:04:56") from the API. Seconds as a string,
+    or "" when it's neither."""
+    value = str(value or "").strip()
+    if value.isdigit():
+        return value
+    parts = value.split(":")
+    if len(parts) == 3 and all(p.isdigit() for p in parts):
+        return str(int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]))
+    return ""
+
+
+def ofp_summary(data):
+    """What the app keeps from a SimBrief OFP, read from either source."""
     def section(name):
         # SimBrief sends an empty value as {} or "", never as a missing key
         value = data.get(name)
         return value if isinstance(value, dict) else {}
-
-    if str(section("fetch").get("status", "")).lower().startswith("error"):
-        return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
 
     origin = section("origin")
     destination = section("destination")
@@ -2634,7 +2650,7 @@ def simbrief_ofp():
     # this app controls), so it's surfaced rather than assumed.
     weight_unit = general.get("units") or params_block.get("units") or "KG"
 
-    return jsonify({
+    return {
         "static_id": params_block.get("static_id", ""),
         "origin_icao": origin.get("icao_code", ""),
         "destination_icao": destination.get("icao_code", ""),
@@ -2643,10 +2659,11 @@ def simbrief_ofp():
         "cost_index": general.get("costindex", ""),
         "initial_altitude_ft": general.get("initial_altitude", ""),
         "registration": aircraft.get("reg", ""),
-        "icao_type": aircraft.get("icaocode", ""),
+        # "icaocode" from the fetch-back endpoint, "icao_code" from the API
+        "icao_type": aircraft.get("icaocode") or aircraft.get("icao_code") or "",
         "weight_unit": weight_unit,
         "block_fuel": fuel.get("plan_ramp", ""),
-        "est_time_enroute_sec": times.get("est_time_enroute", ""),
+        "est_time_enroute_sec": _duration_seconds(times.get("est_time_enroute")),
         "est_zfw": weights.get("est_zfw", ""),
         "est_tow": weights.get("est_tow", ""),
         # EFOB = Estimated Fuel On Board at block-off, i.e. block/ramp
@@ -2676,7 +2693,43 @@ def simbrief_ofp():
         # Departure and destination NOTAMs, graded (see notams.py); None
         # when NOTAMs are switched off in the pilot's SimBrief options
         "notams": notams.ofp_notams(data),
-    })
+    }
+
+
+@app.route("/simbrief/ofp")
+def simbrief_ofp():
+    """
+    Reads back the pilot's most recently generated OFP: through SimBrief's
+    API for pilots signed in with Navigraph, otherwise from SimBrief's
+    public fetch-back endpoint by username (json=v2, no API key). Either
+    way it's whichever OFP is most recent for that SimBrief account -
+    matching static_id (echoed back inside the OFP's params block) against
+    the one this app sent to dispatch.php is how the frontend confirms it
+    got the OFP it just asked for, not a stale one from an earlier session.
+    """
+    username = request.args.get("username", default="", type=str).strip()
+    # The browser checks for a new OFP every few seconds after sending a leg
+    # to SimBrief; with the dispatch's static_id, an older OFP comes back as
+    # a small {"pending": true} instead of the whole plan
+    expected = request.args.get("static_id", default="", type=str).strip()
+
+    data, source = _simbrief_latest_via_api(current_user_id()), "api"
+    if data is None:
+        if not username:
+            return jsonify({"error": "SimBrief username is required."}), 400
+        data, source = _simbrief_latest(username), "username"
+    if data is None:
+        return jsonify({"error": "Could not reach SimBrief, or no OFP is on file for this username."}), 502
+    if not isinstance(data, dict):
+        return jsonify({"error": "Unexpected response from SimBrief."}), 502
+    if expected:
+        got = data.get("params", {}).get("static_id", "") if isinstance(data.get("params"), dict) else ""
+        if got != expected:
+            return jsonify({"pending": True})
+    fetch = data.get("fetch") if isinstance(data.get("fetch"), dict) else {}
+    if str(fetch.get("status", "")).lower().startswith("error"):
+        return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
+    return jsonify({**ofp_summary(data), "source": source})
 
 
 if __name__ == "__main__":
