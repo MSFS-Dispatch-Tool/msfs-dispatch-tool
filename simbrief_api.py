@@ -5,6 +5,7 @@ app.navigraph_access_token keep it current), so it only ever reaches that
 pilot's own SimBrief account.
 
     GET  /v2/flightplans/latest   the pilot's most recent flight plan (OFP)
+    GET  /v2/airframes/user/mine  the pilot's saved airframes
     POST /v2/plan/generate        a new flight plan; answers with the OFP
 
 Navigraph's documentation: https://developers.navigraph.com/docs/simbrief
@@ -27,7 +28,7 @@ class SimBriefError(Exception):
         self.status = status
 
 
-def _get(path, access_token):
+def _get(path, access_token, missing):
     try:
         resp = requests.get(BASE_URL + path, timeout=TIMEOUT_SECONDS,
                             headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"})
@@ -37,7 +38,7 @@ def _get(path, access_token):
         raise SimBriefError("SimBrief didn't accept your Navigraph sign-in. Sign in with Navigraph again",
                             reconnect=True, status=resp.status_code)
     if resp.status_code == 404:
-        raise SimBriefError("No flight plan on your SimBrief account yet", status=404)
+        raise SimBriefError(missing, status=404)
     if resp.status_code != 200:
         raise SimBriefError(f"SimBrief answered with an error (HTTP {resp.status_code})", status=resp.status_code)
     try:
@@ -48,7 +49,12 @@ def _get(path, access_token):
 
 def latest_plan(access_token):
     """The pilot's most recent flight plan, as SimBrief returns it."""
-    return _get("/v2/flightplans/latest", access_token)
+    return _get("/v2/flightplans/latest", access_token, "No flight plan on your SimBrief account yet")
+
+
+def user_airframes(access_token):
+    """The airframes the pilot has saved on SimBrief, as SimBrief returns them."""
+    return _get("/v2/airframes/user/mine", access_token, "No saved airframes on your SimBrief account yet")
 
 
 def try_generate(access_token, params, as_json=False):

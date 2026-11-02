@@ -95,8 +95,9 @@
   <div class="panel">
     <div class="panel-header"><span>SimBrief API sample</span></div>
     <div class="panel-body">
-      <p class="demo-intro">Downloads your own latest SimBrief flight plan through SimBrief's API v2, with your Navigraph sign-in, as a file to map its fields from. Generate a plan on simbrief.com first. Nothing is stored</p>
-      <button type="button" id="simbriefSampleBtn">Download my latest plan</button>
+      <p class="demo-intro">Downloads your own latest SimBrief flight plan, or the airframes you've saved on SimBrief, through SimBrief's API v2 with your Navigraph sign-in, as a file to map its fields from. Nothing is stored</p>
+      <button type="button" class="sb-sample" data-kind="latest">Download my latest plan</button>
+      <button type="button" class="sb-sample" data-kind="airframes">Download my saved airframes</button>
       <div id="simbriefSampleResult"></div>
       <p class="demo-intro" style="margin-top:22px">Try generating a plan through the API, to find the request format it accepts (not published yet). It's a real plan on your SimBrief account and becomes your latest one. Type is an ICAO type (A320, B738) or one of your saved airframes' internal IDs</p>
       <form class="demo-form" id="simbriefTryForm">
@@ -189,11 +190,11 @@ document.getElementById('demoForm').addEventListener('submit', async (e) => {
   } finally { btn.disabled = false; }
 });
 // ---- Allowed pilots and waitlist ----
-document.getElementById('simbriefSampleBtn').addEventListener('click', async () => {
+document.querySelectorAll('.sb-sample').forEach(button => button.addEventListener('click', async () => {
   const out = document.getElementById('simbriefSampleResult');
   out.className = ''; out.textContent = 'Asking SimBrief\u2026';
   try {
-    const resp = await fetch('/admin/api/simbrief/latest');
+    const resp = await fetch('/admin/api/simbrief/' + button.dataset.kind);
     if (!resp.ok) {
       const data = await resp.json().catch(() => ({}));
       throw new Error(data.error || `HTTP ${resp.status}`);
@@ -201,14 +202,14 @@ document.getElementById('simbriefSampleBtn').addEventListener('click', async () 
     const name = (resp.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/);
     const link = document.createElement('a');
     link.href = URL.createObjectURL(await resp.blob());
-    link.download = name ? name[1] : 'simbrief-latest.json';
+    link.download = name ? name[1] : `simbrief-${button.dataset.kind}.json`;
     link.click();
     URL.revokeObjectURL(link.href);
     out.className = 'ok'; out.textContent = 'Downloaded';
   } catch (e) {
     out.className = 'error-state'; out.textContent = e.message;
   }
-});
+}));
 
 document.getElementById('simbriefTryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
