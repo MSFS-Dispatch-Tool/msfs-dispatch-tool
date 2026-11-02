@@ -96,6 +96,22 @@ def test_only_an_admin_downloads_their_own_latest_plan(client, app_module, monke
     assert resp.status_code == 409 and "Sign in with Navigraph" in resp.get_json()["error"]
 
 
+def test_the_admin_downloads_their_saved_airframes(client, app_module, monkeypatch, fake_simbrief):
+    calls, replies = fake_simbrief
+    monkeypatch.setattr(app_module.db, "db_available", lambda: True)
+    monkeypatch.setattr(app_module, "navigraph_access_token", lambda user: "acc-1")
+    sign_in(client, app_module, monkeypatch, "boss@example.com")
+    replies.append(Answer({"airframes": [{"airframe_id": "0_0", "airframe_name": "FENIX A320"}]}))
+    resp = client.get("/admin/api/simbrief/airframes")
+    assert calls[-1][0] == "https://api.simbrief.com/v2/airframes/user/mine"
+    assert resp.status_code == 200 and resp.headers["Content-Disposition"].startswith('attachment; filename="simbrief-airframes-')
+    assert resp.get_json()["airframes"][0]["airframe_name"] == "FENIX A320"
+    replies.append(Answer({}, 404))
+    assert "No saved airframes" in client.get("/admin/api/simbrief/airframes").get_json()["error"]
+    assert client.get("/admin/api/simbrief/everything").status_code == 404
+    assert len(calls) == 2
+
+
 # ---- Reading the OFP: through the API for pilots signed in with Navigraph ----
 
 API_SAMPLE = json.load(open(os.path.join(os.path.dirname(__file__), "..", "fixtures", "simbrief_api_latest.json")))

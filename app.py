@@ -704,24 +704,31 @@ def create_report_route():
     return jsonify({"ok": True, "reference": report_id[:6].upper()})
 
 
-@app.route("/admin/api/simbrief/latest")
-def admin_simbrief_latest_route():
-    """The admin's own latest SimBrief flight plan through the API v2, as a
-    file: a real sample to map its fields from. Read from the admin's own
-    account with their own Navigraph sign-in, and not stored."""
+# What the admin page's "SimBrief API sample" downloads, to map the API's
+# fields from real answers before building on them
+SIMBRIEF_SAMPLES = {"latest": simbrief_api.latest_plan, "airframes": simbrief_api.user_airframes}
+
+
+@app.route("/admin/api/simbrief/<kind>")
+def admin_simbrief_sample_route(kind):
+    """The admin's own latest SimBrief flight plan, or saved airframes,
+    through the API v2, as a file. Read from the admin's own account with
+    their own Navigraph sign-in, and not stored."""
     if not auth.auth_available() or not _is_admin():
         return jsonify({"error": "Forbidden."}), 403
+    if kind not in SIMBRIEF_SAMPLES:
+        return jsonify({"error": "No such sample"}), 404
     unavailable = _require_db()
     if unavailable:
         return unavailable
     try:
-        plan = simbrief_api.latest_plan(navigraph_access_token(current_user_id()))
+        sample = SIMBRIEF_SAMPLES[kind](navigraph_access_token(current_user_id()))
     except navigraph.NavigraphError as exc:
         return jsonify({"error": str(exc)}), 409
     except simbrief_api.SimBriefError as exc:
         return jsonify({"error": str(exc), "status": exc.status}), 502
-    body = json.dumps(plan, indent=2, ensure_ascii=False)
-    name = f"simbrief-latest-{datetime.now(timezone.utc):%Y%m%d-%H%M}.json"
+    body = json.dumps(sample, indent=2, ensure_ascii=False)
+    name = f"simbrief-{kind}-{datetime.now(timezone.utc):%Y%m%d-%H%M}.json"
     return app.response_class(body, mimetype="application/json",
                               headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
