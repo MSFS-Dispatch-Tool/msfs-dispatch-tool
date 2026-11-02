@@ -758,6 +758,10 @@ def admin_simbrief_try_generate_route():
               "date": simbrief_date_str(), "static_id": f"VDTEST_{int(time.time())}"}
     if body.get("time_format") == "seconds":
         params.update({"dephour": hour * 3600, "depmin": minute * 60})
+    elif body.get("time_format") == "datetime":
+        # The departure time inside the date, as SimBrief shows it: "2 Nov 2026 - 14:30"
+        today = datetime.now(timezone.utc)
+        params["date"] = f"{today.day} {today:%b} {today.year} - {hour:02d}:{minute:02d}"
     else:
         params.update({"deph": f"{hour:02d}", "depm": f"{minute:02d}"})
     as_json = body.get("encoding") == "json"
@@ -775,6 +779,8 @@ def admin_simbrief_try_generate_route():
         answer["ofp"] = {k: summary[k] for k in ("static_id", "origin_icao", "destination_icao", "callsign", "route",
                                                  "icao_type", "registration", "block_fuel", "weight_unit")}
         answer["ofp"]["navlog_fixes"] = len(summary["navlog"])
+        times = result["data"].get("times") if isinstance(result["data"].get("times"), dict) else {}
+        answer["ofp"]["sched_out"] = times.get("sched_out", "")
         answer["static_id_echoed"] = summary["static_id"] == params["static_id"]
     else:
         answer["text"] = result["text"]

@@ -99,7 +99,7 @@
       <button type="button" class="sb-sample" data-kind="latest">Download my latest plan</button>
       <button type="button" class="sb-sample" data-kind="airframes">Download my saved airframes</button>
       <div id="simbriefSampleResult"></div>
-      <p class="demo-intro" style="margin-top:22px">Try generating a plan through the API, to find the request format it accepts (not published yet). It's a real plan on your SimBrief account and becomes your latest one. Type is an ICAO type (A320, B738) or one of your saved airframes' internal IDs</p>
+      <p class="demo-intro" style="margin-top:22px">Try generating a plan through the API, to find the request format it accepts (not published yet). It's a real plan on your SimBrief account and becomes your latest one. Type is an ICAO type (A320, B738) or one of your saved airframes' internal IDs. The result shows the off-block time SimBrief planned</p>
       <form class="demo-form" id="simbriefTryForm">
         <label>From <input name="orig" value="EGKK" maxlength="4" required></label>
         <label>To <input name="dest" value="EGAC" maxlength="4" required></label>
@@ -108,7 +108,7 @@
         <label>Flight <input name="fltnum" value="1234" maxlength="4" required></label>
         <label>Off-block (UTC) <input name="dep" value="14:30" maxlength="5" required></label>
         <label>Body <select name="encoding"><option value="form">Form fields</option><option value="json">JSON</option></select></label>
-        <label>Time <select name="time_format"><option value="hours">deph/depm, hours and minutes</option><option value="seconds">dephour/depmin, seconds</option></select></label>
+        <label>Time <select name="time_format"><option value="hours">deph/depm, hours and minutes</option><option value="seconds">dephour/depmin, seconds</option><option value="datetime">In the date: 2 Nov 2026 - 14:30</option></select></label>
         <button type="submit">Try generate</button>
       </form>
       <pre id="simbriefTryResult" class="sb-try"></pre>
