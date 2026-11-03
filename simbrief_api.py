@@ -8,6 +8,10 @@ pilot's own SimBrief account.
     GET  /v2/airframes/user/mine  the pilot's saved airframes
     POST /v2/plan/generate        a new flight plan; answers with the OFP
 
+Plan generation isn't in Navigraph's public documentation; what it
+accepts was worked out against the live API: form fields with the classic
+dispatch option names, the departure time inside the date.
+
 Navigraph's documentation: https://developers.navigraph.com/docs/simbrief
 """
 import os
@@ -57,23 +61,37 @@ def user_airframes(access_token):
     return _get("/v2/airframes/user/mine", access_token, "No saved airframes on your SimBrief account yet")
 
 
-def try_generate(access_token, params, as_json=False):
-    """Asks SimBrief to generate a plan and reports what came back, as
-    {"status", "ok", "data" (the parsed JSON, if any), "text" (the start of
-    the raw answer)}, without raising for a refusal: its request format
-    isn't published yet, so the admin page uses this to find out which
-    format it accepts."""
-    headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+_MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def departure_date(when):
+    """The departure date and time (UTC) the way plan generation reads it:
+    "2 Nov 2026 - 14:30". Separate hour fields (deph/depm, dephour/depmin)
+    are ignored by the API: the plan would leave at 00:00Z."""
+    return f"{when.day} {_MONTHS[when.month - 1]} {when.year} - {when.hour:02d}:{when.minute:02d}"
+
+
+def generate(access_token, params):
+    """Generates a plan with SimBrief's classic dispatch options, sent as
+    form fields, and returns the OFP it answers with (same format as
+    latest_plan). "type" can be an ICAO type or one of the pilot's saved
+    airframes' internal IDs."""
     try:
-        if as_json:
-            resp = requests.post(BASE_URL + "/v2/plan/generate", json=params, headers=headers, timeout=60)
-        else:
-            resp = requests.post(BASE_URL + "/v2/plan/generate", data=params, headers=headers, timeout=60)
-    except requests.RequestException as exc:
-        return {"status": None, "ok": False, "data": None, "text": f"SimBrief can't be reached: {type(exc).__name__}"}
+        resp = requests.post(BASE_URL + "/v2/plan/generate", data=params, timeout=60,
+                             headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"})
+    except requests.RequestException:
+        raise SimBriefError("SimBrief can't be reached right now. Try again in a minute")
+    if resp.status_code in (401, 403):
+        raise SimBriefError("SimBrief didn't accept your Navigraph sign-in. Sign in with Navigraph again",
+                            reconnect=True, status=resp.status_code)
     try:
         data = resp.json()
     except ValueError:
         data = None
-    return {"status": resp.status_code, "ok": resp.status_code == 200 and isinstance(data, dict),
-            "data": data, "text": (getattr(resp, "text", "") or "")[:2000]}
+    if resp.status_code == 200 and isinstance(data, dict) and isinstance(data.get("general"), dict):
+        return data
+    reason = ""
+    if isinstance(data, dict):
+        reason = str(data.get("error") or data.get("message") or "")[:200]
+    raise SimBriefError(f"SimBrief didn't generate the plan ({reason or f'HTTP {resp.status_code}'})",
+                        status=resp.status_code)

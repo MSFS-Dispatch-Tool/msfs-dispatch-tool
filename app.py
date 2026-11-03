@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlencode
+from werkzeug.datastructures import MultiDict
 import db
 import auth
 import wxmap
@@ -702,90 +703,6 @@ def create_report_route():
                                  _report_context(payload.get("context")), flight)
     _report_times[user_id] = recent + [now]
     return jsonify({"ok": True, "reference": report_id[:6].upper()})
-
-
-# What the admin page's "SimBrief API sample" downloads, to map the API's
-# fields from real answers before building on them
-SIMBRIEF_SAMPLES = {"latest": simbrief_api.latest_plan, "airframes": simbrief_api.user_airframes}
-
-
-@app.route("/admin/api/simbrief/<kind>")
-def admin_simbrief_sample_route(kind):
-    """The admin's own latest SimBrief flight plan, or saved airframes,
-    through the API v2, as a file. Read from the admin's own account with
-    their own Navigraph sign-in, and not stored."""
-    if not auth.auth_available() or not _is_admin():
-        return jsonify({"error": "Forbidden."}), 403
-    if kind not in SIMBRIEF_SAMPLES:
-        return jsonify({"error": "No such sample"}), 404
-    unavailable = _require_db()
-    if unavailable:
-        return unavailable
-    try:
-        sample = SIMBRIEF_SAMPLES[kind](navigraph_access_token(current_user_id()))
-    except navigraph.NavigraphError as exc:
-        return jsonify({"error": str(exc)}), 409
-    except simbrief_api.SimBriefError as exc:
-        return jsonify({"error": str(exc), "status": exc.status}), 502
-    body = json.dumps(sample, indent=2, ensure_ascii=False)
-    name = f"simbrief-{kind}-{datetime.now(timezone.utc):%Y%m%d-%H%M}.json"
-    return app.response_class(body, mimetype="application/json",
-                              headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
-
-
-@app.route("/admin/api/simbrief/try-generate", methods=["POST"])
-def admin_simbrief_try_generate_route():
-    """Asks SimBrief's API v2 to generate a plan on the admin's own account,
-    in the request format chosen on the admin page, and shows what came
-    back: SimBrief hasn't published that format yet, so this is how we find
-    out which one it accepts. The plan becomes the admin's latest OFP."""
-    if not auth.auth_available() or not _is_admin():
-        return jsonify({"error": "Forbidden."}), 403
-    unavailable = _require_db()
-    if unavailable:
-        return unavailable
-    body = request.get_json(silent=True) or {}
-    orig, dest = str(body.get("orig") or "").strip().upper(), str(body.get("dest") or "").strip().upper()
-    actype = str(body.get("type") or "").strip()
-    airline = str(body.get("airline") or "").strip().upper()
-    fltnum = str(body.get("fltnum") or "").strip()
-    dep = re.fullmatch(r"(\d{1,2}):(\d{2})", str(body.get("dep") or "").strip())
-    if not (re.fullmatch(r"[A-Z]{4}", orig) and re.fullmatch(r"[A-Z]{4}", dest) and re.fullmatch(r"[A-Za-z0-9_]{2,40}", actype)
-            and re.fullmatch(r"[A-Z0-9]{2,3}", airline) and re.fullmatch(r"\d{1,4}", fltnum) and dep):
-        return jsonify({"error": "Check the fields: ICAO airports, an aircraft type or profile ID, airline, flight number and HH:MM"}), 400
-    hour, minute = int(dep.group(1)), int(dep.group(2))
-    params = {"orig": orig, "dest": dest, "type": actype, "airline": airline, "fltnum": fltnum,
-              "date": simbrief_date_str(), "static_id": f"VDTEST_{int(time.time())}"}
-    if body.get("time_format") == "seconds":
-        params.update({"dephour": hour * 3600, "depmin": minute * 60})
-    elif body.get("time_format") == "datetime":
-        # The departure time inside the date, as SimBrief shows it: "2 Nov 2026 - 14:30"
-        today = datetime.now(timezone.utc)
-        params["date"] = f"{today.day} {today:%b} {today.year} - {hour:02d}:{minute:02d}"
-    else:
-        params.update({"deph": f"{hour:02d}", "depm": f"{minute:02d}"})
-    as_json = body.get("encoding") == "json"
-    try:
-        token = navigraph_access_token(current_user_id())
-    except navigraph.NavigraphError as exc:
-        return jsonify({"error": str(exc)}), 409
-    result = simbrief_api.try_generate(token, params, as_json=as_json)
-    navigraph.log.warning("SimBrief generate test (%s, %s): HTTP %s %s", "json" if as_json else "form",
-                          body.get("time_format") or "hours", result["status"], "" if result["ok"] else result["text"][:300])
-    answer = {"status": result["status"], "ok": result["ok"], "sent": params,
-              "encoding": "json" if as_json else "form"}
-    if result["ok"]:
-        summary = ofp_summary(result["data"])
-        answer["ofp"] = {k: summary[k] for k in ("static_id", "origin_icao", "destination_icao", "callsign", "route",
-                                                 "icao_type", "registration", "block_fuel", "weight_unit")}
-        answer["ofp"]["navlog_fixes"] = len(summary["navlog"])
-        times = result["data"].get("times") if isinstance(result["data"].get("times"), dict) else {}
-        answer["ofp"]["sched_out"] = times.get("sched_out", "")
-        answer["static_id_echoed"] = summary["static_id"] == params["static_id"]
-    else:
-        answer["text"] = result["text"]
-        answer["keys"] = sorted(result["data"])[:40] if isinstance(result["data"], dict) else None
-    return jsonify(answer)
 
 
 @app.route("/admin/reports")
@@ -2063,25 +1980,30 @@ def stats_flights_route():
 
 @app.route("/simbrief/redirect-url")
 def simbrief_redirect_url():
+    params, error = _simbrief_dispatch_params(request.args)
+    if error:
+        return error
+    return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
+
+
+def _simbrief_dispatch_params(args):
     """
-    Builds a SimBrief "dispatch redirect" URL - a plain link to SimBrief's
-    own dispatch form, pre-filled via query string. Opening it just shows
-    the pilot a pre-filled form on simbrief.com; they still press Generate
-    there themselves. No API key involved.
+    SimBrief's dispatch options for a leg, as (params, None), or (None, an
+    error response). The same options go into the "dispatch redirect" URL
+    (a plain link to SimBrief's own dispatch form, pre-filled via query
+    string, where the pilot still presses Generate themselves) and into
+    plan generation through the API (/simbrief/generate).
 
     Airline and aircraft type are preselected from the route's own
     operating carrier (fleet_entry_for/carrier_for) - a Ryanair leg gets
     RYR/B738, an easyJet leg gets its real operating subsidiary and
     whichever A320-family type the route specifies (falling back to a
     default type when it doesn't - see fleet_entry_for's docstring).
-    Registration is deliberately left unset: SimBrief fills it
-    from whichever airframe profile the pilot has set as default, and
-    the actual registration used is read back from the OFP once fetched
-    (see /simbrief/ofp's `registration` field) rather than preselected
-    here - this app doesn't have access to a pilot's saved SimBrief
-    airframes (that needs SimBrief's gated, approval-only API), and even
-    if it did, nothing in a saved airframe profile says which airline it
-    belongs to. acdata (individual payload/performance overrides) and
+    Registration is deliberately left unset: on simbrief.com SimBrief
+    fills it from whichever airframe profile the pilot has set as default;
+    through the API the pilot's chosen saved airframe replaces the type
+    (/simbrief/generate). Either way the registration used is read back
+    from the OFP (see /simbrief/ofp's `registration` field). acdata (individual payload/performance overrides) and
     cargo are still left out: cargo's expected units aren't confirmed
     from public docs, and acdata is airframe minutiae that belongs to
     the pilot's own SimBrief fleet entry, not this app.
@@ -2090,25 +2012,25 @@ def simbrief_redirect_url():
     figure the taxi time on our own SOBT/STOT/SLDT/SIBT table didn't
     match.
     """
-    flights_raw = request.args.get("flights", default="", type=str)
+    flights_raw = args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
     if not flight_numbers:
-        return jsonify({"error": "No flights specified."}), 400
+        return None, (jsonify({"error": "No flights specified."}), 400)
 
     fn = flight_numbers[0]
     route_leg = routes_by_flight_number.get(fn)
     if route_leg is None:
-        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+        return None, (jsonify({"error": f"Unknown flight number: {fn}"}), 400)
 
-    civalue = request.args.get("civalue", type=int)
-    pax = request.args.get("pax", type=int)
-    taxi_out = request.args.get("taxi_out_minutes", type=int)
+    civalue = args.get("civalue", type=int)
+    pax = args.get("pax", type=int)
+    taxi_out = args.get("taxi_out_minutes", type=int)
     # The aircraft type the pilot is actually shown (assigned at /select,
     # possibly changed via /select/reassign-aircraft) - passed through so
     # this never independently re-rolls a DIFFERENT random type than the
     # one already on screen. Only a preview call (before /select ran)
     # goes without one.
-    aircraft_type = request.args.get("aircraft_type", default="", type=str).strip() or None
+    aircraft_type = args.get("aircraft_type", default="", type=str).strip() or None
     if civalue is None or pax is None or taxi_out is None or aircraft_type is None:
         # Only hit when the caller doesn't already have confirmed leg
         # values (e.g. a preview, before CONFIRM has committed a
@@ -2158,7 +2080,7 @@ def simbrief_redirect_url():
     # doesn't know about the previous leg). Only if that's missing
     # (e.g. a pre-CONFIRM preview) does it fall back to recomputing SOBT
     # + delay_minutes here.
-    eobt_raw = request.args.get("eobt", default="", type=str).strip()
+    eobt_raw = args.get("eobt", default="", type=str).strip()
     eobt_match = re.match(r"^(\d{2}):(\d{2})", eobt_raw)
     if eobt_match:
         params["deph"], params["depm"] = eobt_match.group(1), eobt_match.group(2)
@@ -2166,7 +2088,7 @@ def simbrief_redirect_url():
         schedule = resolve_leg_schedule(route_leg, tz_by_icao, date.today(), taxi_out)
         sobt_dt = schedule["_sobt_dt"]
         if sobt_dt is not None:
-            delay_minutes = request.args.get("delay_minutes", default=0, type=int)
+            delay_minutes = args.get("delay_minutes", default=0, type=int)
             expected_dt = sobt_dt + timedelta(minutes=delay_minutes)
             params["deph"] = expected_dt.strftime("%H")
             params["depm"] = expected_dt.strftime("%M")
@@ -2175,11 +2097,11 @@ def simbrief_redirect_url():
     # reproducible here - the frontend must pass through the exact one
     # already shown/confirmed for this leg. Left unset, SimBrief falls
     # back to airline+fltnum, which is a fine default too.
-    callsign = request.args.get("callsign", default="", type=str).strip()
+    callsign = args.get("callsign", default="", type=str).strip()
     if callsign:
         params["callsign"] = callsign
 
-    static_id = request.args.get("static_id", default="", type=str).strip()
+    static_id = args.get("static_id", default="", type=str).strip()
     if static_id:
         params["static_id"] = static_id
 
@@ -2187,21 +2109,20 @@ def simbrief_redirect_url():
     # in as the cruise level, MEL/CDL fuel as extra fuel in minutes (the
     # one unit that doesn't depend on the pilot's kg/lb setting), and the
     # items themselves into the OFP remarks.
-    max_fl = request.args.get("max_fl", type=int)
+    max_fl = args.get("max_fl", type=int)
     if max_fl and 100 <= max_fl <= 450:
         params["fl"] = f"FL{max_fl}"
-    extra_fuel_min = request.args.get("extra_fuel_min", type=int)
+    extra_fuel_min = args.get("extra_fuel_min", type=int)
     if extra_fuel_min and 0 < extra_fuel_min <= 120:
         params["addedfuel"] = extra_fuel_min
         params["addedfuel_units"] = "min"
     # The defects in full (official MEL wording, crew actions and dispatch
     # consequences), one item per line in SimBrief's dispatcher remarks
-    remarks = request.args.get("remarks", default="", type=str).replace("\r", "")
+    remarks = args.get("remarks", default="", type=str).replace("\r", "")
     remarks = re.sub(r"[^A-Za-z0-9 \n/.,:;()%+'-]", "", remarks)[:REMARKS_MAX_CHARS].strip()
     if remarks:
         params["manualrmk"] = remarks
-
-    return jsonify({"url": "https://www.simbrief.com/system/dispatch.php?" + urlencode(params)})
+    return params, None
 
 
 REMARKS_MAX_CHARS = 2500
@@ -2792,6 +2713,164 @@ def simbrief_ofp():
     if str(fetch.get("status", "")).lower().startswith("error"):
         return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
     return jsonify({**ofp_summary(data), "source": source})
+
+
+# ---- SEND TO SIMBRIEF through SimBrief's API: the plan is generated with
+# the pilot's own Navigraph sign-in and one of their saved airframes, and
+# the OFP comes straight back. On for admins only while it's being tried
+# out, unless SIMBRIEF_API_GENERATE=all ("off" turns it off for everyone).
+# Everyone else, and any failure, goes through simbrief.com as before. ----
+SIMBRIEF_API_GENERATE = (os.environ.get("SIMBRIEF_API_GENERATE") or "admins").strip().lower()
+AIRFRAMES_CACHE_SECONDS = 300
+SIMBRIEF_GENERATE_INTERVAL_SECONDS = 10
+AIRFRAME_ID_RE = re.compile(r"^\d{1,12}_\d{1,16}$")
+_simbrief_airframes_cache = {}
+_simbrief_last_generate = {}
+
+
+def _simbrief_generate_allowed(user_id):
+    if SIMBRIEF_API_GENERATE == "off" or not navigraph.configured() or not db.db_available():
+        return False
+    if SIMBRIEF_API_GENERATE != "all" and not _is_admin():
+        return False
+    return bool(db.get_navigraph(user_id).get("refresh"))
+
+
+def _leg_simbrief_type(flight_number, aircraft_type):
+    """(SimBrief type, airline key, airline codes) for a leg, e.g. ("A320",
+    "EZY", {"EZY", "U2", "EJU"}), or None for an unknown flight. A saved
+    airframe whose comment starts with one of the codes ("EZY - A320") is
+    the leg's default."""
+    route_leg = routes_by_flight_number.get(flight_number)
+    if route_leg is None:
+        return None
+    carrier = carrier_for(route_leg)
+    fleet = carrier["fleet_by_type"]
+    entry = fleet.get(aircraft_type) or next(iter(fleet.values()))
+    codes = {carrier.get("icao"), carrier.get("iata"), carrier.get("callsign_prefix"), route_leg.get("callsign_prefix")}
+    return entry["simbrief_type"], route_leg["carrier"], {str(c).upper() for c in codes if c}
+
+
+def _pilot_airframes(user_id):
+    """The pilot's saved SimBrief airframes, kept to what the picker shows
+    ({"id", "type", "name", "reg", "comments"}), cached for a few minutes.
+    Nothing of them is stored."""
+    now = time.monotonic()
+    with _simbrief_lock:
+        hit = _simbrief_airframes_cache.get(user_id)
+        if hit and now - hit[0] < AIRFRAMES_CACHE_SECONDS:
+            return hit[1]
+    try:
+        raw = simbrief_api.user_airframes(navigraph_access_token(user_id))
+    except simbrief_api.SimBriefError as exc:
+        if exc.status != 404:
+            raise
+        raw = []
+    items = raw if isinstance(raw, list) else (raw.get("airframes") if isinstance(raw, dict) else None) or []
+    airframes = []
+    for a in items:
+        if not isinstance(a, dict) or not AIRFRAME_ID_RE.match(str(a.get("airframe_internal_id") or "")):
+            continue
+        airframes.append({
+            "id": str(a["airframe_internal_id"]),
+            "type": str(a.get("airframe_icao") or a.get("airframe_base_type") or "").upper()[:4],
+            "name": str(a.get("airframe_name") or "")[:60],
+            "reg": str(a.get("airframe_registration") or "")[:12],
+            "comments": str(a.get("airframe_comments") or "")[:80],
+        })
+    with _simbrief_lock:
+        if len(_simbrief_airframes_cache) > 500:
+            _simbrief_airframes_cache.clear()
+        _simbrief_airframes_cache[user_id] = (now, airframes)
+    return airframes
+
+
+def _default_airframe(airframes, remembered, codes):
+    """The airframe a leg starts with: the one last chosen for this airline
+    and type ("" = SimBrief's standard aircraft), else the first whose
+    comment starts with the airline's code, else the first of the type."""
+    if remembered is not None and (remembered == "" or any(a["id"] == remembered for a in airframes)):
+        return remembered
+    for a in airframes:
+        words = re.split(r"[^A-Z0-9]+", a["comments"].upper().strip())
+        if words and words[0] in codes:
+            return a["id"]
+    return airframes[0]["id"] if airframes else ""
+
+
+@app.route("/simbrief/airframes")
+def simbrief_airframes():
+    """For the leg about to be sent to SimBrief: whether it can be generated
+    through the API, and the pilot's saved airframes of its type with the
+    one to start with."""
+    user_id = current_user_id()
+    if not _simbrief_generate_allowed(user_id):
+        return jsonify({"available": False})
+    leg = _leg_simbrief_type(request.args.get("flight", default="", type=str).strip(),
+                             request.args.get("aircraft_type", default="", type=str).strip())
+    if leg is None:
+        return jsonify({"error": "Unknown flight number"}), 400
+    sb_type, airline, codes = leg
+    try:
+        airframes = [a for a in _pilot_airframes(user_id) if a["type"] == sb_type]
+    except navigraph.NavigraphError as exc:
+        return jsonify({"available": False, "error": str(exc)})
+    except simbrief_api.SimBriefError as exc:
+        return jsonify({"available": True, "type": sb_type, "airframes": [], "selected": "", "warning": str(exc)})
+    remembered = (db.get_simbrief(user_id).get("airframes") or {}).get(f"{airline}:{sb_type}")
+    return jsonify({"available": True, "type": sb_type, "airframes": airframes,
+                    "selected": _default_airframe(airframes, remembered, codes)})
+
+
+@app.route("/simbrief/generate", methods=["POST"])
+def simbrief_generate():
+    """Generates the leg's plan through SimBrief's API, with the same
+    options as the simbrief.com link plus the chosen saved airframe, and
+    answers with the OFP (as /simbrief/ofp does). On any refusal the answer
+    carries fallback, and the browser opens simbrief.com instead."""
+    user_id = current_user_id()
+    if not _simbrief_generate_allowed(user_id):
+        return jsonify({"error": "Plan generation through SimBrief's API isn't available", "fallback": True}), 403
+    body = request.get_json(silent=True) or {}
+    args = MultiDict({k: str(v) for k, v in body.items() if v is not None and k != "airframe"})
+    params, error = _simbrief_dispatch_params(args)
+    if error:
+        return error
+    airframe = str(body.get("airframe") or "").strip()
+    if airframe and not AIRFRAME_ID_RE.match(airframe):
+        return jsonify({"error": "Unknown airframe"}), 400
+    now = time.monotonic()
+    if now - _simbrief_last_generate.get(user_id, -SIMBRIEF_GENERATE_INTERVAL_SECONDS) < SIMBRIEF_GENERATE_INTERVAL_SECONDS:
+        return jsonify({"error": "A plan was just requested: wait a few seconds"}), 429
+    _simbrief_last_generate[user_id] = now
+
+    # The API reads the departure time from the date only
+    if "deph" in params:
+        departure = datetime.now(timezone.utc).replace(hour=int(params.pop("deph")), minute=int(params.pop("depm")),
+                                                       second=0, microsecond=0)
+        params["date"] = simbrief_api.departure_date(departure)
+    leg = _leg_simbrief_type(args.get("flights", default="", type=str).split(",")[0].strip(),
+                             args.get("aircraft_type", default="", type=str).strip())
+    if airframe:
+        params["type"] = airframe
+    try:
+        data = simbrief_api.generate(navigraph_access_token(user_id), params)
+    except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
+        navigraph.log.warning("SimBrief plan generation failed: %s", exc)
+        return jsonify({"error": str(exc), "fallback": True}), 502
+
+    # Remember the airframe chosen for this airline and type
+    if leg:
+        prefs = db.get_simbrief(user_id)
+        choices = dict(prefs.get("airframes") or {})
+        key = f"{leg[1]}:{leg[0]}"
+        if choices.get(key) != airframe and len(choices) < 100:
+            choices[key] = airframe
+            db.save_simbrief({**prefs, "airframes": choices}, user_id)
+    # The OFP just made is the pilot's latest: a check right after reads it from here
+    with _simbrief_lock:
+        _simbrief_api_cache[user_id] = (time.monotonic(), data)
+    return jsonify({**ofp_summary(data), "source": "api"})
 
 
 if __name__ == "__main__":
