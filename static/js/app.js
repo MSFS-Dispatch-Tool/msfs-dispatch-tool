@@ -284,7 +284,6 @@ let searchState = defaultSearchState();
 let searchStatus = 'idle';   // idle (no airport) | loading | ready | error
 let searchError = '';
 let searchAbort = null;
-let mapPickMode = 'ask';     // ask | origin | destination
 let mapOpenOnMobile = false;
 let networkData = null;
 let networkPromise = null;
@@ -377,33 +376,28 @@ async function renderSearchUI() {
       </div>
       <div class="panel-body map-body" id="mapBody">
         <div class="map-toolbar">
-          <fieldset class="seg-control">
-            <legend>SELECT AN AIRPORT TO</legend>
-            <label><input type="radio" name="mapPickMode" value="ask" checked onchange="setMapPickMode(this.value)"><span>CHOOSE EACH TIME</span></label>
-            <label><input type="radio" name="mapPickMode" value="origin" onchange="setMapPickMode(this.value)"><span>SET DEPARTURE</span></label>
-            <label><input type="radio" name="mapPickMode" value="destination" onchange="setMapPickMode(this.value)"><span>SET DESTINATION</span></label>
-          </fieldset>
+          <div class="wx-toolbar">
+            <span class="wx-title">SHOW:</span>
+            <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxCatToggle" onchange="setWeatherLayer('cat', this.checked)"><span class="track"></span></span>METAR</label>
+            <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxSigmetToggle" onchange="setWeatherLayer('sigmet', this.checked)"><span class="track"></span></span>SIGMETS</label>
+          </div>
           <button class="ghost small" type="button" onclick="fitSelectionMap()">FIT TO RESULTS</button>
-        </div>
-        <div class="wx-toolbar">
-          <span class="wx-title">WEATHER</span>
-          <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxCatToggle" onchange="setWeatherLayer('cat', this.checked)"><span class="track"></span></span>FLIGHT CATEGORY</label>
-          <label class="switch-row"><span class="switch-toggle"><input type="checkbox" id="wxSigmetToggle" onchange="setWeatherLayer('sigmet', this.checked)"><span class="track"></span></span>SIGMETS</label>
-          <span class="wx-status" id="wxStatus" aria-live="polite"></span>
         </div>
         <div class="selection-map-wrap">
           <div id="selectionMap" class="selection-map" role="region" aria-label="Route map. A visual aid: every search option is also available in the fields above, and every result in the flight list"></div>
           <div class="map-overlay" id="mapOverlay" hidden></div>
+          <div class="wx-status" id="wxStatus" aria-live="polite"></div>
         </div>
-        <div class="map-legend" aria-hidden="true">
+        <div class="map-legend" id="mapLegend" aria-hidden="true">
           <span><i class="sw sw-dot" style="background:#1D4ED8"></i>DEPARTURE</span>
           <span><i class="sw sw-dot" style="background:#C4320A"></i>DESTINATION</span>
           <span><i class="sw sw-dot" style="background:#344054"></i>AIRPORT WITH ITINERARIES</span>
           <span><i class="sw sw-dot sw-ring"></i>MULTI-LEG TURNAROUND (VIA) ONLY</span>
           <span><i class="sw sw-line"></i>ROUTE</span>
           <span><i class="sw sw-line hl"></i>HIGHLIGHTED ROW</span>
+          ${Object.entries(FLIGHT_CAT_COLORS).map(([c, col]) => `<span class="wx-key off" data-wx="cat"><i class="sw sw-dot" style="background:${col}"></i>${c}</span>`).join('')}
+          ${SIGMET_LEGEND.map(([h, label]) => `<span class="wx-key off" data-wx="sigmet"><i class="sw sw-area" style="border-color:${SIGMET_COLORS[h]}; background:${SIGMET_COLORS[h]}22"></i>${label}</span>`).join('')}
         </div>
-        <div class="map-legend wx-legend" id="wxLegend" aria-hidden="true" hidden></div>
         <p class="map-hint">PANNING AND ZOOMING DO NOT CHANGE THE SEARCH. SELECT A ROUTE LINE TO LIST ITS ITINERARIES ONLY</p>
       </div>
     </div>
@@ -618,13 +612,6 @@ function resetResultFilters() {
   document.getElementById('arrTimeFilter').value = 'all';
   syncSearchUrl();
   renderSelection({ fit: false });
-}
-
-function setMapPickMode(mode) {
-  mapPickMode = mode;
-  if (selMap) selMap.closePopup();
-  const el = document.getElementById('selectionMap');
-  if (el) el.classList.toggle('pick-direct', mode !== 'ask');
 }
 
 function toggleMapOnMobile() {
@@ -1052,10 +1039,9 @@ async function loadDetail(key) {
 }
 
 async function paintDetail() {
-  const [carriers, ownedAircraft] = await Promise.all([getCarriers(), getOwnedAircraft()]);
   const cell = document.getElementById('detailCell');
   if (!cell || !expandedDetailData || expandedDetailKey !== expandedKey) return;
-  cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
+  cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey);
   expandedDetailData.legs.forEach((leg, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, leg));
 }
 
@@ -1303,21 +1289,13 @@ function renderWeatherChrome() {
     const d = wxData[k], st = wxState[k];
     if (!d) { parts.push(st === 'error' ? `${names[k]} NOT AVAILABLE` : `${names[k]} LOADING…`); return; }
     const count = k === 'sigmet' ? `, ${plural(d.sigmets.length, 'ACTIVE', 'ACTIVE')}` : '';
-    const old = st === 'error' || d.stale ? ' – outdated, refresh failed' : '';
+    const old = st === 'error' || d.stale ? ' (OUTDATED, REFRESH FAILED)' : '';
     parts.push(`${names[k]} ${zuluOf(d.updated)}${count}${old}`);
   });
   document.getElementById('wxStatus').textContent = parts.join(' · ');
 
-  const legend = document.getElementById('wxLegend');
-  const items = [];
-  if (wxPrefs.cat) {
-    Object.entries(FLIGHT_CAT_COLORS).forEach(([c, col]) => items.push(`<span><i class="sw sw-dot" style="background:${col}"></i>${c}</span>`));
-  }
-  if (wxPrefs.sigmet) {
-    SIGMET_LEGEND.forEach(([h, label]) => items.push(`<span><i class="sw sw-area" style="border-color:${SIGMET_COLORS[h]}; background:${SIGMET_COLORS[h]}22"></i>${label}</span>`));
-  }
-  legend.innerHTML = items.join('');
-  legend.hidden = items.length === 0;
+  // The weather keys keep their place in the legend: shown or hidden, never moved
+  document.querySelectorAll('#mapLegend .wx-key').forEach(el => el.classList.toggle('off', !wxPrefs[el.dataset.wx]));
 }
 
 function metarLineHtml(icao) {
@@ -1447,7 +1425,6 @@ function ensureSelectionMap() {
   // A SIGMET's hover tooltip would otherwise sit right under its own popup.
   selMap.on('popupopen', () => el.classList.add('popup-open'));
   selMap.on('popupclose', () => el.classList.remove('popup-open'));
-  el.classList.toggle('pick-direct', mapPickMode !== 'ask');
   // On desktop the map's height follows the space left on screen (the
   // greeting arriving, chips wrapping); Leaflet must be told when it changes.
   if (window.ResizeObserver) {
@@ -1539,7 +1516,7 @@ function renderSelectionMap({ fit }) {
 
     if (searchStatus === 'loading') showMapOverlay('<span class="spinner" aria-hidden="true"></span>SEARCHING&hellip;');
     else if (searchStatus === 'error') showMapOverlay('SEARCH ERROR &mdash; SEE BELOW');
-    else if (model.segments.size === 0) showMapOverlay('NO MATCHING ROUTES &mdash; SEE THE SUGGESTIONS BELOW');
+    else if (model.segments.size === 0) showMapOverlay('NO MATCHING ROUTES. SEE SUGGESTIONS IN THE MATCHING ITINERARIES PANEL');
     else showMapOverlay(null);
   }
   if (fit || mapNeedsFit) fitSelectionMap();
@@ -1628,7 +1605,6 @@ function mapPickFromList(icao) {
 function onMapAirportClick(a, info) {
   const s = searchState;
   const selectedRole = s.origin === a.icao ? 'origin' : (s.destination === a.icao ? 'destination' : null);
-  if (mapPickMode !== 'ask' && !selectedRole) { mapSetAirport(mapPickMode, a.icao); return; }
   openAirportPopup(a, selectedRole, info);
 }
 
@@ -1649,8 +1625,15 @@ function openAirportPopup(a, selectedRole, info) {
                     : `${plural(networkDestinationCount(a.icao), 'DESTINATION', 'DESTINATIONS')} &middot; ${plural(networkOriginCount(a.icao), 'ORIGIN', 'ORIGINS')} IN NETWORK`;
     const depSuffix = n != null && s.destination && !s.origin ? ` (${fmtNum(n)})` : '';
     const destSuffix = n != null && s.origin && !s.destination ? ` (${fmtNum(n)})` : '';
-    actions.push(`<button class="action small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS DEPARTURE${depSuffix}</button>`);
-    actions.push(`<button class="action small" type="button" onclick="mapSetAirport('destination','${a.icao}')">SET AS DESTINATION${destSuffix}</button>`);
+    // With a departure set, the airport is most likely the destination;
+    // a new departure stays one click away
+    if (s.origin) {
+      actions.push(`<button class="action small" type="button" onclick="mapSetAirport('destination','${a.icao}')">SET AS DESTINATION${destSuffix}</button>`);
+      actions.push(`<button class="ghost small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS NEW DEPARTURE</button>`);
+    } else {
+      actions.push(`<button class="action small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS DEPARTURE${depSuffix}</button>`);
+      actions.push(`<button class="action small" type="button" onclick="mapSetAirport('destination','${a.icao}')">SET AS DESTINATION</button>`);
+    }
   }
   const html = `
     <div class="map-popup">
@@ -1730,44 +1713,14 @@ function legScheduleTable(leg) {
         </table>`;
 }
 
-function legLoadTable(leg, legIndex, fleetOptions) {
-  const aircraftCell = (fleetOptions && fleetOptions.length > 1)
-    ? `<select class="aircraft-reassign-select" data-leg-index="${legIndex}" onchange="reassignAircraft(this)">
-         ${fleetOptions.map(ac => `<option value="${escAttr(ac.type)}" ${ac.type === leg.aircraft_type ? 'selected' : ''}>${escAttr(ac.type)} (${ac.seats} seats)</option>`).join('')}
-       </select>`
-    : `${escAttr(leg.aircraft_type || 'N/A')}`;
+// The aircraft itself is chosen on the PLAN tab, from the airline's fleet:
+// here only the type assigned to the trip, and how full it is expected to be
+function legLoadTable(leg) {
   return `
         <table class="kv" style="margin-bottom:10px;">
-          <tr><td class="k">AIRCRAFT</td><td class="v">${aircraftCell}</td></tr>
-          <tr><td class="k">EXPECTED PAX</td><td class="v">${fmtNum(leg.pax_count)} / ${fmtNum(leg.seat_capacity)}</td></tr>
+          <tr><td class="k">RECOMMENDED AIRCRAFT</td><td class="v">${escText(leg.aircraft_type || 'N/A')} <span class="hint">SELECTED AT PLANNING</span></td></tr>
           <tr><td class="k">EXPECTED LOAD FACTOR</td><td class="v">${(leg.load_factor * 100).toFixed(0)}%</td></tr>
-          <tr><td class="k">EXPECTED CARGO/BAGS</td><td class="v">${fmtNum(leg.cargo_weight_kg)} KG</td></tr>
         </table>`;
-}
-
-// One aircraft flies every leg of the trip, so changing it changes them all
-// (each leg keeps its own load factor).
-async function reassignAircraft(selectEl) {
-  const aircraftType = selectEl.value;
-  selectEl.disabled = true;
-  try {
-    const results = await Promise.all(expandedDetailData.legs.map(async leg => {
-      const params = new URLSearchParams({
-        flight_number: leg.flight_number, aircraft_type: aircraftType, load_factor: leg.load_factor,
-      });
-      const result = await (await fetch(`/select/reassign-aircraft?${params}`)).json();
-      if (result.error) throw new Error(result.error);
-      return result;
-    }));
-    expandedDetailData.legs.forEach((leg, i) => Object.assign(leg, results[i]));
-    const cell = document.getElementById('detailCell');
-    const [carriers, ownedAircraft] = await Promise.all([getCarriers(), getOwnedAircraft()]);
-    cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
-    expandedDetailData.legs.forEach((l, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, l));
-  } catch (err) {
-    alert('AIRCRAFT CHANGE FAILED. CHECK CONNECTION, THEN RETRY');
-    selectEl.disabled = false;
-  }
 }
 
 function legWeatherBlock(leg) {
@@ -1969,7 +1922,7 @@ async function swapAircraft(key) {
   }
 }
 
-function buildDetailHtml(data, key, carriers, ownedAircraft) {
+function buildDetailHtml(data, key) {
   const legBlocks = data.legs.map((leg, i) => `
     <div class="leg-block">
       <div class="leg-block-header">LEG ${i + 1} &mdash; ${leg.flight_number}</div>
@@ -1980,7 +1933,7 @@ function buildDetailHtml(data, key, carriers, ownedAircraft) {
         </table>
         ${routeMapDiv(leg, `map-detail-${key}-${i}`)}
         ${legScheduleTable(leg)}
-        ${legLoadTable(leg, i, fleetOptionsFor(leg, carriers, ownedAircraft))}
+        ${legLoadTable(leg)}
         ${legWeatherBlock(leg)}
         ${legDelayMelBlock(leg)}
         ${opsConstraintsHtml(data.legs, i)}
@@ -2208,11 +2161,10 @@ function planPaneHtml(flight, i) {
   const current = st.ofp && st.simbrief === 'available' ? `<p class="plan-current">CURRENT OFP: ${ofpDoneText(st.ofp)}</p>` : '';
   const form = `<section class="sheet plan-form"><h4 class="sheet-h">SIMBRIEF PLAN</h4>
       <div class="plan-fields">
-        <span class="sb-airframe" id="sbAirframe-${i}">${api ? '' : `<span class="af-field"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')} &middot; SIMBRIEF STANDARD</b></span>`}</span>
+        <div class="af-field" id="sbType-${i}"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')}</b></div>
+        <span class="sb-airframe" id="sbAirframe-${i}"></span>
         <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">READING ATIS&hellip;</span></div>
-        <p class="plan-note" id="sbSendNote-${i}">${api
-          ? 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING'
-          : 'SIMBRIEF OPENS WITH THIS LEG PRE-FILLED. GENERATE OFP THERE; IT LOADS HERE ON GENERATION. FOR OWN AIRFRAMES AND ONE-STEP PLANNING, SIGN IN WITH NAVIGRAPH (ACCOUNT SETTINGS)'}</p>
+        <p class="plan-note" id="sbSendNote-${i}">${api ? 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING' : ''}</p>
         ${current}
       </div>${waiting}</section>`;
   return form + sheetSection('THIS LEG', legRows);
@@ -2328,6 +2280,7 @@ function renderRecap(flight) {
       </div>
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
+  if (document.getElementById('sbType-' + i)) paintAircraftChoice(flight, i);
   if (document.getElementById('sbAirframe-' + i)) loadSimbriefAirframes(flight, i);
   if (document.getElementById('sbRunways-' + i)) { if (runwayInfo[simbriefApiKey(flight, i)]) paintRunways(flight, i); else loadRunways(flight, i); }
   // Waiting for this leg's OFP (also after a reload): watch for it
@@ -3164,6 +3117,48 @@ function chooseSimbriefAirframe(index, value) {
   const flight = loadActiveFlight(); if (!flight) return;
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
   if (info) info.selected = value;
+}
+
+// ---- AIRCRAFT: the type to fly, from the airline's fleet (the pilot's own
+// aircraft where set in Account settings). The trip was assigned one, shown
+// as recommended; choosing another applies to every leg not yet flown, with
+// passengers and bags worked out again for its seats at the same load
+// factor. The airframe list then follows the chosen type. ----
+async function paintAircraftChoice(flight, index) {
+  const el = document.getElementById('sbType-' + index); if (!el) return;
+  const leg = flight.legs[index];
+  let fleet = [];
+  try { fleet = fleetOptionsFor(leg, await getCarriers(), await getOwnedAircraft()); } catch (e) { return; }
+  if (fleet.length < 2 || !document.getElementById('sbType-' + index)) return;
+  const recommended = leg.recommended_type || leg.aircraft_type;
+  el.innerHTML = `<span>AIRCRAFT</span><select id="sbTypeSel-${index}" onchange="chooseAircraftType(${index}, this.value)">${fleet.map(ac =>
+    `<option value="${escAttr(ac.type)}"${ac.type === leg.aircraft_type ? ' selected' : ''}>${escText(ac.type)} &middot; ${ac.seats} SEATS${ac.type === recommended ? ' (RECOMMENDED)' : ''}</option>`).join('')}</select>`;
+}
+
+async function chooseAircraftType(index, type) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const sel = document.getElementById('sbTypeSel-' + index); if (sel) sel.disabled = true;
+  const open = flight.legs.map((_, k) => k).filter(k => flight.leg_status[k].status !== 'done' && !flight.leg_state[k].loadsheet_signed);
+  try {
+    const results = await Promise.all(open.map(async k => {
+      const leg = flight.legs[k];
+      const qs = new URLSearchParams({ flight_number: leg.flight_number, aircraft_type: type, load_factor: leg.load_factor });
+      const r = await (await fetch('/select/reassign-aircraft?' + qs)).json();
+      if (r.error) throw new Error(r.error);
+      return r;
+    }));
+    open.forEach((k, n) => {
+      const leg = flight.legs[k];
+      leg.recommended_type = leg.recommended_type || leg.aircraft_type;
+      Object.assign(leg, results[n]);
+      delete simbriefApiLegs[simbriefApiKey(flight, k)];
+    });
+    saveActiveFlight(flight);
+    renderRecap(flight);
+  } catch (err) {
+    alert('AIRCRAFT CHANGE FAILED. CHECK CONNECTION, THEN RETRY');
+    if (sel) sel.disabled = false;
+  }
 }
 
 // ---- RUNWAYS: from the ATIS of the network the pilot flies on (see
