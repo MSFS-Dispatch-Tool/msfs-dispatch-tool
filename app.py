@@ -2844,10 +2844,9 @@ def atis_runways():
     """The runways in use at the leg's two airports from the ATIS of the
     network the pilot flies on (VATSIM, IVAO or SayIntentions; "none": no
     network, SimBrief picks by wind). Choosing a network here remembers it
-    for the next flights; without one, the remembered network is used.
-    The answer lists the networks offered (sources)."""
+    for the next flights; without one, the remembered network is used."""
     user_id = current_user_id()
-    offered = atis.available_sources() + ("none",)
+    offered = atis.SOURCES + ("none",)
     dep = request.args.get("dep", default="", type=str).strip().upper()
     arr = request.args.get("arr", default="", type=str).strip().upper()
     if not (atis.ICAO_RE.match(dep) and atis.ICAO_RE.match(arr)):
@@ -2861,7 +2860,7 @@ def atis_runways():
             db.save_simbrief({**prefs, "runway_source": source}, user_id)
     else:
         source = prefs.get("runway_source") if prefs.get("runway_source") in offered else "vatsim"
-    answer = {"source": source, "sources": list(offered), "dep": None, "arr": None}
+    answer = {"source": source, "dep": None, "arr": None}
     if source == "none":
         return jsonify(answer)
     try:

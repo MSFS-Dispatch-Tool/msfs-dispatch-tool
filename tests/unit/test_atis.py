@@ -125,13 +125,13 @@ def test_sayintentions_gives_its_active_runways_with_both_keys(feeds, monkeypatc
     assert params == {"icao": "EDDF,EGKK", "api_key": "pilot-1"} and headers["X-Developer-Key"] == "dev-1"
 
 
-def test_sayintentions_is_never_asked_without_the_developer_key(feeds, monkeypatch):
+
+
+def test_sayintentions_answers_without_the_developer_key(feeds, monkeypatch):
     calls, _ = feeds
     monkeypatch.setattr(atis.sayintentions, "DEVELOPER_KEY", "")
-    assert atis.available_sources() == ("vatsim", "ivao")
-    with pytest.raises(atis.AtisError, match="SAYINTENTIONS NOT AVAILABLE"):
-        atis.runways("sayintentions", "EGKK", "EDDF", api_key="pilot-1")
-    assert calls == []
+    assert atis.runways("sayintentions", "EGKK", "EDDF")["dep"]["rwy"] == "08R"
+    assert "X-Developer-Key" not in calls[0][2]
 
 
 def test_a_network_out_of_reach_says_so(feeds):
@@ -166,14 +166,6 @@ def test_without_a_network_simbrief_picks_by_wind(client, prefs, feeds):
     assert (got["source"], got["dep"], got["arr"]) == ("none", None, None) and calls == []
 
 
-def test_sayintentions_is_offered_only_with_the_developer_key(client, prefs, feeds, monkeypatch):
-    monkeypatch.setattr(atis.sayintentions, "DEVELOPER_KEY", "")
-    assert client.get("/atis/runways?dep=EGKK&arr=EHAM").get_json()["sources"] == ["vatsim", "ivao", "none"]
-    assert client.get("/atis/runways?dep=EGKK&arr=EHAM&source=sayintentions").status_code == 400
-    prefs["runway_source"] = "sayintentions"                                # chosen while it was offered
-    assert client.get("/atis/runways?dep=EGKK&arr=EHAM").get_json()["source"] == "vatsim"
-    monkeypatch.setattr(atis.sayintentions, "DEVELOPER_KEY", "dev-1")
-    assert "sayintentions" in client.get("/atis/runways?dep=EGKK&arr=EHAM").get_json()["sources"]
 
 
 def test_unknown_airports_and_networks_are_refused(client, prefs):

@@ -13,8 +13,9 @@ what the controllers are using.
   the Whazzup feed at most once every 3 minutes.
 - SayIntentions: SAPI getWX, which already answers with the active runways
   (active_runways_departing / _arriving, "18,07C"), for live and AI ATC.
-  SAPI wants the app's developer key on every request, so this source is
-  offered only with SAYINTENTIONS_DEVELOPER_KEY set.
+  SAPI's documentation asks for the app's developer key on every request
+  (SAYINTENTIONS_DEVELOPER_KEY); getWX also answers without it, so the
+  source is offered either way and the key is sent once it is set.
 
 Nothing is guessed: a network with no ATIS for an airport, or an ATIS with
 no runway in it, gives None, and SimBrief picks that runway by wind as
@@ -158,19 +159,14 @@ def _first(value):
     return None
 
 
-def available_sources():
-    """The networks offered: SayIntentions only with the developer key."""
-    return tuple(s for s in SOURCES if s != "sayintentions" or sayintentions.configured())
-
-
 def _sayintentions_airports(icaos, api_key):
     """SayIntentions' weather for the airports, as it answers it."""
-    if not sayintentions.configured():
-        raise AtisError("SAYINTENTIONS NOT AVAILABLE")
     params = {"icao": ",".join(sorted(icaos))}
     if api_key:
         params["api_key"] = api_key
-    headers = {"Accept": "application/json", "X-Developer-Key": sayintentions.DEVELOPER_KEY}
+    headers = {"Accept": "application/json"}
+    if sayintentions.DEVELOPER_KEY:
+        headers["X-Developer-Key"] = sayintentions.DEVELOPER_KEY
     try:
         resp = requests.get(SAYINTENTIONS_URL, params=params, headers=headers, timeout=TIMEOUT_SECONDS)
         resp.raise_for_status()

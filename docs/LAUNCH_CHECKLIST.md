@@ -38,8 +38,9 @@ them off here as they're done.
       pilot's saved airframe, OFP straight back) is on for every pilot signed
       in with Navigraph, Nov 2026. SIMBRIEF_API_GENERATE=off in Render turns
       it off for everyone; pilots then go through simbrief.com.
-- [ ] SAYINTENTIONS_DEVELOPER_KEY set in Render (SEND TO AIRCRAFT through
-      SayIntentions; the option stays hidden without it).
+- [ ] SAYINTENTIONS_DEVELOPER_KEY set in Render before other pilots join
+      (SEND TO AIRCRAFT through SayIntentions stays hidden without it; the
+      SAYINTENTIONS ATIS runways send it once set).
 - [x] Runways from ATIS (atis.py): terms checked, 3 Nov 2026.
       VATSIM: the data feed is public, needs no key and refreshes every 15
       seconds; its use falls under the VATSIM User Agreement. Read at most
@@ -48,9 +49,11 @@ them off here as they're done.
       every 3 minutes, or IVAO may block the server's address (rule D.4, as
       quoted by client libraries; IVAO's wiki was not reachable to confirm).
       Read at most once every 3 minutes.
-      SayIntentions: SAPI wants the app's developer key on every request.
-      The SAYINTENTIONS ATIS source is offered only with
-      SAYINTENTIONS_DEVELOPER_KEY set.
+      SayIntentions: SAPI's documentation asks for the app's developer key
+      on every request. getWX answers without it, and the SAYINTENTIONS ATIS
+      source is offered meanwhile (one pilot, Nov 2026); the key goes into
+      SAYINTENTIONS_DEVELOPER_KEY below before VirtualDispatch opens to
+      other pilots.
 - [ ] Before the paid plan goes live: none of the terms found covers
       commercial use of the networks' data. Ask VATSIM (tech@vatsim.net), IVAO (DevOps)
       and SayIntentions to confirm that reading runways in use for a paid
