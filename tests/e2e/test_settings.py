@@ -27,9 +27,9 @@ async def main():
         check("tables list every item", counts == expected, f"{counts} vs {expected}")
         await page.evaluate("document.querySelectorAll('.leg-block details').forEach(d => d.open = true)")
         mel_text = await page.inner_text("#gen-mel-items")
-        check("MEL rows show effect and actions", "Cruise no higher than FL250 (set in SimBrief)" in mel_text and "at least 3,402 kg at take-off" in mel_text and "Cruise above FL250 not allowed" in mel_text and "(O)" not in mel_text and "(M)" not in mel_text)
+        check("MEL rows show effect and actions", "MAX FL250 (SET IN SIMBRIEF)" in mel_text and "MIN 3,402 KG PER WING TANK AT TAKE-OFF" in mel_text and "Cruise above FL250 not allowed" in mel_text and "(O)" not in mel_text and "(M)" not in mel_text)
         delay_text = await page.inner_text("#gen-delay-items")
-        check("delay rows show range, slot and actions", "Comes with a take-off slot from air traffic control" in delay_text and "pick the reason in your flight report" in delay_text and "ATC flow restriction en route" in delay_text)
+        check("delay rows show range, slot and actions", "WITH ATC TAKE-OFF SLOT (CTOT)" in delay_text and "CODE THE DELAY IN THE PIREP" in delay_text and "ATC flow restriction en route" in delay_text)
         el = page.locator("#gen-mel-items tbody tr:not(.gen-group)").nth(0)
         await el.scroll_into_view_if_needed()
         await page.screenshot(path=shot("settings_mel.png"))
@@ -67,7 +67,7 @@ async def main():
         saved = await page.text_content("#acarsSaved")
         await page.click("#acarsTestBtn"); await page.wait_for_timeout(800)
         check("a good code is saved masked and the test connects",
-              "N1" in saved and "TESTLOG" not in saved and "Connected" in await page.text_content("#acarsStatus"), saved)
+              "N1" in saved and "TESTLOG" not in saved and "CONNECTED" in await page.text_content("#acarsStatus"), saved)
         raw = urllib.request.urlopen(BASE + "/settings").read().decode() + urllib.request.urlopen(BASE + "/acars/settings").read().decode()
         check("the code never comes back to the browser", "TESTLOGON1" not in raw)
         await page.locator(".panel:has(#acarsLogon)").screenshot(path=shot("settings_acars.png"))
@@ -83,31 +83,31 @@ async def main():
         raw = urllib.request.urlopen(BASE + "/acars/settings").read().decode()
         check("the SayIntentions key is saved masked, never sent back, and the test telex goes",
               "255" in await page.text_content("#siSaved") and "TESTSIKEY0255" not in raw
-              and "test telex" in await page.text_content("#acarsStatus"), await page.text_content("#acarsStatus"))
+              and "TEST TELEX" in await page.text_content("#acarsStatus"), await page.text_content("#acarsStatus"))
         await page.locator(".panel:has(#siKey)").screenshot(path=shot("settings_acars_si.png"))
         await page.click("#acarsNetworkRow label:has-text('HOPPIE')"); await page.wait_for_timeout(500)
         check("back on Hoppie, its code is still there", await page.is_visible("#acarsLogon") and "N1" in await page.text_content("#acarsSaved"))
 
         # Sign in with Navigraph (a fake one): the account shows by name, its tokens stay on the server
         check("the Navigraph panel offers the sign-in",
-              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphState") == "Not connected")
+              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphState") == "NOT CONNECTED")
         check("the sign-in button carries Navigraph's mark",
               await page.evaluate("document.querySelector('#navigraphSignIn img').naturalWidth > 0"))
         await page.locator("#navigraphPanel").screenshot(path=shot("settings_navigraph_off.png"))
         await page.click("#navigraphSignIn")
         await page.wait_for_selector("#navigraphDisconnect:not([hidden])")
         check("back from Navigraph: connected by name, in Account settings",
-              page.url.endswith("/app") and "e2e_pilot" in await page.text_content("#navigraphState")
-              and "Connected" in await page.text_content("#navigraphStatus"), page.url)
+              page.url.endswith("/app") and "E2E_PILOT" in await page.text_content("#navigraphState")
+              and "CONNECTED" in await page.text_content("#navigraphStatus"), page.url)
         raw = urllib.request.urlopen(BASE + "/navigraph/status").read().decode() + urllib.request.urlopen(BASE + "/settings").read().decode()
         check("Navigraph tokens never reach the browser", "e2e_pilot" in raw and "e2e-refresh" not in raw and "e2e-access" not in raw)
         await page.locator("#navigraphPanel").screenshot(path=shot("settings_navigraph.png"))
         page.once("dialog", lambda d: asyncio.ensure_future(d.accept()))
         await page.click("#navigraphDisconnect"); await page.wait_for_timeout(600)
         check("disconnecting offers the sign-in again",
-              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphStatus") == "Disconnected")
+              await page.is_visible("#navigraphSignIn") and await page.text_content("#navigraphStatus") == "DISCONNECTED")
         await page.goto(BASE + "/app?navigraph=cancelled"); await page.wait_for_selector("#navigraphStatus:not(:empty)")
-        check("a cancelled sign-in is reported", "cancelled" in await page.text_content("#navigraphStatus"))
+        check("a cancelled sign-in is reported", "CANCELLED" in await page.text_content("#navigraphStatus"))
 
         # Report a problem, from the header: the message reaches the database with the page and recent errors
         posted = []
@@ -124,7 +124,7 @@ async def main():
         await page.select_option("#reportCategory", "bug")
         await page.fill("#reportMessage", "short")
         await page.click("#reportSend")
-        check("a too-short report is refused", "at least 10" in await page.text_content("#reportStatus"))
+        check("a too-short report is refused", "MIN 10 CHARACTERS" in await page.text_content("#reportStatus"))
         await page.fill("#reportMessage", "The MEL list in settings doesn't scroll on my laptop")
         await page.locator(".report-modal").screenshot(path=shot("report_form.png"))
         await page.click("#reportSend")

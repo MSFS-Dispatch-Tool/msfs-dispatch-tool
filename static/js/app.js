@@ -13,7 +13,7 @@ const TRIP_TYPE_LABELS = { RT: 'ML', '1W': '1L' };
 
 function simbriefNoticeHtml() {
   if (localStorage.getItem(SIMBRIEF_USERNAME_KEY)) return '';
-  return `<div class="notice-banner">SimBrief connection missing. <a href="#" onclick="renderAccountSettings(); return false;">Add your SimBrief username</a> to send loadsheets and flight plans</div>`;
+  return `<div class="notice-banner">SIMBRIEF USERNAME NOT SET. <a href="#" onclick="renderAccountSettings(); return false;">ADD IT IN ACCOUNT SETTINGS</a> TO PLAN FLIGHTS</div>`;
 }
 
 function updateClock() {
@@ -147,7 +147,7 @@ async function pushActiveFlight(keepalive) {
     } else if (resp.status === 409) {
       // Another device saved first: its copy wins; show it.
       adoptServerActiveFlight(data);
-      activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version';
+      activeSyncNotice = 'FLIGHT UPDATED ON ANOTHER DEVICE. LATEST VERSION SHOWN';
       refreshActiveFlightView();
     }
   } catch (e) {
@@ -187,7 +187,7 @@ function refreshActiveFlightView() {
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'hidden') { pushActiveFlight(true); return; }
   if (await pullActiveFlight()) {
-    activeSyncNotice = 'This flight was updated on another device, so you are seeing the latest version';
+    activeSyncNotice = 'FLIGHT UPDATED ON ANOTHER DEVICE. LATEST VERSION SHOWN';
     refreshActiveFlightView();
   }
 });
@@ -289,44 +289,13 @@ let mapOpenOnMobile = false;
 let networkData = null;
 let networkPromise = null;
 
-// Greeting on top of Flight search while no flight is live. {part} is the
-// pilot's local time of day; {name} their first name (left out if unset).
-const GREETINGS = [
-  'Good {part}, Captain {name}. Where are we headed today?',
-  'Good {part}, Captain. Where to today?',
-  'Welcome back, Captain {name}. Which way are we flying today?',
-  'Good {part}, Captain {name}. The aircraft is waiting: where are we taking her?',
-  "Good {part}, Captain. What does today's roster look like?",
-  "Welcome aboard, Captain {name}. Pick a route and we'll get the briefing ready",
-  'Good {part}, Captain {name}. Ready to plan your next departure?',
-  'Good {part}, Captain {name}. Dispatch is standing by. Where are we headed?',
-  'Good {part}, Captain. Which city are we visiting today?',
-  'Nice to see you, Captain {name}. Short hop or a long sector today?',
-  "Good {part}, Captain {name}. Coffee's on. Where are we flying?",
-  'Good {part}, Captain. The briefing room is open. Where to?',
-  "Welcome back, Captain {name}. Let's find you a flight",
-  'Good {part}, Captain {name}. Your crew is ready. Where are we going today?',
-  "Good {part}, Captain. What's the destination today?",
-  'Ready when you are, Captain {name}. Where are we headed?',
-  "Good {part}, Captain {name}. Let's get you off blocks. Where to?",
-];
-const LATE_NIGHT_GREETINGS = [   // 22:00-05:00 only
-  'Burning the midnight oil, Captain {name}? Where are we headed tonight?',
-  'A late one tonight, Captain. Where to?',
-];
-const GREETING_LAST_KEY = 'vd_last_greeting';
-
+// Greeting on top of Flight search while no flight is live: the pilot's
+// local time of day and first name (left out if unset).
 function pickGreeting(firstName, now = new Date()) {
   const hour = now.getHours();
-  const part = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-  const pool = (hour >= 22 || hour < 5) ? GREETINGS.concat(LATE_NIGHT_GREETINGS) : GREETINGS;
-  let last = null;
-  try { last = localStorage.getItem(GREETING_LAST_KEY); } catch (e) { /* storage blocked */ }
-  const choices = pool.filter(t => t !== last);   // never the same one twice in a row
-  const template = choices[Math.floor(Math.random() * choices.length)];
-  try { localStorage.setItem(GREETING_LAST_KEY, template); } catch (e) { /* storage blocked */ }
+  const part = hour < 12 ? 'MORNING' : hour < 18 ? 'AFTERNOON' : 'EVENING';
   const name = (firstName || '').trim();
-  return template.replace('{part}', part).replace(' {name}', name ? ' ' + name : '');
+  return `GOOD ${part}, CAPTAIN${name ? ' ' + name.toUpperCase() : ''}`;
 }
 
 function selectOptionsHtml(labels, current) {
@@ -358,13 +327,13 @@ async function renderSearchUI() {
         <div class="params-grid cols-3">
           <div class="field">
             <label for="origin">DEPARTURE AIRPORT <span class="hint">(ICAO/IATA)</span></label>
-            <input type="text" id="origin" autocomplete="off" placeholder="e.g. BGY or LIME">
+            <input type="text" id="origin" autocomplete="off" placeholder="E.G. BGY OR LIME">
             <div class="custom-dropdown" id="originDropdown"></div>
             <div class="field-error" id="originError">UNKNOWN AIRPORT CODE &ndash; NOT APPLIED</div>
           </div>
           <div class="field">
             <label for="destination">DESTINATION AIRPORT <span class="hint">(ICAO/IATA)</span></label>
-            <input type="text" id="destination" autocomplete="off" placeholder="e.g. STN or EGSS">
+            <input type="text" id="destination" autocomplete="off" placeholder="E.G. STN OR EGSS">
             <div class="custom-dropdown" id="destinationDropdown"></div>
             <div class="field-error" id="destinationError">UNKNOWN AIRPORT CODE &ndash; NOT APPLIED</div>
           </div>
@@ -390,7 +359,7 @@ async function renderSearchUI() {
             </div>
           </div>
         </div>
-        <p class="field-note" id="searchRequirementNote">Type a departure and/or destination airport, or pick one on the map. Sector legs, airline, flight country and times apply instantly</p>
+        <p class="field-note" id="searchRequirementNote">ENTER DEPARTURE AND/OR DESTINATION, OR SELECT ON THE MAP. FILTERS APPLY IMMEDIATELY</p>
         <div class="params-actions">
           <button class="action" id="searchBtn" onclick="applyTypedAirports()">SEARCH</button>
           <button class="ghost" type="button" id="swapBtn" onclick="swapAirports()" title="Swap departure and destination">&#8644; SWAP</button>
@@ -409,7 +378,7 @@ async function renderSearchUI() {
       <div class="panel-body map-body" id="mapBody">
         <div class="map-toolbar">
           <fieldset class="seg-control">
-            <legend>CLICK AN AIRPORT TO</legend>
+            <legend>SELECT AN AIRPORT TO</legend>
             <label><input type="radio" name="mapPickMode" value="ask" checked onchange="setMapPickMode(this.value)"><span>CHOOSE EACH TIME</span></label>
             <label><input type="radio" name="mapPickMode" value="origin" onchange="setMapPickMode(this.value)"><span>SET DEPARTURE</span></label>
             <label><input type="radio" name="mapPickMode" value="destination" onchange="setMapPickMode(this.value)"><span>SET DESTINATION</span></label>
@@ -432,10 +401,10 @@ async function renderSearchUI() {
           <span><i class="sw sw-dot" style="background:#344054"></i>AIRPORT WITH ITINERARIES</span>
           <span><i class="sw sw-dot sw-ring"></i>MULTI-LEG TURNAROUND (VIA) ONLY</span>
           <span><i class="sw sw-line"></i>ROUTE</span>
-          <span><i class="sw sw-line hl"></i>ROW YOU'RE POINTING AT</span>
+          <span><i class="sw sw-line hl"></i>HIGHLIGHTED ROW</span>
         </div>
         <div class="map-legend wx-legend" id="wxLegend" aria-hidden="true" hidden></div>
-        <p class="map-hint">Panning and zooming never change the search. Click a route line to show only its itineraries in the list</p>
+        <p class="map-hint">PANNING AND ZOOMING DO NOT CHANGE THE SEARCH. SELECT A ROUTE LINE TO LIST ITS ITINERARIES ONLY</p>
       </div>
     </div>
     </div>
@@ -799,7 +768,7 @@ function renderCriteriaBar(visibleCount) {
   const crit = activeCriteria();
   const chips = crit.length
     ? crit.map((c, i) => `${c.id === 'destination' && searchState.origin ? `<button class="chip-swap" type="button" onclick="swapAirports()" title="Swap departure and destination" aria-label="Swap departure and destination">&#8644;</button>` : ''}<span class="crit-chip ${c.cls || ''}"><span class="k">${c.k}</span>${c.v}<button type="button" onclick="${c.clear}" aria-label="Remove ${c.k.toLowerCase()} ${escAttr(c.v)}" title="Remove">&times;</button></span>`).join('')
-    : `<span class="crit-empty">Pick a departure or destination airport to start &mdash; type it above or click it on the map</span>`;
+    : `<span class="crit-empty">ENTER DEPARTURE OR DESTINATION, OR SELECT ON THE MAP</span>`;
 
   const html = `
     <div aria-live="polite" aria-atomic="true">${countHtml}</div>
@@ -817,17 +786,17 @@ function noResultsHtml() {
     const actions = [];
     let msg;
     if (s.origin && s.origin === s.destination) {
-      msg = `Departure and destination are both ${s.origin}.`;
+      msg = `DEPARTURE AND DESTINATION ARE BOTH ${s.origin}.`;
     } else if (s.origin && s.destination) {
-      msg = `No scheduled flights go from ${airportLabel(s.origin)} to ${airportLabel(s.destination)} in the loaded network`;
+      msg = `NO SCHEDULED FLIGHTS ${airportLabel(s.origin)} TO ${airportLabel(s.destination)}.`;
       const reverse = networkData && networkData.pairs.has(`${s.destination}>${s.origin}`);
       if (reverse) actions.push(btn('swapAirports()', `SWAP TO ${s.destination} &rarr; ${s.origin}`));
     } else {
-      msg = `No itineraries were found for ${airportLabel(s.origin || s.destination)}.`;
+      msg = `NO ITINERARIES FOR ${airportLabel(s.origin || s.destination)}.`;
     }
     if (s.destination) actions.push(btn("setAirport('destination','')", `REMOVE DESTINATION${s.origin ? ` &middot; ${fmtNum(networkDestinationCount(s.origin))} DESTINATIONS FROM ${s.origin}` : ''}`));
     if (s.origin) actions.push(btn("setAirport('origin','')", `REMOVE DEPARTURE${s.destination ? ` &middot; ${fmtNum(networkOriginCount(s.destination))} ORIGINS TO ${s.destination}` : ''}`));
-    return `<div class="no-results"><h4>NO ITINERARIES MATCH</h4><p>${msg} Your criteria are kept &mdash; relax one to see flights</p><div class="relax-actions">${actions.join('')}</div></div>`;
+    return `<div class="no-results"><h4>NO ITINERARIES MATCH</h4><p>${msg} CRITERIA KEPT. RELAX ONE TO SHOW FLIGHTS</p><div class="relax-actions">${actions.join('')}</div></div>`;
   }
   const relaxable = activeCriteria().filter(c => ['airline', 'legs', 'country', 'route'].includes(c.id));
   const suggestions = relaxable.map(c => {
@@ -923,7 +892,7 @@ function renderListPanel(visible) {
   tableVisibleItineraries = visible || [];
   let body;
   if (searchStatus === 'idle') {
-    body = `<div class="empty-state">Choose a departure or destination airport &mdash; type it in Search Parameters or click it on the map</div>`;
+    body = `<div class="empty-state">ENTER DEPARTURE OR DESTINATION, OR SELECT ON THE MAP</div>`;
   } else if (searchStatus === 'loading') {
     body = `<div class="empty-state"><span class="spinner" aria-hidden="true"></span>LOADING ITINERARIES&hellip;</div>`;
   } else if (searchStatus === 'error') {
@@ -997,7 +966,7 @@ function renderTable() {
   if (dirBtn) {
     const asc = sortState.dir === 'asc';
     dirBtn.innerHTML = asc ? '&uarr;' : '&darr;';
-    dirBtn.title = asc ? 'Ascending: click to reverse' : 'Descending: click to reverse';
+    dirBtn.title = asc ? 'ASCENDING. SELECT TO REVERSE' : 'DESCENDING. SELECT TO REVERSE';
     dirBtn.setAttribute('aria-label', asc ? 'Sorted ascending. Reverse the order' : 'Sorted descending. Reverse the order');
   }
   const listPanel = document.getElementById('listPanelInner');
@@ -1020,14 +989,14 @@ function renderTable() {
         <td data-label="TYPE"><div class="type-cell"><span class="type-badge type-${itin.trip_type}">${TRIP_TYPE_LABELS[itin.trip_type] || itin.trip_type}</span>${domTag}</div></td>
         <td data-label="FLIGHT(S)">${flights}</td>
         <td data-label="DEPARTURE">${itin.departure_icao}</td>
-        <td data-label="VIA" class="via-cell${itin.via_icao ? '' : ' no-via'}${itin.via_icao && itin.via_icao === searchState.destination ? ' matched-cell" title="Matches your destination: the turnaround airport of this multi-leg rotation' : ''}">${itin.via_icao || '&mdash;'}</td>
+        <td data-label="VIA" class="via-cell${itin.via_icao ? '' : ' no-via'}${itin.via_icao && itin.via_icao === searchState.destination ? ' matched-cell" title="MATCHES DESTINATION: TURNAROUND AIRPORT OF THIS MULTI-LEG ROTATION' : ''}">${itin.via_icao || '&mdash;'}</td>
         <td data-label="ARRIVAL">${itin.arrival_icao}</td>
         <td data-label="ETD (Z)" data-short="ETD">${itin.first_departure_zulu ? stripZulu(itin.first_departure_zulu) : 'UNKNOWN'}</td>
         <td data-label="ETA (Z)" data-short="ETA">${itin.last_arrival_zulu ? stripZulu(itin.last_arrival_zulu) : 'UNKNOWN'}</td>
         <td data-label="TURNAROUND" data-short="TURN"${itin.leg_details.length > 1 ? '' : ' class="no-turn"'}>${turnaround}</td>
-        <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' nm' : 'N/A'}</td>
+        <td data-label="DISTANCE" class="nowrap">${itin.total_distance_nm != null ? fmtNum(itin.total_distance_nm) + ' NM' : 'N/A'}</td>
         <td data-label="EBT" data-short="EBT">${itin.ebt_minutes != null ? fmtMinutes(itin.ebt_minutes) : 'N/A'}</td>
-        <td class="select-cell" data-label=""><button class="ghost row-map-btn" type="button" onclick="event.stopPropagation(); showItineraryOnMap('${key}', event)" title="Show on map" aria-label="Show ${flights} on the map">${MAP_PIN_SVG}</button><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')" aria-expanded="${isExpanded}">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
+        <td class="select-cell" data-label=""><button class="ghost row-map-btn" type="button" onclick="event.stopPropagation(); showItineraryOnMap('${key}', event)" title="SHOW ON MAP" aria-label="Show ${flights} on the map">${MAP_PIN_SVG}</button><button class="action small" onclick="event.stopPropagation(); toggleItinerary('${key}')" aria-expanded="${isExpanded}">${isExpanded ? 'CLOSE' : 'SELECT'}</button></td>
       </tr>`;
     const detailRow = isExpanded
       ? `<tr><td colspan="${colCount}" class="detail-cell" id="detailCell"><div class="empty-state">LOADING...</div></td></tr>`
@@ -1327,13 +1296,13 @@ function renderWeatherChrome() {
   if (!catToggle) return;
   catToggle.checked = wxPrefs.cat;
   document.getElementById('wxSigmetToggle').checked = wxPrefs.sigmet;
-  const names = { cat: 'METARs', sigmet: 'SIGMETs' };
+  const names = { cat: 'METARS', sigmet: 'SIGMETS' };
   const parts = [];
   ['cat', 'sigmet'].forEach(k => {
     if (!wxPrefs[k]) return;
     const d = wxData[k], st = wxState[k];
-    if (!d) { parts.push(st === 'error' ? `${names[k]} unavailable right now` : `${names[k]} loading…`); return; }
-    const count = k === 'sigmet' ? `, ${plural(d.sigmets.length, 'active', 'active')}` : '';
+    if (!d) { parts.push(st === 'error' ? `${names[k]} NOT AVAILABLE` : `${names[k]} LOADING…`); return; }
+    const count = k === 'sigmet' ? `, ${plural(d.sigmets.length, 'ACTIVE', 'ACTIVE')}` : '';
     const old = st === 'error' || d.stale ? ' – outdated, refresh failed' : '';
     parts.push(`${names[k]} ${zuluOf(d.updated)}${count}${old}`);
   });
@@ -1354,7 +1323,7 @@ function renderWeatherChrome() {
 function metarLineHtml(icao) {
   if (!wxPrefs.cat || !wxData.cat) return '';
   const w = wxData.cat.stations[icao];
-  if (!w || !w.raw) return '<span class="wx-raw">No current METAR</span>';
+  if (!w || !w.raw) return '<span class="wx-raw">NO CURRENT METAR</span>';
   const cat = FLIGHT_CAT_COLORS[w.cat] ? w.cat : null;
   return `${cat ? `<span class="wx-badge" style="background:${FLIGHT_CAT_COLORS[cat]}">${cat}</span> ` : ''}<span class="wx-raw">${escText(w.raw)}</span>`;
 }
@@ -1378,7 +1347,7 @@ function drawSigmets() {
     const color = SIGMET_COLORS[sg.hazard] || '#475467';
     const { levels, title } = sigmetSummary(sg);
     L.polygon(sg.coords, { color, weight: 1.5, dashArray: '6 4', fillColor: color, fillOpacity: 0.12 })
-      .bindTooltip(`SIGMET &middot; ${title}${levels ? ' &middot; ' + levels : ''}<br>Click for details`, { sticky: true, className: 'sigmet-tip' })
+      .bindTooltip(`SIGMET &middot; ${title}${levels ? ' &middot; ' + levels : ''}<br>SELECT FOR DETAILS`, { sticky: true, className: 'sigmet-tip' })
       .on('click', (e) => { L.DomEvent.stopPropagation(e); openSigmetPopup(e.latlng, sg); })
       .addTo(selLayers.wx);
   });
@@ -1550,12 +1519,12 @@ function renderSelectionMap({ fit }) {
       if (!A || !B) return;
       const focused = s.route === seg.key;
       const n = seg.oneLeg + seg.multi;
-      const parts = [seg.oneLeg ? plural(seg.oneLeg, 'one-leg', 'one-leg') : '', seg.multi ? plural(seg.multi, 'multi-leg', 'multi-leg') : ''].filter(Boolean).join(', ');
+      const parts = [seg.oneLeg ? plural(seg.oneLeg, 'ONE-LEG', 'ONE-LEG') : '', seg.multi ? plural(seg.multi, 'MULTI-LEG', 'MULTI-LEG') : ''].filter(Boolean).join(', ');
       L.polyline([[A.lat, A.lon], [B.lat, B.lon]], {
         color: focused ? MAP_COLORS.dep : MAP_COLORS.route,
         weight: focused ? 4.5 : 2,
         opacity: s.route && !focused ? 0.18 : (focused ? 1 : 0.6),
-      }).bindTooltip(`${seg.a} &ndash; ${seg.b} &middot; ${plural(n, 'itinerary', 'itineraries')} (${parts})<br>${focused ? 'Click to show every route again' : 'Click to list only these in the table'}`, { sticky: true })
+      }).bindTooltip(`${seg.a} &ndash; ${seg.b} &middot; ${plural(n, 'ITINERARY', 'ITINERARIES')} (${parts})<br>${focused ? 'SELECT TO SHOW ALL ROUTES' : 'SELECT TO LIST THESE ONLY'}`, { sticky: true })
         .on('click', (e) => { L.DomEvent.stopPropagation(e); onMapRouteClick(e, seg); })
         .addTo(selLayers.routes);
       mapSegmentEntries.push({ seg, n, A, B });
@@ -1599,8 +1568,8 @@ function addAirportMarker(a, kind, info) {
     marker.bindTooltip(`${a.icao} &middot; ${kind === 'dep' ? 'DEPARTURE' : 'DESTINATION'}`,
       { permanent: true, direction: 'top', offset: [0, -9], className: `map-label map-label-${kind}` });
   } else {
-    const count = info ? ` &middot; ${plural(info.count, 'itinerary', 'itineraries')}` : '';
-    const via = kind === 'via' ? '<br>Multi-leg turnaround (via) only' : '';
+    const count = info ? ` &middot; ${plural(info.count, 'ITINERARY', 'ITINERARIES')}` : '';
+    const via = kind === 'via' ? '<br>MULTI-LEG TURNAROUND (VIA) ONLY' : '';
     marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
       { direction: 'top', offset: [0, -6], className: wx ? 'wx-tip' : '' });
   }
@@ -1643,8 +1612,8 @@ function onMapRouteClick(e, seg) {
   const html = `
     <div class="map-popup">
       <div class="mp-title">WHICH ROUTE?</div>
-      <div class="mp-sub">${near.length} routes pass here &mdash; choose one to list its itineraries${more ? `, or zoom in to separate the other ${more}` : ''}:</div>
-      <div class="mp-actions">${shown.map(x => `<button class="ghost" type="button" onclick="selMap.closePopup(); toggleRouteFocus('${x.seg.key}')"><strong>${x.seg.a} &ndash; ${x.seg.b}</strong>&nbsp;&middot; ${plural(x.n, 'itinerary', 'itineraries')}</button>`).join('')}</div>
+      <div class="mp-sub">${near.length} ROUTES HERE. SELECT ONE TO LIST ITS ITINERARIES${more ? `, OR ZOOM IN TO SEPARATE THE OTHER ${more}` : ''}:</div>
+      <div class="mp-actions">${shown.map(x => `<button class="ghost" type="button" onclick="selMap.closePopup(); toggleRouteFocus('${x.seg.key}')"><strong>${x.seg.a} &ndash; ${x.seg.b}</strong>&nbsp;&middot; ${plural(x.n, 'ITINERARY', 'ITINERARIES')}</button>`).join('')}</div>
     </div>`;
   L.popup({ autoPan: true, maxWidth: 300, className: 'map-popup-wrap' }).setLatLng(e.latlng).setContent(html).openOn(selMap);
 }
@@ -1670,14 +1639,14 @@ function openAirportPopup(a, selectedRole, info) {
   if (selectedRole) {
     const roleName = selectedRole === 'origin' ? 'DEPARTURE' : 'DESTINATION';
     const other = selectedRole === 'origin' ? 'destination' : 'origin';
-    sub = `Selected as ${roleName.toLowerCase()}.`;
+    sub = `SELECTED AS ${roleName}`;
     actions.push(`<button class="ghost" type="button" onclick="mapClearAirport('${selectedRole}')">REMOVE AS ${roleName}</button>`);
     if (s.origin && s.destination) actions.push(`<button class="ghost" type="button" onclick="swapAirports()">&#8644; SWAP DEPARTURE AND DESTINATION</button>`);
     else actions.push(`<button class="ghost" type="button" onclick="mapSetAirport('${other}','${a.icao}')">USE AS ${other === 'origin' ? 'DEPARTURE' : 'DESTINATION'} INSTEAD</button>`);
   } else {
     const n = info ? info.count : null;
-    sub = n != null ? `${plural(n, 'matching itinerary', 'matching itineraries')} with the current search`
-                    : `${plural(networkDestinationCount(a.icao), 'destination', 'destinations')} &middot; ${plural(networkOriginCount(a.icao), 'origin', 'origins')} in the network`;
+    sub = n != null ? `${plural(n, 'MATCHING ITINERARY', 'MATCHING ITINERARIES')}`
+                    : `${plural(networkDestinationCount(a.icao), 'DESTINATION', 'DESTINATIONS')} &middot; ${plural(networkOriginCount(a.icao), 'ORIGIN', 'ORIGINS')} IN NETWORK`;
     const depSuffix = n != null && s.destination && !s.origin ? ` (${fmtNum(n)})` : '';
     const destSuffix = n != null && s.origin && !s.destination ? ` (${fmtNum(n)})` : '';
     actions.push(`<button class="action small" type="button" onclick="mapSetAirport('origin','${a.icao}')">SET AS DEPARTURE${depSuffix}</button>`);
@@ -2941,7 +2910,7 @@ async function sendLoadsheetToAircraft(i, checkOnline) {
       return;
     }
     if (data.no_logon) say(`${escText(data.error)}: <a href="#" onclick="renderAccountSettings(); return false;">OPEN SETTINGS</a>`, 'bad');
-    else say(escText(String(data.error || 'Not sent').toUpperCase()), 'bad');
+    else say(escText(String(data.error || 'NOT SENT').toUpperCase()), 'bad');
     if (data.offline) anyway.hidden = false;
   } catch (e) {
     say('NOT SENT. SERVER NOT AVAILABLE', 'bad');
@@ -3633,7 +3602,7 @@ async function renderUserPage() {
           ${fullName ? `<div class="placeholder-text">${escAttr(fullName)}</div>` : ''}
           ${dobLine ? `<div class="placeholder-text">${dobLine}</div>` : ''}
           ${p.nationality ? `<div class="placeholder-text">${escAttr(p.nationality)}</div>` : ''}
-          ${p.preferred_base ? `<div class="placeholder-text">Base: ${escAttr(p.preferred_base)}</div>` : ''}
+          ${p.preferred_base ? `<div class="placeholder-text">BASE ${escAttr(p.preferred_base)}</div>` : ''}
         </div>
       </div>
     </div>
@@ -3642,7 +3611,7 @@ async function renderUserPage() {
       <div class="panel-header">DESTINATIONS REACHED</div>
       <div class="panel-body">
         <div id="destinationsMap" class="route-map destinations-map"></div>
-        <p class="placeholder-text" style="margin-top:6px;">Base airport shown in red</p>
+        <p class="placeholder-text" style="margin-top:6px;">BASE IN RED</p>
       </div>
     </div>
     </div>
@@ -3680,7 +3649,7 @@ function profileStatsSummary() {
   const recent = rows.filter(r => r.date && r.date >= since).length;
   const cell = (label, value) => `<div><span>${label}</span><b>${value}</b></div>`;
   return `<div class="profile-stats-kpis">
-    ${cell('Flights', fmtNum(k.flights))}${cell('Flight time', fmtHours(k.ft))}${cell('Distance', fmtNum(Math.round(k.dist)) + ' nm')}
+    ${cell('FLIGHTS', fmtNum(k.flights))}${cell('FLIGHT TIME', fmtHours(k.ft))}${cell('DISTANCE', fmtNum(Math.round(k.dist)) + ' NM')}
     ${cell('Airports', fmtNum(k.airports))}${cell('Countries', fmtNum(k.countries))}${cell('Last 30 days', fmtNum(recent) + (recent === 1 ? ' flight' : ' flights'))}
   </div>`;
 }
@@ -3703,7 +3672,7 @@ function profileStatsFromLogbook(data) {
 function renderMonthlyChart(monthly) {
   const el = document.getElementById('monthlyChart');
   if (!el) return;
-  if (!monthly.length) { el.innerHTML = '<div class="empty-state">No flights logged yet</div>'; return; }
+  if (!monthly.length) { el.innerHTML = '<div class="empty-state">NO FLIGHTS LOGGED</div>'; return; }
   const recent = monthly.slice(-12);
   const max = Math.max(...recent.map(m => m.flights), 1);
   const bars = recent.map(m => {
@@ -3767,7 +3736,7 @@ async function renderAccountSettings() {
   const aircraftGroupsHtml = carriers.map(c => `
     <div class="gen-items-group-label">${escAttr(c.name.toUpperCase())}</div>
     ${c.fleet.map(ac => `
-      <label class="checkbox-row"><input type="checkbox" class="aircraft-owned-item" value="${escAttr(ac.type)}" ${ownedAircraft.has(ac.type) ? 'checked' : ''}> ${escAttr(ac.type)} <span class="hint">(${ac.seats} seats)</span></label>
+      <label class="checkbox-row"><input type="checkbox" class="aircraft-owned-item" value="${escAttr(ac.type)}" ${ownedAircraft.has(ac.type) ? 'checked' : ''}> ${escAttr(ac.type)} <span class="hint">(${ac.seats} SEATS)</span></label>
     `).join('')}
   `).join('');
 
@@ -3783,7 +3752,7 @@ async function renderAccountSettings() {
           <div>
             <button class="action small" type="button" onclick="document.getElementById('acctPhotoInput').click()">CHANGE PHOTO</button>
             <input type="file" id="acctPhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadAccountPhoto()">
-            <div class="field-note" id="acctPhotoStatus">JPEG, PNG or WebP, up to 2MB</div>
+            <div class="field-note" id="acctPhotoStatus">JPEG, PNG OR WEBP, MAX 2 MB</div>
           </div>
         </div>
         <div class="params-grid">
@@ -3792,30 +3761,30 @@ async function renderAccountSettings() {
           <div class="field"><label for="profileFirstName">FIRST NAME</label><input type="text" id="profileFirstName" autocomplete="off" value="${escAttr(p.first_name)}"></div>
           <div class="field"><label for="profileLastName">LAST NAME</label><input type="text" id="profileLastName" autocomplete="off" value="${escAttr(p.last_name)}"></div>
           <div class="field">
-            <label for="profileBirthDate">BIRTH DATE <span class="hint">(DD/MM/YYYY, optional)</span></label>
+            <label for="profileBirthDate">BIRTH DATE <span class="hint">(DD/MM/YYYY, OPTIONAL)</span></label>
             <input type="text" id="profileBirthDate" autocomplete="off" placeholder="DD/MM/YYYY" maxlength="10" value="${escAttr(isoToDisplayDate(p.birth_date))}">
             <div class="field-error" id="profileBirthDateError">ENTER A VALID DATE AS DD/MM/YYYY</div>
           </div>
           <div class="field">
-            <label for="profileNationality">NATIONALITY <span class="hint">(optional)</span></label>
+            <label for="profileNationality">NATIONALITY <span class="hint">(OPTIONAL)</span></label>
             <select id="profileNationality"><option value="">&mdash;</option>${countryOptions}</select>
           </div>
           <div class="field">
-            <label for="profilePreferredBase">PREFERRED BASE <span class="hint">(optional, ICAO/IATA)</span></label>
+            <label for="profilePreferredBase">PREFERRED BASE <span class="hint">(OPTIONAL, ICAO/IATA)</span></label>
             <input type="text" id="profilePreferredBase" autocomplete="off" maxlength="4" style="text-transform:uppercase;" value="${escAttr(p.preferred_base)}">
             <div class="custom-dropdown" id="profilePreferredBaseDropdown"></div>
           </div>
           <div class="field">
-            <label for="profileSimulator">SIMULATOR <span class="hint">(optional)</span></label>
+            <label for="profileSimulator">SIMULATOR <span class="hint">(OPTIONAL)</span></label>
             <select id="profileSimulator"><option value="">&mdash;</option>${simulatorOptions}</select>
           </div>
           <div class="field">
             <label for="userSimbriefUsername">SIMBRIEF USERNAME</label>
-            <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(simbriefUsername)}" placeholder="e.g. jdoe123">
+            <input type="text" id="userSimbriefUsername" autocomplete="off" value="${escAttr(simbriefUsername)}" placeholder="E.G. JDOE123">
             <div class="field-error" id="userSimbriefUsernameError">3-30 CHARACTERS: LETTERS, NUMBERS, UNDERSCORE OR HYPHEN ONLY</div>
           </div>
         </div>
-        <p class="placeholder-text">Email and username can't be changed here yet</p>
+        <p class="placeholder-text">EMAIL AND USERNAME CANNOT BE CHANGED HERE</p>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="savePilotProfile()">SAVE</button>
           <span class="placeholder-text" id="profileSaveStatus"></span>
@@ -3830,9 +3799,9 @@ async function renderAccountSettings() {
     <div class="panel" id="navigraphPanel" style="margin-top:14px;" hidden>
       <div class="panel-header">SIMBRIEF (NAVIGRAPH)</div>
       <div class="panel-body">
-        <p class="placeholder-text acars-intro">Sign in with your Navigraph account so VirtualDispatch can create your <a href="https://www.simbrief.com" target="_blank" rel="noopener">SimBrief</a> flight plans without leaving the app. A free <a href="https://navigraph.com" target="_blank" rel="noopener">Navigraph</a> account is enough: no subscription needed</p>
+        <p class="placeholder-text acars-intro">SIGN IN WITH NAVIGRAPH TO GENERATE <a href="https://www.simbrief.com" target="_blank" rel="noopener">SIMBRIEF</a> OFPS FROM THE APP WITH OWN AIRFRAMES. A FREE <a href="https://navigraph.com" target="_blank" rel="noopener">NAVIGRAPH</a> ACCOUNT IS SUFFICIENT</p>
         <div class="ng-row">
-          <span class="ng-state" id="navigraphState">Not connected</span>
+          <span class="ng-state" id="navigraphState">NOT CONNECTED</span>
           <a class="ng-signin" id="navigraphSignIn" href="/auth/navigraph/start"><img src="${escAttr(VD_CONFIG.navigraphMarkUrl)}" alt="" width="20" height="20">Sign in with Navigraph</a>
           <button class="ghost" type="button" id="navigraphDisconnect" onclick="disconnectNavigraph()" hidden>DISCONNECT</button>
         </div>
@@ -3843,18 +3812,18 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">ACARS</div>
       <div class="panel-body">
-        <p class="placeholder-text acars-intro">Lets VirtualDispatch send messages such as your loadsheet straight to the aircraft. Use the network your aircraft's ACARS is set to: an aircraft is on one network at a time</p>
+        <p class="placeholder-text acars-intro">UPLINK OF MESSAGES SUCH AS THE LOADSHEET TO THE AIRCRAFT. SELECT THE NETWORK SET IN THE AIRCRAFT ACARS: ONE NETWORK AT A TIME</p>
         <fieldset class="seg-control acars-network" id="acarsNetworkRow" hidden>
           <legend>SEND MESSAGES VIA</legend>
           <label><input type="radio" name="acarsNetwork" value="hoppie" checked onchange="saveAcarsNetwork(this.value)"><span>HOPPIE</span></label>
           <label><input type="radio" name="acarsNetwork" value="sayintentions" onchange="saveAcarsNetwork(this.value)"><span>SAYINTENTIONS</span></label>
         </fieldset>
         <div id="acarsHoppieBlock">
-          <p class="placeholder-text acars-intro">Hoppie's ACARS network: use the same logon code you enter in the aircraft's ACARS settings. It's free: get one at <a href="https://www.hoppie.nl/acars/" target="_blank" rel="noopener">hoppie.nl</a></p>
+          <p class="placeholder-text acars-intro">HOPPIE ACARS NETWORK. USE THE LOGON CODE SET IN THE AIRCRAFT ACARS. FREE CODE AT <a href="https://www.hoppie.nl/acars/" target="_blank" rel="noopener">HOPPIE.NL</a></p>
           <div class="acars-row">
             <div class="field">
               <label for="acarsLogon">HOPPIE LOGON CODE <span class="hint" id="acarsSaved"></span></label>
-              <input type="password" id="acarsLogon" autocomplete="off" spellcheck="false" maxlength="40" placeholder="Paste your logon code">
+              <input type="password" id="acarsLogon" autocomplete="off" spellcheck="false" maxlength="40" placeholder="LOGON CODE">
               <div class="field-error" id="acarsLogonError">6 TO 40 LETTERS AND NUMBERS</div>
             </div>
             <div class="acars-actions">
@@ -3865,11 +3834,11 @@ async function renderAccountSettings() {
           </div>
         </div>
         <div id="acarsSiBlock" hidden>
-          <p class="placeholder-text acars-intro">For pilots flying with SayIntentions' AI controllers, with the aircraft's ACARS set to SayIntentions. Your API key is on the account page of your <a href="https://www.sayintentions.ai" target="_blank" rel="noopener">SayIntentions</a> pilot portal</p>
+          <p class="placeholder-text acars-intro">FOR SAYINTENTIONS AI ATC, WITH AIRCRAFT ACARS SET TO SAYINTENTIONS. API KEY ON THE ACCOUNT PAGE OF THE <a href="https://www.sayintentions.ai" target="_blank" rel="noopener">SAYINTENTIONS</a> PILOT PORTAL</p>
           <div class="acars-row">
             <div class="field">
               <label for="siKey">SAYINTENTIONS API KEY <span class="hint" id="siSaved"></span></label>
-              <input type="password" id="siKey" autocomplete="off" spellcheck="false" maxlength="128" placeholder="Paste your API key">
+              <input type="password" id="siKey" autocomplete="off" spellcheck="false" maxlength="128" placeholder="API KEY">
               <div class="field-error" id="siKeyError">PASTE THE KEY FROM YOUR PILOT PORTAL</div>
             </div>
             <div class="acars-actions">
@@ -3886,7 +3855,7 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">AIRCRAFT YOU FLY</div>
       <div class="panel-body">
-        <p class="placeholder-text">Tell us which aircraft you actually fly/have installed in the simulator - it affects which aircraft gets assigned to your flights (a carrier that flies more than one type, like easyJet, picks between your selections; leave all unchecked for no preference). You can change this any time</p>
+        <p class="placeholder-text">AIRCRAFT INSTALLED IN THE SIMULATOR. ASSIGNMENT USES THESE TYPES WHERE THE AIRLINE OPERATES MORE THAN ONE. NONE SELECTED: NO PREFERENCE</p>
         <div class="gen-items-list" style="max-height:none;">${aircraftGroupsHtml}</div>
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="savePilotProfile()">SAVE</button>
@@ -3898,10 +3867,10 @@ async function renderAccountSettings() {
     <div class="panel" style="margin-top:14px;">
       <div class="panel-header">DISPATCH COMPLICATIONS</div>
       <div class="panel-body">
-        ${renderComplicationCategory('delay', 'DELAYS', "Delays before the first sector of a trip, in realistic proportions. Later sectors only inherit a late inbound aircraft. Times and the SimBrief plan update automatically", genOptions.delay, settings.generation.delay, delaySettingsRow, d => d.code, null, genOptions.default_probability.delay, 'Chance of a delay on the first sector')}
-        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'Late changes to passenger or baggage figures after the loadsheet is prepared, to be amended before sign-off', genOptions.lmc, settings.generation.lmc, lmcSettingsRow, l => l.id, null, genOptions.default_probability.lmc, 'Chance per trip')}
-        ${renderComplicationCategory('mel', 'DEFERRED DEFECTS (MEL)', "Equipment the aircraft may be dispatched without, under conditions. Up to three per trip: some limit the cruise level, add fuel, require ground equipment or rule out certain weather", genOptions.mel, settings.generation.mel, melSettingsRow, m => m.id, m => m.fleet, genOptions.default_probability.mel, 'Chance of at least one deferred defect')}
-        ${renderComplicationCategory('cdl', 'MISSING PANELS (CDL)', 'An external panel or seal missing from the airframe: adds a small fuel penalty and can reduce the weight limits', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, cdlSettingsRow, c => c.id, c => c.fleet, genOptions.default_probability.cdl, 'Chance per trip')}
+        ${renderComplicationCategory('delay', 'DELAYS', "DELAYS BEFORE THE FIRST SECTOR OF A TRIP, IN REALISTIC PROPORTIONS. LATER SECTORS INHERIT A LATE INBOUND AIRCRAFT ONLY. TIMES AND SIMBRIEF PLAN UPDATE AUTOMATICALLY", genOptions.delay, settings.generation.delay, delaySettingsRow, d => d.code, null, genOptions.default_probability.delay, 'PROBABILITY OF FIRST-SECTOR DELAY')}
+        ${renderComplicationCategory('lmc', 'LAST-MINUTE CHANGES (LMC)', 'CHANGES TO PASSENGER OR BAGGAGE FIGURES AFTER LOADSHEET ISSUE, AMENDED BEFORE SIGNATURE', genOptions.lmc, settings.generation.lmc, lmcSettingsRow, l => l.id, null, genOptions.default_probability.lmc, 'PROBABILITY PER TRIP')}
+        ${renderComplicationCategory('mel', 'DEFERRED DEFECTS (MEL)', "INOPERATIVE EQUIPMENT ACCEPTABLE FOR DISPATCH UNDER CONDITIONS. UP TO THREE PER TRIP: CRUISE LEVEL LIMITS, EXTRA FUEL, GROUND EQUIPMENT OR WEATHER RESTRICTIONS", genOptions.mel, settings.generation.mel, melSettingsRow, m => m.id, m => m.fleet, genOptions.default_probability.mel, 'PROBABILITY OF AT LEAST ONE DEFERRED DEFECT')}
+        ${renderComplicationCategory('cdl', 'MISSING PANELS (CDL)', 'MISSING EXTERNAL PANEL OR SEAL: FUEL PENALTY, POSSIBLE WEIGHT LIMIT REDUCTION', genOptions.cdl || [], settings.generation.cdl || {enabled: true, disabled_ids: []}, cdlSettingsRow, c => c.id, c => c.fleet, genOptions.default_probability.cdl, 'PROBABILITY PER TRIP')}
         <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
           <button class="action" onclick="saveGenerationSettings()">SAVE</button>
           <span class="placeholder-text" id="generationSaveStatus"></span>
@@ -3928,17 +3897,17 @@ function renderDeleteAccountPage() {
       </div>
       <div class="panel-body">
         <div id="deleteAccountStep1">
-          <p class="placeholder-text">This permanently deletes your account and every PIREP, stat and setting attached to it. This cannot be undone and this data cannot be recovered</p>
+          <p class="placeholder-text">PERMANENT DELETION OF THE ACCOUNT WITH ALL PIREPS, STATISTICS AND SETTINGS. NOT REVERSIBLE. DATA NOT RECOVERABLE</p>
           <div class="field" style="max-width:260px; margin-bottom:16px;">
-            <label for="deleteConfirmText">Type DELETE to confirm</label>
+            <label for="deleteConfirmText">TYPE DELETE TO CONFIRM</label>
             <input type="text" id="deleteConfirmText" autocomplete="off">
           </div>
           <button class="action danger" type="button" onclick="proceedToDeleteStep2()">CONTINUE</button>
         </div>
         <div id="deleteAccountStep2" style="display:none;">
-          <p class="placeholder-text">Enter your password to permanently delete your account</p>
+          <p class="placeholder-text">ENTER PASSWORD TO DELETE THE ACCOUNT PERMANENTLY</p>
           <div class="field" style="max-width:260px; margin-bottom:16px;">
-            <label for="deletePassword">Password</label>
+            <label for="deletePassword">PASSWORD</label>
             <input type="password" id="deletePassword" autocomplete="off">
           </div>
           <div class="notice-banner" id="deleteError" style="display:none; margin-bottom:16px;"></div>
@@ -3951,7 +3920,7 @@ function renderDeleteAccountPage() {
 
 function proceedToDeleteStep2() {
   if (document.getElementById('deleteConfirmText').value.trim() !== 'DELETE') {
-    alert('Type DELETE exactly (all capitals) to confirm');
+    alert('TYPE DELETE (CAPITALS) TO CONFIRM');
     return;
   }
   document.getElementById('deleteAccountStep1').style.display = 'none';
@@ -3962,15 +3931,15 @@ async function confirmDeleteAccount() {
   const password = document.getElementById('deletePassword').value;
   const errEl = document.getElementById('deleteError');
   errEl.style.display = 'none';
-  if (!password) { errEl.textContent = 'Enter your password'; errEl.style.display = 'block'; return; }
-  if (!confirm('This is final and cannot be undone. Permanently delete your account?')) return;
+  if (!password) { errEl.textContent = 'ENTER PASSWORD'; errEl.style.display = 'block'; return; }
+  if (!confirm('DELETE ACCOUNT PERMANENTLY? NOT REVERSIBLE')) return;
   try {
     const resp = await fetch('/account/delete', {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'password=' + encodeURIComponent(password),
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Could not delete account');
+    if (!resp.ok) throw new Error(data.error || 'ACCOUNT NOT DELETED');
     localStorage.clear();
     window.location.href = '/';
   } catch (err) {
@@ -3990,10 +3959,10 @@ async function uploadAccountPhoto() {
   try {
     const resp = await fetch('/account/photo', { method: 'POST', body: formData });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Upload failed');
+    if (!resp.ok) throw new Error(data.error || 'UPLOAD FAILED');
     currentSettings = data;
     document.getElementById('acctPhotoPreview').innerHTML = avatarHtml(data.profile, 72);
-    status.textContent = 'Photo updated';
+    status.textContent = 'PHOTO UPDATED';
   } catch (err) {
     status.textContent = err.message;
   } finally {
@@ -4009,8 +3978,8 @@ async function sendPasswordReset() {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'email=' + encodeURIComponent(CURRENT_USER_EMAIL),
     });
-    if (!resp.ok) throw new Error('Could not send reset email');
-    status.textContent = `Check ${CURRENT_USER_EMAIL} for a reset link`;
+    if (!resp.ok) throw new Error('RESET EMAIL NOT SENT');
+    status.textContent = `RESET LINK SENT TO ${CURRENT_USER_EMAIL}`;
   } catch (err) {
     status.textContent = err.message;
   }
@@ -4100,48 +4069,48 @@ const NO_WX_LABELS = { TS: 'thunderstorms', ICING: 'icing', LVP: 'low visibility
 function delaySettingsRow(d) {
   const [lo, hi] = d.duration_range_minutes || [0, 0];
   const typical = Math.round(lo + (hi - lo) / 3);
-  const effect = [`Leaves ${lo} to ${hi} min late, usually about ${typical} min`];
-  if (d.atfm) effect.push('Comes with a take-off slot from air traffic control');
-  if (d.code === '77') effect.push('Only when a thunderstorm is reported at the departure airport, and then more likely than not');
-  else if (d.weather_gated) effect.push('Only happens when the weather is actually bad');
-  if (d.code === '83') effect.push('More likely when thunderstorms are reported at the destination');
-  if (d.code === '93') effect.push('First flight of a trip only');
-  const actions = ['Your times and SimBrief plan update automatically', 'If you leave late, pick the reason in your flight report'];
-  if (d.atfm) actions.unshift('Take off between 5 min before and 10 min after your slot');
-  if (d.code === '75') actions.unshift('Allow time for de-icing before departure');
-  if (d.code === '71' || d.code === '72') actions.unshift(`Check the ${d.code === '71' ? 'departure' : 'destination'} weather before planning`);
+  const effect = [`${lo}-${hi} MIN LATE, TYPICALLY ${typical} MIN`];
+  if (d.atfm) effect.push('WITH ATC TAKE-OFF SLOT (CTOT)');
+  if (d.code === '77') effect.push('ONLY WITH THUNDERSTORM REPORTED AT DEP. LIKELY WHEN REPORTED');
+  else if (d.weather_gated) effect.push('ONLY IN ADVERSE WX');
+  if (d.code === '83') effect.push('MORE LIKELY WITH THUNDERSTORMS REPORTED AT ARR');
+  if (d.code === '93') effect.push('FIRST SECTOR OF A TRIP ONLY');
+  const actions = ['TIMES AND SIMBRIEF PLAN UPDATE AUTOMATICALLY', 'IF LATE OFF-BLOCK, CODE THE DELAY IN THE PIREP'];
+  if (d.atfm) actions.unshift('TAKE-OFF WITHIN CTOT -5/+10 MIN');
+  if (d.code === '75') actions.unshift('ALLOW TIME FOR DE-ICING BEFORE DEPARTURE');
+  if (d.code === '71' || d.code === '72') actions.unshift(`CHECK ${d.code === '71' ? 'DEP' : 'ARR'} WX BEFORE PLANNING`);
   return { item: `<b>${escText(d.plain || d.description)}</b><span class="tech-tag">CODE ${escText(d.code)}</span>`,
-    description: escText(d.plain ? `Delay reason: ${d.plain.charAt(0).toLowerCase()}${d.plain.slice(1)}` : d.description),
+    description: escText(d.plain ? `DELAY REASON: ${d.plain}` : d.description),
     effect: effect.join('<br>'), actions };
 }
 function lmcSettingsRow(l) {
   const [a, b] = l.delta_range || [0, 0];
   const fmt = n => (n > 0 ? '+' : n < 0 ? '&minus;' : '') + Math.abs(n);
-  const range = a === b ? fmt(a) : `${fmt(a)} to ${fmt(b)}`;
+  const range = a === b ? fmt(a) : `${fmt(a)} TO ${fmt(b)}`;
   const pax = l.type === 'pax_change';
-  const when = l.needs_full_flight ? '<br>Only on a full flight' : l.needs_free_seats ? '<br>Only when seats are free' : '';
+  const when = l.needs_full_flight ? '<br>FULL FLIGHTS ONLY' : l.needs_free_seats ? '<br>ONLY WITH FREE SEATS' : '';
   return {
-    item: `<b>${pax ? 'Passengers' : 'Bags and cargo'}</b>`, description: escText(l.description),
-    effect: `${range} ${escText(l.unit)} after the loadsheet is ready${when}`,
-    actions: l.delta_range[1] > 0 ? ['Accept or decline it on the loadsheet before you sign', 'Extra load over the weight limits can only be declined']
-                 : ['Acknowledge it on the loadsheet: offloaded passengers and bags always come off'],
+    item: `<b>${pax ? 'PASSENGERS' : 'BAGS AND CARGO'}</b>`, description: escText(l.description),
+    effect: `${range} ${escText(String(l.unit).toUpperCase())} AFTER LOADSHEET ISSUE${when}`,
+    actions: l.delta_range[1] > 0 ? ['ACCEPT OR DECLINE ON THE LOADSHEET BEFORE SIGNATURE', 'LOAD ABOVE WEIGHT LIMITS: DECLINE ONLY']
+                 : ['ACKNOWLEDGE ON THE LOADSHEET. OFFLOADED PASSENGERS AND BAGS ALWAYS COME OFF'],
   };
 }
 function melEffectLines(e) {
   const out = [];
-  if (e.max_fl) out.push(`Cruise no higher than FL${e.max_fl} (set in SimBrief)`);
-  if (e.extra_fuel_min) out.push(`${e.extra_fuel_min} min of extra fuel (added in SimBrief)`);
-  if (e.min_main_tank_fuel_kg) out.push(`Each wing tank needs at least ${fmtNum(e.min_main_tank_fuel_kg.takeoff)} kg at take-off and ${fmtNum(e.min_main_tank_fuel_kg.landing)} kg at landing`);
-  if (e.centre_tank_empty) out.push(`Centre tank can't be used${e.max_fuel_kg ? ` (about ${fmtNum(e.max_fuel_kg)} kg of fuel at most)` : ''}`);
-  if (e.ground_support && e.ground_support.length) out.push(`Requires ${e.ground_support.map(g => g === 'GPU' ? 'a ground power unit (GPU)' : 'an air start unit (ASU)').join(' and ')} on every stand`);
-  if (e.no_wx && e.no_wx.length) out.push(`Can't fly into ${e.no_wx.map(c => NO_WX_LABELS[c] || c).join(', ')}`);
-  if (e.performance) out.push('Needs more runway for take-off and landing');
-  if (e.cargo_hold_empty) out.push('One cargo hold must stay empty');
+  if (e.max_fl) out.push(`MAX FL${e.max_fl} (SET IN SIMBRIEF)`);
+  if (e.extra_fuel_min) out.push(`EXTRA FUEL ${e.extra_fuel_min} MIN (ADDED IN SIMBRIEF)`);
+  if (e.min_main_tank_fuel_kg) out.push(`MIN ${fmtNum(e.min_main_tank_fuel_kg.takeoff)} KG PER WING TANK AT TAKE-OFF, ${fmtNum(e.min_main_tank_fuel_kg.landing)} KG AT LANDING`);
+  if (e.centre_tank_empty) out.push(`CENTRE TANK UNUSABLE${e.max_fuel_kg ? ` (MAX FUEL APPROX ${fmtNum(e.max_fuel_kg)} KG)` : ''}`);
+  if (e.ground_support && e.ground_support.length) out.push(`${e.ground_support.join(' AND ')} REQUIRED ON EVERY STAND`);
+  if (e.no_wx && e.no_wx.length) out.push(`NO FLIGHT INTO ${e.no_wx.map(c => NO_WX_LABELS[c] || c).join(', ').toUpperCase()}`);
+  if (e.performance) out.push('INCREASED TAKE-OFF AND LANDING DISTANCE');
+  if (e.cargo_hold_empty) out.push('ONE CARGO HOLD EMPTY');
   return out;
 }
 function melSettingsRow(m) {
   const out = melEffectLines(m.effects || {});
-  if (!out.length) out.push('No effect on how you fly');
+  if (!out.length) out.push('NO OPERATIONAL EFFECT');
   return {
     item: `<b>${escText(m.name || m.system)}</b>`,
     description: escText(m.plain || m.description),
@@ -4151,9 +4120,9 @@ function melSettingsRow(m) {
 }
 function cdlSettingsRow(c) {
   const e = c.effects || {}, out = [];
-  if (e.fuel_burn_pct) out.push(`Burns ${e.fuel_burn_pct}% more fuel`);
-  if (e.weight_penalty_kg) out.push(`Maximum weights ${e.weight_penalty_kg} kg lower`);
-  if (!out.length) out.push('No effect');
+  if (e.fuel_burn_pct) out.push(`FUEL BURN +${e.fuel_burn_pct}%`);
+  if (e.weight_penalty_kg) out.push(`MAX WEIGHTS -${e.weight_penalty_kg} KG`);
+  if (!out.length) out.push('NO EFFECT');
   return { item: `<b>${escText(c.name || c.part)}</b>`, description: escText(c.plain || c.description), effect: out.join('<br>'),
     actions: (c.steps || (c.note ? [c.note] : [])).map(escText) };
 }
@@ -4189,9 +4158,9 @@ async function saveGenerationSettings() {
     const resp = await fetch('/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
     if (!resp.ok) throw new Error('save failed');
     currentSettings = await resp.json();
-    document.getElementById('generationSaveStatus').textContent = 'SAVED.';
+    document.getElementById('generationSaveStatus').textContent = 'SAVED';
   } catch (err) {
-    alert('Could not save these settings. Check the connection (and that a database is configured) and retry');
+    alert('SETTINGS NOT SAVED. CHECK CONNECTION, THEN RETRY');
   }
 }
 
@@ -4199,11 +4168,11 @@ async function saveGenerationSettings() {
 // The sign-in happens on navigraph.com, which sends the pilot back to the
 // app with ?navigraph=<result>; the tokens stay on the server. ----
 const NAVIGRAPH_RESULTS = {
-  connected: ['Connected: VirtualDispatch can now reach your SimBrief account', 'ok'],
-  cancelled: ['Sign-in cancelled on Navigraph', ''],
-  expired: ['The sign-in took too long or was started in another browser. Try again', 'bad'],
-  failed: ['Navigraph didn\'t complete the sign-in. Try again in a minute', 'bad'],
-  unavailable: ['Sign in with Navigraph isn\'t available yet', 'bad'],
+  connected: ['CONNECTED. SIMBRIEF ACCOUNT LINKED', 'ok'],
+  cancelled: ['SIGN-IN CANCELLED ON NAVIGRAPH', ''],
+  expired: ['SIGN-IN TIMED OUT OR STARTED IN ANOTHER BROWSER. RETRY', 'bad'],
+  failed: ['NAVIGRAPH SIGN-IN NOT COMPLETED. RETRY IN 1 MIN', 'bad'],
+  unavailable: ['NAVIGRAPH SIGN-IN NOT AVAILABLE', 'bad'],
 };
 let navigraphResult = '';
 let navigraphWhy = '';   // Navigraph's error code when the sign-in failed, e.g. invalid_client
@@ -4219,7 +4188,7 @@ function paintNavigraph(status) {
   if (!panel) return;
   panel.hidden = !status.available && !status.connected;
   document.getElementById('navigraphState').innerHTML = status.connected
-    ? `Connected as <strong>${escText(status.name || 'your Navigraph account')}</strong>` : 'Not connected';
+    ? `CONNECTED AS <strong>${escText(String(status.name || 'NAVIGRAPH ACCOUNT').toUpperCase())}</strong>` : 'NOT CONNECTED';
   document.getElementById('navigraphSignIn').hidden = status.connected || !status.available;
   document.getElementById('navigraphDisconnect').hidden = !status.connected;
 }
@@ -4234,20 +4203,20 @@ async function loadNavigraphStatus() {
   navigraphResult = navigraphWhy = '';
   if (result && document.getElementById('navigraphPanel')) {
     document.getElementById('navigraphPanel').hidden = false;
-    navigraphMessage(why ? `${result[0]} (reason: ${why})` : result[0], result[1]);
+    navigraphMessage(why ? `${result[0]} (REASON: ${why.toUpperCase()})` : result[0], result[1]);
     document.getElementById('navigraphPanel').scrollIntoView({ block: 'center' });
   }
 }
 
 async function disconnectNavigraph() {
-  if (!confirm('Disconnect your Navigraph account from VirtualDispatch?')) return;
+  if (!confirm('DISCONNECT NAVIGRAPH ACCOUNT?')) return;
   try {
     const resp = await fetch('/navigraph/disconnect', { method: 'POST' });
     if (!resp.ok) throw new Error('disconnect failed');
     paintNavigraph(await resp.json());
-    navigraphMessage('Disconnected');
+    navigraphMessage('DISCONNECTED');
   } catch (e) {
-    navigraphMessage('Not disconnected: the server can\'t be reached', 'bad');
+    navigraphMessage('NOT DISCONNECTED. SERVER NOT AVAILABLE', 'bad');
   }
 }
 
@@ -4266,7 +4235,7 @@ function paintAcars(status) {
   acarsNetwork = status.network || 'hoppie';
   const saved = document.getElementById('acarsSaved');
   if (!saved) return;
-  saved.textContent = status.configured ? `(saved: ${status.hint})` : '(not set)';
+  saved.textContent = status.configured ? `(SAVED: ${status.hint})` : '(NOT SET)';
   document.getElementById('acarsTestBtn').disabled = !status.configured;
   document.getElementById('acarsRemoveBtn').hidden = !status.configured;
   const si = status.si_available, onSi = si && status.network === 'sayintentions';
@@ -4274,7 +4243,7 @@ function paintAcars(status) {
   document.querySelectorAll('input[name=acarsNetwork]').forEach(r => { r.checked = r.value === (onSi ? 'sayintentions' : 'hoppie'); });
   document.getElementById('acarsHoppieBlock').hidden = onSi;
   document.getElementById('acarsSiBlock').hidden = !onSi;
-  document.getElementById('siSaved').textContent = status.si_configured ? `(saved: ${status.si_hint})` : '(not set)';
+  document.getElementById('siSaved').textContent = status.si_configured ? `(SAVED: ${status.si_hint})` : '(NOT SET)';
   document.getElementById('siTestBtn').disabled = !status.si_configured;
   document.getElementById('siRemoveBtn').hidden = !status.si_configured;
 }
@@ -4283,12 +4252,12 @@ async function postAcars(url, body, okText) {
   try {
     const resp = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
     const data = await resp.json();
-    if (!resp.ok) { acarsMessage(data.error || 'Not saved', 'bad'); return false; }
+    if (!resp.ok) { acarsMessage(data.error || 'NOT SAVED', 'bad'); return false; }
     paintAcars(data);
     if (okText) acarsMessage(okText, 'ok');
     return true;
   } catch (e) {
-    acarsMessage('Not saved: the server can\'t be reached', 'bad');
+    acarsMessage('NOT SAVED. SERVER NOT AVAILABLE', 'bad');
     return false;
   }
 }
@@ -4296,7 +4265,7 @@ async function postAcars(url, body, okText) {
 async function saveAcarsNetwork(network) {
   acarsMessage('');
   await postAcars('/acars/network', { network },
-    network === 'sayintentions' ? 'Messages now go via SayIntentions' : 'Messages now go via Hoppie');
+    network === 'sayintentions' ? 'MESSAGES NOW VIA SAYINTENTIONS' : 'MESSAGES NOW VIA HOPPIE');
 }
 
 async function saveSiKey() {
@@ -4305,13 +4274,13 @@ async function saveSiKey() {
   const valid = /^[A-Za-z0-9_-]{8,128}$/.test(key);
   document.getElementById('siKeyError').classList.toggle('show', !valid);
   if (!valid) return;
-  acarsMessage('Saving...');
-  if (await postAcars('/acars/sayintentions', { api_key: key }, 'Saved. Send a test message to check it reaches the aircraft')) input.value = '';
+  acarsMessage('SAVING\u2026');
+  if (await postAcars('/acars/sayintentions', { api_key: key }, 'SAVED. SEND A TEST MESSAGE TO VERIFY RECEPTION IN THE AIRCRAFT')) input.value = '';
 }
 
 async function removeSiKey() {
-  if (!confirm('Remove your SayIntentions API key from VirtualDispatch?')) return;
-  if (await postAcars('/acars/sayintentions', { api_key: '' })) acarsMessage('Removed');
+  if (!confirm('REMOVE SAYINTENTIONS API KEY?')) return;
+  if (await postAcars('/acars/sayintentions', { api_key: '' })) acarsMessage('REMOVED');
 }
 
 function acarsMessage(text, kind) {
@@ -4333,26 +4302,26 @@ async function saveAcarsLogon() {
   const valid = /^[A-Za-z0-9]{6,40}$/.test(code);
   document.getElementById('acarsLogonError').classList.toggle('show', !valid);
   if (!valid) return;
-  acarsMessage('Saving...');
+  acarsMessage('SAVING\u2026');
   try {
     const resp = await fetch('/acars/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ logon: code }) });
     const data = await resp.json();
-    if (!resp.ok) { acarsMessage(data.error || 'Not saved', 'bad'); return; }
+    if (!resp.ok) { acarsMessage(data.error || 'NOT SAVED', 'bad'); return; }
     input.value = '';
     paintAcars(data);
-    acarsMessage('Saved. Test the connection to check the code', 'ok');
+    acarsMessage('SAVED. TEST CONNECTION TO VERIFY THE CODE', 'ok');
   } catch (e) {
-    acarsMessage('Not saved: the server can\'t be reached', 'bad');
+    acarsMessage('NOT SAVED. SERVER NOT AVAILABLE', 'bad');
   }
 }
 
 async function removeAcarsLogon() {
-  if (!confirm('Remove your Hoppie logon code from VirtualDispatch?')) return;
+  if (!confirm('REMOVE HOPPIE LOGON CODE?')) return;
   try {
     const resp = await fetch('/acars/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ logon: '' }) });
-    if (resp.ok) { paintAcars(await resp.json()); acarsMessage('Removed'); }
+    if (resp.ok) { paintAcars(await resp.json()); acarsMessage('REMOVED'); }
   } catch (e) {
-    acarsMessage('Not removed: the server can\'t be reached', 'bad');
+    acarsMessage('NOT REMOVED. SERVER NOT AVAILABLE', 'bad');
   }
 }
 
@@ -4360,14 +4329,14 @@ async function testAcars(network = 'hoppie') {
   const si = network === 'sayintentions';
   const btn = document.getElementById(si ? 'siTestBtn' : 'acarsTestBtn');
   btn.disabled = true;
-  acarsMessage(si ? 'Sending a test message through SayIntentions...' : 'Contacting Hoppie...');
+  acarsMessage(si ? 'SENDING TEST MESSAGE VIA SAYINTENTIONS\u2026' : 'CONTACTING HOPPIE\u2026');
   try {
     const resp = await fetch('/acars/test', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ network }) });
     const data = await resp.json();
-    const ok = si ? 'Sent: with SayIntentions connected, the aircraft receives a test telex' : 'Connected: Hoppie accepted your logon code';
-    acarsMessage(data.ok ? ok : (data.error || 'Test failed'), data.ok ? 'ok' : 'bad');
+    const ok = si ? 'SENT. WITH SAYINTENTIONS CONNECTED, THE AIRCRAFT RECEIVES A TEST TELEX' : 'CONNECTED. HOPPIE LOGON CODE ACCEPTED';
+    acarsMessage(data.ok ? ok : (data.error || 'TEST FAILED'), data.ok ? 'ok' : 'bad');
   } catch (e) {
-    acarsMessage('Test failed: the server can\'t be reached', 'bad');
+    acarsMessage('TEST FAILED. SERVER NOT AVAILABLE', 'bad');
   }
   btn.disabled = false;
 }
@@ -4407,10 +4376,10 @@ async function savePilotProfile() {
     currentSettings = await resp.json();
     if (username) localStorage.setItem(SIMBRIEF_USERNAME_KEY, username);
     else localStorage.removeItem(SIMBRIEF_USERNAME_KEY);
-    document.getElementById('profileSaveStatus').textContent = 'SAVED.';
-    document.getElementById('aircraftOwnedSaveStatus').textContent = 'SAVED.';
+    document.getElementById('profileSaveStatus').textContent = 'SAVED';
+    document.getElementById('aircraftOwnedSaveStatus').textContent = 'SAVED';
   } catch (err) {
-    alert('Could not save the profile. Check the connection (and that a database is configured) and retry');
+    alert('PROFILE NOT SAVED. CHECK CONNECTION, THEN RETRY');
   }
 }
 
@@ -4476,14 +4445,14 @@ function togglePirepRecord(id) {
 }
 
 async function deletePirepRecord(id) {
-  if (!confirm('Delete this PIREP record? This cannot be undone')) return;
+  if (!confirm('DELETE THIS PIREP? NOT REVERSIBLE')) return;
   try {
     const resp = await fetch('/pireps/' + encodeURIComponent(id), { method: 'DELETE' });
     if (!resp.ok) throw new Error('delete failed');
     if (expandedPirepId === id) expandedPirepId = null;
     loadPirepLog();
   } catch (err) {
-    alert('Could not delete this record. Check the connection and retry');
+    alert('PIREP NOT DELETED. CHECK CONNECTION, THEN RETRY');
   }
 }
 
@@ -4538,7 +4507,7 @@ async function sendReport(event) {
   const status = document.getElementById('reportStatus');
   const say = (text, kind) => { status.textContent = text; status.className = 'acars-status' + (kind ? ' ' + kind : ''); };
   const message = document.getElementById('reportMessage').value.trim();
-  if (message.length < 10) { say('Tell us a little more: at least 10 characters', 'bad'); return; }
+  if (message.length < 10) { say('DESCRIBE THE PROBLEM: MIN 10 CHARACTERS', 'bad'); return; }
   const body = {
     category: document.getElementById('reportCategory').value,
     message,
@@ -4552,21 +4521,21 @@ async function sendReport(event) {
   };
   const btn = document.getElementById('reportSend');
   btn.disabled = true;
-  say('Sending...');
+  say('SENDING\u2026');
   try {
     const resp = await fetch('/reports', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
     const data = await resp.json();
-    if (!resp.ok) { say(data.error || 'Not sent', 'bad'); btn.disabled = false; return; }
+    if (!resp.ok) { say(data.error || 'NOT SENT', 'bad'); btn.disabled = false; return; }
     document.getElementById('reportForm').reset();
-    say(`Sent, thank you. Reference ${data.reference}`, 'ok');
+    say(`SENT. REFERENCE ${data.reference}`, 'ok');
   } catch (e) {
-    say('Not sent: the server can\'t be reached', 'bad');
+    say('NOT SENT. SERVER NOT AVAILABLE', 'bad');
     btn.disabled = false;
   }
 }
 
 function startNewFlight() {
-  if (!confirm('Are you sure? This will discard the current flight')) return;
+  if (!confirm('DISCARD THE CURRENT FLIGHT?')) return;
   clearActiveFlight();
   renderSearchUI();
 }
@@ -4594,7 +4563,7 @@ const STATS_TABS = [['overview', 'OVERVIEW'], ['fleet', 'FLEET & AIRLINES'], ['g
 const STATS_METRICS = {
   flights: { label: 'FLIGHTS', value: rows => rows.length, fmt: v => fmtNum(v) },
   ft: { label: 'FLIGHT TIME', value: rows => sumOf(rows, 'ft'), fmt: v => fmtHours(v) },
-  dist: { label: 'DISTANCE', value: rows => sumOf(rows, 'dist'), fmt: v => fmtNum(Math.round(v)) + ' nm' },
+  dist: { label: 'DISTANCE', value: rows => sumOf(rows, 'dist'), fmt: v => fmtNum(Math.round(v)) + ' NM' },
   pax: { label: 'PASSENGERS', value: rows => sumOf(rows, 'pax'), fmt: v => fmtNum(v) },
 };
 const STAT_BLUE = '#2a78d6', STAT_ORANGE = '#eb6834';
@@ -4823,11 +4792,11 @@ function renderStatsBody() {
   const content = document.getElementById('stContent');
   if (statsMap) { statsMap.remove(); statsMap = null; }
   if (!all.length) {
-    content.innerHTML = `<div class="empty-state">No flights logged yet. File a PIREP at the end of a flight and it appears here</div>`;
+    content.innerHTML = `<div class="empty-state">NO FLIGHTS LOGGED. FILED PIREPS APPEAR HERE</div>`;
     return;
   }
   if (!rows.length) {
-    content.innerHTML = `<div class="empty-state">No flights match this date range and these filters</div>`;
+    content.innerHTML = `<div class="empty-state">NO FLIGHTS FOR THIS DATE RANGE AND FILTERS</div>`;
     return;
   }
   const views = { overview: statsOverview, fleet: statsFleet, geo: statsGeo, airports: statsAirports, ops: statsOperations, load: statsLoadFuel, records: statsRecords, logbook: statsLogbook };
@@ -4838,31 +4807,31 @@ function renderStatsKpis(rows, prevRows, range) {
   const k = statsKpis(rows), p = prevRows ? statsKpis(prevRows) : null;
   // One grey line per tile: the change vs the previous period when there
   // is one (the full period name is in its tooltip), else the tile's note.
-  const periodName = { '7d': 'the previous 7 days', '30d': 'the previous 30 days', '90d': 'the previous 90 days', ytd: 'the same number of days before', '12m': 'the previous 12 months', custom: 'the previous period of the same length' }[statsState.preset];
+  const periodName = { '7d': 'PREVIOUS 7 DAYS', '30d': 'PREVIOUS 30 DAYS', '90d': 'PREVIOUS 90 DAYS', ytd: 'SAME NUMBER OF DAYS BEFORE', '12m': 'PREVIOUS 12 MONTHS', custom: 'PREVIOUS PERIOD OF SAME LENGTH' }[statsState.preset];
   const delta = (key, points) => {
     if (!p || k[key] == null || p[key] == null) return '';
     const arrow = d => d > 0 ? '&#9650; +' : d < 0 ? '&#9660; ' : '';
-    if (points) { const d = k[key] - p[key]; return `${arrow(d)}${d} pts vs previous`; }
-    if (!p[key]) return k[key] ? 'new vs previous' : '';
+    if (points) { const d = k[key] - p[key]; return `${arrow(d)}${d} PTS VS PREVIOUS`; }
+    if (!p[key]) return k[key] ? 'NEW VS PREVIOUS' : '';
     const d = Math.round(((k[key] - p[key]) / p[key]) * 100);
-    return `${arrow(d)}${d}% vs previous`;
+    return `${arrow(d)}${d}% VS PREVIOUS`;
   };
   const tile = (label, value, key, note = '', points = false, noteTitle = '') => {
     const d = delta(key, points);
     const line = d || note;
-    const title = d ? `Compared with ${periodName}` : noteTitle;
+    const title = d ? `VS ${periodName}` : noteTitle;
     return `<div class="st-kpi"><span class="st-kpi-label">${label}</span><span class="st-kpi-value">${value}</span>${line ? `<span class="st-delta"${title ? ` title="${escAttr(title)}"` : ''}>${line}</span>` : ''}</div>`;
   };
-  const estTitle = 'PIREPs without actual block times count their scheduled block time';
+  const estTitle = 'PIREPS WITHOUT ACTUAL BLOCK TIMES COUNT SCHEDULED BLOCK TIME';
   document.getElementById('stKpis').innerHTML = [
     tile('Flights', fmtNum(k.flights), 'flights'),
-    tile('Flight time', fmtHours(k.ft) + (k.est && p ? `<sup class="st-est" title="${k.est} estimated: ${estTitle}">*</sup>` : ''), 'ft', k.est ? `${k.est} estimated` : '', false, estTitle),
+    tile('Flight time', fmtHours(k.ft) + (k.est && p ? `<sup class="st-est" title="${k.est} ESTIMATED: ${estTitle}">*</sup>` : ''), 'ft', k.est ? `${k.est} ESTIMATED` : '', false, estTitle),
     tile('Air time', fmtHours(k.air), 'air'),
-    tile('Distance', fmtNum(Math.round(k.dist)) + ' nm', 'dist'),
+    tile('Distance', fmtNum(Math.round(k.dist)) + ' NM', 'dist'),
     tile('Passengers', fmtNum(k.pax), 'pax'),
     tile('Airports', fmtNum(k.airports), 'airports'),
     tile('Countries', fmtNum(k.countries), 'countries'),
-    tile('On-time departures', k.otp == null ? '&mdash;' : k.otp + '%', 'otp', 'within 15 min', true, 'Off-block within 15 minutes of schedule'),
+    tile('On-time departures', k.otp == null ? '&mdash;' : k.otp + '%', 'otp', 'WITHIN 15 MIN', true, 'OFF-BLOCK WITHIN 15 MIN OF SCHEDULE'),
   ].join('');
 }
 
@@ -4884,7 +4853,7 @@ function statsTip(e, html) {
 function statsBars(items, { value, fmt, onPick, pickLabel }) {
   const max = Math.max(...items.map(value), 1);
   return `<div class="st-bars">${items.map((it, i) => `
-    <button type="button" class="st-bar-row"${onPick ? ` onclick="${onPick(it)}" title="${escAttr(pickLabel || 'Filter by this')}"` : ' disabled'}>
+    <button type="button" class="st-bar-row"${onPick ? ` onclick="${onPick(it)}" title="${escAttr(pickLabel || 'FILTER BY THIS')}"` : ' disabled'}>
       <span class="st-bar-label">${it.label}</span>
       <span class="st-bar-track"><span class="st-bar-fill" style="width:${Math.max(1, (value(it) / max) * 100)}%"></span></span>
       <span class="st-bar-value">${fmt(value(it))}</span>
@@ -4913,7 +4882,7 @@ function statsOverview(el, rows, range, group) {
           <div class="st-seg" role="group" aria-label="Measure">${Object.entries(STATS_METRICS).map(([k, m]) => `<button type="button" class="st-chip${k === s.metric && !s.timelineTable ? ' on' : ''}" aria-pressed="${k === s.metric && !s.timelineTable}"${s.timelineTable ? ' disabled title="The table shows every measure"' : ''} onclick="statsState.metric='${k}'; renderStatsBody()">${m.label}</button>`).join('')}
             <label class="switch-row st-switch"><span class="switch-toggle"><input type="checkbox" id="stTableSwitch"${s.timelineTable ? ' checked' : ''} onchange="statsState.timelineTable = this.checked; renderStatsBody()"><span class="track"></span></span>TABLE</label></div>
         </div>
-        <p class="st-hint">${s.timelineTable ? 'Every measure per period, with periods that have flights' : group === 'day' ? 'Hover a bar for its flights' : 'Click a bar to zoom into that period'}</p>
+        <p class="st-hint">${s.timelineTable ? 'ALL MEASURES PER PERIOD WITH FLIGHTS' : group === 'day' ? 'HOVER A BAR FOR ITS FLIGHTS' : 'SELECT A BAR TO ZOOM INTO THE PERIOD'}</p>
         <div class="st-timeline" id="stTimeline"></div>
       </section>
       <section class="st-card">
@@ -4973,7 +4942,7 @@ function statsTimelineChart(host, buckets, group) {
   host.querySelectorAll('.st-hit').forEach(hit => {
     const b = buckets[+hit.dataset.i], v = values[+hit.dataset.i];
     const html = () => `<b>${m.fmt(v)}</b><span>${escText(bucketLabel(b.start, group))}</span>` + (group === 'day' && b.rows.length
-      ? `<ul>${b.rows.slice(0, 6).map(r => `<li>${escText(r.fn)} ${r.dep}&rarr;${r.arr}</li>`).join('')}</ul>` : '') + (group !== 'day' && b.rows.length ? '<em>Click to zoom in</em>' : '');
+      ? `<ul>${b.rows.slice(0, 6).map(r => `<li>${escText(r.fn)} ${r.dep}&rarr;${r.arr}</li>`).join('')}</ul>` : '') + (group !== 'day' && b.rows.length ? '<em>SELECT TO ZOOM IN</em>' : '');
     hit.addEventListener('pointermove', e => { hit.classList.add('on'); statsTip(e, html()); });
     hit.addEventListener('pointerleave', () => { hit.classList.remove('on'); statsTip(null, ''); });
     hit.addEventListener('focus', e => statsTip({ target: hit }, html()));
@@ -5001,7 +4970,7 @@ function statsFleet(el, rows) {
   const line = (label, rs, pick, cls) => `<tr class="${cls || ''}"${pick ? ` onclick="${pick}" tabindex="0" title="Filter by this"` : ''}>
       <td>${label}</td><td class="num">${fmtNum(rs.length)}</td><td class="num">${fmtHours(sumOf(rs, 'ft'))}</td>
       <td class="st-share"><span class="st-bar-track"><span class="st-bar-fill" style="width:${(sumOf(rs, 'ft') / ftTotal) * 100}%"></span></span>${Math.round((sumOf(rs, 'ft') / ftTotal) * 100)}%</td>
-      <td class="num">${avg(rs, 'dist') != null ? fmtNum(Math.round(avg(rs, 'dist'))) + ' nm' : '&mdash;'}</td><td class="num">${avg(rs, 'ft') != null ? fmtHours(avg(rs, 'ft')) : '&mdash;'}</td></tr>`;
+      <td class="num">${avg(rs, 'dist') != null ? fmtNum(Math.round(avg(rs, 'dist'))) + ' NM' : '&mdash;'}</td><td class="num">${avg(rs, 'ft') != null ? fmtHours(avg(rs, 'ft')) : '&mdash;'}</td></tr>`;
   const head = (first) => `<thead><tr><th>${first}</th><th class="num">FLIGHTS</th><th class="num">FLIGHT TIME</th><th>SHARE OF TIME</th><th class="num">AVG SECTOR</th><th class="num">AVG FLIGHT</th></tr></thead>`;
   const carriers = [...groupRows(rows, r => r.carrier)].sort((a, b) => b[1].length - a[1].length);
   el.innerHTML = `
@@ -5032,7 +5001,7 @@ function statsGeo(el, rows) {
   const dom = rows.filter(isDomestic).length;
   el.innerHTML = `
     <div class="st-grid st-grid-geo">
-      <section class="st-card st-card-grow"><h3>ROUTES FLOWN</h3><p class="st-hint">Line weight grows with flights on the route; circle size with airport movements. Click an airport to filter</p><div class="st-map" id="stMap"></div></section>
+      <section class="st-card st-card-grow"><h3>ROUTES FLOWN</h3><p class="st-hint">LINE WEIGHT: FLIGHTS ON ROUTE. CIRCLE SIZE: AIRPORT MOVEMENTS. SELECT AN AIRPORT TO FILTER</p><div class="st-map" id="stMap"></div></section>
       <section class="st-card st-card-scroll">
         <h3>DOMESTIC / INTERNATIONAL</h3>
         ${statsSplit([{ label: 'Domestic', n: dom, color: STAT_BLUE, pick: 'domestic' }, { label: 'International', n: rows.length - dom, color: STAT_ORANGE, pick: 'international' }])}
@@ -5053,7 +5022,7 @@ function statsGeo(el, rows) {
     const [a, b] = key.split('-').map(statsAirport);
     if (a.lat == null || b.lat == null) return;
     L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: STAT_BLUE, weight: 1.5 + Math.min(4, Math.log2(rs.length)), opacity: 0.55 })
-      .bindTooltip(`<b>${rs.length}</b> ${rs.length === 1 ? 'flight' : 'flights'} &middot; ${key.replace('-', ' &ndash; ')}`, { sticky: true }).addTo(statsMap);
+      .bindTooltip(`<b>${rs.length}</b> ${rs.length === 1 ? 'FLIGHT' : 'FLIGHTS'} &middot; ${key.replace('-', ' &ndash; ')}`, { sticky: true }).addTo(statsMap);
   });
   const maxMoves = Math.max(...moves.values());
   moves.forEach((n, icao) => {
@@ -5079,18 +5048,18 @@ function statsAirports(el, rows, range) {
   const routes = [...groupRows(rows, r => [r.dep, r.arr].sort().join('-'))].map(([k, rs]) => ({ k, rs, dist: rs.find(r => r.dist != null)?.dist ?? null }));
   const byDist = rows.filter(r => r.dist != null).sort((a, b) => b.dist - a.dist);
   const apLabel = a => `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`;
-  const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} nm</td><td class="num">${fmtDay(r.date)}</td></tr>`;
+  const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} NM</td><td class="num">${fmtDay(r.date)}</td></tr>`;
   el.innerHTML = `
     <div class="st-grid st-grid-3">
       <section class="st-card st-card-scroll"><h3>AIRPORTS <span class="st-muted">${ap.size}</span></h3><div class="st-scroll"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEP</th><th class="num">ARR</th><th class="num">FIRST VISIT</th></tr></thead><tbody>
         ${[...ap].sort((a, b) => (b[1].dep + b[1].arr) - (a[1].dep + a[1].arr)).map(([a, c]) => `<tr onclick="setStatsFilter('airport', '${a}')" tabindex="0" title="Filter by this"><td>${apLabel(a)}<span class="st-sub">${escText(countryName(statsAirport(a).country))}</span></td><td class="num">${c.dep}</td><td class="num">${c.arr}</td><td class="num">${fmtDay(firstSeen[a])}</td></tr>`).join('')}
       </tbody></table></div></section>
       <section class="st-card st-card-scroll"><h3>ROUTES <span class="st-muted">${routes.length}</span></h3><div class="st-scroll"><table class="st-table"><thead><tr><th>CITY PAIR</th><th class="num">FLIGHTS</th><th class="num">DISTANCE</th></tr></thead><tbody>
-        ${routes.sort((a, b) => b.rs.length - a.rs.length || (b.dist || 0) - (a.dist || 0)).map(x => { const [a, b] = x.k.split('-'); return `<tr><td>${apLabel(a)} &ndash; ${apLabel(b)}</td><td class="num">${x.rs.length}</td><td class="num">${x.dist != null ? fmtNum(x.dist) + ' nm' : '&mdash;'}</td></tr>`; }).join('')}
+        ${routes.sort((a, b) => b.rs.length - a.rs.length || (b.dist || 0) - (a.dist || 0)).map(x => { const [a, b] = x.k.split('-'); return `<tr><td>${apLabel(a)} &ndash; ${apLabel(b)}</td><td class="num">${x.rs.length}</td><td class="num">${x.dist != null ? fmtNum(x.dist) + ' NM' : '&mdash;'}</td></tr>`; }).join('')}
       </tbody></table></div></section>
       <section class="st-card st-card-stack">
         <h3>NEW AIRPORTS IN THIS PERIOD <span class="st-muted">${newOnes.length}</span></h3>
-        ${newOnes.length ? `<ul class="st-list">${newOnes.map(a => `<li>${apLabel(a)} <span class="st-muted">${fmtDay(firstSeen[a])}</span></li>`).join('')}</ul>` : '<p class="st-hint">No first visits in this period</p>'}
+        ${newOnes.length ? `<ul class="st-list">${newOnes.map(a => `<li>${apLabel(a)} <span class="st-muted">${fmtDay(firstSeen[a])}</span></li>`).join('')}</ul>` : '<p class="st-hint">NO FIRST VISITS IN THIS PERIOD</p>'}
         <h3>LONGEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(0, 5).map(flightLine).join('')}</tbody></table></div>
         <h3>SHORTEST FLIGHTS</h3><div class="st-scroll st-scroll-short"><table class="st-table"><tbody>${byDist.slice(-5).reverse().map(flightLine).join('')}</tbody></table></div>
       </section>
@@ -5131,29 +5100,29 @@ function statsOperations(el, rows) {
       <section class="st-card st-card-stack">
         <h3>PUNCTUALITY</h3>
         <div class="st-minis">
-          ${stat('On-time departures', otp(dep, 'dep_delay') == null ? '&mdash;' : otp(dep, 'dep_delay') + '%', 'off-block within 15 min')}
-          ${stat('On-time arrivals', otp(arr, 'arr_delay') == null ? '&mdash;' : otp(arr, 'arr_delay') + '%', 'in-block within 15 min')}
-          ${stat('Average departure delay', avg(dep, 'dep_delay') == null ? '&mdash;' : fmtSigned(avg(dep, 'dep_delay')), `${dep.length} flights with times`)}
-          ${stat('Average arrival delay', avg(arr, 'arr_delay') == null ? '&mdash;' : fmtSigned(avg(arr, 'arr_delay')), 'vs scheduled in-block')}
+          ${stat('On-time departures', otp(dep, 'dep_delay') == null ? '&mdash;' : otp(dep, 'dep_delay') + '%', 'OFF-BLOCK WITHIN 15 MIN')}
+          ${stat('On-time arrivals', otp(arr, 'arr_delay') == null ? '&mdash;' : otp(arr, 'arr_delay') + '%', 'IN-BLOCK WITHIN 15 MIN')}
+          ${stat('Average departure delay', avg(dep, 'dep_delay') == null ? '&mdash;' : fmtSigned(avg(dep, 'dep_delay')), `${dep.length} FLIGHTS WITH TIMES`)}
+          ${stat('Average arrival delay', avg(arr, 'arr_delay') == null ? '&mdash;' : fmtSigned(avg(arr, 'arr_delay')), 'VS SCHEDULED IN-BLOCK')}
         </div>
         <h3>DEPARTURE DELAY VS SCHEDULE</h3>
-        ${dep.length ? statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`) : '<p class="st-hint">No flights with actual off-block times in this selection</p>'}
+        ${dep.length ? statsMiniCols(bands, v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}`) : '<p class="st-hint">NO FLIGHTS WITH ACTUAL OFF-BLOCK TIMES IN THIS SELECTION</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>DISPATCHED DELAYS <span class="st-muted">${rows.filter(r => r.delay_code).length} of ${rows.length} flights</span></h3>
         ${codes.length ? `<div class="st-scroll st-scroll-short"><table class="st-table"><thead><tr><th>CODE</th><th>REASON</th><th class="num">FLIGHTS</th></tr></thead><tbody>
-          ${codes.map(([c, rs]) => `<tr><td><b>${escText(c)}</b></td><td>${escText(rs.find(r => r.delay_desc)?.delay_desc || '')}</td><td class="num">${rs.length}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">No delays were dispatched on these flights</p>'}
+          ${codes.map(([c, rs]) => `<tr><td><b>${escText(c)}</b></td><td>${escText(rs.find(r => r.delay_desc)?.delay_desc || '')}</td><td class="num">${rs.length}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">NO DELAYS ON THESE FLIGHTS</p>'}
         <h3>MEL ITEMS <span class="st-muted">${rows.filter(r => r.mel).length} of ${rows.length} flights</span></h3>
-        ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'flight' : 'flights'}` }) : '<p class="st-hint">No MEL items on these flights</p>'}
+        ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}` }) : '<p class="st-hint">NO MEL ITEMS ON THESE FLIGHTS</p>'}
         <h3>DEPARTURE PUNCTUALITY BY AIRPORT <span class="st-muted">2+ departures, worst first</span></h3>
         ${byAirport.length ? `<div class="st-scroll st-scroll-short"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEPARTURES</th><th class="num">ON TIME</th><th class="num">AVG DELAY</th></tr></thead><tbody>
           ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>SCHEDULED DEPARTURE TIME (UTC)</h3>
-        ${statsMiniCols(hours, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+        ${statsMiniCols(hours, v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}`)}
         <h3>DAY OF THE WEEK</h3>
-        ${statsMiniCols(dows, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+        ${statsMiniCols(dows, v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}`)}
       </section>
     </div>`;
 }
@@ -5183,8 +5152,8 @@ function statsLoadFuel(el, rows) {
         <h3>LOAD</h3>
         <div class="st-minis">
           ${stat('Passengers carried', fmtNum(sumOf(rows, 'pax')))}
-          ${stat('Average load factor', avgLf == null ? '&mdash;' : avgLf + '%', `${withLf.length} flights`)}
-          ${stat('Average passengers', withLf.length ? fmtNum(Math.round(sumOf(rows, 'pax') / rows.filter(r => r.pax != null).length)) : '&mdash;', 'per flight')}
+          ${stat('Average load factor', avgLf == null ? '&mdash;' : avgLf + '%', `${withLf.length} FLIGHTS`)}
+          ${stat('Average passengers', withLf.length ? fmtNum(Math.round(sumOf(rows, 'pax') / rows.filter(r => r.pax != null).length)) : '&mdash;', 'PER FLIGHT')}
           ${stat('Cargo and bags', fmtNum(Math.round(sumOf(rows, 'cargo') / 1000)) + ' t')}
         </div>
         <h3>BY AIRCRAFT TYPE</h3>
@@ -5192,18 +5161,18 @@ function statsLoadFuel(el, rows) {
           ${byType.map(x => `<tr onclick="setStatsFilter('type', '${escAttr(x.t)}')" tabindex="0" title="Filter by this"><td>${escText(typeName(x.t))}</td><td class="num">${x.rs.length}</td><td class="num">${fmtNum(x.pax)}</td><td class="num">${x.lf == null ? '&mdash;' : x.lf + '%'}</td>
             <td class="num">${x.perFlight == null ? '&mdash;' : fmtNum(x.perFlight) + ' kg'}</td><td class="num">${x.perHour == null ? '&mdash;' : fmtNum(x.perHour) + ' kg/h'}</td></tr>`).join('')}
         </tbody></table></div>
-        <p class="st-hint">Burn is OFP block fuel minus your actual fuel at destination, over the flight time (off-block to in-block). It needs an OFP and a PIREP with AFAD</p>
+        <p class="st-hint">BURN: OFP BLOCK FUEL MINUS AFAD, OVER BLOCK TIME. REQUIRES OFP AND PIREP WITH AFAD</p>
       </section>
       <section class="st-card st-card-stack">
         <h3>FUEL AT DESTINATION: ACTUAL VS PLANNED</h3>
         ${fuel.length ? `
           <div class="st-minis">
-            ${stat('Average difference', (avgDiff > 0 ? '+' : '') + fmtNum(avgDiff) + ' kg', avgDiff >= 0 ? 'landing with more than planned' : 'landing with less than planned')}
-            ${stat('Within ±200 kg', within + '%', `${fuel.length} flights`)}
+            ${stat('Average difference', (avgDiff > 0 ? '+' : '') + fmtNum(avgDiff) + ' kg', avgDiff >= 0 ? 'LANDING ABOVE PLAN' : 'LANDING BELOW PLAN')}
+            ${stat('Within ±200 kg', within + '%', `${fuel.length} FLIGHTS`)}
           </div>
-          ${statsMiniCols(bands, v => `${v} ${v === 1 ? 'flight' : 'flights'}`)}
+          ${statsMiniCols(bands, v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}`)}
           <p class="st-hint">Your AFAD against the OFP's planned landing fuel. Negative means you landed with less fuel than planned</p>`
-          : `<p class="st-hint">No flights with a planned landing fuel yet. The app started saving it from SimBrief with this release, so flights whose OFP you fetch from now on will appear here</p>`}
+          : `<p class="st-hint">NO FLIGHTS WITH PLANNED LANDING FUEL</p>`}
       </section>
     </div>`;
 }
@@ -5229,17 +5198,17 @@ function statsRecords(el, rows) {
   const lateR = by('dep_delay'), fullR = rows.filter(r => r.pax != null).sort((a, b) => (b.lf || 0) - (a.lf || 0))[0];
   const card = (label, value, note) => value == null ? '' : `<div class="st-record"><span>${label}</span><b>${value}</b><em>${note || ''}</em></div>`;
   el.innerHTML = `<section class="st-card st-card-scroll"><div class="st-scroll"><div class="st-records">
-    ${card('Longest flight', by('dist') ? fmtNum(by('dist').dist) + ' nm' : null, flightNote(by('dist')))}
+    ${card('Longest flight', by('dist') ? fmtNum(by('dist').dist) + ' NM' : null, flightNote(by('dist')))}
     ${card('Longest flight time', by('ft') ? fmtHours(by('ft').ft) : null, flightNote(by('ft')))}
-    ${card('Shortest flight', by('dist', 1) ? fmtNum(by('dist', 1).dist) + ' nm' : null, flightNote(by('dist', 1)))}
-    ${card('Busiest day', busiest ? `${busiest[1].length} ${busiest[1].length === 1 ? 'flight' : 'flights'}` : null, busiest ? `${fmtDay(busiest[0], { weekday: 'short' })} &middot; ${fmtHours(sumOf(busiest[1], 'ft'))}` : '')}
+    ${card('Shortest flight', by('dist', 1) ? fmtNum(by('dist', 1).dist) + ' NM' : null, flightNote(by('dist', 1)))}
+    ${card('Busiest day', busiest ? `${busiest[1].length} ${busiest[1].length === 1 ? 'FLIGHT' : 'FLIGHTS'}` : null, busiest ? `${fmtDay(busiest[0], { weekday: 'short' })} &middot; ${fmtHours(sumOf(busiest[1], 'ft'))}` : '')}
     ${card('Most flying in a day', longestDay ? fmtHours(sumOf(longestDay[1], 'ft')) : null, longestDay ? fmtDay(longestDay[0], { weekday: 'short' }) : '')}
-    ${card('Longest streak', best.n ? `${best.n} ${best.n === 1 ? 'day' : 'days'} in a row` : null, best.n ? `${fmtDay(best.from)} &ndash; ${fmtDay(best.to)}` : '')}
-    ${card('Most flown route', route ? `${route[0].replace('-', ' &ndash; ')}` : null, route ? `${route[1].length} ${route[1].length === 1 ? 'flight' : 'flights'}` : '')}
-    ${card('Most visited airport', ap ? `${ap[0]}` : null, ap ? `${escText(statsAirport(ap[0]).name || '')} &middot; ${ap[1]} movements` : '')}
-    ${card('Most flown aircraft', type ? escText(typeName(type[0])) : null, type ? `${type[1].length} flights &middot; ${fmtHours(sumOf(type[1], 'ft'))}` : '')}
+    ${card('Longest streak', best.n ? `${best.n} CONSECUTIVE ${best.n === 1 ? 'DAY' : 'DAYS'}` : null, best.n ? `${fmtDay(best.from)} &ndash; ${fmtDay(best.to)}` : '')}
+    ${card('Most flown route', route ? `${route[0].replace('-', ' &ndash; ')}` : null, route ? `${route[1].length} ${route[1].length === 1 ? 'FLIGHT' : 'FLIGHTS'}` : '')}
+    ${card('Most visited airport', ap ? `${ap[0]}` : null, ap ? `${escText(statsAirport(ap[0]).name || '')} &middot; ${ap[1]} MOVEMENTS` : '')}
+    ${card('Most flown aircraft', type ? escText(typeName(type[0])) : null, type ? `${type[1].length} FLIGHTS &middot; ${fmtHours(sumOf(type[1], 'ft'))}` : '')}
     ${card('Biggest departure delay', lateR ? fmtSigned(lateR.dep_delay) : null, flightNote(lateR))}
-    ${card('Fullest flight', fullR && fullR.lf != null ? Math.round(fullR.lf * 100) + '%' : null, fullR ? `${fmtNum(fullR.pax)} of ${fmtNum(fullR.seats)} seats &middot; ${flightNote(fullR)}` : '')}
+    ${card('Fullest flight', fullR && fullR.lf != null ? Math.round(fullR.lf * 100) + '%' : null, fullR ? `${fmtNum(fullR.pax)} / ${fmtNum(fullR.seats)} SEATS &middot; ${flightNote(fullR)}` : '')}
     ${card('First flight in range', rows.length ? fmtDay(rows[0].date) : null, flightNote(rows[0]))}
   </div></div></section>`;
 }
@@ -5253,7 +5222,7 @@ const LOGBOOK_COLUMNS = [
   ['type', 'AIRCRAFT', r => escText(typeName(r.type)), r => r.type],
   ['dep', 'FROM', r => r.dep, r => r.dep],
   ['arr', 'TO', r => r.arr, r => r.arr],
-  ['dist', 'DISTANCE', r => r.dist != null ? fmtNum(r.dist) + ' nm' : '&mdash;', r => r.dist],
+  ['dist', 'DISTANCE', r => r.dist != null ? fmtNum(r.dist) + ' NM' : '&mdash;', r => r.dist],
   ['ft', 'FLIGHT TIME', r => r.ft != null ? fmtHours(r.ft) + (r.ft_est ? '*' : '') : '&mdash;', r => r.ft],
   ['air', 'AIR TIME', r => r.air != null ? fmtHours(r.air) : '&mdash;', r => r.air],
   ['dep_delay', 'DEP DELAY', r => fmtSigned(r.dep_delay), r => r.dep_delay],
@@ -5270,7 +5239,7 @@ function statsLogbook(el, rows) {
   });
   el.innerHTML = `
     <section class="st-card st-card-scroll st-logbook">
-      <div class="st-card-head"><h3>LOGBOOK <span class="st-muted">${rows.length} ${rows.length === 1 ? 'flight' : 'flights'}</span></h3>
+      <div class="st-card-head"><h3>LOGBOOK <span class="st-muted">${rows.length} ${rows.length === 1 ? 'FLIGHT' : 'FLIGHTS'}</span></h3>
         <button class="action small" type="button" onclick="exportStatsCsv()">EXPORT CSV</button></div>
       <div class="st-scroll"><table class="st-table st-log"><thead><tr>${LOGBOOK_COLUMNS.map(([k, l]) =>
         `<th class="sortable${k === s.key ? ' sort-active' : ''}${['dist', 'ft', 'air', 'dep_delay', 'pax'].includes(k) ? ' num' : ''}" onclick="sortStatsLog('${k}')" aria-sort="${k === s.key ? (s.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">${l}<span class="sort-arrow">${k === s.key ? (s.dir === 'asc' ? '&uarr;' : '&darr;') : '&uarr;'}</span></th>`).join('')}</tr></thead>
