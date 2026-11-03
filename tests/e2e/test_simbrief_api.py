@@ -51,6 +51,15 @@ async def main():
         check("the plan says the OFP is generated on SimBrief, and the bar's action is GENERATE OFP",
               "plans the leg on SimBrief" in await page.text_content("#sbSendNote-0")
               and "GENERATE OFP" in await page.text_content("#afNextBtn"))
+        await page.wait_for_selector("#sbRunwaySel-0")
+        rwys = await page.inner_text("#sbRunways-0")
+        check("RUNWAYS reads VATSIM by default: Gatwick's ATIS, nothing at Belfast City",
+              await page.eval_on_selector("#sbRunwaySel-0", "s => s.value") == "vatsim"
+              and "EGKK DEP 08R VATSIM ATIS F" in rwys and "no runway on VATSIM right now: SimBrief picks by wind" in rwys, rwys)
+        await page.select_option("#sbRunwaySel-0", "sayintentions"); await page.wait_for_timeout(500)
+        rwys = await page.inner_text("#sbRunways-0")
+        check("switching to SayIntentions reads its ATIS", "08R SayIntentions ATIS O" in rwys, rwys)
+        await page.select_option("#sbRunwaySel-0", "vatsim"); await page.wait_for_timeout(500)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
         await page.click("#afNextBtn")
@@ -61,6 +70,7 @@ async def main():
         check("the plan is generated with the chosen airframe and the leg's own options",
               sent["type"] == info["selected"] and sent["orig"] == leg["departure_info"]["icao"]
               and sent["dest"] == leg["arrival_info"]["icao"] and sent["static_id"] == state["simbrief_static_id"], sent)
+        check("the ATIS runway goes into the plan, none where there's no ATIS", sent.get("origrwy") == "08R" and "destrwy" not in sent, sent)
         check("the departure time goes inside the date", sent["date"].endswith(" - " + leg["eobt"][:5]) and "deph" not in sent,
               (sent["date"], leg["eobt"]))
         check("the OFP lands in the briefing, with no SimBrief tab opened",

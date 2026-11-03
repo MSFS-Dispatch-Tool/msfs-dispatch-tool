@@ -3,8 +3,10 @@ against the live world replaced: weather comes from fixed samples (so runs
 are repeatable and need no aviationweather.gov access), Hoppie's ACARS
 network is a fake (TESTLOGON1: every aircraft online; TESTLOGON2: none), so
 is SayIntentions (TESTSIKEY0255 / TESTSIKEY0128: aircraft taking 255 / 128 characters), so
-is Navigraph's sign-in (it signs in "e2e_pilot" at once), and a scenario can pin the random rolls a suite
-depends on.
+is Navigraph's sign-in (it signs in "e2e_pilot" at once), the networks' ATIS
+come from recorded samples (tests/fixtures/atis_*.json: VATSIM has Gatwick
+08R, nothing at Belfast City), and a scenario can pin the random rolls a
+suite depends on.
 
     python tests/e2e/server.py --seed                  # reset the test pilot's data
     python tests/e2e/server.py --scenario mel --port 5055
@@ -40,6 +42,7 @@ for var in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "S
 import flask  # noqa: E402
 
 import acars  # noqa: E402
+import atis  # noqa: E402
 import app  # noqa: E402
 import db  # noqa: E402
 import navigraph  # noqa: E402
@@ -158,6 +161,17 @@ def patch_sayintentions():
             return _JsonAnswer({"error": f"Message too long: {len(params['message'])} characters. Maximum is {limit} characters."})
         return _TextAnswer("OK")
     sayintentions.requests.get = get
+
+
+def patch_atis():
+    """VATSIM, IVAO and SayIntentions answer with recorded ATIS samples."""
+    def sample(name):
+        with open(os.path.join(ROOT, "tests", "fixtures", f"atis_{name}.json")) as f:
+            return json.load(f)
+    feeds = {atis.VATSIM_URL: sample("vatsim"), atis.IVAO_URL: sample("ivao")}
+    atis._feed = lambda name, url: feeds[url]
+    si = sample("sayintentions")["airports"]
+    atis._sayintentions_airports = lambda icaos, api_key: [a for a in si if a["airport"] in icaos]
 
 
 def patch_navigraph(port):
@@ -304,6 +318,7 @@ def main():
     patch_hoppie()
     patch_navigraph(args.port)
     patch_sayintentions()
+    patch_atis()
     SCENARIOS[args.scenario]()
     app.app.run(port=args.port, debug=False)
 

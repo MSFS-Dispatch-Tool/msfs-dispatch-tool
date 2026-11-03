@@ -39,6 +39,12 @@ them off here as they're done.
       on for every pilot signed in with Navigraph ("off" turns it off).
 - [ ] SAYINTENTIONS_DEVELOPER_KEY set in Render (SEND TO AIRCRAFT through
       SayIntentions; the option stays hidden without it).
+- [ ] Runways from ATIS (atis.py) read VATSIM's public data feed, IVAO's
+      public tracker and SayIntentions' getWX, each at most once a minute.
+      Before launch, check each network's terms for this use: VATSIM's data
+      feed policy, IVAO's API terms (older IVAO notes asked for clearance to
+      use the tracker data), and SayIntentions' SAPI terms (getWX answered
+      without a pilot key when tested, 3 Nov 2026).
 - [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens, Hoppie codes
       and SayIntentions keys are encrypted with keys derived from it.
 

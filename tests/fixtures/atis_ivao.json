@@ -1,0 +1,82 @@
+{
+ "_note": "Real ATIS from the IVAO tracker (3 Nov 2026, 11:20Z), only callsign and ATIS kept",
+ "clients": {
+  "atcs": [
+   {
+    "callsign": "OIIX_CTR",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/OIIX_CTR",
+      "    TL FL160 TA 14000ft  CPDLC ID OIIX"
+     ],
+     "revision": "C"
+    }
+   },
+   {
+    "callsign": "URSS_TWR",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/URSS_TWR",
+      "Sochi ATIS Information INDIA recorded at 1112z URSS 031100Z 25003MPS 9999 FEW060 20/14 Q1015 R02/010070 R06/010070 NOSIG RMK R06/28003MPS QFE760 ARR RWY 02 DEP RWY 24 TL FL150 TA 13000ft RMK TWY M BTN STANDS 27 AND 31 CLSD. TWY M ABM STANDS 5, 6 AND 7 CLSD. TAXI RTE N1 ABM STANDS 23 AND 24 CLSD. TWY S AND D CLSD. CONFIRM ATIS INFO INDIA on initial contact"
+     ],
+     "revision": "I"
+    }
+   },
+   {
+    "callsign": "LROP_DEL",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/LROP_DEL",
+      "Otopeni ATIS Information DELTA recorded at 1011z LROP 031100Z 06023KT 9999 -DZ BKN016 OVC027 09/07 Q1019 TEMPO 5000 RA BR ARR RWY 08L DEP RWY 08R TL FL110  CONFIRM ATIS INFO DELTA on initial contact"
+     ],
+     "revision": "D"
+    }
+   },
+   {
+    "callsign": "EHAM_A_TWR",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/EHAM_A_TWR",
+      "Schiphol Information FOXTROT recorded at 1109z EHAM 031055Z 05013KT 020V090 9999 FEW013 BKN019 11/08 Q1032 BECMG BKN021 ARR RWY 06 DEP RWY 36L TL FL040 TA 3000ft CONFIRM ATIS INFO FOXTROT on initial contact CPDLC ID EHAM"
+     ],
+     "revision": "F"
+    }
+   },
+   {
+    "callsign": "LEMD_S_TWR",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/LEMD_S_TWR",
+      "Madrid Barahas Information CHARLIE recorded at 1114z LEMD 031100Z 05006KT 340V130 CAVOK 12/00 Q1017 NOSIG ARR RWY 32L 32R DEP RWY 36L 36R TL FL140 TA 13000ft RMK AUTOSWITCH PROC ON DEP IN FORCE CONFIRM ATIS INFO CHARLIE on initial contact CPDLC ID MADT"
+     ],
+     "revision": "C"
+    }
+   },
+   {
+    "callsign": "LROP_TWR",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/LROP_TWR",
+      "Otopeni information X-RAY recorded at 1112Z",
+      "LROP 031100Z 06023KT 9999 -DZ BKN016 OVC027 09/07 Q1019 TEMPO 5000 RA BR",
+      "ARR RWY 08L / DEP RWY 08R / TRL FL50 / TA 4000ft",
+      "/// Expect ILS DME Approach /// All Conventional SID are suspendend /// Report if u have the new AIRAC on init contact ///",
+      "Welcome to Otopeni, Expect 2K departure..",
+      "confirm ATIS info X-RAY on initial contact."
+     ],
+     "revision": "X"
+    }
+   },
+   {
+    "callsign": "URSS_GND",
+    "atis": {
+     "lines": [
+      "ts-1.eu-west-2.ivao.aero/URSS_GND",
+      "Sochi ATIS Information INDIA recorded at 1034z URSS 031100Z 25003MPS 9999 FEW060 20/14 Q1015 R02/010070 R06/010070 NOSIG RMK R06/28003MPS QFE760 ARR RWY 02 DEP RWY 24 TL FL150 TA 13000ft RMK TWY M BTN STANDS 27 AND 31 CLSD. TWY M ABM STANDS 5, 6 AND 7 CLSD. TAXI RTE N1 ABM STANDS 23 AND 24 CLSD. TWY S AND D CLSD. CONFIRM ATIS INFO INDIA on initial contact"
+     ],
+     "revision": "I"
+    }
+   }
+  ]
+ }
+}
