@@ -125,7 +125,7 @@
   <div class="panel">
     <div class="panel-header">
       <h1>Set up your profile</h1>
-      <p>A few details so your account is ready to fly</p>
+      <p>Pilot details for the account</p>
     </div>
     <div class="panel-body">
       <form method="POST" enctype="multipart/form-data">
@@ -137,7 +137,7 @@
             <label for="photo">Profile photo <span class="hint">(optional)</span></label>
             <label class="file-btn" for="photo">Choose file&hellip;</label>
             <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp">
-            <span class="file-name" id="fileName">JPEG, PNG or WebP, up to 2MB</span>
+            <span class="file-name" id="fileName">JPEG, PNG or WebP, up to 2 MB</span>
           </div>
         </div>
 
@@ -177,7 +177,7 @@
         </div>
 
         <div class="field">
-          <label>Which aircraft do you fly? <span class="hint">(optional)</span></label>
+          <label>Aircraft installed in the simulator <span class="hint">(optional)</span></label>
           {% for carrier in fleet_by_carrier %}
           <div class="fleet-group">
             <div class="fleet-group-label">{{ carrier.name }}</div>
@@ -186,7 +186,7 @@
             {% endfor %}
           </div>
           {% endfor %}
-          <p class="field-hint-note">This affects which aircraft gets assigned to your flights. You can change it any time in account settings</p>
+          <p class="field-hint-note">Used to assign aircraft to flights. Can be changed at any time in Account settings</p>
         </div>
 
         <button type="submit">Continue</button>
@@ -201,7 +201,7 @@
       const fileName = document.getElementById('fileName');
       if (!file) {
         preview.textContent = 'No photo';
-        fileName.textContent = 'JPEG, PNG or WebP, up to 2MB';
+        fileName.textContent = 'JPEG, PNG or WebP, up to 2 MB';
         return;
       }
       fileName.textContent = file.name;

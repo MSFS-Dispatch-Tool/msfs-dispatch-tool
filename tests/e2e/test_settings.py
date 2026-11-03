@@ -20,23 +20,23 @@ async def main():
         await page.goto(BASE + "/app"); await page.wait_for_timeout(1500)
         await page.evaluate("renderAccountSettings()"); await page.wait_for_timeout(1500)
         labels = await page.evaluate("['delay','lmc','mel','cdl'].map(k => document.getElementById('gen-'+k+'-prob-val').textContent)")
-        check("four sliders, realistic by default", all("realistic" in l for l in labels), labels)
+        check("four sliders, realistic by default", all("REALISTIC" in l for l in labels), labels)
         counts = await page.evaluate("['delay','lmc','mel','cdl'].map(k => document.querySelectorAll('#gen-'+k+'-items tbody tr:not(.gen-group)').length)")
         options = json.load(urllib.request.urlopen(BASE + "/generation-options"))
         expected = [len(options[k]) for k in ("delay", "lmc", "mel", "cdl")]
         check("tables list every item", counts == expected, f"{counts} vs {expected}")
         await page.evaluate("document.querySelectorAll('.leg-block details').forEach(d => d.open = true)")
         mel_text = await page.inner_text("#gen-mel-items")
-        check("MEL rows show effect and actions", "MAX FL250 (SET IN SIMBRIEF)" in mel_text and "MIN 3,402 KG PER WING TANK AT TAKE-OFF" in mel_text and "Cruise above FL250 not allowed" in mel_text and "(O)" not in mel_text and "(M)" not in mel_text)
+        check("MEL rows show effect and actions", "MAX FL250 (SET IN SIMBRIEF)" in mel_text and "MIN 3,402 KG PER WING TANK AT TAKE-OFF" in mel_text and "CRUISE ABOVE FL250 NOT ALLOWED" in mel_text and "(O)" not in mel_text and "(M)" not in mel_text)
         delay_text = await page.inner_text("#gen-delay-items")
-        check("delay rows show range, slot and actions", "WITH ATC TAKE-OFF SLOT (CTOT)" in delay_text and "CODE THE DELAY IN THE PIREP" in delay_text and "ATC flow restriction en route" in delay_text)
+        check("delay rows show range, slot and actions", "WITH ATC TAKE-OFF SLOT (CTOT)" in delay_text and "CODE THE DELAY IN THE PIREP" in delay_text and "ATC FLOW RESTRICTION EN ROUTE" in delay_text)
         el = page.locator("#gen-mel-items tbody tr:not(.gen-group)").nth(0)
         await el.scroll_into_view_if_needed()
         await page.screenshot(path=shot("settings_mel.png"))
         # set MEL 100, delay 0, LMC 0; uncheck first CDL
         for k, v in (("mel", 100), ("delay", 0), ("lmc", 0)):
             await page.evaluate(f"(() => {{ const i = document.getElementById('gen-{k}-prob'); i.value = {v}; i.dispatchEvent(new Event('input')); }})()")
-        check("moving a slider marks it as your setting", "your setting" in await page.inner_text("#gen-mel-prob-val"))
+        check("moving a slider marks it as a custom setting", "CUSTOM" in await page.inner_text("#gen-mel-prob-val"))
         await page.locator("#gen-cdl-items input.gen-item").first.uncheck()
         await page.click("button[onclick*=saveGenerationSettings]"); await page.wait_for_timeout(1000)
         st = json.load(urllib.request.urlopen(BASE + "/settings"))["generation"]
@@ -46,7 +46,7 @@ async def main():
         check("MEL 100%: every trip has at least one item", min(mels) >= 1, mels)
         check("delay 0%: no leg-1 delays", all(d is None for d in delays))
         await page.evaluate("renderAccountSettings()"); await page.wait_for_timeout(1500)
-        check("reload shows saved values", "100%" in await page.inner_text("#gen-mel-prob-val") and "your setting" in await page.inner_text("#gen-mel-prob-val"))
+        check("reload shows saved values", "100%" in await page.inner_text("#gen-mel-prob-val") and "CUSTOM" in await page.inner_text("#gen-mel-prob-val"))
         await page.click("#gen-mel-prob ~ button"); await page.click("#gen-delay-prob ~ button"); await page.click("#gen-lmc-prob ~ button")
         await page.click("button[onclick*=saveGenerationSettings]"); await page.wait_for_timeout(1000)
         st = json.load(urllib.request.urlopen(BASE + "/settings"))["generation"]

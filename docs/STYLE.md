@@ -36,6 +36,12 @@ ACARS message.
   NAVIGRAPH, SAYINTENTIONS); on public pages they keep their own spelling
   (SimBrief, Navigraph, SayIntentions).
 
+Texts that come from data (MEL and CDL wording, delay, LMC and dangerous
+goods descriptions, curfew notes, airport names) stay in sentence case in
+the data files, where they are also the reference wording; the app shows
+everything on its pages uppercase (`#mainContent` in app.css). Values the
+pilot types are shown as typed.
+
 Glossary definitions (the DISPATCH TERMS panel) are the one in-app exception:
 short sentences in sentence case, because they explain rather than report.
 

@@ -35,7 +35,7 @@ import time
 
 import requests
 
-UNREACHABLE = "The sign-in service can't be reached right now. Try again in a minute."
+UNREACHABLE = "The sign-in service is not available. Try again in a minute."
 
 
 class _Http:

@@ -23,7 +23,7 @@
   "plain": "One of the two autopilots is inoperative, while the other remains available",
   "steps": [
    "Use the serviceable autopilot",
-   "CAT III dual approaches are not available. Amend your route and planning accordingly"
+   "CAT III dual approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -50,7 +50,7 @@
   "plain": "The autothrust is inoperative",
   "steps": [
    "Fly with manual thrust throughout",
-   "Low-visibility approaches are not available. Amend your route and planning accordingly"
+   "Low-visibility approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -352,7 +352,7 @@
   "name": "Weather radar",
   "plain": "The weather radar is inoperative",
   "steps": [
-   "Do not plan the flight through forecast thunderstorm activity. Amend your route and planning accordingly",
+   "Do not plan the flight through forecast thunderstorm activity. Amend route and planning accordingly",
    "Brief the windshear escape procedure before departure"
   ]
  },
@@ -555,7 +555,7 @@
   "plain": "One air data and inertial reference unit is inoperative or unreliable",
   "steps": [
    "Select ADIRU 3 on the affected side (ATT HDG and AIR DATA switching)",
-   "RNP AR approaches are not available. Amend your route and planning accordingly"
+   "RNP AR approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -582,7 +582,7 @@
   "plain": "One flight management and guidance computer is inoperative or unreliable",
   "steps": [
    "Operate on the serviceable FMGC",
-   "CAT III dual approaches are not available. Amend your route and planning accordingly"
+   "CAT III dual approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -761,7 +761,7 @@
   "name": "Wing anti-ice valve",
   "plain": "One wing anti-ice valve is inoperative in the closed position",
   "steps": [
-   "Do not plan the flight into known or forecast icing. Amend your route and planning accordingly"
+   "Do not plan the flight into known or forecast icing. Amend route and planning accordingly"
   ]
  },
  {

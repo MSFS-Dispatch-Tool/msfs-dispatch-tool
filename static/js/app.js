@@ -4045,7 +4045,7 @@ function renderComplicationCategory(key, title, explanation, items, categorySett
 }
 
 function probabilityLabel(pct, custom) {
-  return `${pct}%<small>${custom ? 'your setting' : 'realistic'}</small>`;
+  return `${pct}%<small>${custom ? 'CUSTOM' : 'REALISTIC'}</small>`;
 }
 function onProbabilityInput(key) {
   const input = document.getElementById(`gen-${key}-prob`);

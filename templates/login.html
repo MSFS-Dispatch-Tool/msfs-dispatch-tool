@@ -103,23 +103,23 @@
     <div class="panel-header">VirtualDispatch &mdash; {{ "Create account" if mode == "signup" else "Access restricted" if mode == "restricted" else "Sign in" }}</div>
     <div class="panel-body">
       {% if mode == "restricted" %}
-      <p class="notice" style="margin-bottom:var(--sp-3);">This account doesn't have access yet</p>
-      <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in a private preview, open to invited pilots only. You're signed in as <strong>{{ signup_email }}</strong>. <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a> to be invited</p>
+      <p class="notice" style="margin-bottom:var(--sp-3);">No access for this account yet</p>
+      <p style="margin:0 0 var(--sp-5);">VirtualDispatch is in private beta, open to invited pilots only. Signed in as <strong>{{ signup_email }}</strong>. <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a> to receive an invitation</p>
       <div class="switch"><form class="inline-form" method="post" action="{{ url_for('logout') }}"><button class="link-button" type="submit">Sign out</button></form> &middot; <a href="{{ url_for('index') }}">Back to the website</a></div>
       {% elif just_signed_up %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
-      <p class="notice" style="margin-bottom:var(--sp-3);">Thank you for choosing to join VirtualDispatch &mdash; we're glad to have you on board!</p>
-      <p style="margin:0 0 var(--sp-5);">Just one last step: check <strong>{{ signup_email }}</strong> for a verification link before signing in. If you don't see it within a few minutes, please check your spam/junk folder too. If you run into any trouble signing in afterwards, feel free to get in touch &mdash; we're happy to help</p>
+      <p class="notice" style="margin-bottom:var(--sp-3);">Account created</p>
+      <p style="margin:0 0 var(--sp-5);">A verification link has been sent to <strong>{{ signup_email }}</strong>. Open it before signing in. If it does not arrive within a few minutes, check the spam or junk folder</p>
       <form method="POST" action="{{ url_for('resend_verification_route') }}" style="text-align:center;"
             onsubmit="this.email.value = {{ signup_email|tojson }}; return true;">
         <input type="hidden" name="email">
-        <button type="submit">Didn't get the email? Resend</button>
+        <button type="submit">Resend verification email</button>
       </form>
       <div class="switch">Already verified? <a href="{{ url_for('login') }}">Sign in</a></div>
       {% else %}
       {% if error %}<p class="error">{{ error }}</p>{% endif %}
       {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
-      {% if mode == "signup" and invite_only and not error %}<p class="notice">VirtualDispatch is in a private preview: create your account with the email address you were invited with. Not invited yet? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a></p>{% endif %}
+      {% if mode == "signup" and invite_only and not error %}<p class="notice">VirtualDispatch is in private beta: create the account with the email address the invitation was sent to. No invitation yet? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a></p>{% endif %}
       <form method="POST" action="{{ url_for('signup') if mode == 'signup' else url_for('login', next=request.args.get('next')) }}" id="authForm">
         <div class="field">
           <label for="email">Email</label>
@@ -147,7 +147,7 @@
         {% if mode != "signup" %}
         <div class="remember-row">
           <input type="checkbox" id="remember" name="remember">
-          <label for="remember">Stay logged in</label>
+          <label for="remember">Keep me signed in</label>
         </div>
         {% endif %}
 
@@ -164,9 +164,9 @@
         {% if mode == "signup" %}
           Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
         {% elif signups_open %}
-          New here? <a href="{{ url_for('signup') }}">Create an account</a>
+          No account? <a href="{{ url_for('signup') }}">Create an account</a>
         {% else %}
-          Invited? <a href="{{ url_for('signup') }}">Create your account</a> &middot; Not yet? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a>
+          Invited? <a href="{{ url_for('signup') }}">Create an account</a> &middot; No invitation? <a href="{{ url_for('index') }}#waitlist">Join the waitlist</a>
         {% endif %}
       </div>
       {% endif %}

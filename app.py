@@ -147,7 +147,7 @@ def require_login():
     # on the allowlist sees only the restricted page (and can sign out).
     if not _has_access(user) and request.endpoint != "logout":
         if request.accept_mimetypes.best == "application/json" or request.method != "GET":
-            return jsonify({"error": "This account doesn't have access to VirtualDispatch yet."}), 403
+            return jsonify({"error": "This account has no access to VirtualDispatch yet."}), 403
         return redirect(url_for("access_restricted"))
 
 
@@ -325,7 +325,7 @@ def signup():
         password = request.form.get("password") or ""
         confirm = request.form.get("password_confirm") or ""
         if not _verify_turnstile_from_form():
-            error = "Captcha verification failed. Please try again."
+            error = "Captcha verification failed. Try again."
         elif invite_only and not auth.email_allowed(email, _allowed_pilots(refresh=True)):
             error = INVITE_ONLY_ERROR
         else:
@@ -334,7 +334,7 @@ def signup():
             try:
                 result = auth.sign_up(email, password, redirect_to=_auth_redirect_to())
                 if _signup_result_indicates_existing_user(result):
-                    error = "That email is already registered. Try signing in, or use \"Forgot password?\" if you don't remember your password."
+                    error = "This email address is already registered. Sign in, or use \"Forgot password?\" to set a new password."
                 else:
                     # A dedicated "check your email" screen, not the signup
                     # form again with a banner on top - there's nothing left
@@ -348,8 +348,8 @@ def signup():
                             turnstile_site_key=auth.TURNSTILE_SITE_KEY), (403 if error == INVITE_ONLY_ERROR else 200)
 
 
-INVITE_ONLY_ERROR = ("This email isn't on the invitation list yet. Use the address you were invited with, "
-                     "or join the waitlist on our website")
+INVITE_ONLY_ERROR = ("This email address is not on the invitation list. Use the address the invitation was sent to, "
+                     "or join the waitlist on the website")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -361,7 +361,7 @@ def login():
         password = request.form.get("password") or ""
         remember = request.form.get("remember") == "on"
         if not _verify_turnstile_from_form():
-            error = "Captcha verification failed. Please try again."
+            error = "Captcha verification failed. Try again."
         else:
             try:
                 token_response = auth.sign_in(email, password)
@@ -417,7 +417,7 @@ def auth_session():
     access_token = payload.get("access_token")
     refresh_token = payload.get("refresh_token")
     if not access_token or not refresh_token:
-        return jsonify({"error": "Missing tokens."}), 400
+        return jsonify({"error": "Missing sign-in tokens."}), 400
     try:
         user = auth.get_user(access_token)
     except auth.AuthError as exc:
@@ -466,7 +466,7 @@ def _validate_onboarding_form(form):
     if not username:
         return None, "Username is required."
     if not _USERNAME_RE.match(username):
-        return None, "Username must be 3-20 characters: letters, numbers, or underscore only."
+        return None, "Username must be 3 to 20 characters: letters, numbers or underscore only."
     return username, None
 
 
@@ -479,12 +479,12 @@ def _handle_photo_upload(photo_file):
         return None, None
     content_type = photo_file.mimetype
     if content_type not in _ALLOWED_PHOTO_TYPES:
-        return None, "Photo must be a JPEG, PNG, or WebP image."
+        return None, "Photo must be a JPEG, PNG or WebP image."
     data = photo_file.read()
     if len(data) > _MAX_PHOTO_BYTES:
-        return None, "Photo must be 2MB or smaller."
+        return None, "Photo must be 2 MB or smaller."
     if not _photo_matches_type(data, content_type):
-        return None, "Photo must be a JPEG, PNG, or WebP image."
+        return None, "Photo must be a JPEG, PNG or WebP image."
     if not auth.admin_available():
         return None, None
     try:
@@ -836,7 +836,7 @@ def admin_allowed_remove_route(email):
 
 # ---- Waitlist: visitors leave their email on the website, while sign-ups
 # are invitation-only, to be invited later ----
-WAITLIST_CONSENT = ("I'd like an email when I can join VirtualDispatch. "
+WAITLIST_CONSENT = ("I would like to receive an email when I can join VirtualDispatch. "
                     "My address is used for nothing else, and I can ask for it to be deleted at any time.")
 WAITLIST_WINDOW_SECONDS, WAITLIST_MAX_PER_VISITOR, WAITLIST_MAX_TOTAL = 3600, 5, 200
 _waitlist_times = {}
