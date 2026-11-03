@@ -48,9 +48,10 @@ async def main():
               options[0] == f"SimBrief standard {info['type']}" and len(options) >= 2
               and all(info["type"] in o for o in options), options)
         check("the leg starts with the airframe labelled for its airline", "(EZY - " in selected, selected)
-        check("the note says the plan is generated on SimBrief",
-              "Generates the plan on SimBrief" in await page.text_content("#sbSendNote-0"))
-        await page.locator(".brief-actions").screenshot(path=shot("simbrief_airframe_picker.png"))
+        check("step 1 says the OFP is generated on SimBrief, with a GENERATE OFP button",
+              "Generates the OFP on SimBrief" in await page.text_content("#sbSendNote-0")
+              and (await page.text_content("#sbSendBtn-0")).strip() == "GENERATE OFP")
+        await page.locator(".af-flow").screenshot(path=shot("simbrief_airframe_picker.png"))
 
         await page.click("#sbSendBtn-0")
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'available'", timeout=10000)
@@ -65,10 +66,16 @@ async def main():
         check("the OFP lands in the briefing, with no SimBrief tab opened",
               state["ofp"]["source"] == "api" and state["ofp"]["registration"].startswith("G-EZ") and popups == [] and alerts == [],
               (state["ofp"].get("registration"), popups, alerts))
-        check("the loadsheet opens next", await page.locator("#af-pane-loadsheet").is_visible())
+        check("the briefing stays on screen, from the top, with the OFP in it",
+              await page.locator("#af-pane-briefing").is_visible() and await page.evaluate("document.getElementById('af-pane-briefing').scrollTop") == 0
+              and "RUNWAYS" in await page.inner_text("#brief-ofp"))
+        done = await page.inner_text(".af-flow-step.done")
+        check("step 1 sums up the OFP: registration, runways, cruise, generated time",
+              "G-EZ" in done and "RWY 06" in done and "FL340" in done and "OFP generated 18:33Z" in done, done)
+        await page.screenshot(path=shot("simbrief_ofp_in.png"))
 
         # SimBrief refuses: the pilot is told and simbrief.com opens as before
-        await page.evaluate("selectRecapTab('briefing')"); await page.wait_for_selector("#sbAirframeSel-0")
+        await page.click(".af-flow-step.done button:has-text('NEW OFP')"); await page.wait_for_selector("#sbAirframeSel-0")
         await page.evaluate("simbriefApiLegs[simbriefApiKey(loadActiveFlight(), 0)].selected = ''")
         urllib.request.urlopen(urllib.request.Request(BASE + "/__simbrief/refuse", method="POST"))
         await page.wait_for_timeout(10500)                                    # one plan per 10 seconds

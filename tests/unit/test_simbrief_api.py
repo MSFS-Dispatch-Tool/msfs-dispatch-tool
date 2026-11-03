@@ -83,10 +83,17 @@ def test_a_connected_pilots_ofp_comes_through_the_api(client, app_module, connec
     assert got["est_time_enroute_sec"] == str(1 * 3600 + 4 * 60 + 56)        # "01:04:56" in the API
     assert got["weight_unit"] == "kgs" and got["est_zfw"] == "54669" and got["trip_fuel"] == "2553"
     assert len(got["navlog"]) == 25 and got["navlog"][0]["ident"] == "VUNHO"
+    assert (got["dep_rwy"], got["arr_rwy"], got["generated_at"]) == ("06", "35", "2026-11-02T18:33:16Z")
     assert got["notams"] and {n["icao"] for n in got["notams"]} <= {"LIRN", "LIML"}
     # The browser asks again every few seconds while it waits: one call to SimBrief
     client.get("/simbrief/ofp?username=someone")
     assert len(calls) == 1
+
+
+def test_the_generation_time_reads_from_either_source(app_module):
+    assert app_module._generated_at("1793644396") == "2026-11-02T18:33:16Z"      # Unix time, fetch-back endpoint
+    assert app_module._generated_at("2026-11-02T18:33:16Z") == "2026-11-02T18:33:16Z"
+    assert app_module._generated_at({}) == "" and app_module._generated_at("soon") == ""
 
 
 def test_no_username_needed_when_signed_in_with_navigraph(client, connected, fake_simbrief):
