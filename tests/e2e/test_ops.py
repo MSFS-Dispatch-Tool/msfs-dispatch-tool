@@ -62,7 +62,7 @@ async def main():
         await fill("aobt-0", sobt + 40); await page.wait_for_timeout(200)
         await fill("atot-0", atot); await fill("aldt-0", abit - 10); await fill("abit-0", abit)
         await page.fill("#afad-0", "2400"); await page.check("#normal-0")
-        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(1000)
+        await page.click("#afNextBtn"); await page.wait_for_timeout(1000)
         fl = await page.evaluate("loadActiveFlight()")
         p0 = fl["leg_state"][0]["pirep"]
         exp_delta = 6

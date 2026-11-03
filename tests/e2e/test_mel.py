@@ -38,7 +38,7 @@ async def main():
         await confirm.click(); await page.wait_for_timeout(2000)
         tech = await page.inner_text("#af-pane-briefing")
         check("briefing technical log shows the procedure cards", "Cruise above FL315 not allowed" in tech and "fix within" not in tech.lower() and "CDL " in tech and "(M)" not in tech and "(O)" not in tech)
-        check("only three tabs: briefing, loadsheet, PIREP", await page.evaluate("[...document.querySelectorAll('.af-tabbar button')].map(b => b.textContent).join(',')") == "BRIEFING,LOADSHEET,PIREP")
+        check("four tabs: plan, briefing, loadsheet, PIREP", await page.evaluate("[...document.querySelectorAll('.af-tabbar button')].map(b => b.textContent).join(',')") == "PLAN,BRIEFING,LOADSHEET,PIREP")
         await page.screenshot(path=shot("mel_tab.png"))
         check("defect steps are a plain list, no tick boxes", await page.locator("#af-pane-briefing .tcard input").count() == 0
               and await page.locator("#af-pane-briefing .tcard-steps li").count() > 0)

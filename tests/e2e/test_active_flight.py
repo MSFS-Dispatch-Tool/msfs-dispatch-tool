@@ -59,10 +59,12 @@ async def main():
         await page.wait_for_selector(".af-top")
 
         now = await page.evaluate("document.querySelector('.af-flow-step.now b').textContent")
-        check("step 1 is PLAN WITH SIMBRIEF and opens on the briefing", now == "PLAN WITH SIMBRIEF" and await page.locator("#af-pane-briefing").is_visible())
-        check("the next step carries its button, the others none",
-              await page.locator(".af-flow-step.now button:has-text('SEND TO SIMBRIEF')").count() == 1
-              and await page.locator(".af-flow-step.todo button").count() == 0)
+        check("step 1 is PLAN WITH SIMBRIEF and the page opens on the PLAN tab", now == "PLAN WITH SIMBRIEF" and await page.locator("#af-pane-plan").is_visible())
+        check("the steps are a tracker, not buttons", await page.locator(".af-flow button").count() == 0)
+        check("the next action is in the bar: OPEN SIMBRIEF without Navigraph", "OPEN SIMBRIEF" in await page.text_content("#afNextBtn"))
+        check("the plan shows the aircraft type when there are no saved airframes", "SimBrief standard" in await page.inner_text("#af-pane-plan"))
+        await page.evaluate("selectRecapTab('briefing')")
+        check("away from the plan, the bar leads back to it", "PLAN THE FLIGHT" in await page.text_content("#afNextBtn"))
         check("the briefing is for reading: no buttons at its end", await page.locator("#af-pane-briefing .sheets ~ * button").count() == 0)
         widths = await page.evaluate("[...document.querySelectorAll('.af-tabbar button')].map(b => Math.round(b.getBoundingClientRect().width))")
         check("the three tabs are the same width", len(set(widths)) == 1, widths)
@@ -76,13 +78,15 @@ async def main():
         await page.wait_for_timeout(700)
         check("a summary tile scrolls to its section", await page.evaluate("document.getElementById('af-pane-briefing').scrollTop") > 300)
         check("map note waits for the OFP", "Waiting for the SimBrief OFP" in await page.inner_text(".af-map-note"))
-        check("loadsheet waits for the OFP", await page.locator("#af-pane-loadsheet button:has-text('ASK FOR LOADSHEET')").is_disabled())
-        check("PIREP waits for the loadsheet", await page.locator("#af-pane-pirep button:has-text('FILL PIREP')").is_disabled())
+        check("loadsheet waits for the OFP", "plan the flight with SimBrief first" in await page.text_content("#af-pane-loadsheet"))
+        check("PIREP waits for the loadsheet", "opens once the loadsheet" in await page.text_content("#af-pane-pirep"))
 
-        await page.click(".af-flow-step.now button:has-text('SEND TO SIMBRIEF')")
+        await page.click("#afNextBtn")                                   # PLAN THE FLIGHT
+        check("PLAN THE FLIGHT opens the PLAN tab", await page.locator("#af-pane-plan").is_visible())
+        await page.click("#afNextBtn")                                   # OPEN SIMBRIEF
         await page.wait_for_timeout(500)
-        check("step 1 waits for the OFP, watching SimBrief", await page.evaluate("document.querySelector('.af-flow-step.now b').textContent") == "PLAN WITH SIMBRIEF"
-              and "Watching SimBrief" in await page.inner_text(".af-flow-step.now"))
+        check("step 1 waits for the OFP, the plan watches SimBrief", "Waiting for your OFP" in await page.inner_text(".af-flow-step.now")
+              and "Watching SimBrief" in await page.inner_text("#af-pane-plan") and "FETCH OFP NOW" in await page.text_content("#afNextBtn"))
         await page.evaluate("OFP_POLL_MS = 300; scheduleOfpCheck(0)")
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'available'", timeout=10000)
         check("the OFP is captured automatically, no click", len(ofp_calls) >= 3 and all("static_id=" in u for u in ofp_calls), ofp_calls[:3])
@@ -98,7 +102,8 @@ async def main():
         check("NOTAM section lists major first, the rest folded away", "EGAC MAJOR" in notam_sec and "ILS RWY 22 U/S" in notam_sec and "Show 1 other NOTAM" in notam_sec, notam_sec)
         check("briefing shows the OFP figures", "SAM L620 HON" in brief and "FL360" in brief and "58,150" in brief, brief[-500:])
 
-        await page.click(".af-flow-step.now button:has-text('ASK FOR LOADSHEET')")
+        check("the bar's next action is ASK FOR LOADSHEET", "ASK FOR LOADSHEET" in await page.text_content("#afNextBtn"))
+        await page.click("#afNextBtn")
         await page.wait_for_timeout(600)
         check("ASK FOR LOADSHEET opens the loadsheet tab", await page.locator("#af-pane-loadsheet").is_visible())
         check("asking for the loadsheet tells load control whether the leg is full", extras_urls and "full=" in extras_urls[0], extras_urls[:1])
@@ -107,7 +112,8 @@ async def main():
         check("loadsheet built from the OFP", line("ZERO FUEL WEIGHT ACT") == "58150" and line("TAKE OFF WEIGHT ACT") == "64350"
               and line("PASSENGER/CABIN BAG") == "14364" and "G-EZWX" in sheet, sheet)
         check("changes pending until the captain decides", sheet.count("PENDING CAPTAIN DECISION") == 2)
-        check("SIGN LOADSHEET is off while items are open", await page.locator("#signLoadsheetBtn-0").is_disabled())
+        check("SIGN LOADSHEET is off while items are open, and the bar says why", await page.locator("#afNextBtn").is_disabled()
+              and "still to sort out" in await page.text_content(".af-nextbar"))
 
         await page.click("#af-pane-loadsheet .ls-item:nth-child(1) button:has-text('DECLINE')")
         await page.click("#af-pane-loadsheet button:has-text('ACCEPT NOTOC')")
@@ -131,7 +137,7 @@ async def main():
         await page.click("#af-pane-loadsheet .ls-item:nth-child(1) button:has-text('DECLINE')")
         await page.wait_for_timeout(300)
 
-        await page.click("#signLoadsheetBtn-0")
+        await page.click("#afNextBtn")
         await page.wait_for_timeout(600)
         fl = await page.evaluate("loadActiveFlight()")
         ls = fl["leg_state"][0]["loadsheet"]
@@ -185,7 +191,7 @@ async def main():
         await page.evaluate("fetch('/acars/settings', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({logon: ''})})")
         await page.evaluate("selectRecapTab('pirep')")
 
-        await page.click("#af-pane-pirep button:has-text('FILL PIREP')")
+        await page.click("#afNextBtn")                                   # FILL PIREP
         await page.wait_for_timeout(300)
         await page.click("#af-pane-pirep button:has-text('SEND TO AIRCRAFT')")
         check("SEND TO AIRCRAFT is a placeholder for now", await page.locator("#sta-note-0").is_visible())
@@ -204,7 +210,7 @@ async def main():
         await page.check("#normal-0")
         await page.fill("#remarks-0", "Light chop over the Irish Sea")
         await page.screenshot(path=shot("af_pirep.png"))
-        await page.click("#af-pane-pirep button:has-text('SIGN PIREP')")
+        await page.click("#afNextBtn")                                   # SIGN PIREP
         await page.wait_for_timeout(1000)
         fl = await page.evaluate("loadActiveFlight()")
         p0 = fl["leg_state"][0]["pirep"]
