@@ -2613,6 +2613,15 @@ def _duration_seconds(value):
     return ""
 
 
+def _generated_at(value):
+    """When SimBrief made the OFP, as "2026-11-02T18:33:16Z": a Unix time
+    from the fetch-back endpoint, ISO from the API. "" when it's neither."""
+    value = str(value or "").strip()
+    if value.isdigit():
+        return datetime.fromtimestamp(int(value), timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return value if re.match(r"^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?Z$", value) else ""
+
+
 def ofp_summary(data):
     """What the app keeps from a SimBrief OFP, read from either source."""
     def section(name):
@@ -2635,6 +2644,9 @@ def ofp_summary(data):
 
     return {
         "static_id": params_block.get("static_id", ""),
+        "generated_at": _generated_at(params_block.get("time_generated")),
+        "dep_rwy": origin.get("plan_rwy", ""),
+        "arr_rwy": destination.get("plan_rwy", ""),
         "origin_icao": origin.get("icao_code", ""),
         "destination_icao": destination.get("icao_code", ""),
         "callsign": f"{general.get('icao_airline', '')}{general.get('flight_number', '')}",

@@ -67,7 +67,7 @@ async def main():
         await page.click(".confirm-row button")
         await page.wait_for_selector(".af-top")
         steps = await page.evaluate("[...document.querySelectorAll('.af-flow-step b')].map(e => e.textContent)")
-        check("CONFIRM opens the active flight with its four steps", steps == ["SEND TO SIMBRIEF", "FETCH OFP", "SIGN LOADSHEET", "FILE PIREP"], steps)
+        check("CONFIRM opens the active flight with its three steps", steps == ["PLAN WITH SIMBRIEF", "SIGN LOADSHEET", "FILE PIREP"], steps)
         await page.evaluate("""async () => { const r = await (await fetch('/active-flight')).json();
             await fetch('/active-flight', {method: 'PUT', headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({flight: null, base_rev: r.rev})}); clearActiveFlight(); }""")

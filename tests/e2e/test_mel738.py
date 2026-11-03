@@ -37,7 +37,7 @@ async def main():
         await page.evaluate("""(ofp) => { const f = loadActiveFlight(); const st = f.leg_state[0];
           st.simbrief = 'available'; st.ofp = ofp; saveAndRender(f); }""", ofp)
         await page.wait_for_timeout(400)
-        await page.click("#af-pane-loadsheet button:has-text('ASK FOR LOADSHEET')"); await page.wait_for_timeout(600)
+        await page.click(".af-flow-step.now button:has-text('ASK FOR LOADSHEET')"); await page.wait_for_timeout(600)
         pane = await page.inner_text("#af-pane-loadsheet")
         check("loadsheet flags take-off fuel below the MEL minimum", "below the MEL minimum of 6,804 KG" in pane, pane[-400:])
         check("SIGN LOADSHEET stays off until the fuel is sorted", await page.locator("#signLoadsheetBtn-0").is_disabled())

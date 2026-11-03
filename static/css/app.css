@@ -558,7 +558,8 @@
   .af-leg.done small { color: var(--green); }
   .af-leg.on { border-color: var(--titlebar); background: var(--accent-bg); box-shadow: inset 0 0 0 1px var(--titlebar); }
   .af-leg.on small { color: var(--titlebar); }
-  /* The four steps for the leg: a read-only checklist (done, next, to do) */
+  /* The three steps for the leg (done, next, to do); the next one carries
+     its controls in a box under its text */
   .af-flow { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; }
   .af-flow-step { position: relative; display: flex; gap: 10px; padding: 0 0 12px; }
   .af-flow-step:last-child { padding-bottom: 0; }
@@ -566,7 +567,7 @@
   .af-flow-step.done:not(:last-child)::after { background: var(--green); }
   .af-flow-n { flex: none; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 700; color: var(--text-muted); background: var(--white); border: 2px solid var(--shadow-dk); box-sizing: border-box; }
-  .af-flow-body { min-width: 0; padding-top: 3px; }
+  .af-flow-body { flex: 1 1 auto; min-width: 0; padding-top: 3px; }
   .af-flow-body b { font-size: 12.5px; letter-spacing: 0.03em; color: var(--text-muted); }
   .af-flow-body small { display: block; margin-top: 1px; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
   .af-flow-tag { margin-left: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
@@ -578,11 +579,17 @@
   .af-flow-step.now small { color: var(--text); }
   .af-flow-step.now .af-flow-tag { background: var(--titlebar); color: #fff; }
   .af-flow-note { margin: 0 0 12px; font-size: 12px; color: var(--text-muted); }
+  .af-flow-when { display: block; color: var(--text-muted); }
+  .af-act { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--face); display: flex; flex-direction: column; gap: 10px; }
+  .af-act-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+  .af-flow-body > .af-act-row { margin-top: 8px; }
+  .af-field { display: flex; flex-direction: column; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted); }
+  .af-field select { font: inherit; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text); width: 100%; max-width: 520px;
+    padding: 6px 8px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm); background: var(--white); }
   .ofp-watch { display: inline-flex; align-items: center; gap: 8px; flex: 1 1 100%; font-size: 12.5px; color: var(--text); }
 .ofp-watch-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--titlebar); animation: ofp-pulse 1.4s ease-in-out infinite; }
 @keyframes ofp-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
 @media (prefers-reduced-motion: reduce) { .ofp-watch-dot { animation: none; } }
-.brief-actions { margin: 4px 0 6px; padding-top: 12px; border-top: 1px solid var(--shadow-md); }
   .af-status { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: flex-end; flex: 1 1 240px; }
   .af-route-names { font-size: 12.5px; color: var(--text-muted); margin-bottom: 8px; }
   .af-map-note { margin: 6px 0 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.4; overflow-wrap: anywhere; }
@@ -612,7 +619,7 @@
      never goes below 560px, so a very short window still scrolls. ---- */
   @media (min-width: 1200px) {
     main, footer { max-width: 1320px; }
-    body.page-search main { max-width: 1840px; }
+    body.page-search main, body.page-flight main { max-width: 1840px; }
     body.page-fit footer { display: none; }
     body.page-fit main {
       display: flex; flex-direction: column; margin-top: 12px; margin-bottom: 0; padding-bottom: 16px;
@@ -655,7 +662,7 @@
 
     /* Active flight: route map and schedule on the left, the tabs on the
        right; a long tab scrolls inside its box. */
-    .af-cols { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    .af-cols { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: minmax(420px, 2fr) minmax(0, 3fr); gap: 16px; }
     .af-route, .af-tabs { min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; }
     .af-route > .panel-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
     .af-route .route-map { flex: 1 1 auto; min-height: 160px; height: auto; }
@@ -883,6 +890,12 @@
 .bsum-v { font-size: 14px; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bsum-tile.nogo .bsum-v { color: var(--red); }
 .bsum-sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A wide briefing reads in two columns, sections kept whole */
+#af-pane-briefing { container-type: inline-size; }
+@container (min-width: 940px) {
+  .sheets { columns: 2; column-gap: 12px; }
+  .sheets > .sheet { break-inside: avoid; }
+}
 .sheet { border: 1px solid var(--shadow-md); border-radius: var(--radius-sm); background: var(--white); margin-bottom: 12px; overflow: hidden; }
 .sheet-h { margin: 0; padding: 7px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.07em; color: var(--text); background: var(--face-dark); border-bottom: 1px solid var(--shadow-md); }
 .sheet-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 7px 12px; font-size: 12.5px; line-height: 1.45; border-top: 1px solid var(--shadow-md); }
@@ -941,9 +954,6 @@
 .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
 .doc-blocker { font-size: 12px; color: var(--text-muted); }
 .sb-airframe:empty { display: none; }
-.sb-airframe-pick { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-muted); }
-.sb-airframe-pick select { font: inherit; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text); max-width: 340px;
-  padding: 6px 8px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm); background: var(--white); }
 .soon-tag { font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; padding: 1px 5px; margin-left: 4px; border-radius: 999px; background: var(--face-dark); color: var(--text-muted); vertical-align: 1px; }
 .doc { padding: 14px 16px; font-size: 12px; color: #1b1b1b; background: #FFFDF5; border: 1px solid #E8E2CC; border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
 .doc-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; letter-spacing: 0.04em; padding-bottom: 6px; border-bottom: 1px dashed #B9B29B; }
