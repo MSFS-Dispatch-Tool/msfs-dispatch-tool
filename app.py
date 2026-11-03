@@ -687,15 +687,15 @@ def create_report_route():
     payload = request.get_json(silent=True) or {}
     category = payload.get("category")
     if category not in REPORT_CATEGORIES:
-        return jsonify({"error": "Pick what kind of problem it is"}), 400
+        return jsonify({"error": "SELECT PROBLEM TYPE"}), 400
     message = str(payload.get("message") or "").strip()
     if len(message) < REPORT_MIN_CHARS:
-        return jsonify({"error": "Tell us a little more: at least 10 characters"}), 400
+        return jsonify({"error": "DESCRIBE THE PROBLEM: MIN 10 CHARACTERS"}), 400
     user_id = current_user_id()
     now = time.time()
     recent = [t for t in _report_times.get(user_id, []) if now - t < REPORT_WINDOW_SECONDS]
     if len(recent) >= REPORT_MAX_PER_WINDOW:
-        return jsonify({"error": "You've sent several reports just now. Try again in a few minutes"}), 429
+        return jsonify({"error": "REPORT LIMIT REACHED. RETRY IN A FEW MINUTES"}), 429
     flight = payload.get("flight") if isinstance(payload.get("flight"), dict) else None
     if flight is not None and len(json.dumps(flight)) > REPORT_MAX_FLIGHT_BYTES:
         flight = {"note": "The active flight was too large to attach"}
@@ -1909,12 +1909,12 @@ def account_photo_route():
     if unavailable:
         return unavailable
     if not auth.admin_available():
-        return jsonify({"error": "Photo storage is not configured (SUPABASE_SERVICE_ROLE_KEY unset)."}), 502
+        return jsonify({"error": "PHOTO STORAGE NOT AVAILABLE"}), 502
     photo_url, error = _handle_photo_upload(request.files.get("photo"))
     if error:
         return jsonify({"error": error}), 400
     if not photo_url:
-        return jsonify({"error": "No photo provided."}), 400
+        return jsonify({"error": "NO PHOTO PROVIDED"}), 400
     existing = get_settings_safe()
     profile = dict(existing["profile"])
     profile["photo_url"] = photo_url
@@ -1931,18 +1931,18 @@ def account_delete_route():
     session) and this app's own rows for them (PIREPs, settings)."""
     user = current_user()
     if not user:
-        return jsonify({"error": "Not signed in."}), 401
+        return jsonify({"error": "NOT SIGNED IN"}), 401
     if not auth.admin_available():
-        return jsonify({"error": "Account deletion is not configured (SUPABASE_SERVICE_ROLE_KEY unset)."}), 502
+        return jsonify({"error": "ACCOUNT DELETION NOT AVAILABLE"}), 502
     password = request.form.get("password") or ""
     if not password:
-        return jsonify({"error": "Enter your password to confirm."}), 400
+        return jsonify({"error": "ENTER PASSWORD TO CONFIRM"}), 400
     try:
         auth.sign_in(user["email"], password)
     except auth.AuthError as exc:
         if exc.message == auth.UNREACHABLE:
             return jsonify({"error": exc.message}), 503
-        return jsonify({"error": "Incorrect password."}), 400
+        return jsonify({"error": "INCORRECT PASSWORD"}), 400
     try:
         auth.admin_delete_user(user["id"])
     except auth.AuthError as exc:
@@ -2289,7 +2289,7 @@ def acars_settings_save():
         return unavailable
     code = str((request.get_json(silent=True) or {}).get("logon") or "").strip()
     if code and not acars.valid_logon(code):
-        return jsonify({"error": "A Hoppie logon code is 6 to 40 letters and numbers"}), 400
+        return jsonify({"error": "HOPPIE LOGON CODE: 6 TO 40 LETTERS AND NUMBERS"}), 400
     _save_hoppie_logon(code, current_user_id())
     return jsonify(_acars_status(current_user_id()))
 
@@ -2302,7 +2302,7 @@ def acars_sayintentions_save():
         return unavailable
     key = str((request.get_json(silent=True) or {}).get("api_key") or "").strip()
     if key and not sayintentions.valid_key(key):
-        return jsonify({"error": "That doesn't look like a SayIntentions API key: copy it again from your pilot portal"}), 400
+        return jsonify({"error": "SAYINTENTIONS API KEY NOT VALID. COPY IT AGAIN FROM THE PILOT PORTAL"}), 400
     _update_acars(current_user_id(), si_key=_si_box.seal(key) if key else None)
     return jsonify(_acars_status(current_user_id()))
 
