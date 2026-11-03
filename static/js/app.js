@@ -2240,6 +2240,7 @@ function planPaneHtml(flight, i) {
   const form = `<section class="sheet plan-form"><h4 class="sheet-h">SIMBRIEF PLAN</h4>
       <div class="plan-fields">
         <span class="sb-airframe" id="sbAirframe-${i}">${api ? '' : `<span class="af-field"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')} &middot; SimBrief standard</b></span>`}</span>
+        <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">Reading the ATIS&hellip;</span></div>
         <p class="plan-note" id="sbSendNote-${i}">${api
           ? 'GENERATE OFP plans the leg on SimBrief with this airframe: route, fuel, weights and NOTAMs come straight into the briefing'
           : 'OPEN SIMBRIEF opens SimBrief with this leg filled in: generate the OFP there and it comes back here on its own. Sign in with Navigraph in Account settings to plan with your own airframes in one click'}</p>
@@ -2359,6 +2360,7 @@ function renderRecap(flight) {
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
   if (document.getElementById('sbAirframe-' + i)) loadSimbriefAirframes(flight, i);
+  if (document.getElementById('sbRunways-' + i)) { if (runwayInfo[simbriefApiKey(flight, i)]) paintRunways(flight, i); else loadRunways(flight, i); }
   // Waiting for this leg's OFP (also after a reload): watch for it
   const waiting = flight.leg_state.findIndex((s, k) => s.simbrief === 'sent' && legStage(flight, k) === 'ofp');
   if (waiting >= 0) { startOfpWatch(waiting); paintOfpWatch(); } else stopOfpWatch();
@@ -3130,6 +3132,9 @@ function simbriefLegOptions(flight, index, staticId) {
   if (leg.tech && leg.tech.extra_fuel_min) options.extra_fuel_min = leg.tech.extra_fuel_min;
   const remarks = simbriefRemarks(leg);
   if (remarks) options.remarks = remarks;
+  const rwy = runwayInfo[simbriefApiKey(flight, index)];
+  if (rwy && rwy.dep) options.dep_rwy = rwy.dep.rwy;
+  if (rwy && rwy.arr) options.arr_rwy = rwy.arr.rwy;
   return options;
 }
 
@@ -3192,10 +3197,42 @@ function chooseSimbriefAirframe(index, value) {
   if (info) info.selected = value;
 }
 
+// ---- RUNWAYS: from the ATIS of the network the pilot flies on (see
+// atis.py). The choice of network is remembered; the runways are read again
+// just before the plan is made, so the OFP gets the ones in use then. ----
+const runwayInfo = {};   // per leg: {source, dep, arr, error} from /atis/runways
+const RUNWAY_SOURCES = [['vatsim', 'VATSIM ATIS'], ['ivao', 'IVAO ATIS'], ['sayintentions', 'SayIntentions ATIS'], ['none', 'No network: SimBrief picks by wind']];
+async function loadRunways(flight, index, source) {
+  const leg = flight.legs[index], key = simbriefApiKey(flight, index);
+  const qs = new URLSearchParams({ dep: leg.departure_info.icao, arr: leg.arrival_info.icao });
+  if (source) qs.set('source', source);
+  try {
+    runwayInfo[key] = await (await fetch('/atis/runways?' + qs)).json();
+  } catch (e) {
+    runwayInfo[key] = { source: source || (runwayInfo[key] || {}).source || 'vatsim', dep: null, arr: null, error: 'The ATIS can\'t be read right now' };
+  }
+  paintRunways(flight, index);
+}
+function paintRunways(flight, index) {
+  const el = document.getElementById('sbRunways-' + index), info = runwayInfo[simbriefApiKey(flight, index)];
+  if (!el || !info || info.error === 'Unknown airports') return;
+  const leg = flight.legs[index], net = (RUNWAY_SOURCES.find(([k]) => k === info.source) || [, ''])[1].replace(' ATIS', '');
+  const line = (icao, found) => `<li><b>${icao}</b> ${found
+    ? `<span class="plan-rwy">${escText(found.rwy)}</span> <span class="plan-note">${escText(net)} ATIS${found.letter ? ' ' + escText(found.letter) : ''}</span>`
+    : `<span class="plan-note">${info.source === 'none' ? 'SimBrief picks by wind' : info.error ? `${escText(info.error)}: SimBrief picks by wind` : `no runway on ${escText(net)} right now: SimBrief picks by wind`}</span>`}</li>`;
+  el.innerHTML = `<span>RUNWAYS</span>
+    <select id="sbRunwaySel-${index}" onchange="loadRunways(loadActiveFlight(), ${index}, this.value)" aria-label="Where the runways come from">
+      ${RUNWAY_SOURCES.map(([k, label]) => `<option value="${k}"${k === info.source ? ' selected' : ''}>${label}</option>`).join('')}</select>
+    <ul class="plan-rwys">${line(leg.departure_info.icao + ' DEP', info.dep)}${line(leg.arrival_info.icao + ' ARR', info.arr)}</ul>`;
+}
+
 async function sendToSimbrief(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
+  // (simbrief.com opens in a new tab, which has to happen straight after the click)
   if (!info || !info.available) return prepareLeg(index);
+  const rwy = runwayInfo[simbriefApiKey(flight, index)];
+  if (rwy && rwy.source && rwy.source !== 'none') await loadRunways(flight, index, rwy.source);
   const button = document.querySelector(`[data-id="sbSendBtn-${index}"]`);
   const note = document.getElementById('sbSendNote-' + index);
   if (button) button.disabled = true;

@@ -24,6 +24,7 @@ import demo
 import techlog
 import notams
 import acars
+import atis
 import monitoring
 import navigraph
 import ops
@@ -2122,6 +2123,12 @@ def _simbrief_dispatch_params(args):
     remarks = re.sub(r"[^A-Za-z0-9 \n/.,:;()%+'-]", "", remarks)[:REMARKS_MAX_CHARS].strip()
     if remarks:
         params["manualrmk"] = remarks
+    # The runways in use from the pilot's network ATIS (/atis/runways);
+    # without them SimBrief picks by wind
+    for arg, key in (("dep_rwy", "origrwy"), ("arr_rwy", "destrwy")):
+        rwy = args.get(arg, default="", type=str).strip().upper()
+        if atis.RUNWAY_RE.match(rwy):
+            params[key] = rwy
     return params, None
 
 
@@ -2832,6 +2839,38 @@ def simbrief_airframes():
     remembered = (db.get_simbrief(user_id).get("airframes") or {}).get(f"{airline}:{sb_type}")
     return jsonify({"available": True, "type": sb_type, "airframes": airframes,
                     "selected": _default_airframe(airframes, remembered, codes)})
+
+
+RUNWAY_SOURCES = atis.SOURCES + ("none",)
+
+
+@app.route("/atis/runways")
+def atis_runways():
+    """The runways in use at the leg's two airports from the ATIS of the
+    network the pilot flies on (VATSIM, IVAO or SayIntentions; "none": no
+    network, SimBrief picks by wind). Choosing a network here remembers it
+    for the next flights; without one, the remembered network is used."""
+    user_id = current_user_id()
+    dep = request.args.get("dep", default="", type=str).strip().upper()
+    arr = request.args.get("arr", default="", type=str).strip().upper()
+    if not (atis.ICAO_RE.match(dep) and atis.ICAO_RE.match(arr)):
+        return jsonify({"error": "Unknown airports"}), 400
+    prefs = db.get_simbrief(user_id) if db.db_available() else {}
+    source = request.args.get("source", default="", type=str).strip().lower()
+    if source:
+        if source not in RUNWAY_SOURCES:
+            return jsonify({"error": "Unknown network"}), 400
+        if db.db_available() and prefs.get("runway_source") != source:
+            db.save_simbrief({**prefs, "runway_source": source}, user_id)
+    else:
+        source = prefs.get("runway_source") if prefs.get("runway_source") in RUNWAY_SOURCES else "vatsim"
+    if source == "none":
+        return jsonify({"source": source, "dep": None, "arr": None})
+    try:
+        found = atis.runways(source, dep, arr, api_key=_si_key(user_id) if source == "sayintentions" and db.db_available() else None)
+    except atis.AtisError as exc:
+        return jsonify({"source": source, "dep": None, "arr": None, "error": str(exc)})
+    return jsonify({"source": source, **found})
 
 
 @app.route("/simbrief/generate", methods=["POST"])
