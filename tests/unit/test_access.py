@@ -47,9 +47,9 @@ def test_only_invited_emails_can_create_an_account(client, app_module, lists, mo
     monkeypatch.setattr(app_module.auth, "sign_up", lambda email, password, redirect_to=None: created.append(email) or {"identities": [1]})
     form = {"email": "pilot@example.com", "password": "Str0ng!pass", "password_confirm": "Str0ng!pass"}
     page = client.get("/signup").get_data(as_text=True)
-    assert "email address you were invited with" in page and 'name="password"' in page
+    assert "email address the invitation was sent to" in page and 'name="password"' in page
     refused = client.post("/signup", data=form)
-    assert refused.status_code == 403 and "isn&#39;t on the invitation list" in refused.get_data(as_text=True) and not created
+    assert refused.status_code == 403 and "not on the invitation list" in refused.get_data(as_text=True) and not created
     allowed["pilot@example.com"] = ""                     # read fresh at sign-up, no cache wait
     assert client.post("/signup", data=form).status_code == 200 and created == ["pilot@example.com"]
 

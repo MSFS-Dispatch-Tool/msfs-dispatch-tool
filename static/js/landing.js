@@ -197,13 +197,13 @@
     { note: 'U2803 London Gatwick to Belfast City: a late inbound and a generator deferred',
       lights: [
         ['ok', 'GO', '<ul class="ld-checks"><li class="ok">Weather at Gatwick and Belfast City above minima</li><li class="ok">Crew duty: 3h 20m planned of an 11h 30m limit</li><li class="ok">Belfast City curfew 22:00Z: 2h 40m margin</li></ul>'],
-        ['warn', '+40 MIN', '<p><span class="ld-tag">IATA 93</span> Late arrival of the inbound aircraft</p><p class="ld-sub">Off-blocks 17:50Z instead of 17:10Z. The delay carries on to the next leg of the trip, and you code it in your PIREP</p>'],
+        ['warn', '+40 MIN', '<p><span class="ld-tag">IATA 93</span> Late arrival of the inbound aircraft</p><p class="ld-sub">Off-blocks 17:50Z instead of 17:10Z. The delay carries on to the next sector of the trip and is coded in the PIREP</p>'],
         ['warn', '1 MEL', '<p><span class="ld-tag">MEL 24-21-01 &middot; CAT C</span> Engine generator 2 inoperative</p><ul class="ld-list"><li>Keep the APU running with its generator online for the whole flight</li><li>5 minutes of extra fuel for the APU burn, already in the SimBrief plan</li></ul>'],
         ['ok', 'CLEAR', '<p>No major or significant NOTAMs live at either end</p><p class="ld-sub">3 other NOTAMs in the briefing: taxiway works, stand closures, a crane near the approach</p>'],
       ] },
     { note: 'FR113 Dublin to London Gatwick: thunderstorms forecast, and the weather radar is out',
       lights: [
-        ['bad', 'NO-GO', '<p><span class="ld-tag bad">NO-GO</span> Weather radar inoperative with thunderstorms forecast at Gatwick</p><p class="ld-sub">The MEL doesn\'t allow this departure. Swap the aircraft, or wait for the storms to clear</p>'],
+        ['bad', 'NO-GO', '<p><span class="ld-tag bad">NO-GO</span> Weather radar inoperative with thunderstorms forecast at Gatwick</p><p class="ld-sub">The MEL does not allow this departure. Swap the aircraft, or wait for the storms to clear</p>'],
         ['warn', '+25 SLOT', '<p><span class="ld-tag">IATA 81</span> Air traffic flow restriction over the UK</p><p class="ld-sub">Slot 07:20Z: be ready to push 15 minutes before it</p>'],
         ['bad', 'WX RADAR', '<p><span class="ld-tag bad">MEL 34-43-01</span> Weather radar inoperative</p><ul class="ld-list"><li>Dispatch only with no thunderstorms forecast along the route or at the destination</li></ul>'],
         ['warn', '1 MAJOR', '<p><span class="ld-tag">EGKK</span> Runway 08R/26L closed 0600-1400Z</p><p class="ld-sub">Single-runway operations: expect holding on arrival</p>'],

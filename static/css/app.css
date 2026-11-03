@@ -483,10 +483,12 @@
   .st-card-head h3 { margin: 0; }
   .st-card-head .st-seg { flex: 1 1 240px; min-width: 0; justify-content: flex-end; }
   .st-hint { font-size: 11.5px; color: var(--text-muted); margin: 4px 0 8px; }
-  /* Statistics read in the operations register: every label, note and
-     name uppercase, data included (airports, airlines, dates) */
-  .st-kpis, .st-main, .profile-stats-kpis { text-transform: uppercase; }
-  .st-kpis button, .st-main button, .st-main select { text-transform: inherit; }
+  /* The app reads in the operations register (docs/STYLE.md): everything on
+     its pages uppercase, data included (airports, MEL and delay texts,
+     names); what the pilot types stays as typed */
+  #mainContent { text-transform: uppercase; }
+  #mainContent button, #mainContent select { text-transform: inherit; }
+  #mainContent input, #mainContent textarea { text-transform: none; }
   .st-muted { color: var(--text-muted); font-weight: 500; }
   .st-sub { display: block; font-size: 11px; color: var(--text-muted); }
   .st-timeline { height: 280px; position: relative; }

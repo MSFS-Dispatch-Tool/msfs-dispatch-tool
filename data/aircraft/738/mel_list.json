@@ -30,7 +30,7 @@
   "plain": "One of the two autopilot channels is inoperative, while the other remains available",
   "steps": [
    "Use the serviceable autopilot channel",
-   "Autoland and low-visibility approaches are not available. Amend your route and planning accordingly"
+   "Autoland and low-visibility approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -60,7 +60,7 @@
   "plain": "The autothrottle is inoperative",
   "steps": [
    "Fly with manual thrust throughout",
-   "Autoland and low-visibility approaches are not available. Amend your route and planning accordingly"
+   "Autoland and low-visibility approaches are not available. Amend route and planning accordingly"
   ]
  },
  {
@@ -380,7 +380,7 @@
   "name": "Weather radar",
   "plain": "The weather radar is inoperative",
   "steps": [
-   "Do not plan the flight through forecast thunderstorm activity. Amend your route and planning accordingly",
+   "Do not plan the flight through forecast thunderstorm activity. Amend route and planning accordingly",
    "Brief the windshear escape procedure before departure"
   ]
  },
@@ -599,7 +599,7 @@
   "plain": "The GPS is inoperative or unreliable",
   "steps": [
    "Navigate on IRS and radio updating",
-   "Plan ILS or VOR approaches rather than RNP approaches. Amend your route and planning accordingly"
+   "Plan ILS or VOR approaches rather than RNP approaches. Amend route and planning accordingly"
   ]
  },
  {
@@ -824,7 +824,7 @@
   "name": "Wing anti-ice valve",
   "plain": "One wing anti-ice valve is inoperative in the closed position",
   "steps": [
-   "Do not plan the flight into known or forecast icing. Amend your route and planning accordingly"
+   "Do not plan the flight into known or forecast icing. Amend route and planning accordingly"
   ]
  },
  {
