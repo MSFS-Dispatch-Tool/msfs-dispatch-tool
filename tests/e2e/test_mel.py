@@ -19,7 +19,7 @@ async def main():
         confirm = page.locator(".confirm-row button")
         check("CONFIRM disabled while NO-GO", await confirm.is_disabled())
         txt = await page.inner_text("#detailCell")
-        check("preview lists MEL items, CDL and SimBrief inputs", all(s in txt for s in ["MEL 34-41-01", "Air conditioning pack", "CDL ", "Included in your SimBrief plan", "FL315"]))
+        check("preview lists MEL items, CDL and SimBrief inputs", all(s in txt for s in ["MEL 34-41-01", "Air conditioning pack", "CDL ", "IN SIMBRIEF PLAN", "FL315"]))
         await page.locator(".nogo-banner").scroll_into_view_if_needed()
         await page.screenshot(path=shot("mel_nogo.png"))
         d0 = await page.evaluate("expandedDetailData.legs[0]")
@@ -44,7 +44,7 @@ async def main():
               and await page.locator("#af-pane-briefing .tcard-steps li").count() > 0)
         await page.evaluate("selectRecapTab('briefing')"); await page.wait_for_timeout(200)
         brief = await page.inner_text("#af-pane-briefing")
-        check("briefing shows DELAY 46", "Aircraft change" in brief)
+        check("briefing shows DELAY 46", "AIRCRAFT CHANGE" in brief)
         req = []
         page.on("request", lambda r: req.append(r.url) if "redirect-url" in r.url else None)
         await page.evaluate("doPrepareLeg(0)"); await page.wait_for_timeout(800)

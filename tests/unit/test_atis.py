@@ -115,7 +115,7 @@ def test_sayintentions_gives_its_active_runways_with_both_keys(feeds, monkeypatc
 def test_a_network_out_of_reach_says_so(feeds):
     _, answers = feeds
     answers[atis.VATSIM_URL] = requests.ConnectionError("down")
-    with pytest.raises(atis.AtisError, match="VATSIM can't be reached"):
+    with pytest.raises(atis.AtisError, match="VATSIM NOT AVAILABLE"):
         atis.runways("vatsim", "EGKK", "EGAC")
 
 
@@ -153,7 +153,7 @@ def test_a_network_out_of_reach_leaves_the_runways_to_simbrief(client, prefs, fe
     _, answers = feeds
     answers[atis.VATSIM_URL] = requests.ConnectionError("down")
     got = client.get("/atis/runways?dep=EGKK&arr=EHAM").get_json()
-    assert got["dep"] is None and got["arr"] is None and "can't be reached" in got["error"]
+    assert got["dep"] is None and got["arr"] is None and "NOT AVAILABLE" in got["error"]
 
 
 def test_the_runways_go_to_simbrief_as_origrwy_and_destrwy(client):

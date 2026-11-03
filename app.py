@@ -1269,7 +1269,7 @@ def wx_metars():
     try:
         data = wxmap.metar_categories([a["icao"] for a in network["airports"]], WEATHER_USER_AGENT)
     except Exception:
-        return jsonify({"error": "Weather data is unavailable right now."}), 503
+        return jsonify({"error": "WX NOT AVAILABLE"}), 503
     resp = jsonify(data)
     resp.headers["Cache-Control"] = "public, max-age=300"
     return resp
@@ -1281,7 +1281,7 @@ def wx_sigmets():
     try:
         data = wxmap.current_sigmets(WEATHER_USER_AGENT)
     except Exception:
-        return jsonify({"error": "SIGMET data is unavailable right now."}), 503
+        return jsonify({"error": "SIGMET NOT AVAILABLE"}), 503
     resp = jsonify(data)
     resp.headers["Cache-Control"] = "public, max-age=120"
     return resp
@@ -1307,18 +1307,18 @@ def search():
     if not origin_raw.strip() and not destination_raw.strip():
         # An unfiltered search is the whole network (~19 MB, ~2 s); the app
         # never sends one, so refuse it rather than let anyone trigger it
-        return jsonify({"error": "Give a departure or destination airport."}), 400
+        return jsonify({"error": "ENTER DEPARTURE OR DESTINATION AIRPORT"}), 400
     trip_type = request.args.get("trip_type", default="random", type=str)
     airline = request.args.get("airline", default="", type=str).strip().upper()
     if airline and airline not in ACTIVE_CARRIER_CODES:
-        return jsonify({"error": f"Unknown carrier: {airline}"}), 400
+        return jsonify({"error": f"UNKNOWN AIRLINE: {airline}"}), 400
 
     origin_icao = resolve_airport(airports, origin_raw) if origin_raw else None
     if origin_raw and origin_icao is None:
-        return jsonify({"error": f"Unknown airport code: {origin_raw}"}), 400
+        return jsonify({"error": f"UNKNOWN AIRPORT: {origin_raw}"}), 400
     destination_icao = resolve_airport(airports, destination_raw) if destination_raw else None
     if destination_raw and destination_icao is None:
-        return jsonify({"error": f"Unknown airport code: {destination_raw}"}), 400
+        return jsonify({"error": f"UNKNOWN AIRPORT: {destination_raw}"}), 400
 
     itineraries = find_itineraries(
         routes, rt_pairing,
@@ -1423,11 +1423,11 @@ def select():
     for fn in flight_numbers:
         leg = routes_by_flight_number.get(fn)
         if leg is None:
-            return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+            return jsonify({"error": f"UNKNOWN FLIGHT: {fn}"}), 400
         itinerary.append(leg)
 
     if not itinerary:
-        return jsonify({"error": "No flights specified."}), 400
+        return jsonify({"error": "NO FLIGHT SPECIFIED"}), 400
 
     today = date.today()
     icao_needed = set()
@@ -1616,7 +1616,7 @@ def select_swap_aircraft():
     flight_numbers = [f.strip() for f in request.args.get("flights", default="", type=str).split(",") if f.strip()]
     itinerary = [routes_by_flight_number.get(fn) for fn in flight_numbers]
     if not itinerary or any(leg is None for leg in itinerary):
-        return jsonify({"error": "Unknown flights."}), 400
+        return jsonify({"error": "UNKNOWN FLIGHTS"}), 400
     exclude = {i for i in request.args.get("exclude", default="", type=str).split(",") if i}
     eets = request.args.get("eet", default="", type=str).split(",")
     weather = fetch_weather_batch([icao for leg in itinerary for icao in (leg["departure_icao"], leg["arrival_icao"])])
@@ -1662,13 +1662,13 @@ def select_reassign_aircraft():
 
     route_leg = routes_by_flight_number.get(fn)
     if route_leg is None:
-        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+        return jsonify({"error": f"UNKNOWN FLIGHT: {fn}"}), 400
     if load_factor is None or not (0 < load_factor <= 1):
-        return jsonify({"error": "A valid load_factor is required."}), 400
+        return jsonify({"error": "LOAD FACTOR NOT VALID"}), 400
 
     fleet = carrier_for(route_leg)["fleet_by_type"]
     if aircraft_type not in fleet:
-        return jsonify({"error": f"{aircraft_type} isn't in this flight's fleet."}), 400
+        return jsonify({"error": f"{aircraft_type} NOT IN THIS FLIGHT'S FLEET"}), 400
 
     pax_count, load_factor, cargo_weight_kg = pax_and_cargo(
         fleet[aircraft_type]["seats"], route_leg["duration_minutes"], load_factor
@@ -1695,7 +1695,7 @@ def confirm():
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
     itinerary = [routes_by_flight_number[fn] for fn in flight_numbers if fn in routes_by_flight_number]
     if not itinerary:
-        return jsonify({"error": "No flights specified."}), 400
+        return jsonify({"error": "NO FLIGHT SPECIFIED"}), 400
 
     # A route's own callsign_prefix (e.g. easyJet's per-route EJU/EZY/EZS -
     # the real operating subsidiary) wins over the carrier's default when
@@ -1721,7 +1721,7 @@ def loadsheet_extras():
     (no late joiners then, but it can be oversold)."""
     fn = request.args.get("flight", default="", type=str).strip()
     if fn not in routes_by_flight_number:
-        return jsonify({"error": f"Unknown flight number: {fn}"}), 400
+        return jsonify({"error": f"UNKNOWN FLIGHT: {fn}"}), 400
     full_flight = request.args.get("full", type=int)
     settings = get_settings_safe()
     dg, lmc = generate_loadsheet_extras(dangerous_goods, lmc_events, settings["generation"]["lmc"],
@@ -1755,7 +1755,7 @@ if auth.admin_available():
 
 def _require_db():
     if not db.db_available():
-        return jsonify({"error": "No database configured (DATABASE_URL is unset) - the PIREP log is unavailable."}), 502
+        return jsonify({"error": "PIREP LOG NOT AVAILABLE (NO DATABASE)"}), 502
     return None
 
 
@@ -1783,7 +1783,7 @@ def delete_pirep(pirep_id):
     if unavailable:
         return unavailable
     if not db.delete_pirep(pirep_id, current_user_id()):
-        return jsonify({"error": "PIREP not found."}), 404
+        return jsonify({"error": "PIREP NOT FOUND"}), 404
     return jsonify({"deleted": pirep_id})
 
 
@@ -1809,7 +1809,7 @@ def put_active_flight():
     if unavailable:
         return unavailable
     if (request.content_length or 0) > ACTIVE_FLIGHT_MAX_BYTES:
-        return jsonify({"error": "Active flight is too large."}), 413
+        return jsonify({"error": "ACTIVE FLIGHT TOO LARGE"}), 413
     payload = request.get_json(silent=True) or {}
     flight = payload.get("flight")
     base_rev = payload.get("base_rev")
@@ -2016,12 +2016,12 @@ def _simbrief_dispatch_params(args):
     flights_raw = args.get("flights", default="", type=str)
     flight_numbers = [f.strip() for f in flights_raw.split(",") if f.strip()]
     if not flight_numbers:
-        return None, (jsonify({"error": "No flights specified."}), 400)
+        return None, (jsonify({"error": "NO FLIGHT SPECIFIED"}), 400)
 
     fn = flight_numbers[0]
     route_leg = routes_by_flight_number.get(fn)
     if route_leg is None:
-        return None, (jsonify({"error": f"Unknown flight number: {fn}"}), 400)
+        return None, (jsonify({"error": f"UNKNOWN FLIGHT: {fn}"}), 400)
 
     civalue = args.get("civalue", type=int)
     pax = args.get("pax", type=int)
@@ -2314,7 +2314,7 @@ def acars_network_save():
         return unavailable
     network = (request.get_json(silent=True) or {}).get("network")
     if network not in ACARS_NETWORKS or (network == "sayintentions" and not sayintentions.configured()):
-        return jsonify({"error": "Unknown network"}), 400
+        return jsonify({"error": "UNKNOWN NETWORK"}), 400
     _update_acars(current_user_id(), network=network)
     return jsonify(_acars_status(current_user_id()))
 
@@ -2358,17 +2358,17 @@ def acars_send():
     credential = _si_key(user_id) if network == "sayintentions" else _hoppie_logon(user_id)
     if not credential:
         missing = "SayIntentions API key" if network == "sayintentions" else "Hoppie logon code"
-        return jsonify({"ok": False, "no_logon": True, "error": f"Add your {missing} in Account settings first"}), 400
+        return jsonify({"ok": False, "no_logon": True, "error": f"NO {missing.upper()}. ADD IT IN ACCOUNT SETTINGS"}), 400
     callsign = str(payload.get("callsign") or "").strip().upper()
     flight = db.get_active_flight(user_id).get("flight") or {}
     if callsign not in [str(c).upper() for c in (flight.get("callsigns") or [])]:
-        return jsonify({"ok": False, "error": "That callsign isn't part of your active flight"}), 400
+        return jsonify({"ok": False, "error": "CALLSIGN NOT IN ACTIVE FLIGHT"}), 400
     text = acars.clean_message(payload.get("text"))
     if not text:
-        return jsonify({"ok": False, "error": "Nothing to send"}), 400
+        return jsonify({"ok": False, "error": "NOTHING TO SEND"}), 400
     now = time.time()
     if now - _acars_last_send.get(user_id, 0) < ACARS_SEND_INTERVAL_SECONDS:
-        return jsonify({"ok": False, "error": "Just sent: wait a few seconds before sending again"}), 429
+        return jsonify({"ok": False, "error": "SENT. WAIT 10 SEC BEFORE SENDING AGAIN"}), 429
     try:
         if network == "sayintentions":
             variants = payload.get("variants") if isinstance(payload.get("variants"), list) else []
@@ -2377,11 +2377,11 @@ def acars_send():
         else:
             if payload.get("check_online"):
                 if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
-                    return jsonify({"ok": False, "error": "One moment: wait a few seconds and try again"}), 429
+                    return jsonify({"ok": False, "error": "BUSY. RETRY IN 10 SEC"}), 429
                 _acars_last_test[user_id] = now
                 if not acars.ping(credential, [callsign]):
                     return jsonify({"ok": False, "offline": True,
-                                    "error": f"{callsign} isn't logged on to ACARS. Log on in the aircraft as {callsign}, or send anyway"}), 409
+                                    "error": f"{callsign} NOT LOGGED ON TO ACARS. LOG ON IN THE AIRCRAFT AS {callsign}, OR SEND ANYWAY"}), 409
             acars.send_telex(credential, callsign, text)
             sent = text
     except (acars.AcarsError, sayintentions.SayIntentionsError) as exc:
@@ -2401,14 +2401,14 @@ def acars_test():
     user_id = current_user_id()
     network = (request.get_json(silent=True) or {}).get("network") or _acars_network(user_id)
     if network == "sayintentions" and not sayintentions.configured():
-        return jsonify({"ok": False, "error": "SayIntentions isn't available right now"}), 400
+        return jsonify({"ok": False, "error": "SAYINTENTIONS NOT AVAILABLE"}), 400
     credential = _si_key(user_id) if network == "sayintentions" else _hoppie_logon(user_id)
     if not credential:
         missing = "SayIntentions API key" if network == "sayintentions" else "Hoppie logon code"
-        return jsonify({"ok": False, "error": f"Save your {missing} first"}), 400
+        return jsonify({"ok": False, "error": f"SAVE {missing.upper()} FIRST"}), 400
     now = time.time()
     if now - _acars_last_test.get(user_id, 0) < ACARS_TEST_INTERVAL_SECONDS:
-        return jsonify({"ok": False, "error": "One moment: wait a few seconds before testing again"}), 429
+        return jsonify({"ok": False, "error": "WAIT 10 SEC BEFORE TESTING AGAIN"}), 429
     _acars_last_test[user_id] = now
     try:
         if network == "sayintentions":
@@ -2718,19 +2718,19 @@ def simbrief_ofp():
     data, source = _simbrief_latest_via_api(current_user_id()), "api"
     if data is None:
         if not username:
-            return jsonify({"error": "SimBrief username is required."}), 400
+            return jsonify({"error": "SIMBRIEF USERNAME REQUIRED"}), 400
         data, source = _simbrief_latest(username), "username"
     if data is None:
-        return jsonify({"error": "Could not reach SimBrief, or no OFP is on file for this username."}), 502
+        return jsonify({"error": "SIMBRIEF NOT AVAILABLE, OR NO OFP FOR THIS USER"}), 502
     if not isinstance(data, dict):
-        return jsonify({"error": "Unexpected response from SimBrief."}), 502
+        return jsonify({"error": "SIMBRIEF RESPONSE NOT READABLE"}), 502
     if expected:
         got = data.get("params", {}).get("static_id", "") if isinstance(data.get("params"), dict) else ""
         if got != expected:
             return jsonify({"pending": True})
     fetch = data.get("fetch") if isinstance(data.get("fetch"), dict) else {}
     if str(fetch.get("status", "")).lower().startswith("error"):
-        return jsonify({"error": "SimBrief reported an error for this username - generate an OFP first."}), 502
+        return jsonify({"error": "SIMBRIEF ERROR FOR THIS USER. GENERATE OFP FIRST"}), 502
     return jsonify({**ofp_summary(data), "source": source})
 
 
@@ -2828,7 +2828,7 @@ def simbrief_airframes():
     leg = _leg_simbrief_type(request.args.get("flight", default="", type=str).strip(),
                              request.args.get("aircraft_type", default="", type=str).strip())
     if leg is None:
-        return jsonify({"error": "Unknown flight number"}), 400
+        return jsonify({"error": "UNKNOWN FLIGHT"}), 400
     sb_type, airline, codes = leg
     try:
         airframes = [a for a in _pilot_airframes(user_id) if a["type"] == sb_type]
@@ -2854,12 +2854,12 @@ def atis_runways():
     dep = request.args.get("dep", default="", type=str).strip().upper()
     arr = request.args.get("arr", default="", type=str).strip().upper()
     if not (atis.ICAO_RE.match(dep) and atis.ICAO_RE.match(arr)):
-        return jsonify({"error": "Unknown airports"}), 400
+        return jsonify({"error": "UNKNOWN AIRPORTS"}), 400
     prefs = db.get_simbrief(user_id) if db.db_available() else {}
     source = request.args.get("source", default="", type=str).strip().lower()
     if source:
         if source not in RUNWAY_SOURCES:
-            return jsonify({"error": "Unknown network"}), 400
+            return jsonify({"error": "UNKNOWN NETWORK"}), 400
         if db.db_available() and prefs.get("runway_source") != source:
             db.save_simbrief({**prefs, "runway_source": source}, user_id)
     else:
@@ -2881,7 +2881,7 @@ def simbrief_generate():
     carries fallback, and the browser opens simbrief.com instead."""
     user_id = current_user_id()
     if not _simbrief_generate_allowed(user_id):
-        return jsonify({"error": "Plan generation through SimBrief's API isn't available", "fallback": True}), 403
+        return jsonify({"error": "SIMBRIEF API PLANNING NOT AVAILABLE", "fallback": True}), 403
     body = request.get_json(silent=True) or {}
     args = MultiDict({k: str(v) for k, v in body.items() if v is not None and k != "airframe"})
     params, error = _simbrief_dispatch_params(args)
@@ -2889,10 +2889,10 @@ def simbrief_generate():
         return error
     airframe = str(body.get("airframe") or "").strip()
     if airframe and not AIRFRAME_ID_RE.match(airframe):
-        return jsonify({"error": "Unknown airframe"}), 400
+        return jsonify({"error": "UNKNOWN AIRFRAME"}), 400
     now = time.monotonic()
     if now - _simbrief_last_generate.get(user_id, -SIMBRIEF_GENERATE_INTERVAL_SECONDS) < SIMBRIEF_GENERATE_INTERVAL_SECONDS:
-        return jsonify({"error": "A plan was just requested: wait a few seconds"}), 429
+        return jsonify({"error": "OFP JUST REQUESTED. WAIT 10 SEC"}), 429
     _simbrief_last_generate[user_id] = now
 
     # The API reads the departure time from the date only

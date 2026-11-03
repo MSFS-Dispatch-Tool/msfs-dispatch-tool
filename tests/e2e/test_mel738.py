@@ -24,10 +24,10 @@ async def main():
         await rows.nth(idx).locator("button:has-text('SELECT')").click(); await page.wait_for_timeout(2500)
         detail = await page.inner_text("#detailCell")
         check("preview: FAA item numbers and fuel minimum", "Main tank fuel pump, aft" in detail and "minimum 6,804 kg at take-off" in detail and "Centre tank unusable" in detail, "")
-        check("preview: pack FL250 sent to SimBrief", "cruise no higher than FL250" in detail)
+        check("preview: pack FL250 sent to SimBrief", "MAX FL250" in detail)
         await page.locator(".confirm-row button").click(); await page.wait_for_timeout(2000)
         tech = await page.inner_text("#af-pane-briefing")
-        check("MEL tab: installed/required, FAA source, MMEL provisos", "Official wording" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
+        check("MEL tab: installed/required, FAA source, MMEL provisos", "MEL/CDL TEXT" in tech and "Load at least 3,402 kg in each main tank" in tech and "(M)" not in tech and "INSTALLED" not in tech, "")
         await page.screenshot(path=shot("mel738_tab.png"))
         # Loadsheet: an OFP with too little take-off fuel for the pump minimum
         await page.route("**/loadsheet/extras*", lambda r: r.fulfill(status=200, content_type="application/json",
@@ -39,7 +39,7 @@ async def main():
         await page.wait_for_timeout(400)
         await page.click("#afNextBtn"); await page.wait_for_timeout(600)          # ASK FOR LOADSHEET
         pane = await page.inner_text("#af-pane-loadsheet")
-        check("loadsheet flags take-off fuel below the MEL minimum", "below the MEL minimum of 6,804 KG" in pane, pane[-400:])
+        check("loadsheet flags take-off fuel below the MEL minimum", "BELOW MEL MINIMUM 6,804 KG" in pane, pane[-400:])
         check("SIGN LOADSHEET stays off until the fuel is sorted", await page.locator("#afNextBtn").is_disabled())
         await page.click("#af-pane-loadsheet button:has-text('UPLIFT FUEL')"); await page.wait_for_timeout(400)
         sheet = await page.inner_text("#loadsheet-0")
@@ -51,7 +51,7 @@ async def main():
           st.ofp = Object.assign({}, st.ofp, {takeoff_fuel: '9000'}); st.ls.decisions = {}; saveAndRender(f); }""")
         await page.wait_for_timeout(400)
         pane = await page.inner_text("#af-pane-loadsheet")
-        check("block fuel above the main tanks asks for a defuel", "the main tanks hold (centre tank unusable). Defuel 1,400 KG" in pane, pane[-400:])
+        check("block fuel above the main tanks asks for a defuel", "(CENTRE TANK UNUSABLE). DEFUEL 1,400 KG" in pane, pane[-400:])
         check.done(page)
         await b.close()
 asyncio.run(main())

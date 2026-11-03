@@ -45,20 +45,20 @@ async def main():
         options = await page.evaluate("[...document.querySelectorAll('#sbAirframeSel-0 option')].map(o => o.textContent)")
         selected = await page.evaluate("document.getElementById('sbAirframeSel-0').selectedOptions[0].textContent")
         check("the picker lists SimBrief's standard aircraft and the pilot's airframes of the leg's type",
-              options[0] == f"SimBrief standard {info['type']}" and len(options) >= 2
+              options[0] == f"SIMBRIEF STANDARD {info['type']}" and len(options) >= 2
               and all(info["type"] in o for o in options), options)
         check("the leg starts with the airframe labelled for its airline", "(EZY - " in selected, selected)
         check("the plan says the OFP is generated on SimBrief, and the bar's action is GENERATE OFP",
-              "plans the leg on SimBrief" in await page.text_content("#sbSendNote-0")
+              "OFP GENERATED ON SIMBRIEF" in await page.text_content("#sbSendNote-0")
               and "GENERATE OFP" in await page.text_content("#afNextBtn"))
         await page.wait_for_selector("#sbRunwaySel-0")
         rwys = await page.inner_text("#sbRunways-0")
         check("RUNWAYS reads VATSIM by default: Gatwick's ATIS, nothing at Belfast City",
               await page.eval_on_selector("#sbRunwaySel-0", "s => s.value") == "vatsim"
-              and "EGKK DEP 08R VATSIM ATIS F" in rwys and "no runway on VATSIM right now: SimBrief picks by wind" in rwys, rwys)
+              and "EGKK DEP 08R VATSIM ATIS F" in rwys and "NO VATSIM ATIS RWY. SIMBRIEF BY WIND" in rwys, rwys)
         await page.select_option("#sbRunwaySel-0", "sayintentions"); await page.wait_for_timeout(500)
         rwys = await page.inner_text("#sbRunways-0")
-        check("switching to SayIntentions reads its ATIS", "08R SayIntentions ATIS O" in rwys, rwys)
+        check("switching to SayIntentions reads its ATIS", "08R SAYINTENTIONS ATIS O" in rwys, rwys)
         await page.select_option("#sbRunwaySel-0", "vatsim"); await page.wait_for_timeout(500)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
@@ -81,13 +81,13 @@ async def main():
               and "RUNWAYS" in await page.inner_text("#brief-ofp"))
         done = await page.inner_text(".af-flow-step.done")
         check("step 1 sums up the OFP: registration, runways, cruise, generated time",
-              "G-EZ" in done and "RWY 06" in done and "FL340" in done and "OFP generated 18:33Z" in done, done)
+              "G-EZ" in done and "RWY 06" in done and "FL340" in done and "OFP 18:33Z" in done, done)
         await page.screenshot(path=shot("simbrief_ofp_in.png"))
 
         # SimBrief refuses: the pilot is told and simbrief.com opens as before
         await page.click("#af-tab-plan"); await page.wait_for_selector("#sbAirframeSel-0")
         check("back on the PLAN tab, the bar offers a new OFP and the current one is summed up",
-              "GENERATE NEW OFP" in await page.text_content("#afNextBtn") and "Current OFP" in await page.inner_text("#af-pane-plan"))
+              "GENERATE NEW OFP" in await page.text_content("#afNextBtn") and "CURRENT OFP" in await page.inner_text("#af-pane-plan"))
         await page.evaluate("simbriefApiLegs[simbriefApiKey(loadActiveFlight(), 0)].selected = ''")
         urllib.request.urlopen(urllib.request.Request(BASE + "/__simbrief/refuse", method="POST"))
         await page.wait_for_timeout(10500)                                    # one plan per 10 seconds
@@ -96,7 +96,7 @@ async def main():
         sent = json.load(urllib.request.urlopen(BASE + "/__simbrief/last"))
         check("SimBrief's standard aircraft is sent by its type", sent["type"] == info["type"], sent["type"])
         check("a refusal says why and opens SimBrief instead",
-              alerts and "Invalid aircraft type" in alerts[-1] and "Opening SimBrief instead" in alerts[-1] and len(popups) == 1, alerts)
+              alerts and "INVALID AIRCRAFT TYPE" in alerts[-1] and "OPENING SIMBRIEF" in alerts[-1] and len(popups) == 1, alerts)
         check.done(page)
         await browser.close()
 asyncio.run(main())

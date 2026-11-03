@@ -82,7 +82,7 @@ def _token_request(fields):
         resp = requests.post(IDENTITY_URL + "/connect/token", timeout=TIMEOUT_SECONDS,
                              data={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, **fields})
     except requests.RequestException:
-        raise NavigraphError("Navigraph can't be reached right now. Try again in a minute", code="unreachable")
+        raise NavigraphError("NAVIGRAPH NOT AVAILABLE. RETRY IN 1 MIN", code="unreachable")
     try:
         body = resp.json()
     except ValueError:
@@ -96,8 +96,8 @@ def _token_request(fields):
                 str(body.get("error_description") or "")[:200])
     # invalid_grant: the code or refresh token is used up, expired or revoked
     if code == "invalid_grant":
-        raise NavigraphError("Your Navigraph sign-in has expired. Sign in with Navigraph again", reconnect=True, code=code)
-    raise NavigraphError(f"Navigraph refused the sign-in ({code})", code=code)
+        raise NavigraphError("NAVIGRAPH SIGN-IN EXPIRED. SIGN IN WITH NAVIGRAPH AGAIN", reconnect=True, code=code)
+    raise NavigraphError(f"NAVIGRAPH SIGN-IN REFUSED ({code})", code=code)
 
 
 def exchange_code(code, verifier, redirect_uri):

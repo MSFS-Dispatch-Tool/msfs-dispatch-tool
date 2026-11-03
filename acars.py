@@ -67,14 +67,14 @@ def _call(logon, to, kind, packet=""):
                              timeout=TIMEOUT_SECONDS)
         resp.raise_for_status()
     except requests.RequestException:
-        raise AcarsError("Hoppie's ACARS network can't be reached right now. Try again in a minute")
+        raise AcarsError("HOPPIE ACARS NOT AVAILABLE. RETRY IN 1 MIN")
     text = resp.text.strip()
     if text.lower().startswith("ok"):
         return _braced(text)
     reason = _braced(text) or text[:120] or "no answer"
     if "logon" in reason.lower():
-        raise AcarsError("Hoppie doesn't recognise this logon code. Check it on hoppie.nl")
-    raise AcarsError(f"Hoppie refused the request: {reason}")
+        raise AcarsError("HOPPIE LOGON CODE NOT RECOGNISED. CHECK CODE ON HOPPIE.NL")
+    raise AcarsError(f"REFUSED BY HOPPIE: {str(reason).upper()}")
 
 
 def ping(logon, callsigns=()):
@@ -88,5 +88,5 @@ def ping(logon, callsigns=()):
 def send_telex(logon, callsign, text):
     callsign = (callsign or "").upper()
     if not CALLSIGN_RE.match(callsign):
-        raise AcarsError("That isn't a valid callsign for ACARS")
+        raise AcarsError("CALLSIGN NOT VALID FOR ACARS")
     _call(logon, callsign, "telex", text)

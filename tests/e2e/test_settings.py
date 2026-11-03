@@ -60,7 +60,7 @@ async def main():
         await page.fill("#acarsLogon", "WRONGCODE9")
         await page.click("button[onclick*=saveAcarsLogon]"); await page.wait_for_timeout(600)
         await page.click("#acarsTestBtn"); await page.wait_for_timeout(800)
-        check("a code Hoppie rejects is reported", "doesn't recognise" in await page.text_content("#acarsStatus"))
+        check("a code Hoppie rejects is reported", "NOT RECOGNISED" in await page.text_content("#acarsStatus"))
         await page.wait_for_timeout(5200)                                     # the test is rate limited
         await page.fill("#acarsLogon", "TESTLOGON1")
         await page.click("button[onclick*=saveAcarsLogon]"); await page.wait_for_timeout(600)
