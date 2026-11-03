@@ -48,12 +48,12 @@ async def main():
               options[0] == f"SimBrief standard {info['type']}" and len(options) >= 2
               and all(info["type"] in o for o in options), options)
         check("the leg starts with the airframe labelled for its airline", "(EZY - " in selected, selected)
-        check("step 1 says the OFP is generated on SimBrief, with a GENERATE OFP button",
-              "Generates the OFP on SimBrief" in await page.text_content("#sbSendNote-0")
-              and (await page.text_content("#sbSendBtn-0")).strip() == "GENERATE OFP")
-        await page.locator(".af-flow").screenshot(path=shot("simbrief_airframe_picker.png"))
+        check("the plan says the OFP is generated on SimBrief, and the bar's action is GENERATE OFP",
+              "plans the leg on SimBrief" in await page.text_content("#sbSendNote-0")
+              and "GENERATE OFP" in await page.text_content("#afNextBtn"))
+        await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
-        await page.click("#sbSendBtn-0")
+        await page.click("#afNextBtn")
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'available'", timeout=10000)
         sent = json.load(urllib.request.urlopen(BASE + "/__simbrief/last"))
         leg = await page.evaluate("loadActiveFlight().legs[0]")
@@ -75,11 +75,13 @@ async def main():
         await page.screenshot(path=shot("simbrief_ofp_in.png"))
 
         # SimBrief refuses: the pilot is told and simbrief.com opens as before
-        await page.click(".af-flow-step.done button:has-text('NEW OFP')"); await page.wait_for_selector("#sbAirframeSel-0")
+        await page.click("#af-tab-plan"); await page.wait_for_selector("#sbAirframeSel-0")
+        check("back on the PLAN tab, the bar offers a new OFP and the current one is summed up",
+              "GENERATE NEW OFP" in await page.text_content("#afNextBtn") and "Current OFP" in await page.inner_text("#af-pane-plan"))
         await page.evaluate("simbriefApiLegs[simbriefApiKey(loadActiveFlight(), 0)].selected = ''")
         urllib.request.urlopen(urllib.request.Request(BASE + "/__simbrief/refuse", method="POST"))
         await page.wait_for_timeout(10500)                                    # one plan per 10 seconds
-        await page.click("#sbSendBtn-0")
+        await page.click("#afNextBtn")
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'sent'", timeout=10000)
         sent = json.load(urllib.request.urlopen(BASE + "/__simbrief/last"))
         check("SimBrief's standard aircraft is sent by its type", sent["type"] == info["type"], sent["type"])

@@ -2153,7 +2153,8 @@ function saveAndRender(flight) {
 let recapLegIndex = null;     // null = the leg in progress
 let recapTab = null;          // null = the tab of that leg's next step
 let recapFlightKey = '';
-const RECAP_TABS = [['briefing', 'BRIEFING'], ['loadsheet', 'LOADSHEET'], ['pirep', 'PIREP']];
+let recapShownLeg = null;     // the leg on screen
+const RECAP_TABS = [['plan', 'PLAN'], ['briefing', 'BRIEFING'], ['loadsheet', 'LOADSHEET'], ['pirep', 'PIREP']];
 
 function legProgress(flight, i) {
   const done = flight.leg_status[i].status === 'done';
@@ -2171,17 +2172,17 @@ function legStage(flight, i) {
   return st.loadsheet_signed ? 'pirep' : 'loadsheet';
 }
 function stageTab(stage, st) {
-  // With the OFP just in, the briefing stays on screen to be read; the
-  // loadsheet tab opens once it's been asked for
+  // The plan comes first; with the OFP in, the briefing is there to be read;
+  // the loadsheet tab opens once it's been asked for
+  if (stage === 'simbrief' || stage === 'ofp') return 'plan';
   if (stage === 'loadsheet') return st && st.ls ? 'loadsheet' : 'briefing';
   return stage === 'pirep' || stage === 'done' ? 'pirep' : 'briefing';
 }
 
-// The three steps of a leg: what's done, what's next and what's still to
-// do. The next step carries its own controls (the SimBrief plan, the
-// loadsheet, the PIREP), so the pilot always knows what to press.
+// The three steps of a leg, read-only: what's done, what's next and what's
+// still to do. What to press is always in the same place: the bar at the
+// bottom of the right-hand panel (see nextBarHtml).
 const STEP_LABELS = ['PLAN WITH SIMBRIEF', 'SIGN LOADSHEET', 'FILE PIREP'];
-const sbReplan = {};   // per leg (simbriefApiKey): the plan controls re-opened after an OFP is in
 function zuluTime(iso) { return iso && /T\d\d:\d\d/.test(iso) ? iso.slice(11, 16) + 'Z' : ''; }
 function ofpDoneText(ofp) {
   const fl = ofpNum(ofp.initial_altitude_ft), block = ofpNum(ofp.block_fuel);
@@ -2191,64 +2192,106 @@ function ofpDoneText(ofp) {
   const when = zuluTime(ofp.generated_at);
   return `${facts}${when ? `<span class="af-flow-when">OFP generated ${when}</span>` : ''}`;
 }
-function simbriefPlanControls(flight, i) {
-  const st = flight.leg_state[i], key = simbriefApiKey(flight, i);
-  const info = simbriefApiLegs[key], api = !!(info && info.available);
-  const sent = st.simbrief === 'sent', replan = st.simbrief === 'available';
-  return `<div class="af-act">
-      <span class="sb-airframe" id="sbAirframe-${i}"></span>
-      <div class="af-act-row">
-        <button class="action small" type="button" id="sbSendBtn-${i}" onclick="sendToSimbrief(${i})">${api ? 'GENERATE OFP' : sent ? 'SEND TO SIMBRIEF AGAIN' : 'SEND TO SIMBRIEF'}</button>
-        ${sent ? `<button class="ghost small" type="button" onclick="fetchOfp(${i})">FETCH OFP NOW</button>` : ''}
-        ${replan ? `<button class="ghost small" type="button" onclick="toggleReplan(${i}, false)">CANCEL</button>` : ''}
-      </div>
-    </div>`;
-}
-function planStepText(flight, i, state) {
-  const st = flight.leg_state[i];
-  if (state === 'done' && st.ofp) return ofpDoneText(st.ofp);
-  if (st.simbrief === 'sent') return `<span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">Watching SimBrief: your OFP appears here as soon as you generate it</span></span>`;
-  const info = simbriefApiLegs[simbriefApiKey(flight, i)];
-  return `<span id="sbSendNote-${i}">${info && info.available
-    ? 'Generates the OFP on SimBrief with your airframe: route, fuel, weights and NOTAMs come straight into the briefing'
-    : 'Opens SimBrief with this leg filled in: generate the OFP there and it comes back here on its own'}</span>`;
-}
 function afStepsHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i), finished = stage === 'done';
   const done = [finished || st.simbrief === 'available', finished || !!st.loadsheet_signed, !!st.pirep];
   const nowIndex = ({ simbrief: 0, ofp: 0, loadsheet: 1, pirep: 2 })[stage];
-  const replanning = stage === 'loadsheet' && !!sbReplan[simbriefApiKey(flight, i)];
+  const texts = [
+    st.ofp && done[0] ? ofpDoneText(st.ofp) : st.simbrief === 'sent' ? 'Waiting for your OFP from SimBrief' : 'Choose your airframe and generate the OFP',
+    done[1] && st.loadsheet && st.loadsheet.signed_at ? `Signed ${zuluTime(st.loadsheet.signed_at)}` : 'Ask for the loadsheet, sort out any last-minute changes, sign it',
+    done[2] ? 'Filed' : 'Fly the leg, then report your actual times and fuel',
+  ];
   return `<ol class="af-flow" aria-label="Steps for this leg">${STEP_LABELS.map((label, k) => {
     const state = done[k] ? 'done' : k === nowIndex ? 'now' : 'todo';
     const tag = state === 'done' ? 'DONE' : state === 'now' ? 'NEXT' : '';
-    let text = '', act = '';
-    if (k === 0) {
-      text = planStepText(flight, i, state);
-      if (state === 'now' || replanning) act = simbriefPlanControls(flight, i);
-      else if (state === 'done' && stage === 'loadsheet') act = `<div class="af-act-row af-act-quiet">
-          <button class="ghost small" type="button" onclick="toggleReplan(${i}, true)">NEW OFP</button>
-          <button class="ghost small" type="button" onclick="fetchOfp(${i})">FETCH LATEST</button></div>`;
-    } else if (k === 1) {
-      text = state === 'done' && st.loadsheet && st.loadsheet.signed_at ? `Signed ${zuluTime(st.loadsheet.signed_at)}`
-        : 'Ask for the loadsheet, sort out any last-minute changes, sign it';
-      if (state === 'now') act = `<div class="af-act-row">${st.ls
-        ? `<button class="action small" type="button" onclick="selectRecapTab('loadsheet')">OPEN LOADSHEET</button>`
-        : `<button class="action small" type="button" onclick="askForLoadsheet(${i})">ASK FOR LOADSHEET</button>`}</div>`;
-    } else {
-      text = state === 'done' ? 'Filed' : 'Fly the leg, then report your actual times and fuel';
-      if (state === 'now') act = `<div class="af-act-row"><button class="action small" type="button" onclick="selectRecapTab('pirep')">OPEN PIREP</button></div>`;
-    }
     return `<li class="af-flow-step ${state}"${state === 'now' ? ' aria-current="step"' : ''}>
       <span class="af-flow-n" aria-hidden="true">${state === 'done' ? '&#10003;' : k + 1}</span>
-      <div class="af-flow-body"><b>${label}</b>${tag ? `<span class="af-flow-tag">${tag}</span>` : ''}<small>${text}</small>${act}</div></li>`;
+      <span class="af-flow-body"><b>${label}</b>${tag ? `<span class="af-flow-tag">${tag}</span>` : ''}<small>${texts[k]}</small></span></li>`;
   }).join('')}</ol>${stage === 'waiting' ? `<p class="af-flow-note">These steps open once the PIREP for leg ${i} is filed</p>` : ''}`;
 }
-function toggleReplan(i, on) {
-  const flight = loadActiveFlight(); if (!flight) return;
-  if (on) sbReplan[simbriefApiKey(flight, i)] = true; else delete sbReplan[simbriefApiKey(flight, i)];
-  renderRecap(flight);
+
+// ---- PLAN: the first tab, open until the OFP is in. What the plan needs
+// (the airframe) on top, the leg's key facts under it; GENERATE OFP in the
+// bar brings the OFP and opens the briefing. Coming back here replans. ----
+function canPlan(flight, i) {
+  const stage = legStage(flight, i);
+  return stage === 'simbrief' || stage === 'ofp' || stage === 'loadsheet';
 }
-// A new OFP is in: the briefing it completes stays on screen, from the top
+function planPaneHtml(flight, i) {
+  const leg = flight.legs[i], st = flight.leg_state[i];
+  const callsign = flight.callsigns ? flight.callsigns[i] : '';
+  const info = simbriefApiLegs[simbriefApiKey(flight, i)], api = !!(info && info.available);
+  const legRows = [
+    sheetRow('FLIGHT', `${escText(leg.flight_number)}${callsign ? ' &middot; ' + escText(callsign) : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}`),
+    sheetRow('AIRCRAFT', escText(leg.aircraft_type || 'N/A')),
+    sheetRow('OFF-BLOCK', `${escText(leg.eobt || leg.sobt || 'N/A')}${legExpectedDelayMinutes(leg) ? ` <span class="sheet-note">scheduled ${escText(leg.sobt || '')}</span>` : ''}`),
+    ...(leg.eet_minutes != null ? [sheetRow('FLIGHT TIME', fmtMinutes(leg.eet_minutes))] : []),
+    sheetRow('PASSENGERS', `${fmtNum(leg.pax_count)} of ${fmtNum(leg.seat_capacity)} seats &middot; bags ${fmtNum(leg.cargo_weight_kg)} kg`),
+    ...(legMels(leg).length || legCdl(leg).length ? [sheetRow('TECH LOG', `${[...legMels(leg).map(m => 'MEL ' + techRef(m)), ...legCdl(leg).map(c => 'CDL ' + techRef(c))].join(', ')} <span class="sheet-note">in the plan's remarks; details in the briefing</span>`)] : []),
+  ];
+  if (!canPlan(flight, i)) {
+    const done = st.ofp ? `<p class="plan-note plan-done">${ofpDoneText(st.ofp)}</p>` : '';
+    return sheetSection('SIMBRIEF PLAN', [sheetRow('STATUS', legStage(flight, i) === 'waiting' ? `Planned once the PIREP for leg ${i} is filed` : 'Planned: the loadsheet is signed')], done)
+      + sheetSection('THIS LEG', legRows);
+  }
+  const waiting = st.simbrief === 'sent'
+    ? `<p class="plan-wait"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">Watching SimBrief: your OFP appears here as soon as you generate it</span></span></p>` : '';
+  const current = st.ofp && st.simbrief === 'available' ? `<p class="plan-current">Current OFP: ${ofpDoneText(st.ofp)}</p>` : '';
+  const form = `<section class="sheet plan-form"><h4 class="sheet-h">SIMBRIEF PLAN</h4>
+      <div class="plan-fields">
+        <span class="sb-airframe" id="sbAirframe-${i}">${api ? '' : `<span class="af-field"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')} &middot; SimBrief standard</b></span>`}</span>
+        <p class="plan-note" id="sbSendNote-${i}">${api
+          ? 'GENERATE OFP plans the leg on SimBrief with this airframe: route, fuel, weights and NOTAMs come straight into the briefing'
+          : 'OPEN SIMBRIEF opens SimBrief with this leg filled in: generate the OFP there and it comes back here on its own. Sign in with Navigraph in Account settings to plan with your own airframes in one click'}</p>
+        ${current}
+      </div>${waiting}</section>`;
+  return form + sheetSection('THIS LEG', legRows);
+}
+
+// ---- The next-action bar: one place, at the bottom of the right-hand
+// panel, for the one thing to do next. On the PLAN tab that's the plan. ----
+function nextAction(flight, i) {
+  const st = flight.leg_state[i], stage = legStage(flight, i);
+  if (stage === 'waiting' || stage === 'done') return null;
+  const info = simbriefApiLegs[simbriefApiKey(flight, i)], api = !!(info && info.available);
+  if (recapTab === 'plan' && canPlan(flight, i)) {
+    if (st.simbrief === 'sent' && !api) return { left: [`<button class="ghost" type="button" onclick="sendToSimbrief(${i})">OPEN SIMBRIEF AGAIN</button>`], label: 'FETCH OFP NOW', run: `fetchOfp(${i})` };
+    return { left: [], label: api ? (st.ofp ? 'GENERATE NEW OFP' : 'GENERATE OFP') : 'OPEN SIMBRIEF', run: `sendToSimbrief(${i})`, id: `sbSendBtn-${i}` };
+  }
+  if (stage === 'simbrief' || stage === 'ofp') return { left: [], label: 'PLAN THE FLIGHT', run: `selectRecapTab('plan')` };
+  if (stage === 'loadsheet' && !st.ls) return { left: [], label: 'ASK FOR LOADSHEET', run: `askForLoadsheet(${i})` };
+  if (stage === 'loadsheet') {
+    const s = loadsheetState(flight, i);
+    const note = !s ? 'No weights in this OFP: replan or fetch it again' : s.pending.length ? `${s.pending.length} item${s.pending.length > 1 ? 's' : ''} still to sort out on the loadsheet` : s.over ? 'The load is over the weight limits' : '';
+    return { left: [], label: 'SIGN LOADSHEET', run: `nextSignLoadsheet(${i})`, disabled: !!note, note };
+  }
+  if (!st.pirep_open) return { left: [], label: 'FILL PIREP', run: `openPirep(${i})` };
+  return { left: [], label: 'SIGN PIREP', run: `nextSignPirep(${i})` };
+}
+function nextBarHtml(flight, i) {
+  const a = nextAction(flight, i);
+  if (!a) return '';
+  return `<div class="af-nextbar">
+      <div class="af-nextbar-side">${a.left.join('')}</div>
+      ${a.note ? `<span class="af-nextbar-note">${a.note}</span>` : ''}
+      <button class="action" type="button" id="afNextBtn"${a.id ? ` data-id="${a.id}"` : ''} onclick="${a.run}"${a.disabled ? ' disabled' : ''}>${a.label} &rarr;</button>
+    </div>`;
+}
+function paintNextBar() {
+  const flight = loadActiveFlight(), bar = document.getElementById('afNextBar');
+  if (!flight || !bar || recapShownLeg == null) return;
+  bar.innerHTML = nextBarHtml(flight, recapShownLeg);
+}
+// Signing from the bar: the document being signed is shown first
+function nextSignLoadsheet(i) {
+  if (recapTab !== 'loadsheet') return selectRecapTab('loadsheet');
+  signLoadsheet(i);
+}
+function nextSignPirep(i) {
+  if (recapTab !== 'pirep') return selectRecapTab('pirep');
+  submitPirep(i);
+}
+// A new OFP is in: the briefing it completes takes the panel, from the top
 function showBriefingWithOfp(flight) {
   recapLegIndex = null;
   recapTab = 'briefing';
@@ -2284,9 +2327,10 @@ function renderRecap(flight) {
     : stage !== 'waiting' && stage !== 'done' ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
   const mismatch = state.aircraft_type_mismatch && state.ofp ? `<div class="notice-banner">The OFP's aircraft type (${escText(state.ofp.icao_type)}) doesn't match the ${escText(leg.aircraft_type)} assigned to this leg. Double-check the aircraft on SimBrief before flying this OFP</div>` : '';
 
-  const panes = { briefing: briefingHtml(flight, i), loadsheet: loadsheetPaneHtml(flight, i), pirep: pirepPaneHtml(flight, i) };
+  recapShownLeg = i;
+  const panes = { plan: planPaneHtml(flight, i), briefing: briefingHtml(flight, i), loadsheet: loadsheetPaneHtml(flight, i), pirep: pirepPaneHtml(flight, i) };
   const tab = RECAP_TABS.some(([k]) => k === recapTab) ? recapTab : stageTab(stage, state);
-  recapTab = tab;
+  recapTab = tab;   // before the panes' bar is built: the bar depends on the tab
 
   const syncNotice = activeSyncNotice ? `<div class="sync-notice" role="status">${activeSyncNotice}</div>` : '';
   activeSyncNotice = '';
@@ -2310,6 +2354,7 @@ function renderRecap(flight) {
         <div class="af-tabbar" role="tablist">${RECAP_TABS.map(([k, label]) =>
           `<button type="button" role="tab" id="af-tab-${k}" aria-controls="af-pane-${k}" aria-selected="${k === tab}" class="${k === tab ? 'on' : ''}" onclick="selectRecapTab('${k}')">${label}</button>`).join('')}</div>
         ${RECAP_TABS.map(([k]) => `<div class="panel-body af-pane" role="tabpanel" id="af-pane-${k}" aria-labelledby="af-tab-${k}"${k === tab ? '' : ' hidden'}>${panes[k]}</div>`).join('')}
+        <div id="afNextBar">${nextBarHtml(flight, i)}</div>
       </div>
     </div>`;
   initRouteMap(`map-recap-${i}`, leg, state.ofp, { interactive: true });
@@ -2337,6 +2382,7 @@ function selectRecapTab(key) {
     btn.setAttribute('aria-selected', k === key ? 'true' : 'false');
     pane.hidden = k !== key;
   });
+  paintNextBar();
 }
 
 // ---- BRIEFING: everything about the leg, the OFP figures once fetched ----
@@ -2917,10 +2963,10 @@ function loadsheetPaneHtml(flight, i) {
     return kvRows([['ZFW', fmtNum(l.zfw)], ['FUEL ON BOARD', fmtNum(l.fob)], ['PASSENGERS', fmtNum(l.pax)], ['CREW', fmtNum(l.crew)]]);
   }
   if (stage === 'waiting') return docEmpty('No loadsheet yet', `This leg opens once the PIREP for leg ${i} is filed`, '');
-  if (st.simbrief !== 'available') return docEmpty('No loadsheet yet', 'The loadsheet is prepared from the OFP: send the leg to SimBrief and fetch the OFP first', '<button class="action" disabled>ASK FOR LOADSHEET</button>');
-  if (!st.ls) return docEmpty('Ready for the loadsheet', 'Load control prepares it from your OFP. Last-minute changes and dangerous goods, if any, turn up with it', `<button class="action" onclick="askForLoadsheet(${i})">ASK FOR LOADSHEET</button>`);
+  if (st.simbrief !== 'available') return docEmpty('No loadsheet yet', 'The loadsheet is prepared from the OFP: plan the flight with SimBrief first', '');
+  if (!st.ls) return docEmpty('Ready for the loadsheet', 'Load control prepares it from your OFP. Last-minute changes and dangerous goods, if any, turn up with it. Press ASK FOR LOADSHEET below', '');
   const s = loadsheetState(flight, i);
-  if (!s) return docEmpty('No weights in this OFP', 'SimBrief sent no weights with this OFP. Fetch the OFP again, then ask for the loadsheet', `<button class="action" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>`);
+  if (!s) return docEmpty('No weights in this OFP', 'SimBrief sent no weights with this OFP. Replan, or fetch the OFP again, then ask for the loadsheet', `<button class="ghost" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>`);
   const itemsHtml = s.items.map(it => {
     const dec = s.decisions[it.key];
     const buttons = it.choices.map(([id, label]) => {
@@ -2930,11 +2976,9 @@ function loadsheetPaneHtml(flight, i) {
     }).join('');
     return `<div class="ls-item${dec ? ' done' : ''}"><span class="brief-tag">${it.tag}</span><div class="ls-item-body"><p>${it.text}</p><div class="ls-item-actions">${buttons}${dec ? '<span class="ls-item-ok">&#10003; sorted</span>' : ''}</div></div></div>`;
   }).join('');
-  const blocker = s.pending.length ? `${s.pending.length} item${s.pending.length > 1 ? 's' : ''} still to sort out` : s.over ? 'The load is over the weight limits' : '';
   return `<pre class="doc-sheet" id="loadsheet-${i}">${escText(loadsheetText(flight, i, s, null))}</pre>
     ${s.items.length ? `<h4 class="ls-items-title">CAPTAIN'S DECISIONS</h4><div class="ls-items">${itemsHtml}</div>` : '<p class="brief-empty">No last-minute changes and no dangerous goods to sign for</p>'}
-    ${acarsPreviewHtml(acarsLoadsheetText(flight, i, s, null))}
-    <div class="doc-actions"><button class="action" id="signLoadsheetBtn-${i}" onclick="signLoadsheet(${i})"${blocker ? ' disabled' : ''}>SIGN LOADSHEET</button>${blocker ? `<span class="doc-blocker">${blocker}</span>` : ''}</div>`;
+    ${acarsPreviewHtml(acarsLoadsheetText(flight, i, s, null))}`;
 }
 async function askForLoadsheet(i) {
   const flight = loadActiveFlight(); if (!flight) return;
@@ -2993,8 +3037,8 @@ function pirepDocHead(flight, i) {
 function pirepPaneHtml(flight, i) {
   const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, unit = ofpUnit(st.ofp);
   if (st.pirep) return pirepFiledHtml(flight, i);
-  if (!st.loadsheet_signed) return docEmpty('No PIREP yet', 'The PIREP opens once the loadsheet for this leg is signed', '<button class="action" disabled>FILL PIREP</button>');
-  if (!st.pirep_open) return docEmpty('Ready for the PIREP', 'Fly the leg, then report your actual times and the fuel left at the destination', `<button class="action" onclick="openPirep(${i})">FILL PIREP</button>`);
+  if (!st.loadsheet_signed) return docEmpty('No PIREP yet', 'The PIREP opens once the loadsheet for this leg is signed', '');
+  if (!st.pirep_open) return docEmpty('Ready for the PIREP', 'Fly the leg, then report your actual times and the fuel left at the destination. Press FILL PIREP below', '');
   const exp = (s, e) => `SCHED ${s || 'N/A'} &middot; EXP ${e || 'N/A'}`;
   const slot = leg.atfm ? ` &middot; SLOT ${escText(leg.atfm.ctot)}` : '';
   const planFuel = ofpNum(ofp.plan_landing_fuel) != null ? `PLAN ${fmtNum(ofp.plan_landing_fuel)} ${unit}` : '';
@@ -3012,8 +3056,7 @@ function pirepPaneHtml(flight, i) {
     <label class="doc-check"><input id="normal-${i}" type="checkbox"> NO NEW DEFECTS, MEL ITEMS OR NON-NORMAL OCCURRENCES TO ENTER IN THE TECH LOG</label>
     <label class="doc-remarks" for="remarks-${i}">PILOT REMARKS</label>
     <textarea id="remarks-${i}" class="doc-textarea" maxlength="500" rows="3" placeholder="Anything worth noting about this flight (optional)"></textarea>
-    <div class="doc-actions"><button class="action" onclick="submitPirep(${i})">SIGN PIREP</button>
-      <button class="ghost" type="button" onclick="sendToAircraftSoon(${i})" title="Coming soon">SEND TO AIRCRAFT <span class="soon-tag">SOON</span></button>
+    <div class="doc-actions"><button class="ghost" type="button" onclick="sendToAircraftSoon(${i})" title="Coming soon">SEND TO AIRCRAFT <span class="soon-tag">SOON</span></button>
       <span class="doc-blocker" id="sta-note-${i}" hidden>Coming soon: the PIREP will go to and from the aircraft directly</span></div>
   </div>`;
 }
@@ -3134,14 +3177,13 @@ function paintSimbriefAirframes(flight, index) {
   const el = document.getElementById('sbAirframe-' + index);
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
   if (!el || !info || info.loading) return;
-  if (!info.available) { el.innerHTML = ''; return; }
+  if (!info.available) return;
   const options = [`<option value="">SimBrief standard ${escText(info.type)}</option>`].concat((info.airframes || []).map(a =>
     `<option value="${escText(a.id)}"${a.id === info.selected ? ' selected' : ''}>${escText(a.name)} &middot; ${escText(a.reg)}${a.comments ? ` (${escText(a.comments)})` : ''}</option>`));
   el.innerHTML = `<label class="af-field"><span>AIRFRAME</span><select id="sbAirframeSel-${index}" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></label>`;
   const note = document.getElementById('sbSendNote-' + index);
-  if (note) note.textContent = 'Generates the OFP on SimBrief with your airframe: route, fuel, weights and NOTAMs come straight into the briefing';
-  const button = document.getElementById('sbSendBtn-' + index);
-  if (button) button.textContent = 'GENERATE OFP';
+  if (note) note.textContent = 'GENERATE OFP plans the leg on SimBrief with this airframe: route, fuel, weights and NOTAMs come straight into the briefing';
+  paintNextBar();
 }
 
 function chooseSimbriefAirframe(index, value) {
@@ -3154,7 +3196,7 @@ async function sendToSimbrief(index) {
   const flight = loadActiveFlight(); if (!flight) return;
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
   if (!info || !info.available) return prepareLeg(index);
-  const button = document.getElementById('sbSendBtn-' + index);
+  const button = document.querySelector(`[data-id="sbSendBtn-${index}"]`);
   const note = document.getElementById('sbSendNote-' + index);
   if (button) button.disabled = true;
   if (note) note.textContent = 'Generating the OFP on SimBrief\u2026';
@@ -3184,7 +3226,6 @@ async function sendToSimbrief(index) {
   state.simbrief = 'available';
   state.simbrief_static_id = staticId;
   state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(fresh.legs[index], data);
-  delete sbReplan[simbriefApiKey(fresh, index)];
   stopOfpWatch();
   showBriefingWithOfp(fresh);
 }
@@ -3211,7 +3252,6 @@ async function fetchOfp(index, silent = false) {
     state.ofp = data;
     state.simbrief = 'available';
     state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(leg, data);
-    delete sbReplan[simbriefApiKey(flight, index)];
     stopOfpWatch();
     showBriefingWithOfp(flight);
     return true;

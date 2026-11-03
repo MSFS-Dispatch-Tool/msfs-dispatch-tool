@@ -37,14 +37,14 @@ async def main():
         await page.evaluate("""(ofp) => { const f = loadActiveFlight(); const st = f.leg_state[0];
           st.simbrief = 'available'; st.ofp = ofp; saveAndRender(f); }""", ofp)
         await page.wait_for_timeout(400)
-        await page.click(".af-flow-step.now button:has-text('ASK FOR LOADSHEET')"); await page.wait_for_timeout(600)
+        await page.click("#afNextBtn"); await page.wait_for_timeout(600)          # ASK FOR LOADSHEET
         pane = await page.inner_text("#af-pane-loadsheet")
         check("loadsheet flags take-off fuel below the MEL minimum", "below the MEL minimum of 6,804 KG" in pane, pane[-400:])
-        check("SIGN LOADSHEET stays off until the fuel is sorted", await page.locator("#signLoadsheetBtn-0").is_disabled())
+        check("SIGN LOADSHEET stays off until the fuel is sorted", await page.locator("#afNextBtn").is_disabled())
         await page.click("#af-pane-loadsheet button:has-text('UPLIFT FUEL')"); await page.wait_for_timeout(400)
         sheet = await page.inner_text("#loadsheet-0")
         check("uplift brings the take-off fuel to the minimum", "TAKE OFF FUEL               6900" in sheet and "FUEL UPLIFT" in sheet, sheet[:900])
-        check("then the loadsheet can be signed", not await page.locator("#signLoadsheetBtn-0").is_disabled())
+        check("then the loadsheet can be signed", not await page.locator("#afNextBtn").is_disabled())
         await page.screenshot(path=shot("mel738_loadsheet.png"))
         # Centre tank unusable: block fuel above what the main tanks hold
         await page.evaluate("""() => { const f = loadActiveFlight(); const st = f.leg_state[0];

@@ -57,11 +57,11 @@ async def main():
         check("sum warning shown", "MUST ADD UP" in (await page.inner_text("#dc-sum-0")).upper())
         await fill("atot-0", aobt + 12); await fill("aldt-0", abit - 6); await fill("abit-0", abit)
         await page.fill("#afad-0", "2500"); await page.check("#normal-0")
-        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(500)
+        await page.click("#afNextBtn"); await page.wait_for_timeout(500)
         check("submit blocked when minutes don't add up", any("add up" in a for a in alerts), str(alerts[-1:]))
         # second row: code 63 for 7 min
         await page.select_option("#dc-code-0-1", "63"); await page.fill("#dc-min-0-1", "7"); await page.dispatch_event("#dc-min-0-1", "input")
-        await page.click("#pirep-0 button:has-text('SIGN PIREP')"); await page.wait_for_timeout(1000)
+        await page.click("#afNextBtn"); await page.wait_for_timeout(1000)
         fl = await page.evaluate("loadActiveFlight()")
         p0 = fl["leg_state"][0]["pirep"]
         check("PIREP stored the two codes", p0 and p0.get("delay_codes") and [c["code"] for c in p0["delay_codes"]] == ["81", "63"], str(p0 and p0.get("delay_codes")))
