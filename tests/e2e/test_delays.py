@@ -58,7 +58,7 @@ async def main():
         await fill("atot-0", aobt + 12); await fill("aldt-0", abit - 6); await fill("abit-0", abit)
         await page.fill("#afad-0", "2500"); await page.check("#normal-0")
         await page.click("#afNextBtn"); await page.wait_for_timeout(500)
-        check("submit blocked when minutes don't add up", any("add up" in a for a in alerts), str(alerts[-1:]))
+        check("submit blocked when minutes don't add up", any("ADD UP" in a for a in alerts), str(alerts[-1:]))
         # second row: code 63 for 7 min
         await page.select_option("#dc-code-0-1", "63"); await page.fill("#dc-min-0-1", "7"); await page.dispatch_event("#dc-min-0-1", "input")
         await page.click("#afNextBtn"); await page.wait_for_timeout(1000)

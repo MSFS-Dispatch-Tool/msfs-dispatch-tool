@@ -41,7 +41,7 @@ class MessageTooLong(SayIntentionsError):
     """Longer than this aircraft takes: maximum is its limit in characters."""
 
     def __init__(self, maximum):
-        super().__init__(f"Too long for this aircraft: at most {maximum} characters")
+        super().__init__(f"MESSAGE TOO LONG FOR AIRCRAFT. MAX {maximum} CHARACTERS")
         self.maximum = maximum
 
 
@@ -60,7 +60,7 @@ def send_telex(api_key, text):
         resp = requests.get(URL, timeout=TIMEOUT_SECONDS, headers={"X-Developer-Key": DEVELOPER_KEY}, params={
             "api_key": api_key, "channel": "ACARS_IN", "message_type": "telex", "from": STATION, "message": text})
     except requests.RequestException:
-        raise SayIntentionsError("SayIntentions can't be reached right now. Try again in a minute")
+        raise SayIntentionsError("SAYINTENTIONS NOT AVAILABLE. RETRY IN 1 MIN")
     error = None
     try:
         body = resp.json()
@@ -76,7 +76,7 @@ def send_telex(api_key, text):
     if maximum and "too long" in error.lower():
         raise MessageTooLong(int(maximum.group(1)))
     if "developer" in error.lower():
-        raise SayIntentionsError("SayIntentions didn't accept VirtualDispatch's request. Try again later")
+        raise SayIntentionsError("REQUEST NOT ACCEPTED BY SAYINTENTIONS. RETRY LATER")
     if "key" in error.lower() or resp.status_code in (401, 403):
-        raise SayIntentionsError("SayIntentions doesn't recognise this API key. Check it on your SayIntentions pilot portal")
-    raise SayIntentionsError(f"SayIntentions refused the message: {error[:160]}")
+        raise SayIntentionsError("SAYINTENTIONS API KEY NOT RECOGNISED. CHECK KEY ON SAYINTENTIONS PILOT PORTAL")
+    raise SayIntentionsError(f"REFUSED BY SAYINTENTIONS: {error[:160].upper()}")

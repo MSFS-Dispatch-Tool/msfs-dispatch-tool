@@ -30,7 +30,7 @@ function fmtMinutes(min) {
   if (min === null || min === undefined || Number.isNaN(min)) return 'N/A';
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return `${h}h ${String(m).padStart(2, '0')}m`;
+  return `${h}H ${String(m).padStart(2, '0')}M`;
 }
 
 function fmtNum(value) {
@@ -1796,7 +1796,7 @@ async function reassignAircraft(selectEl) {
     cell.innerHTML = buildDetailHtml(expandedDetailData, expandedKey, carriers, ownedAircraft);
     expandedDetailData.legs.forEach((l, i) => initRouteMap(`map-detail-${expandedKey}-${i}`, l));
   } catch (err) {
-    alert('Could not change the aircraft. Check the connection and retry');
+    alert('AIRCRAFT CHANGE FAILED. CHECK CONNECTION, THEN RETRY');
     selectEl.disabled = false;
   }
 }
@@ -1825,7 +1825,7 @@ function legExpectedDelayMinutes(leg) {
 // ---- Operational constraints: ATFM slot, curfews, crew duty (see ops.py) ----
 function slotWindowText(atfm) {
   const [lo, hi] = atfm.window || [-5, 10];
-  return `${shiftZulu(atfm.ctot, lo)} and ${shiftZulu(atfm.ctot, hi)}`;
+  return `${shiftZulu(atfm.ctot, lo)}-${shiftZulu(atfm.ctot, hi)}`;
 }
 // A slot only holds while the expected take-off stays inside its window;
 // a later take-off means a new, later slot (Eurocontrol re-slots the flight).
@@ -1851,10 +1851,10 @@ function legCurfewChecks(leg) {
     const what = c.check === 'landing' ? 'landing' : c.check === 'offblock' ? 'off-block' : 'take-off';
     const st = curfewState(zuluMinutes(timeText), c);
     if (!st) return null;
-    const limit = `${escText(c.name)} ${what} limit ${c.until_local} local (${c.until_utc})`;
-    const outcome = c.kind === 'arrival' ? 'the flight would have to divert' : 'the flight would be cancelled';
-    if (st.closed) return { icao: c.icao, level: 'nogo', text: `Expected ${what} ${timeText} is ${st.late} min after the ${limit}: ${outcome}. ${escText(c.note)}` };
-    if (st.margin < 30) return { icao: c.icao, level: 'caution', text: `${limit}: only ${st.margin} min of margin on the expected ${what}` };
+    const limit = `${escText(String(c.name).toUpperCase())} ${what.toUpperCase()} LIMIT ${c.until_local} LT (${c.until_utc})`;
+    const outcome = c.kind === 'arrival' ? 'DIVERSION REQUIRED' : 'FLIGHT CANCELLED';
+    if (st.closed) return { icao: c.icao, level: 'nogo', text: `EXPECTED ${what.toUpperCase()} ${timeText} ${st.late} MIN AFTER ${limit}: ${outcome}. ${escText(c.note)}` };
+    if (st.margin < 30) return { icao: c.icao, level: 'caution', text: `${limit}: ${st.margin} MIN MARGIN ON EXPECTED ${what.toUpperCase()}` };
     return { icao: c.icao, level: 'ok', text: `${limit}: ${fmtMinutes(st.margin)} margin` };
   }).filter(Boolean);
 }
@@ -1875,11 +1875,11 @@ function dutyCheck(legs, legStates) {
   const f = dutyFigures(legs, legStates);
   if (!f) return null;
   const duty = f.duty, fdp = f.fdp;
-  const head = `Crew duty: report ${duty.report_local} local (${duty.report_utc}), maximum FDP ${fmtMinutes(duty.max_fdp_minutes)} for ${duty.sectors} sector${duty.sectors > 1 ? 's' : ''}`;
+  const head = `CREW REPORT ${duty.report_local} LT (${duty.report_utc}). MAX FDP ${fmtMinutes(duty.max_fdp_minutes)}, ${duty.sectors} SECTOR${duty.sectors > 1 ? 'S' : ''}`;
   const over = fdp - duty.max_fdp_minutes;
-  if (over > duty.discretion_minutes) return { level: 'nogo', text: `${head}. Expected FDP ${fmtMinutes(fdp)} is beyond even the 2-hour commander's discretion: the crew runs out of hours` };
-  if (over > 0) return { level: 'caution', text: `${head}. Expected FDP ${fmtMinutes(fdp)}: ${fmtMinutes(over)} into commander's discretion (up to 2 hours)` };
-  return { level: 'ok', text: `${head}. Expected FDP ${fmtMinutes(fdp)}, ${fmtMinutes(-over)} to spare` };
+  if (over > duty.discretion_minutes) return { level: 'nogo', text: `${head}. EXPECTED FDP ${fmtMinutes(fdp)}: BEYOND COMMANDER'S DISCRETION (2H). CREW OUT OF HOURS` };
+  if (over > 0) return { level: 'caution', text: `${head}. EXPECTED FDP ${fmtMinutes(fdp)}: ${fmtMinutes(over)} INTO COMMANDER'S DISCRETION (MAX 2H)` };
+  return { level: 'ok', text: `${head}. EXPECTED FDP ${fmtMinutes(fdp)}, ${fmtMinutes(-over)} SPARE` };
 }
 function opsConstraintsHtml(legs, i, legStates) {
   const checks = legCurfewChecks(legs[i]);
@@ -1897,12 +1897,12 @@ function briefRow(tag, text, tone = '') {
 function legDelayRows(leg) {
   const own = legOwnDelayMinutes(leg), r = leg.reactionary ? leg.reactionary.minutes : 0;
   const rows = [];
-  if (leg.reactionary) rows.push(briefRow(`DELAY ${r} MIN`, leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector', 'warn'));
+  if (leg.reactionary) rows.push(briefRow(`DELAY ${r} MIN`, leg.reactionary.expected ? 'LATE INBOUND ACFT EXPECTED FROM PREVIOUS SECTOR' : 'LATE INBOUND ACFT FROM PREVIOUS SECTOR', 'warn'));
   if (leg.delay) rows.push(briefRow(`DELAY ${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN`, `${escText(leg.delay.plain || leg.delay.description)} <span class="brief-note">IATA ${escText(leg.delay.iata_code)}</span>`, 'warn'));
-  if (leg.aircraft_change) rows.push(briefRow(`DELAY ${leg.aircraft_change.minutes} MIN`, 'Aircraft change <span class="brief-note">IATA 46</span>', 'warn'));
-  if (leg.reactionary && own) rows.push(briefRow('TOTAL', `${legExpectedDelayMinutes(leg)} min expected: the other delays are absorbed during the late turnaround`));
-  if (leg.atfm) rows.push(briefRow(`SLOT ${escText(leg.atfm.ctot)}`, `ATC slot (${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}): take off between ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. New slot: the first one was missed' : ''}`, 'warn'));
-  if (!rows.length) rows.push(briefRow('ON TIME', 'No delay expected', 'ok'));
+  if (leg.aircraft_change) rows.push(briefRow(`DELAY ${leg.aircraft_change.minutes} MIN`, 'AIRCRAFT CHANGE <span class="brief-note">IATA 46</span>', 'warn'));
+  if (leg.reactionary && own) rows.push(briefRow('TOTAL', `${legExpectedDelayMinutes(leg)} MIN EXPECTED. OTHER DELAYS ABSORBED IN LATE TURNAROUND`));
+  if (leg.atfm) rows.push(briefRow(`SLOT ${escText(leg.atfm.ctot)}`, `ATC SLOT (${escText(leg.atfm.reason.toUpperCase())}, ${escText(String(leg.atfm.where).toUpperCase())}). TAKE-OFF ${slotWindowText(leg.atfm)}${leg.atfm.revised ? '. REVISED SLOT: FIRST SLOT MISSED' : ''}`, 'warn'));
+  if (!rows.length) rows.push(briefRow('ON TIME', 'NO DELAY EXPECTED', 'ok'));
   return rows;
 }
 
@@ -1927,7 +1927,7 @@ function legTechRows(leg) {
   const rows = legMels(leg).map(m => briefRow(`MEL ${techRef(m)}`,
     `<b>${techTitle(m)}</b>: ${escText(m.plain || m.description)}`, 'warn'))
     .concat(legCdl(leg).map(c => briefRow(`CDL ${techRef(c)}`, `<b>${techTitle(c)}</b>: ${escText(c.plain || c.description)}`, 'warn')));
-  return rows.length ? rows : [briefRow('TECH LOG', 'No deferred defects or missing panels', 'ok')];
+  return rows.length ? rows : [briefRow('TECH LOG', 'NIL DEFERRED DEFECTS. NIL MISSING PARTS', 'ok')];
 }
 function techChecksHtml(leg) {
   const checks = (leg.tech && leg.tech.checks) || [];
@@ -1936,10 +1936,10 @@ function techChecksHtml(leg) {
 function techAppliedText(leg) {
   const t = leg.tech; if (!t) return '';
   const parts = [];
-  if (t.max_fl) parts.push(`cruise no higher than FL${t.max_fl}`);
-  if (t.extra_fuel_min) parts.push(`${t.extra_fuel_min} min of extra fuel`);
-  if (legMels(leg).length || legCdl(leg).length) parts.push('every defect in full in the dispatch remarks');
-  return parts.length ? `Included in your SimBrief plan: <strong>${parts.join(' &middot; ')}</strong>` : '';
+  if (t.max_fl) parts.push(`MAX FL${t.max_fl}`);
+  if (t.extra_fuel_min) parts.push(`EXTRA FUEL ${t.extra_fuel_min} MIN`);
+  if (legMels(leg).length || legCdl(leg).length) parts.push('ALL DEFECTS IN DISPATCH REMARKS');
+  return parts.length ? `IN SIMBRIEF PLAN: <strong>${parts.join(' &middot; ')}</strong>` : '';
 }
 // Trip preview: delays and defects as rows, then the dispatch checks
 function legDelayMelBlock(leg) {
@@ -1995,7 +1995,7 @@ async function swapAircraft(key) {
     for (let k = 1; k < data.legs.length; k++) applyReactionaryDelay(data.legs[k], data.legs[k - 1].eibt, true);
     await paintDetail();
   } catch (err) {
-    alert('Could not swap the aircraft. Check the connection and retry');
+    alert('AIRCRAFT SWAP FAILED. CHECK CONNECTION, THEN RETRY');
     if (btn) btn.disabled = false;
   }
 }
@@ -2028,7 +2028,7 @@ function buildDetailHtml(data, key, carriers, ownedAircraft) {
       ${legBlocks}
       ${banner}
       <div class="confirm-row">
-        <button class="action" onclick="confirmFlight('${key}')"${nogo.length ? ' disabled title="This aircraft can&#39;t fly the trip: swap it or pick another flight"' : ''}>CONFIRM</button>
+        <button class="action" onclick="confirmFlight('${key}')"${nogo.length ? ' disabled title="AIRCRAFT NOT DISPATCHABLE FOR THIS TRIP. SWAP AIRCRAFT OR SELECT ANOTHER FLIGHT"' : ''}>CONFIRM</button>
       </div>
     </div>`;
 }
@@ -2061,7 +2061,7 @@ async function confirmFlight(key) {
     saveActiveFlight(activeFlight);
     renderRecap(activeFlight);
   } catch (err) {
-    alert('Could not confirm this flight. Check the connection and retry');
+    alert('FLIGHT NOT CONFIRMED. CHECK CONNECTION, THEN RETRY');
   }
 }
 
@@ -2086,15 +2086,15 @@ function ofpRouteFixes(leg, ofp) {
 // it again), SimBrief sending no coordinates, or an OFP for other airports.
 function routeMapNote(leg, state, refetchIndex) {
   const ofp = state.ofp;
-  if (ofpRouteFixes(leg, ofp)) return `Planned route from the SimBrief OFP: ${escText(ofp.route || '')}`;
+  if (ofpRouteFixes(leg, ofp)) return `OFP ROUTE: ${escText(ofp.route || '')}`;
   const refetch = refetchIndex != null
     ? ` <button class="ghost small" type="button" onclick="fetchOfp(${refetchIndex})">FETCH OFP AGAIN</button>` : '';
-  if (!ofp) return 'Waiting for the SimBrief OFP to plot the planned route';
+  if (!ofp) return 'ROUTE PENDING OFP';
   if (ofp.origin_icao && ofp.destination_icao && (ofp.origin_icao !== leg.departure_info.icao || ofp.destination_icao !== leg.arrival_info.icao)) {
-    return `Straight line: the saved OFP is for ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, not this leg${refetch}`;
+    return `DIRECT LINE SHOWN. SAVED OFP IS FOR ${escText(ofp.origin_icao)} &rarr; ${escText(ofp.destination_icao)}, NOT THIS LEG.${refetch}`;
   }
-  if (!Array.isArray(ofp.navlog)) return `Straight line: this OFP was saved before routes could be drawn. Fetch it again to draw its route${refetch}`;
-  return `Straight line: SimBrief didn't include route coordinates in this OFP.${refetch}`;
+  if (!Array.isArray(ofp.navlog)) return `DIRECT LINE SHOWN. OFP SAVED WITHOUT ROUTE DATA. FETCH OFP AGAIN TO PLOT THE ROUTE.${refetch}`;
+  return `DIRECT LINE SHOWN. NO ROUTE COORDINATES IN OFP.${refetch}`;
 }
 
 // Leg route map: the OFP's planned route through its fixes once an OFP is
@@ -2122,7 +2122,7 @@ function initRouteMap(id, leg, ofp, opts = {}) {
       const m = L.circleMarker([f.lat, f.lon], phase
         ? { radius: 5, color: '#FFFFFF', weight: 2, fillColor: '#DC6803', fillOpacity: 1 }
         : { radius: 3.5, color: '#2563EB', weight: 1.5, fillColor: '#FFFFFF', fillOpacity: 1 }).addTo(map);
-      const label = phase ? (f.ident === 'TOC' ? 'TOC · top of climb' : 'TOD · top of descent') : escText(f.ident) + (f.via && f.via !== 'DCT' ? ` · ${escText(f.via)}` : '');
+      const label = phase ? (f.ident === 'TOC' ? 'TOC · TOP OF CLIMB' : 'TOD · TOP OF DESCENT') : escText(f.ident) + (f.via && f.via !== 'DCT' ? ` · ${escText(f.via)}` : '');
       m.bindTooltip(label, { direction: 'top', offset: [0, -4], className: 'route-fix-tip' });
     });
   } else {
@@ -2188,18 +2188,18 @@ function ofpDoneText(ofp) {
   const fl = ofpNum(ofp.initial_altitude_ft), block = ofpNum(ofp.block_fuel);
   const rwy = ofp.dep_rwy || ofp.arr_rwy ? `RWY ${escText(ofp.dep_rwy || '?')} &rarr; ${escText(ofp.arr_rwy || '?')}` : '';
   const facts = [escText(ofp.registration || ofp.icao_type || ''), rwy, fl ? `FL${Math.round(fl / 100)}` : '',
-    block != null ? `block ${fmtNum(block)} ${ofpUnit(ofp).toLowerCase()}` : ''].filter(Boolean).join(' &middot; ');
+    block != null ? `BLOCK ${fmtNum(block)} ${ofpUnit(ofp)}` : ''].filter(Boolean).join(' &middot; ');
   const when = zuluTime(ofp.generated_at);
-  return `${facts}${when ? `<span class="af-flow-when">OFP generated ${when}</span>` : ''}`;
+  return `${facts}${when ? `<span class="af-flow-when">OFP ${when}</span>` : ''}`;
 }
 function afStepsHtml(flight, i) {
   const st = flight.leg_state[i], stage = legStage(flight, i), finished = stage === 'done';
   const done = [finished || st.simbrief === 'available', finished || !!st.loadsheet_signed, !!st.pirep];
   const nowIndex = ({ simbrief: 0, ofp: 0, loadsheet: 1, pirep: 2 })[stage];
   const texts = [
-    st.ofp && done[0] ? ofpDoneText(st.ofp) : st.simbrief === 'sent' ? 'Waiting for your OFP from SimBrief' : 'Choose your airframe and generate the OFP',
-    done[1] && st.loadsheet && st.loadsheet.signed_at ? `Signed ${zuluTime(st.loadsheet.signed_at)}` : 'Ask for the loadsheet, sort out any last-minute changes, sign it',
-    done[2] ? 'Filed' : 'Fly the leg, then report your actual times and fuel',
+    st.ofp && done[0] ? ofpDoneText(st.ofp) : st.simbrief === 'sent' ? 'AWAITING OFP FROM SIMBRIEF' : 'SELECT AIRFRAME AND RUNWAYS. GENERATE OFP',
+    done[1] && st.loadsheet && st.loadsheet.signed_at ? `SIGNED ${zuluTime(st.loadsheet.signed_at)}` : 'REQUEST LOADSHEET. RESOLVE LMC AND DG. SIGN',
+    done[2] ? 'FILED' : 'FLY THE SECTOR. REPORT ACTUAL TIMES AND FUEL',
   ];
   return `<ol class="af-flow" aria-label="Steps for this leg">${STEP_LABELS.map((label, k) => {
     const state = done[k] ? 'done' : k === nowIndex ? 'now' : 'todo';
@@ -2207,7 +2207,7 @@ function afStepsHtml(flight, i) {
     return `<li class="af-flow-step ${state}"${state === 'now' ? ' aria-current="step"' : ''}>
       <span class="af-flow-n" aria-hidden="true">${state === 'done' ? '&#10003;' : k + 1}</span>
       <span class="af-flow-body"><b>${label}</b>${tag ? `<span class="af-flow-tag">${tag}</span>` : ''}<small>${texts[k]}</small></span></li>`;
-  }).join('')}</ol>${stage === 'waiting' ? `<p class="af-flow-note">These steps open once the PIREP for leg ${i} is filed</p>` : ''}`;
+  }).join('')}</ol>${stage === 'waiting' ? `<p class="af-flow-note">AVAILABLE AFTER LEG ${i} PIREP</p>` : ''}`;
 }
 
 // ---- PLAN: the first tab, open until the OFP is in. What the plan needs
@@ -2224,26 +2224,26 @@ function planPaneHtml(flight, i) {
   const legRows = [
     sheetRow('FLIGHT', `${escText(leg.flight_number)}${callsign ? ' &middot; ' + escText(callsign) : ''} &middot; ${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}`),
     sheetRow('AIRCRAFT', escText(leg.aircraft_type || 'N/A')),
-    sheetRow('OFF-BLOCK', `${escText(leg.eobt || leg.sobt || 'N/A')}${legExpectedDelayMinutes(leg) ? ` <span class="sheet-note">scheduled ${escText(leg.sobt || '')}</span>` : ''}`),
+    sheetRow('OFF-BLOCK', `EOBT ${escText(leg.eobt || leg.sobt || 'N/A')}${legExpectedDelayMinutes(leg) ? ` <span class="sheet-note">SOBT ${escText(leg.sobt || '')}</span>` : ''}`),
     ...(leg.eet_minutes != null ? [sheetRow('FLIGHT TIME', fmtMinutes(leg.eet_minutes))] : []),
-    sheetRow('PASSENGERS', `${fmtNum(leg.pax_count)} of ${fmtNum(leg.seat_capacity)} seats &middot; bags ${fmtNum(leg.cargo_weight_kg)} kg`),
-    ...(legMels(leg).length || legCdl(leg).length ? [sheetRow('TECH LOG', `${[...legMels(leg).map(m => 'MEL ' + techRef(m)), ...legCdl(leg).map(c => 'CDL ' + techRef(c))].join(', ')} <span class="sheet-note">in the plan's remarks; details in the briefing</span>`)] : []),
+    sheetRow('PASSENGERS', `${fmtNum(leg.pax_count)} / ${fmtNum(leg.seat_capacity)} SEATS &middot; BAGS ${fmtNum(leg.cargo_weight_kg)} KG`),
+    ...(legMels(leg).length || legCdl(leg).length ? [sheetRow('TECH LOG', `${[...legMels(leg).map(m => 'MEL ' + techRef(m)), ...legCdl(leg).map(c => 'CDL ' + techRef(c))].join(', ')} <span class="sheet-note">IN OFP REMARKS. DETAILS IN BRIEFING</span>`)] : []),
   ];
   if (!canPlan(flight, i)) {
     const done = st.ofp ? `<p class="plan-note plan-done">${ofpDoneText(st.ofp)}</p>` : '';
-    return sheetSection('SIMBRIEF PLAN', [sheetRow('STATUS', legStage(flight, i) === 'waiting' ? `Planned once the PIREP for leg ${i} is filed` : 'Planned: the loadsheet is signed')], done)
+    return sheetSection('SIMBRIEF PLAN', [sheetRow('STATUS', legStage(flight, i) === 'waiting' ? `AVAILABLE AFTER LEG ${i} PIREP` : 'PLAN CLOSED. LOADSHEET SIGNED')], done)
       + sheetSection('THIS LEG', legRows);
   }
   const waiting = st.simbrief === 'sent'
-    ? `<p class="plan-wait"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">Watching SimBrief: your OFP appears here as soon as you generate it</span></span></p>` : '';
-  const current = st.ofp && st.simbrief === 'available' ? `<p class="plan-current">Current OFP: ${ofpDoneText(st.ofp)}</p>` : '';
+    ? `<p class="plan-wait"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">MONITORING SIMBRIEF. OFP LOADS ON GENERATION</span></span></p>` : '';
+  const current = st.ofp && st.simbrief === 'available' ? `<p class="plan-current">CURRENT OFP: ${ofpDoneText(st.ofp)}</p>` : '';
   const form = `<section class="sheet plan-form"><h4 class="sheet-h">SIMBRIEF PLAN</h4>
       <div class="plan-fields">
-        <span class="sb-airframe" id="sbAirframe-${i}">${api ? '' : `<span class="af-field"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')} &middot; SimBrief standard</b></span>`}</span>
-        <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">Reading the ATIS&hellip;</span></div>
+        <span class="sb-airframe" id="sbAirframe-${i}">${api ? '' : `<span class="af-field"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')} &middot; SIMBRIEF STANDARD</b></span>`}</span>
+        <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">READING ATIS&hellip;</span></div>
         <p class="plan-note" id="sbSendNote-${i}">${api
-          ? 'GENERATE OFP plans the leg on SimBrief with this airframe: route, fuel, weights and NOTAMs come straight into the briefing'
-          : 'OPEN SIMBRIEF opens SimBrief with this leg filled in: generate the OFP there and it comes back here on its own. Sign in with Navigraph in Account settings to plan with your own airframes in one click'}</p>
+          ? 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING'
+          : 'SIMBRIEF OPENS WITH THIS LEG PRE-FILLED. GENERATE OFP THERE; IT LOADS HERE ON GENERATION. FOR OWN AIRFRAMES AND ONE-STEP PLANNING, SIGN IN WITH NAVIGRAPH (ACCOUNT SETTINGS)'}</p>
         ${current}
       </div>${waiting}</section>`;
   return form + sheetSection('THIS LEG', legRows);
@@ -2263,7 +2263,7 @@ function nextAction(flight, i) {
   if (stage === 'loadsheet' && !st.ls) return { left: [], label: 'ASK FOR LOADSHEET', run: `askForLoadsheet(${i})` };
   if (stage === 'loadsheet') {
     const s = loadsheetState(flight, i);
-    const note = !s ? 'No weights in this OFP: replan or fetch it again' : s.pending.length ? `${s.pending.length} item${s.pending.length > 1 ? 's' : ''} still to sort out on the loadsheet` : s.over ? 'The load is over the weight limits' : '';
+    const note = !s ? 'NO WEIGHTS IN OFP. REPLAN OR FETCH OFP AGAIN' : s.pending.length ? `${s.pending.length} LOADSHEET ITEM${s.pending.length > 1 ? 'S' : ''} OPEN` : s.over ? 'LOAD EXCEEDS WEIGHT LIMITS' : '';
     return { left: [], label: 'SIGN LOADSHEET', run: `nextSignLoadsheet(${i})`, disabled: !!note, note };
   }
   if (!st.pirep_open) return { left: [], label: 'FILL PIREP', run: `openPirep(${i})` };
@@ -2326,7 +2326,7 @@ function renderRecap(flight) {
   const actions = allDone
     ? `<span class="status-chip status-ok">ALL LEGS COMPLETE</span><button class="action small" onclick="startNewFlight()">NEW FLIGHT</button>`
     : stage !== 'waiting' && stage !== 'done' ? `<button class="action small danger" onclick="skipFlight()">SKIP LEG</button>` : '';
-  const mismatch = state.aircraft_type_mismatch && state.ofp ? `<div class="notice-banner">The OFP's aircraft type (${escText(state.ofp.icao_type)}) doesn't match the ${escText(leg.aircraft_type)} assigned to this leg. Double-check the aircraft on SimBrief before flying this OFP</div>` : '';
+  const mismatch = state.aircraft_type_mismatch && state.ofp ? `<div class="notice-banner">OFP ACFT TYPE ${escText(state.ofp.icao_type)} DOES NOT MATCH ASSIGNED ${escText(leg.aircraft_type)}. CHECK AIRCRAFT ON SIMBRIEF BEFORE USING THIS OFP.</div>` : '';
 
   recapShownLeg = i;
   const panes = { plan: planPaneHtml(flight, i), briefing: briefingHtml(flight, i), loadsheet: loadsheetPaneHtml(flight, i), pirep: pirepPaneHtml(flight, i) };
@@ -2416,9 +2416,9 @@ function briefingSummary(flight, i) {
   const mels = legMels(leg).length, cdl = legCdl(leg).length;
   const duty = dutyFigures(flight.legs, flight.leg_state);
   const tiles = [
-    ['DISPATCH', nogo ? 'NO-GO' : caution ? 'CAUTION' : 'GO', nogo ? `${nogo} blocking item${nogo > 1 ? 's' : ''}` : caution ? `${caution} item${caution > 1 ? 's' : ''} to watch` : 'All checks clear', nogo ? 'nogo' : caution ? 'caution' : 'ok'],
-    ['DELAY', delay ? `+${delay} MIN` : 'ON TIME', delay ? (code ? `IATA ${escText(code)}` : 'Expected delay') : 'No delay expected', delay ? 'caution' : 'ok'],
-    ['TECH LOG', mels && cdl ? `${mels + cdl} ITEMS` : mels ? `${mels} MEL` : cdl ? `${cdl} CDL` : 'CLEAN', mels || cdl ? `${mels} MEL, ${cdl} CDL` : 'No deferred defects', mels || cdl ? 'caution' : 'ok'],
+    ['DISPATCH', nogo ? 'NO-GO' : caution ? 'CAUTION' : 'GO', nogo ? `${nogo} BLOCKING ITEM${nogo > 1 ? 'S' : ''}` : caution ? `${caution} ITEM${caution > 1 ? 'S' : ''} TO MONITOR` : 'ALL CHECKS CLEAR', nogo ? 'nogo' : caution ? 'caution' : 'ok'],
+    ['DELAY', delay ? `+${delay} MIN` : 'ON TIME', delay ? (code ? `IATA ${escText(code)}` : 'EXPECTED DELAY') : 'NO DELAY EXPECTED', delay ? 'caution' : 'ok'],
+    ['TECH LOG', mels && cdl ? `${mels + cdl} ITEMS` : mels ? `${mels} MEL` : cdl ? `${cdl} CDL` : 'CLEAN', mels || cdl ? `${mels} MEL, ${cdl} CDL` : 'NIL DEFERRED DEFECTS', mels || cdl ? 'caution' : 'ok'],
     notamTile(flight.leg_state[i].ofp),
     ['CREW DUTY', duty ? (duty.over > 0 ? `${hm(duty.over)} OVER` : `${hm(-duty.over)} SPARE`) : 'N/A',
       duty ? `FDP ${hm(duty.fdp)} of ${hm(duty.duty.max_fdp_minutes)}` : '', duty ? duty.level : ''],
@@ -2442,7 +2442,7 @@ function briefingHtml(flight, i) {
     sheetRow('FLIGHT', `${escText(leg.flight_number)}${callsign ? ' &middot; ' + escText(callsign) : ''}`),
     sheetRow('ROUTE', `${leg.departure_info.icao} &rarr; ${leg.arrival_info.icao}`),
     sheetRow('AIRCRAFT', `${escText(leg.aircraft_type || 'N/A')}${ofp && ofp.registration ? ' &middot; ' + escText(ofp.registration) : ''}`),
-    sheetRow('PASSENGERS', `${fmtNum(leg.pax_count)} of ${fmtNum(leg.seat_capacity)} seats (${Math.round((leg.load_factor || 0) * 100)}%)`),
+    sheetRow('PASSENGERS', `${fmtNum(leg.pax_count)} / ${fmtNum(leg.seat_capacity)} SEATS (${Math.round((leg.load_factor || 0) * 100)}%)`),
     sheetRow('BAGS (EXPECTED)', `${fmtNum(leg.cargo_weight_kg)} kg`),
   ];
   return briefingSummary(flight, i) + '<div class="sheets">'
@@ -2465,11 +2465,11 @@ function timingRows(flight, i) {
   rows.push(`<div class="sheet-row sheet-cols sheet-colhead"><span class="sheet-k"></span><span>SCHEDULED</span><span>ESTIMATED</span></div>`
     + times.map(([k, sch, e]) => `<div class="sheet-row sheet-cols"><span class="sheet-k">${k}</span><span>${escText(sch || 'N/A')}</span><span>${cell(e, sch)}</span></div>`).join('')
     + (leg.eet_minutes != null ? `<div class="sheet-row sheet-cols"><span class="sheet-k">FLIGHT TIME</span><span>${fmtMinutes(leg.eet_minutes)}</span><span></span></div>` : ''));
-  if (leg.reactionary) rows.push(sheetRow(`DELAY +${leg.reactionary.minutes} MIN`, `${leg.reactionary.expected ? 'Late inbound aircraft expected from the previous sector' : 'Late inbound aircraft from the previous sector'} <span class="sheet-note">IATA 93</span>`, 'caution'));
+  if (leg.reactionary) rows.push(sheetRow(`DELAY +${leg.reactionary.minutes} MIN`, `${leg.reactionary.expected ? 'LATE INBOUND ACFT EXPECTED FROM PREVIOUS SECTOR' : 'LATE INBOUND ACFT FROM PREVIOUS SECTOR'} <span class="sheet-note">IATA 93</span>`, 'caution'));
   if (leg.delay) rows.push(sheetRow(`DELAY +${Number.isFinite(leg.delay.minutes) ? leg.delay.minutes : Math.max(...leg.delay.duration_range_minutes)} MIN`, `${escText(leg.delay.plain || leg.delay.description)} <span class="sheet-note">IATA ${escText(leg.delay.iata_code)}</span>`, 'caution'));
-  if (leg.aircraft_change) rows.push(sheetRow(`DELAY +${leg.aircraft_change.minutes} MIN`, 'Aircraft change <span class="sheet-note">IATA 46</span>', 'caution'));
-  if (leg.reactionary && own) rows.push(sheetRow('TOTAL DELAY', `${legExpectedDelayMinutes(leg)} min: the other delays are absorbed during the late turnaround`));
-  if (leg.atfm) rows.push(sheetRow(`ATC SLOT ${escText(leg.atfm.ctot)}`, `Take off between ${slotWindowText(leg.atfm)} <span class="sheet-note">${escText(leg.atfm.reason.toLowerCase())}, ${escText(leg.atfm.where)}${leg.atfm.revised ? ', new slot' : ''}</span>`, 'caution'));
+  if (leg.aircraft_change) rows.push(sheetRow(`DELAY +${leg.aircraft_change.minutes} MIN`, 'AIRCRAFT CHANGE <span class="sheet-note">IATA 46</span>', 'caution'));
+  if (leg.reactionary && own) rows.push(sheetRow('TOTAL DELAY', `${legExpectedDelayMinutes(leg)} MIN. OTHER DELAYS ABSORBED IN LATE TURNAROUND`));
+  if (leg.atfm) rows.push(sheetRow(`ATC SLOT ${escText(leg.atfm.ctot)}`, `TAKE-OFF ${slotWindowText(leg.atfm)} <span class="sheet-note">${escText(leg.atfm.reason.toUpperCase())}, ${escText(String(leg.atfm.where).toUpperCase())}${leg.atfm.revised ? ', REVISED SLOT' : ''}</span>`, 'caution'));
   legCurfewChecks(leg).forEach(c => rows.push(sheetRow(`CURFEW ${escText(c.icao)}`, c.text, c.level)));
   return rows;
 }
@@ -2479,49 +2479,49 @@ function crewRows(flight) {
   if (duty) {
     const d = duty.duty;
     rows.push(sheetRow('CREW REPORT', `${d.report_local} local <span class="sheet-note">${d.report_utc}</span>`));
-    rows.push(sheetRow('MAX FDP', `${fmtMinutes(d.max_fdp_minutes)} for ${d.sectors} sector${d.sectors > 1 ? 's' : ''} <span class="sheet-note">EASA ORO.FTL.205</span>`));
-    rows.push(sheetRow('EXPECTED FDP', `${fmtMinutes(duty.fdp)} <span class="sheet-note">${duty.over > 0 ? `${fmtMinutes(duty.over)} into commander's discretion` : `${fmtMinutes(-duty.over)} to spare`}</span>`, duty.level));
+    rows.push(sheetRow('MAX FDP', `${fmtMinutes(d.max_fdp_minutes)}, ${d.sectors} SECTOR${d.sectors > 1 ? 'S' : ''} <span class="sheet-note">EASA ORO.FTL.205</span>`));
+    rows.push(sheetRow('EXPECTED FDP', `${fmtMinutes(duty.fdp)} <span class="sheet-note">${duty.over > 0 ? `${fmtMinutes(duty.over)} INTO COMMANDER'S DISCRETION` : `${fmtMinutes(-duty.over)} SPARE`}</span>`, duty.level));
   }
-  return rows.length ? rows : [sheetRow('STATUS', 'No crew duty figures for this trip')];
+  return rows.length ? rows : [sheetRow('STATUS', 'NO CREW DUTY DATA FOR THIS TRIP')];
 }
 // NOTAMs come with the OFP (see notams.py): major and significant ones as
 // rows, the rest folded away
 function legNotams(st) { return st && st.ofp && Array.isArray(st.ofp.notams) ? st.ofp.notams : null; }
 function notamTile(ofp) {
-  if (!ofp) return ['NOTAMS', 'AFTER OFP', 'Come with the OFP', ''];
+  if (!ofp) return ['NOTAMS', 'PENDING', 'RECEIVED WITH OFP', ''];
   const list = Array.isArray(ofp.notams) ? ofp.notams : null;
-  if (!list) return ['NOTAMS', 'N/A', 'None in this OFP', ''];
+  if (!list) return ['NOTAMS', 'N/A', 'NOT IN OFP', ''];
   const major = list.filter(n => n.level === 'major').length, sig = list.filter(n => n.level === 'significant').length;
-  if (!major && !sig) return ['NOTAMS', 'CLEAR', `${list.length} minor`, 'ok'];
-  return ['NOTAMS', major ? `${major} MAJOR` : `${sig} SIGNIFICANT`, major && sig ? `+${sig} significant` : `${list.length} in total`, 'caution'];
+  if (!major && !sig) return ['NOTAMS', 'CLEAR', `${list.length} MINOR`, 'ok'];
+  return ['NOTAMS', major ? `${major} MAJOR` : `${sig} SIGNIFICANT`, major && sig ? `+${sig} SIGNIFICANT` : `${list.length} TOTAL`, 'caution'];
 }
 function notamText(n) {
   const valid = n.from || n.to ? ` <span class="sheet-note">${escText(n.from || '')}${n.to ? ' to ' + escText(n.to) : ''}</span>` : '';
   return `${n.reason ? `<b>${escText(n.reason.charAt(0).toUpperCase() + n.reason.slice(1))}</b>${valid}<br>` : ''}<span class="mono">${escText(n.text)}</span>${n.reason ? '' : valid}`;
 }
 function notamRows(st) {
-  if (!st.ofp) return [sheetRow('STATUS', 'Waiting for the SimBrief OFP: the departure and destination NOTAMs come with it')];
+  if (!st.ofp) return [sheetRow('STATUS', 'NOTAMS PENDING OFP')];
   const list = legNotams(st);
-  if (!list) return [sheetRow('STATUS', 'SimBrief sent no NOTAMs with this OFP. Switch NOTAMs on in your SimBrief options, then fetch the OFP again')];
+  if (!list) return [sheetRow('STATUS', 'NO NOTAMS IN OFP. ENABLE NOTAMS IN SIMBRIEF OPTIONS, THEN FETCH OFP AGAIN')];
   const key = list.filter(n => n.level !== 'other');
-  if (!key.length) return [sheetRow('STATUS', `No major or significant NOTAMs live at the departure or destination (${list.length} minor)`, 'ok')];
+  if (!key.length) return [sheetRow('STATUS', `NIL MAJOR OR SIGNIFICANT NOTAMS AT DEP OR ARR (${list.length} MINOR)`, 'ok')];
   return key.map(n => sheetRow(`${escText(n.icao)} ${n.level === 'major' ? 'MAJOR' : 'SIGNIFICANT'}`, notamText(n), 'caution'));
 }
 function notamOthers(st) {
   const others = (legNotams(st) || []).filter(n => n.level === 'other');
   if (!others.length) return '';
-  return `<details class="sheet-more"><summary>Show ${others.length} other NOTAM${others.length > 1 ? 's' : ''}</summary>
+  return `<details class="sheet-more"><summary>${others.length} OTHER NOTAM${others.length > 1 ? 'S' : ''}</summary>
     ${others.map(n => sheetRow(escText(n.icao) + (n.id ? ' ' + escText(n.id) : ''), notamText(n))).join('')}</details>`;
 }
 const CHECK_LABELS = { nogo: 'NO-GO', caution: 'CAUTION', ok: 'CLEAR' };
 function techRows(leg) {
   const mels = legMels(leg), cdl = legCdl(leg);
-  if (!mels.length && !cdl.length) return [sheetRow('STATUS', 'No deferred defects or missing panels', 'ok')];
+  if (!mels.length && !cdl.length) return [sheetRow('STATUS', 'NIL DEFERRED DEFECTS. NIL MISSING PARTS', 'ok')];
   const rows = ((leg.tech && leg.tech.checks) || []).map(c => sheetRow(CHECK_LABELS[c.level] || 'CHECK', escText(c.text), c.level));
   const t = leg.tech || {}, plan = [];
-  if (t.max_fl) plan.push(`cruise FL${t.max_fl} or below`);
-  if (t.extra_fuel_min) plan.push(`+${t.extra_fuel_min} min fuel`);
-  plan.push('every item in full in the dispatch remarks');
+  if (t.max_fl) plan.push(`MAX FL${t.max_fl}`);
+  if (t.extra_fuel_min) plan.push(`EXTRA FUEL ${t.extra_fuel_min} MIN`);
+  plan.push('ALL ITEMS IN DISPATCH REMARKS');
   rows.push(sheetRow('IN SIMBRIEF PLAN', plan.join(' &middot; ')));
   return rows;
 }
@@ -2535,21 +2535,21 @@ function techCards(flight, i) {
       <div class="tcard-head"><span class="tech-ref">${ref}</span><b>${techTitle(m)}</b></div>
       <p class="tcard-means">${escText(m.plain || m.description)}</p>
       ${steps.length ? `<ul class="tcard-steps">${steps.map(t => `<li>${escText(t)}</li>`).join('')}</ul>` : ''}
-      ${official || m.description ? `<details class="tech-official"><summary>Official wording</summary><p>${escText(m.description)}</p>${official ? `<ul>${official}</ul>` : ''}${m.source ? `<p>Source: ${escText(m.source)}</p>` : ''}</details>` : ''}
+      ${official || m.description ? `<details class="tech-official"><summary>MEL/CDL TEXT</summary><p>${escText(m.description)}</p>${official ? `<ul>${official}</ul>` : ''}${m.source ? `<p>SOURCE: ${escText(m.source)}</p>` : ''}</details>` : ''}
     </div>`;
   };
   const cards = legMels(leg).map(m => card(`MEL ${techRef(m)}`, m, m.steps || (m.procedures || []).map(stripMO)))
     .concat(legCdl(leg).map(c => {
       const e = c.effects || {};
-      const steps = c.steps || [e.fuel_burn_pct ? `Burns ${e.fuel_burn_pct}% more fuel: already in the flight plan` : '',
-        e.weight_penalty_kg ? `Maximum take-off and landing weights reduced by ${e.weight_penalty_kg} kg` : ''].filter(Boolean);
+      const steps = c.steps || [e.fuel_burn_pct ? `FUEL BURN +${e.fuel_burn_pct}%. INCLUDED IN OFP` : '',
+        e.weight_penalty_kg ? `MTOW AND MLW REDUCED BY ${e.weight_penalty_kg} KG` : ''].filter(Boolean);
       return card(`CDL ${techRef(c)}`, c, steps);
     }));
   return cards.length ? `<div class="tcards">${cards.join('')}</div>` : '';
 }
 function ofpRows(leg, st) {
   const ofp = st.ofp;
-  if (!ofp) return [sheetRow('STATUS', 'Not fetched yet: the route, fuel and weights appear here once the OFP is in')];
+  if (!ofp) return [sheetRow('STATUS', 'OFP NOT RECEIVED')];
   const unit = ofpUnit(ofp), w = v => ofpNum(v) != null ? `${fmtNum(v)} ${unit.toLowerCase()}` : 'N/A';
   const fl = ofpNum(ofp.initial_altitude_ft);
   return [
@@ -2573,7 +2573,7 @@ function weatherRows(leg) {
 
 function ofpSectionHtml(leg, st) {
   const ofp = st.ofp;
-  if (!ofp) return `<p class="brief-empty">The route, fuel and weights appear here once the OFP is fetched from SimBrief</p>`;
+  if (!ofp) return `<p class="brief-empty">OFP NOT RECEIVED</p>`;
   const unit = ofpUnit(ofp), w = v => ofpNum(v) != null ? `${fmtNum(v)} ${unit}` : 'N/A';
   const fl = ofpNum(ofp.initial_altitude_ft);
   return kvRows([
@@ -2649,32 +2649,32 @@ function loadsheetItems(flight, i, b) {
       const paxLoad = pax ? Math.round(d * b.paxW) : 0;
       const hold = pax ? (d < 0 ? kgToUnit(unit, d * STD_BAG_KG) : 0) : kgToUnit(unit, d);
       const change = { label: pax ? (d > 0 ? 'LATE PAX' : 'PAX OFFLOAD') : (d > 0 ? 'EXTRA BAGS' : 'BAGS OFFLOAD'), pax: pax ? d : 0, paxLoad, hold, weight: paxLoad + hold };
-      const amount = pax ? `${d > 0 ? '+' : ''}${d} passenger${Math.abs(d) === 1 ? '' : 's'}${d < 0 ? ' and their bags' : ''}` : `${d > 0 ? '+' : ''}${fmtNum(kgToUnit(unit, d))} ${unit} in the hold`;
+      const amount = pax ? `${d > 0 ? '+' : ''}${d} PAX${d < 0 ? ' WITH BAGS' : ''}` : `${d > 0 ? '+' : ''}${fmtNum(kgToUnit(unit, d))} ${unit} HOLD`;
       items.push(d > 0
         ? { key: 'lmc', tag: 'LMC', text: `${escText(lmc.description)}: <b>${amount}</b> (${fmtNum(change.weight)} ${unit})`, choices: [['accept', 'ACCEPT'], ['decline', 'DECLINE']], change: { accept: change } }
-        : { key: 'lmc', tag: 'LMC', text: `${escText(lmc.description)}: <b>${amount}</b> (${fmtNum(change.weight)} ${unit}). Unaccompanied bags always come off the aircraft`, choices: [['ack', 'ACKNOWLEDGE']], change: { ack: change } });
+        : { key: 'lmc', tag: 'LMC', text: `${escText(lmc.description)}: <b>${amount}</b> (${fmtNum(change.weight)} ${unit}). UNACCOMPANIED BAGS OFFLOADED`, choices: [['ack', 'ACKNOWLEDGE']], change: { ack: change } });
     }
   }
   const dg = ls.dangerous_goods;
   if (!isNoDg(dg)) {
     if (dg.notoc) {
       const w = kgToUnit(unit, dg.weight_kg || 0);
-      items.push({ key: 'dg', tag: 'NOTOC', text: `Dangerous goods for the hold: <b>${escText(dg.label)}</b>. Accept and sign the NOTOC, or refuse and have it offloaded`,
+      items.push({ key: 'dg', tag: 'NOTOC', text: `DG FOR THE HOLD: <b>${escText(dg.label)}</b>. ACCEPT AND SIGN NOTOC, OR REFUSE FOR OFFLOAD`,
         choices: [['accept', 'ACCEPT NOTOC'], ['refuse', 'REFUSE']], change: { accept: { label: `DG ${dg.un || ''}`.trim(), hold: w, weight: w } } });
     } else {
-      items.push({ key: 'dg', tag: 'DG INFO', text: `${escText(dg.label)}. Carried within the passenger allowances: the captain is informed, nothing to sign`, choices: [['ack', 'ACKNOWLEDGE']], change: {} });
+      items.push({ key: 'dg', tag: 'DG INFO', text: `${escText(dg.label)}. WITHIN PASSENGER ALLOWANCES. FOR INFORMATION, NO SIGNATURE`, choices: [['ack', 'ACKNOWLEDGE']], change: {} });
     }
   }
   // MEL fuel limits (see techlog.py): fuel-pump minimums, centre tank empty
   const tech = leg.tech || {};
   if (tech.min_takeoff_fuel_kg && unitToKg(unit, b.tof) < tech.min_takeoff_fuel_kg) {
     const add = Math.ceil((kgToUnit(unit, tech.min_takeoff_fuel_kg) - b.tof) / 100) * 100;
-    items.push({ key: 'fuelmin', tag: 'MEL FUEL', text: `Take-off fuel ${fmtNum(b.tof)} ${unit} is below the MEL minimum of ${fmtNum(kgToUnit(unit, tech.min_takeoff_fuel_kg))} ${unit} (fuel pump inoperative). Uplift ${fmtNum(add)} ${unit} more`,
+    items.push({ key: 'fuelmin', tag: 'MEL FUEL', text: `TAKE-OFF FUEL ${fmtNum(b.tof)} ${unit} BELOW MEL MINIMUM ${fmtNum(kgToUnit(unit, tech.min_takeoff_fuel_kg))} ${unit} (FUEL PUMP INOP). UPLIFT ${fmtNum(add)} ${unit}`,
       choices: [['ack', 'UPLIFT FUEL']], change: { ack: { label: 'FUEL UPLIFT', fuel: add, weight: add } } });
   }
   if (tech.max_fuel_kg && unitToKg(unit, b.tof + b.taxi) > tech.max_fuel_kg) {
     const cut = Math.ceil((b.tof + b.taxi - kgToUnit(unit, tech.max_fuel_kg)) / 100) * 100;
-    items.push({ key: 'fuelmax', tag: 'MEL FUEL', text: `Block fuel is above the ${fmtNum(kgToUnit(unit, tech.max_fuel_kg))} ${unit} the main tanks hold (centre tank unusable). Defuel ${fmtNum(cut)} ${unit}`,
+    items.push({ key: 'fuelmax', tag: 'MEL FUEL', text: `BLOCK FUEL ABOVE MAIN TANK CAPACITY ${fmtNum(kgToUnit(unit, tech.max_fuel_kg))} ${unit} (CENTRE TANK UNUSABLE). DEFUEL ${fmtNum(cut)} ${unit}`,
       choices: [['ack', 'DEFUEL']], change: { ack: { label: 'FUEL DEFUEL', fuel: -cut, weight: -cut } } });
   }
   return items;
@@ -2881,12 +2881,12 @@ function acarsVariants(flight, i, s, signedAt) {
 }
 function acarsPreviewHtml(text, variants) {
   if (acarsNetwork === 'sayintentions' && variants && variants.length) {
-    const labels = ['Up to 255 characters, e.g. Fenix A320', 'Up to 128 characters, e.g. PMDG 737'];
+    const labels = ['MAX 255 CHARACTERS (E.G. FENIX A320)', 'MAX 128 CHARACTERS (E.G. PMDG 737)'];
     return `<details class="acars-preview"><summary>ACARS VERSIONS <span>SayIntentions sends the longest one the aircraft takes, as one message</span></summary>
       <div class="acars-versions">${variants.map((v, k) => `<div><div class="acars-version-label">${escText(labels[k] || '')} &middot; ${v.length} characters</div>
         <pre class="acars-screen">${escText(v)}</pre></div>`).join('')}</div></details>`;
   }
-  return `<details class="acars-preview"><summary>ACARS VERSION <span>what SEND TO AIRCRAFT transmits</span></summary>
+  return `<details class="acars-preview"><summary>ACARS VERSION <span>AS TRANSMITTED BY SEND TO AIRCRAFT</span></summary>
     <pre class="acars-screen">${escText(text)}</pre></details>`;
 }
 
@@ -2896,8 +2896,8 @@ function acarsPreviewHtml(text, variants) {
 // anyway. Each send is recorded on the loadsheet.
 function acarsSentLine(sent) {
   if (!sent) return '';
-  const via = sent.network === 'sayintentions' ? ` via SayIntentions${sent.lines ? `, ${sent.lines}-line version` : ''}` : '';
-  return `Sent to the aircraft ${opsTime(sent.at)}Z, edition ${String(sent.edition).padStart(2, '0')}${via}`;
+  const via = sent.network === 'sayintentions' ? ` VIA SAYINTENTIONS${sent.lines ? `, ${sent.lines}-LINE VERSION` : ''}` : '';
+  return `SENT TO AIRCRAFT ${opsTime(sent.at)}Z, EDNO ${String(sent.edition).padStart(2, '0')}${via}`;
 }
 function acarsSendHtml(flight, i) {
   const ls = flight.leg_state[i].loadsheet || {}, callsign = flight.callsigns ? flight.callsigns[i] : '';
@@ -2905,10 +2905,10 @@ function acarsSendHtml(flight, i) {
   const sent = (ls.acars_sent || []).slice(-1)[0];
   const si = acarsNetwork === 'sayintentions';
   const note = si
-    ? 'In the aircraft, set ACARS to SayIntentions and have SayIntentions connected, then send. The loadsheet arrives as a telex (company message), in one message: on aircraft that take fewer characters, such as the PMDG 737, a shorter version'
-    : `In the aircraft, log on to ACARS with your Hoppie logon code as <b class="mono">${escText(callsign)}</b>, then send. The loadsheet arrives as a company message`;
+    ? 'SET AIRCRAFT ACARS TO SAYINTENTIONS WITH SAYINTENTIONS CONNECTED, THEN SEND. LOADSHEET ARRIVES AS ONE TELEX (COMPANY MESSAGE); AIRCRAFT WITH SHORTER LIMITS (E.G. PMDG 737) RECEIVE A SHORTER VERSION'
+    : `LOG ON TO AIRCRAFT ACARS WITH HOPPIE LOGON CODE AS <b class="mono">${escText(callsign)}</b>, THEN SEND. LOADSHEET ARRIVES AS COMPANY MESSAGE`;
   return `<div class="acars-send" id="acarsSend-${i}">
-    <div class="acars-send-head"><b>SEND TO AIRCRAFT</b><span>${si ? 'ACARS via SayIntentions' : `ACARS to <span class="mono">${escText(callsign)}</span>`}</span></div>
+    <div class="acars-send-head"><b>SEND TO AIRCRAFT</b><span>${si ? 'ACARS VIA SAYINTENTIONS' : `ACARS TO <span class="mono">${escText(callsign)}</span>`}</span></div>
     <p class="acars-send-note">${note}</p>
     <div class="doc-actions">
       <button class="action" type="button" id="acarsSendBtn-${i}" onclick="sendLoadsheetToAircraft(${i}, true)">${sent ? 'SEND AGAIN' : 'SEND TO AIRCRAFT'}</button>
@@ -2926,7 +2926,7 @@ async function sendLoadsheetToAircraft(i, checkOnline) {
   const text = ls.acars_text || (s ? acarsLoadsheetText(flight, i, s, ls.signed_at) : '');
   const variants = ls.acars_variants || (s ? acarsVariants(flight, i, s, ls.signed_at) : []);
   btn.disabled = true; anyway.hidden = true;
-  say(checkOnline && acarsNetwork !== 'sayintentions' ? 'Checking the aircraft is logged on...' : 'Sending...');
+  say(checkOnline && acarsNetwork !== 'sayintentions' ? 'CHECKING AIRCRAFT LOGON\u2026' : 'SENDING\u2026');
   try {
     const resp = await fetch('/acars/send', { method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ callsign: flight.callsigns[i], text, variants, check_online: checkOnline }) });
@@ -2940,11 +2940,11 @@ async function sendLoadsheetToAircraft(i, checkOnline) {
       renderRecap(fresh);
       return;
     }
-    if (data.no_logon) say(`${escText(data.error)}: <a href="#" onclick="renderAccountSettings(); return false;">open settings</a>`, 'bad');
-    else say(escText(data.error || 'Not sent'), 'bad');
+    if (data.no_logon) say(`${escText(data.error)}: <a href="#" onclick="renderAccountSettings(); return false;">OPEN SETTINGS</a>`, 'bad');
+    else say(escText(String(data.error || 'Not sent').toUpperCase()), 'bad');
     if (data.offline) anyway.hidden = false;
   } catch (e) {
-    say('Not sent: the server can\'t be reached', 'bad');
+    say('NOT SENT. SERVER NOT AVAILABLE', 'bad');
   }
   btn.disabled = false;
 }
@@ -2964,11 +2964,11 @@ function loadsheetPaneHtml(flight, i) {
     const l = st.loadsheet || {};
     return kvRows([['ZFW', fmtNum(l.zfw)], ['FUEL ON BOARD', fmtNum(l.fob)], ['PASSENGERS', fmtNum(l.pax)], ['CREW', fmtNum(l.crew)]]);
   }
-  if (stage === 'waiting') return docEmpty('No loadsheet yet', `This leg opens once the PIREP for leg ${i} is filed`, '');
-  if (st.simbrief !== 'available') return docEmpty('No loadsheet yet', 'The loadsheet is prepared from the OFP: plan the flight with SimBrief first', '');
-  if (!st.ls) return docEmpty('Ready for the loadsheet', 'Load control prepares it from your OFP. Last-minute changes and dangerous goods, if any, turn up with it. Press ASK FOR LOADSHEET below', '');
+  if (stage === 'waiting') return docEmpty('NO LOADSHEET', `AVAILABLE AFTER LEG ${i} PIREP`, '');
+  if (st.simbrief !== 'available') return docEmpty('NO LOADSHEET', 'ISSUED FROM OFP. PLAN THE FLIGHT FIRST', '');
+  if (!st.ls) return docEmpty('LOADSHEET NOT REQUESTED', 'ISSUED BY LOAD CONTROL FROM OFP, WITH ANY LMC AND DG', '');
   const s = loadsheetState(flight, i);
-  if (!s) return docEmpty('No weights in this OFP', 'SimBrief sent no weights with this OFP. Replan, or fetch the OFP again, then ask for the loadsheet', `<button class="ghost" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>`);
+  if (!s) return docEmpty('NO WEIGHTS IN OFP', 'REPLAN OR FETCH OFP AGAIN, THEN REQUEST LOADSHEET', `<button class="ghost" onclick="fetchOfp(${i})">FETCH OFP AGAIN</button>`);
   const itemsHtml = s.items.map(it => {
     const dec = s.decisions[it.key];
     const buttons = it.choices.map(([id, label]) => {
@@ -2979,7 +2979,7 @@ function loadsheetPaneHtml(flight, i) {
     return `<div class="ls-item${dec ? ' done' : ''}"><span class="brief-tag">${it.tag}</span><div class="ls-item-body"><p>${it.text}</p><div class="ls-item-actions">${buttons}${dec ? '<span class="ls-item-ok">&#10003; sorted</span>' : ''}</div></div></div>`;
   }).join('');
   return `<pre class="doc-sheet" id="loadsheet-${i}">${escText(loadsheetText(flight, i, s, null))}</pre>
-    ${s.items.length ? `<h4 class="ls-items-title">CAPTAIN'S DECISIONS</h4><div class="ls-items">${itemsHtml}</div>` : '<p class="brief-empty">No last-minute changes and no dangerous goods to sign for</p>'}
+    ${s.items.length ? `<h4 class="ls-items-title">CAPTAIN'S DECISIONS</h4><div class="ls-items">${itemsHtml}</div>` : '<p class="brief-empty">NIL LMC. NIL DG</p>'}
     ${acarsPreviewHtml(acarsLoadsheetText(flight, i, s, null))}`;
 }
 async function askForLoadsheet(i) {
@@ -2994,7 +2994,7 @@ async function askForLoadsheet(i) {
     saveActiveFlight(flight);
     renderRecap(flight);
   } catch (err) {
-    alert('Could not get the loadsheet. Check the connection and retry');
+    alert('LOADSHEET NOT RECEIVED. CHECK CONNECTION, THEN RETRY');
   }
 }
 function decideLoadsheetItem(i, key, choice) {
@@ -3039,8 +3039,8 @@ function pirepDocHead(flight, i) {
 function pirepPaneHtml(flight, i) {
   const leg = flight.legs[i], st = flight.leg_state[i], ofp = st.ofp || {}, unit = ofpUnit(st.ofp);
   if (st.pirep) return pirepFiledHtml(flight, i);
-  if (!st.loadsheet_signed) return docEmpty('No PIREP yet', 'The PIREP opens once the loadsheet for this leg is signed', '');
-  if (!st.pirep_open) return docEmpty('Ready for the PIREP', 'Fly the leg, then report your actual times and the fuel left at the destination. Press FILL PIREP below', '');
+  if (!st.loadsheet_signed) return docEmpty('NO PIREP', 'AVAILABLE AFTER LOADSHEET SIGNATURE', '');
+  if (!st.pirep_open) return docEmpty('PIREP OPEN', 'AFTER IN-BLOCK, REPORT ACTUAL TIMES AND FUEL AT DESTINATION', '');
   const exp = (s, e) => `SCHED ${s || 'N/A'} &middot; EXP ${e || 'N/A'}`;
   const slot = leg.atfm ? ` &middot; SLOT ${escText(leg.atfm.ctot)}` : '';
   const planFuel = ofpNum(ofp.plan_landing_fuel) != null ? `PLAN ${fmtNum(ofp.plan_landing_fuel)} ${unit}` : '';
@@ -3057,9 +3057,9 @@ function pirepPaneHtml(flight, i) {
     <div class="delay-coding" id="delaycoding-${i}"></div>
     <label class="doc-check"><input id="normal-${i}" type="checkbox"> NO NEW DEFECTS, MEL ITEMS OR NON-NORMAL OCCURRENCES TO ENTER IN THE TECH LOG</label>
     <label class="doc-remarks" for="remarks-${i}">PILOT REMARKS</label>
-    <textarea id="remarks-${i}" class="doc-textarea" maxlength="500" rows="3" placeholder="Anything worth noting about this flight (optional)"></textarea>
-    <div class="doc-actions"><button class="ghost" type="button" onclick="sendToAircraftSoon(${i})" title="Coming soon">SEND TO AIRCRAFT <span class="soon-tag">SOON</span></button>
-      <span class="doc-blocker" id="sta-note-${i}" hidden>Coming soon: the PIREP will go to and from the aircraft directly</span></div>
+    <textarea id="remarks-${i}" class="doc-textarea" maxlength="500" rows="3" placeholder="REMARKS (OPTIONAL)"></textarea>
+    <div class="doc-actions"><button class="ghost" type="button" onclick="sendToAircraftSoon(${i})" title="IN DEVELOPMENT">SEND TO AIRCRAFT <span class="soon-tag">SOON</span></button>
+      <span class="doc-blocker" id="sta-note-${i}" hidden>IN DEVELOPMENT: PIREP EXCHANGE WITH THE AIRCRAFT OVER ACARS</span></div>
   </div>`;
 }
 function pirepFiledHtml(flight, i) {
@@ -3152,7 +3152,7 @@ async function doPrepareLeg(index) {
     flight.leg_state[index].ofp = null;
     saveAndRender(flight);
   } catch (err) {
-    alert('Could not build the SimBrief dispatch link. Check the connection and retry');
+    alert('SIMBRIEF LINK NOT CREATED. CHECK CONNECTION, THEN RETRY');
   }
 }
 
@@ -3183,11 +3183,11 @@ function paintSimbriefAirframes(flight, index) {
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
   if (!el || !info || info.loading) return;
   if (!info.available) return;
-  const options = [`<option value="">SimBrief standard ${escText(info.type)}</option>`].concat((info.airframes || []).map(a =>
+  const options = [`<option value="">SIMBRIEF STANDARD ${escText(info.type)}</option>`].concat((info.airframes || []).map(a =>
     `<option value="${escText(a.id)}"${a.id === info.selected ? ' selected' : ''}>${escText(a.name)} &middot; ${escText(a.reg)}${a.comments ? ` (${escText(a.comments)})` : ''}</option>`));
   el.innerHTML = `<label class="af-field"><span>AIRFRAME</span><select id="sbAirframeSel-${index}" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></label>`;
   const note = document.getElementById('sbSendNote-' + index);
-  if (note) note.textContent = 'GENERATE OFP plans the leg on SimBrief with this airframe: route, fuel, weights and NOTAMs come straight into the briefing';
+  if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
   paintNextBar();
 }
 
@@ -3201,7 +3201,7 @@ function chooseSimbriefAirframe(index, value) {
 // atis.py). The choice of network is remembered; the runways are read again
 // just before the plan is made, so the OFP gets the ones in use then. ----
 const runwayInfo = {};   // per leg: {source, dep, arr, error} from /atis/runways
-const RUNWAY_SOURCES = [['vatsim', 'VATSIM ATIS'], ['ivao', 'IVAO ATIS'], ['sayintentions', 'SayIntentions ATIS'], ['none', 'No network: SimBrief picks by wind']];
+const RUNWAY_SOURCES = [['vatsim', 'VATSIM ATIS'], ['ivao', 'IVAO ATIS'], ['sayintentions', 'SAYINTENTIONS ATIS'], ['none', 'NO NETWORK (SIMBRIEF BY WIND)']];
 async function loadRunways(flight, index, source) {
   const leg = flight.legs[index], key = simbriefApiKey(flight, index);
   const qs = new URLSearchParams({ dep: leg.departure_info.icao, arr: leg.arrival_info.icao });
@@ -3209,19 +3209,19 @@ async function loadRunways(flight, index, source) {
   try {
     runwayInfo[key] = await (await fetch('/atis/runways?' + qs)).json();
   } catch (e) {
-    runwayInfo[key] = { source: source || (runwayInfo[key] || {}).source || 'vatsim', dep: null, arr: null, error: 'The ATIS can\'t be read right now' };
+    runwayInfo[key] = { source: source || (runwayInfo[key] || {}).source || 'vatsim', dep: null, arr: null, error: 'ATIS NOT AVAILABLE' };
   }
   paintRunways(flight, index);
 }
 function paintRunways(flight, index) {
   const el = document.getElementById('sbRunways-' + index), info = runwayInfo[simbriefApiKey(flight, index)];
-  if (!el || !info || info.error === 'Unknown airports') return;
+  if (!el || !info || info.error === 'UNKNOWN AIRPORTS') return;
   const leg = flight.legs[index], net = (RUNWAY_SOURCES.find(([k]) => k === info.source) || [, ''])[1].replace(' ATIS', '');
   const line = (icao, found) => `<li><b>${icao}</b> ${found
     ? `<span class="plan-rwy">${escText(found.rwy)}</span> <span class="plan-note">${escText(net)} ATIS${found.letter ? ' ' + escText(found.letter) : ''}</span>`
-    : `<span class="plan-note">${info.source === 'none' ? 'SimBrief picks by wind' : info.error ? `${escText(info.error)}: SimBrief picks by wind` : `no runway on ${escText(net)} right now: SimBrief picks by wind`}</span>`}</li>`;
+    : `<span class="plan-note">${info.source === 'none' ? 'SIMBRIEF BY WIND' : info.error ? `${escText(info.error.toUpperCase())}. SIMBRIEF BY WIND` : `NO ${escText(net.toUpperCase())} ATIS RWY. SIMBRIEF BY WIND`}</span>`}</li>`;
   el.innerHTML = `<span>RUNWAYS</span>
-    <select id="sbRunwaySel-${index}" onchange="loadRunways(loadActiveFlight(), ${index}, this.value)" aria-label="Where the runways come from">
+    <select id="sbRunwaySel-${index}" onchange="loadRunways(loadActiveFlight(), ${index}, this.value)" aria-label="Runway source">
       ${RUNWAY_SOURCES.map(([k, label]) => `<option value="${k}"${k === info.source ? ' selected' : ''}>${label}</option>`).join('')}</select>
     <ul class="plan-rwys">${line(leg.departure_info.icao + ' DEP', info.dep)}${line(leg.arrival_info.icao + ' ARR', info.arr)}</ul>`;
 }
@@ -3236,7 +3236,7 @@ async function sendToSimbrief(index) {
   const button = document.querySelector(`[data-id="sbSendBtn-${index}"]`);
   const note = document.getElementById('sbSendNote-' + index);
   if (button) button.disabled = true;
-  if (note) note.textContent = 'Generating the OFP on SimBrief\u2026';
+  if (note) note.textContent = 'GENERATING OFP ON SIMBRIEF\u2026';
   const staticId = `simdispatch-${Date.now()}-${index}`;
   let data = {};
   try {
@@ -3246,14 +3246,14 @@ async function sendToSimbrief(index) {
     });
     data = await resp.json();
   } catch (e) {
-    data = { error: 'SimBrief can\'t be reached right now', fallback: true };
+    data = { error: 'SIMBRIEF NOT AVAILABLE', fallback: true };
   }
   const fresh = loadActiveFlight(); if (!fresh) return;
   if (data.error) {
     if (button) button.disabled = false;
     if (note) note.textContent = '';
     if (data.fallback) {
-      alert(`${data.error}. Opening SimBrief instead: generate the plan there and it comes back here automatically`);
+      alert(`${String(data.error).toUpperCase()}. OPENING SIMBRIEF: GENERATE OFP THERE; IT LOADS HERE ON GENERATION.`);
       return prepareLeg(index);
     }
     return alert(data.error);
@@ -3283,7 +3283,7 @@ async function fetchOfp(index, silent = false) {
     if (data.pending) return false;
     if (data.error) throw new Error(data.error);
     if (state.simbrief_static_id && data.static_id && data.static_id !== state.simbrief_static_id) {
-      if (!silent) alert('The latest OFP on SimBrief isn\'t the one for this leg yet. Generate it in the SimBrief tab: it appears here automatically');
+      if (!silent) alert('LATEST SIMBRIEF OFP IS NOT FOR THIS LEG. GENERATE OFP IN SIMBRIEF; IT LOADS HERE ON GENERATION');
       return false;
     }
     state.ofp = data;
@@ -3293,7 +3293,7 @@ async function fetchOfp(index, silent = false) {
     showBriefingWithOfp(flight);
     return true;
   } catch (err) {
-    if (!silent) alert('Could not fetch an OFP from SimBrief for that username. Make sure it\'s been generated there first');
+    if (!silent) alert('OFP NOT FOUND FOR SIMBRIEF USER. GENERATE OFP ON SIMBRIEF, THEN RETRY');
     return false;
   }
 }
@@ -3338,8 +3338,8 @@ async function checkOfpNow() {
 function paintOfpWatch() {
   const el = document.getElementById('ofpWatchNote'); if (!el) return;
   el.textContent = ofpWatch
-    ? `Watching SimBrief: your OFP appears here as soon as you generate it${ofpWatch.last ? ` (checked ${new Date(ofpWatch.last).toISOString().slice(11, 19)}Z)` : ''}`
-    : 'Stopped watching after 20 minutes: use FETCH OFP NOW once the OFP is generated';
+    ? `MONITORING SIMBRIEF. OFP LOADS ON GENERATION${ofpWatch.last ? ` (CHECKED ${new Date(ofpWatch.last).toISOString().slice(11, 19)}Z)` : ''}`
+    : 'MONITORING STOPPED AFTER 20 MIN. USE FETCH OFP NOW AFTER GENERATION';
 }
 // Coming back from the SimBrief tab is when the OFP has usually just been made
 ['visibilitychange', 'focus'].forEach(ev => (ev === 'focus' ? window : document).addEventListener(ev, () => {
@@ -3448,9 +3448,9 @@ function readDelayCoding(i, leg, aobt) {
   const d = departureDelayMinutes(leg, aobt);
   if (d == null || d < DELAY_CODE_THRESHOLD_MINUTES) return { codes: [] };
   const rows = delayCodingRows(i);
-  if (!rows.length) return { error: `Code the ${d}-minute departure delay with at least one IATA delay code` };
-  if (rows.some(row => !Number.isInteger(row.minutes) || row.minutes < 1)) return { error: 'Each delay code needs a whole number of minutes' };
-  if (rows.reduce((a, row) => a + row.minutes, 0) !== d) return { error: `The delay-code minutes must add up to the ${d}-minute delay` };
+  if (!rows.length) return { error: `CODE THE ${d} MIN DEPARTURE DELAY WITH AT LEAST ONE IATA DELAY CODE` };
+  if (rows.some(row => !Number.isInteger(row.minutes) || row.minutes < 1)) return { error: 'ENTER WHOLE MINUTES FOR EACH DELAY CODE' };
+  if (rows.reduce((a, row) => a + row.minutes, 0) !== d) return { error: `DELAY CODE MINUTES MUST ADD UP TO ${d} MIN` };
   return { codes: rows.map(row => ({ code: row.code, minutes: row.minutes,
     description: (IATA_DELAY_CODES.find(c => c.code === row.code) || {}).description || '' })) };
 }
@@ -3458,7 +3458,7 @@ function readDelayCoding(i, leg, aobt) {
 function pirepDelayCodesText(pirep) {
   const codes = pirep && pirep.delay_codes;
   const slot = pirep && pirep.slot
-    ? ` &middot; SLOT ${pirep.slot.met ? 'MET' : 'MISSED'} (${pirep.slot.delta >= 0 ? '+' : ''}${pirep.slot.delta} min)` : '';
+    ? ` &middot; SLOT ${pirep.slot.met ? 'MET' : 'MISSED'} (${pirep.slot.delta >= 0 ? '+' : ''}${pirep.slot.delta} MIN)` : '';
   return (codes && codes.length ? ' &middot; DELAY ' + codes.map(c => `${escText(c.code)}/${c.minutes}`).join(' ') : '') + slot;
 }
 function readTimeField(id) {
@@ -3478,7 +3478,7 @@ async function submitPirep(index) {
   const afad = Number(document.getElementById('afad-' + index).value);
   const normal = document.getElementById('normal-' + index).checked;
   if (!aobt || !atot || !aldt || !abit || !Number.isFinite(afad) || afad < 0 || !normal) {
-    alert('Enter AOBT, ATOT, ALDT, AIBT (as HH and MM, 24-hour) and AFAD, then confirm the tech log entry');
+    alert('ENTER AOBT, ATOT, ALDT, AIBT (HH MM, 24H) AND AFAD. CONFIRM TECH LOG ENTRY');
     return;
   }
   const flight = loadActiveFlight(); if (!flight) return;
@@ -3521,7 +3521,7 @@ async function submitPirep(index) {
   }
 }
 function skipFlight() {
-  if (!confirm('Skip this active flight? This discards the unfinished dispatch and PIREP data')) return;
+  if (!confirm('SKIP THIS LEG? UNFINISHED DISPATCH AND PIREP DATA ARE DISCARDED')) return;
   clearActiveFlight(); renderSearchUI();
 }
 
@@ -3554,7 +3554,7 @@ function setPageFit(on) {
 
 function goActiveFlight() {
   const flight = loadActiveFlight();
-  if (!flight) { alert('No active flight yet. Search and confirm one first'); return; }
+  if (!flight) { alert('NO ACTIVE FLIGHT. SEARCH AND CONFIRM A FLIGHT FIRST'); return; }
   renderRecap(flight);
 }
 

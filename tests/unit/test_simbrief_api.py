@@ -51,7 +51,7 @@ def test_refusals_become_plain_messages(fake_simbrief):
     with pytest.raises(simbrief_api.SimBriefError) as refused:
         simbrief_api.latest_plan("acc-1")
     assert refused.value.reconnect
-    for expected in ("No flight plan", "HTTP 500", "couldn't read", "can't be reached"):
+    for expected in ("NO OFP", "HTTP 500", "NOT READABLE", "NOT AVAILABLE"):
         with pytest.raises(simbrief_api.SimBriefError, match=expected) as err:
             simbrief_api.latest_plan("acc-1")
         assert not err.value.reconnect
@@ -171,7 +171,7 @@ def test_generation_refusals_become_plain_messages(fake_generate):
     with pytest.raises(simbrief_api.SimBriefError) as refused:
         simbrief_api.generate("acc-1", {"orig": "EGKK"})
     assert refused.value.reconnect
-    with pytest.raises(simbrief_api.SimBriefError, match="Invalid aircraft type"):
+    with pytest.raises(simbrief_api.SimBriefError, match="INVALID AIRCRAFT TYPE"):
         simbrief_api.generate("acc-1", {"orig": "EGKK"})
     with pytest.raises(simbrief_api.SimBriefError, match="HTTP 500"):
         simbrief_api.generate("acc-1", {"orig": "EGKK"})
@@ -227,7 +227,7 @@ def test_a_refused_generation_falls_back_to_simbrief_com(client, app_module, gen
     _, replies = fake_generate
     replies.append(Posted({"error": "Invalid aircraft type"}, 400))
     resp = client.post("/simbrief/generate", json={**LEG, "airframe": "100_9"})
-    assert resp.status_code == 502 and resp.get_json()["fallback"] and "Invalid aircraft type" in resp.get_json()["error"]
+    assert resp.status_code == 502 and resp.get_json()["fallback"] and "INVALID AIRCRAFT TYPE" in resp.get_json()["error"]
     assert generating == {}                                                     # nothing remembered
     app_module._simbrief_last_generate.clear()
     assert client.post("/simbrief/generate", json={**LEG, "airframe": "../etc"}).status_code == 400

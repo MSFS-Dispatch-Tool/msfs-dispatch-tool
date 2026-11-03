@@ -84,7 +84,7 @@ def test_token_errors_become_plain_messages(fake_navigraph):
     with pytest.raises(navigraph.NavigraphError, match="invalid_client") as refused:
         navigraph.refresh("old")
     assert not refused.value.reconnect
-    with pytest.raises(navigraph.NavigraphError, match="can't be reached"):
+    with pytest.raises(navigraph.NavigraphError, match="NOT AVAILABLE"):
         navigraph.refresh("old")
 
 

@@ -108,7 +108,7 @@ def _feed(name, url):
     except (requests.RequestException, ValueError):
         if cached:
             return cached[1]
-        raise AtisError(f"{_NAMES[name]} can't be reached right now")
+        raise AtisError(f"{_NAMES[name].upper()} NOT AVAILABLE")
     with _lock:
         _feeds[name] = (time.time(), data)
     return data
@@ -167,7 +167,7 @@ def _sayintentions_airports(icaos, api_key):
         resp.raise_for_status()
         return resp.json().get("airports") or []
     except (requests.RequestException, ValueError, AttributeError):
-        raise AtisError("SayIntentions can't be reached right now")
+        raise AtisError("SAYINTENTIONS NOT AVAILABLE")
 
 
 def _sayintentions(icaos, api_key):

@@ -48,7 +48,7 @@ def test_refusals_are_read_from_the_body_even_with_status_200(si):
     with pytest.raises(sayintentions.MessageTooLong) as too_long:
         sayintentions.send_telex("PILOTKEY123", "X" * 200)
     assert too_long.value.maximum == 128
-    with pytest.raises(sayintentions.SayIntentionsError, match="doesn't recognise this API key"):
+    with pytest.raises(sayintentions.SayIntentionsError, match="API KEY NOT RECOGNISED"):
         sayintentions.send_telex("WRONGKEY99", "X")
 
 
@@ -62,7 +62,7 @@ def test_other_failures_become_plain_messages(monkeypatch):
             raise reply
         return reply
     monkeypatch.setattr(sayintentions.requests, "get", get)
-    for expected in ("can't be reached", "HTTP 500", "didn't accept VirtualDispatch", "No active flight"):
+    for expected in ("NOT AVAILABLE", "HTTP 500", "NOT ACCEPTED BY SAYINTENTIONS", "NO ACTIVE FLIGHT"):
         with pytest.raises(sayintentions.SayIntentionsError, match=expected):
             sayintentions.send_telex("PILOTKEY123", "X")
 
@@ -131,13 +131,13 @@ def test_an_aircraft_taking_less_than_every_version_is_reported(client, pilot, s
     use_sayintentions(client)
     limit["n"] = 60
     resp = send(client)
-    assert resp.status_code == 502 and "at most 60 characters" in resp.get_json()["error"]
+    assert resp.status_code == 502 and "MAX 60 CHARACTERS" in resp.get_json()["error"]
 
 
 def test_without_a_key_sending_points_to_settings(client, pilot, si):
     client.post("/acars/network", json={"network": "sayintentions"})
     resp = send(client).get_json()
-    assert resp["no_logon"] and "SayIntentions API key" in resp["error"]
+    assert resp["no_logon"] and "SAYINTENTIONS API KEY" in resp["error"]
 
 
 def test_the_sayintentions_test_sends_a_short_telex(client, pilot, si):

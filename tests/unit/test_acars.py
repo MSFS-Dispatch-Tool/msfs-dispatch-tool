@@ -39,11 +39,11 @@ def test_ping_checks_the_code_and_lists_aircraft_online(hoppie):
 def test_hoppie_errors_become_plain_messages(hoppie):
     _, replies = hoppie
     replies += ["error {illegal logon code}", "error {callsign not online}", requests.ConnectionError("down")]
-    with pytest.raises(acars.AcarsError, match="doesn't recognise this logon code"):
+    with pytest.raises(acars.AcarsError, match="LOGON CODE NOT RECOGNISED"):
         acars.ping("WRONG1234")
-    with pytest.raises(acars.AcarsError, match="callsign not online"):
+    with pytest.raises(acars.AcarsError, match="CALLSIGN NOT ONLINE"):
         acars.send_telex("ABC123xyz", "EZY45KP", "LOADSHEET")
-    with pytest.raises(acars.AcarsError, match="can't be reached"):
+    with pytest.raises(acars.AcarsError, match="NOT AVAILABLE"):
         acars.ping("ABC123xyz")
 
 
