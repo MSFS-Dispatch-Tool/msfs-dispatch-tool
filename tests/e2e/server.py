@@ -211,7 +211,6 @@ def scenario_simbrief():
     """SimBrief's API as it answers plan generation: the OFP for the route,
     airframe and static_id asked for. /__simbrief/last shows what the app
     sent; POST /__simbrief/refuse makes the next generation fail."""
-    app.SIMBRIEF_API_GENERATE = "all"
     seen = {"last": None, "refuse": False}
     simbrief_api.user_airframes = lambda token: SIMBRIEF_AIRFRAMES
 

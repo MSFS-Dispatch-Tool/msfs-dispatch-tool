@@ -3186,7 +3186,7 @@ function paintRunways(flight, index) {
     : `<span class="plan-note">${info.source === 'none' ? 'SIMBRIEF BY WIND' : info.error ? `${escText(info.error.toUpperCase())}. SIMBRIEF BY WIND` : `NO ${escText(net.toUpperCase())} ATIS RWY. SIMBRIEF BY WIND`}</span>`}</li>`;
   el.innerHTML = `<span>RUNWAYS</span>
     <select id="sbRunwaySel-${index}" onchange="loadRunways(loadActiveFlight(), ${index}, this.value)" aria-label="Runway source">
-      ${RUNWAY_SOURCES.map(([k, label]) => `<option value="${k}"${k === info.source ? ' selected' : ''}>${label}</option>`).join('')}</select>
+      ${RUNWAY_SOURCES.filter(([k]) => !info.sources || info.sources.includes(k)).map(([k, label]) => `<option value="${k}"${k === info.source ? ' selected' : ''}>${label}</option>`).join('')}</select>
     <ul class="plan-rwys">${line(leg.departure_info.icao + ' DEP', info.dep)}${line(leg.arrival_info.icao + ' ARR', info.arr)}</ul>`;
 }
 
@@ -3504,13 +3504,12 @@ function setAppNav(section) {
     btn.classList.toggle('is-current', key === section);
     if (key === section) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
-  document.body.classList.toggle('page-search', section === 'search');
-  document.body.classList.toggle('page-flight', section === 'flight');
   setPageFit(false);
 }
 
-// Desktop pages that fit the screen without page scrolling (see the
-// page-fit CSS); each page opts in after setAppNav.
+// Desktop pages that take most of the screen's width and fit its height
+// without page scrolling (see the page-fit CSS); each page opts in after
+// setAppNav.
 function setPageFit(on) {
   document.body.classList.toggle('page-fit', on);
   if (on) sizeSearchLayout();

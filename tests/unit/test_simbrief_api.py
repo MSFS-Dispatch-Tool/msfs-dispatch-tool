@@ -149,10 +149,8 @@ LEG = {"flights": "U2765", "aircraft_type": "320", "civalue": 12, "pax": 160, "t
 
 @pytest.fixture
 def generating(app_module, connected, monkeypatch):
-    """Generation through the API switched on for everyone, and the pilot's
-    SimBrief preferences in memory."""
+    """The pilot's SimBrief preferences in memory."""
     prefs = {}
-    monkeypatch.setattr(app_module, "SIMBRIEF_API_GENERATE", "all")
     monkeypatch.setattr(app_module.db, "get_simbrief", lambda user: dict(prefs))
     monkeypatch.setattr(app_module.db, "save_simbrief", lambda p, user: prefs.update(p))
     app_module._simbrief_airframes_cache.clear()
@@ -200,10 +198,11 @@ def test_without_saved_airframes_the_standard_aircraft_is_used(client, app_modul
     assert got["available"] and got["airframes"] == [] and got["selected"] == ""
 
 
-def test_generation_is_off_without_navigraph_and_for_pilots_while_admins_try_it(client, app_module, connected, monkeypatch):
-    assert client.get("/simbrief/airframes?flight=U2765").get_json() == {"available": False}   # admins only by default
+def test_generation_is_off_without_navigraph_or_when_switched_off(client, app_module, connected, monkeypatch):
+    monkeypatch.setattr(app_module, "SIMBRIEF_API_GENERATE", False)                          # SIMBRIEF_API_GENERATE=off
+    assert client.get("/simbrief/airframes?flight=U2765").get_json() == {"available": False}
     assert client.post("/simbrief/generate", json=LEG).get_json()["fallback"]
-    monkeypatch.setattr(app_module, "SIMBRIEF_API_GENERATE", "all")
+    monkeypatch.setattr(app_module, "SIMBRIEF_API_GENERATE", True)
     monkeypatch.setattr(app_module.db, "get_navigraph", lambda user: {})                     # not signed in
     assert client.get("/simbrief/airframes?flight=U2765").get_json() == {"available": False}
 

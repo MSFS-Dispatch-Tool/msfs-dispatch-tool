@@ -638,13 +638,14 @@
     .profile-panel { order: 1; } .stats-panel { order: 2; } .destinations-panel { order: 3; } .pirep-log-panel { order: 4; }
   }
 
-  /* ---- Desktop (1200px+): every page is wider, and the app pages fit the
-     screen with no page scrolling - boxes with long content (the flight
+  /* ---- Desktop (1200px+): every page is wider, and the app pages
+     (search, active flight, profile, statistics) take most of the screen
+     and fit it with no page scrolling - boxes with long content (the flight
      list, the PIREP log) scroll inside themselves instead. The page height
      never goes below 560px, so a very short window still scrolls. ---- */
   @media (min-width: 1200px) {
     main, footer { max-width: 1320px; }
-    body.page-search main, body.page-flight main { max-width: 1840px; }
+    body.page-fit main { max-width: 1840px; }
     body.page-fit footer { display: none; }
     body.page-fit main {
       display: flex; flex-direction: column; margin-top: 12px; margin-bottom: 0; padding-bottom: 16px;
