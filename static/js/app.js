@@ -3504,13 +3504,12 @@ function setAppNav(section) {
     btn.classList.toggle('is-current', key === section);
     if (key === section) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
-  document.body.classList.toggle('page-search', section === 'search');
-  document.body.classList.toggle('page-flight', section === 'flight');
   setPageFit(false);
 }
 
-// Desktop pages that fit the screen without page scrolling (see the
-// page-fit CSS); each page opts in after setAppNav.
+// Desktop pages that take most of the screen's width and fit its height
+// without page scrolling (see the page-fit CSS); each page opts in after
+// setAppNav.
 function setPageFit(on) {
   document.body.classList.toggle('page-fit', on);
   if (on) sizeSearchLayout();

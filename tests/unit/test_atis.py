@@ -97,6 +97,19 @@ def test_an_airport_without_atis_gives_none_and_the_feed_is_fetched_once_a_minut
     assert len(calls) == 1
 
 
+def test_ivao_is_read_at_most_every_3_minutes(feeds, monkeypatch):
+    calls, _ = feeds
+    now = [1000.0]
+    monkeypatch.setattr(atis.time, "time", lambda: now[0])
+    atis.runways("ivao", "URSS", "EHAM")
+    now[0] += 170
+    atis.runways("ivao", "URSS", "EHAM")
+    assert len(calls) == 1                                                 # IVAO rule D.4
+    now[0] += 20
+    atis.runways("ivao", "URSS", "EHAM")
+    assert len(calls) == 2
+
+
 def test_ivao_reads_the_tower_before_ground_and_skips_the_voice_server_line(feeds):
     got = atis.runways("ivao", "URSS", "EHAM")
     assert got["dep"] == {"rwy": "24", "letter": "I", "station": "URSS_TWR"}
@@ -110,6 +123,15 @@ def test_sayintentions_gives_its_active_runways_with_both_keys(feeds, monkeypatc
     assert got["dep"]["rwy"] == "08R" and got["arr"]["rwy"] == "07R"      # "07R,07L" arriving at Frankfurt
     url, params, headers = calls[0]
     assert params == {"icao": "EDDF,EGKK", "api_key": "pilot-1"} and headers["X-Developer-Key"] == "dev-1"
+
+
+
+
+def test_sayintentions_answers_without_the_developer_key(feeds, monkeypatch):
+    calls, _ = feeds
+    monkeypatch.setattr(atis.sayintentions, "DEVELOPER_KEY", "")
+    assert atis.runways("sayintentions", "EGKK", "EDDF")["dep"]["rwy"] == "08R"
+    assert "X-Developer-Key" not in calls[0][2]
 
 
 def test_a_network_out_of_reach_says_so(feeds):
@@ -140,8 +162,10 @@ def test_the_chosen_network_is_remembered_for_the_next_flights(client, prefs, fe
 
 def test_without_a_network_simbrief_picks_by_wind(client, prefs, feeds):
     calls, _ = feeds
-    assert client.get("/atis/runways?dep=EGKK&arr=EHAM&source=none").get_json() == {"source": "none", "dep": None, "arr": None}
-    assert calls == []
+    got = client.get("/atis/runways?dep=EGKK&arr=EHAM&source=none").get_json()
+    assert (got["source"], got["dep"], got["arr"]) == ("none", None, None) and calls == []
+
+
 
 
 def test_unknown_airports_and_networks_are_refused(client, prefs):

@@ -9,13 +9,18 @@ what the controllers are using.
   The text is whatever the controller wrote, so it's read (runways_in_text).
 - IVAO: the public tracker (api.ivao.aero/v2/tracker/whazzup), the ATIS of
   an airport's controllers (ICAO_TWR, _APP, _GND, _DEL). Its first line is
-  the voice server; the rest is read the same way.
+  the voice server; the rest is read the same way. IVAO's rules (D.4) allow
+  the Whazzup feed at most once every 3 minutes.
 - SayIntentions: SAPI getWX, which already answers with the active runways
   (active_runways_departing / _arriving, "18,07C"), for live and AI ATC.
+  SAPI's documentation asks for the app's developer key on every request
+  (SAYINTENTIONS_DEVELOPER_KEY); getWX also answers without it, so the
+  source is offered either way and the key is sent once it is set.
 
 Nothing is guessed: a network with no ATIS for an airport, or an ATIS with
 no runway in it, gives None, and SimBrief picks that runway by wind as
-before. Both feeds are fetched at most once a minute for the whole app.
+before. The VATSIM feed is fetched at most once a minute and IVAO's once
+every 3 minutes, for the whole app.
 """
 import re
 import threading
@@ -29,7 +34,7 @@ SOURCES = ("vatsim", "ivao", "sayintentions")
 VATSIM_URL = "https://data.vatsim.net/v3/vatsim-data.json"
 IVAO_URL = "https://api.ivao.aero/v2/tracker/whazzup"
 SAYINTENTIONS_URL = "https://apipri.sayintentions.ai/sapi/getWX"
-FEED_SECONDS = 60
+FEED_SECONDS = {"vatsim": 60, "ivao": 180}
 TIMEOUT_SECONDS = 10
 ICAO_RE = re.compile(r"^[A-Z]{4}$")
 RUNWAY_RE = re.compile(r"^(0[1-9]|[12]\d|3[0-6])[LRC]?$")
@@ -96,10 +101,10 @@ def runways_in_text(text):
 
 # ---- The networks ----
 def _feed(name, url):
-    """A network's whole feed, fetched at most once a minute."""
+    """A network's whole feed, fetched at most once per FEED_SECONDS."""
     with _lock:
         cached = _feeds.get(name)
-        if cached and time.time() - cached[0] < FEED_SECONDS:
+        if cached and time.time() - cached[0] < FEED_SECONDS[name]:
             return cached[1]
     try:
         resp = requests.get(url, timeout=TIMEOUT_SECONDS, headers={"Accept": "application/json"})

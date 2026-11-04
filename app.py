@@ -2736,10 +2736,10 @@ def simbrief_ofp():
 
 # ---- SEND TO SIMBRIEF through SimBrief's API: the plan is generated with
 # the pilot's own Navigraph sign-in and one of their saved airframes, and
-# the OFP comes straight back. On for admins only while it's being tried
-# out, unless SIMBRIEF_API_GENERATE=all ("off" turns it off for everyone).
-# Everyone else, and any failure, goes through simbrief.com as before. ----
-SIMBRIEF_API_GENERATE = (os.environ.get("SIMBRIEF_API_GENERATE") or "admins").strip().lower()
+# the OFP comes straight back. On for every pilot signed in with Navigraph;
+# SIMBRIEF_API_GENERATE=off turns it off for everyone. Pilots without a
+# Navigraph sign-in, and any failure, go through simbrief.com. ----
+SIMBRIEF_API_GENERATE = (os.environ.get("SIMBRIEF_API_GENERATE") or "").strip().lower() != "off"
 AIRFRAMES_CACHE_SECONDS = 300
 SIMBRIEF_GENERATE_INTERVAL_SECONDS = 10
 AIRFRAME_ID_RE = re.compile(r"^\d{1,12}_\d{1,16}$")
@@ -2748,9 +2748,7 @@ _simbrief_last_generate = {}
 
 
 def _simbrief_generate_allowed(user_id):
-    if SIMBRIEF_API_GENERATE == "off" or not navigraph.configured() or not db.db_available():
-        return False
-    if SIMBRIEF_API_GENERATE != "all" and not _is_admin():
+    if not SIMBRIEF_API_GENERATE or not navigraph.configured() or not db.db_available():
         return False
     return bool(db.get_navigraph(user_id).get("refresh"))
 
@@ -2841,9 +2839,6 @@ def simbrief_airframes():
                     "selected": _default_airframe(airframes, remembered, codes)})
 
 
-RUNWAY_SOURCES = atis.SOURCES + ("none",)
-
-
 @app.route("/atis/runways")
 def atis_runways():
     """The runways in use at the leg's two airports from the ATIS of the
@@ -2851,6 +2846,7 @@ def atis_runways():
     network, SimBrief picks by wind). Choosing a network here remembers it
     for the next flights; without one, the remembered network is used."""
     user_id = current_user_id()
+    offered = atis.SOURCES + ("none",)
     dep = request.args.get("dep", default="", type=str).strip().upper()
     arr = request.args.get("arr", default="", type=str).strip().upper()
     if not (atis.ICAO_RE.match(dep) and atis.ICAO_RE.match(arr)):
@@ -2858,19 +2854,20 @@ def atis_runways():
     prefs = db.get_simbrief(user_id) if db.db_available() else {}
     source = request.args.get("source", default="", type=str).strip().lower()
     if source:
-        if source not in RUNWAY_SOURCES:
+        if source not in offered:
             return jsonify({"error": "UNKNOWN NETWORK"}), 400
         if db.db_available() and prefs.get("runway_source") != source:
             db.save_simbrief({**prefs, "runway_source": source}, user_id)
     else:
-        source = prefs.get("runway_source") if prefs.get("runway_source") in RUNWAY_SOURCES else "vatsim"
+        source = prefs.get("runway_source") if prefs.get("runway_source") in offered else "vatsim"
+    answer = {"source": source, "dep": None, "arr": None}
     if source == "none":
-        return jsonify({"source": source, "dep": None, "arr": None})
+        return jsonify(answer)
     try:
         found = atis.runways(source, dep, arr, api_key=_si_key(user_id) if source == "sayintentions" and db.db_available() else None)
     except atis.AtisError as exc:
-        return jsonify({"source": source, "dep": None, "arr": None, "error": str(exc)})
-    return jsonify({"source": source, **found})
+        return jsonify({**answer, "error": str(exc)})
+    return jsonify({**answer, **found})
 
 
 @app.route("/simbrief/generate", methods=["POST"])
