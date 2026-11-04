@@ -1,5 +1,5 @@
 /* Shared design system for VirtualDispatch's public-facing pages
-   (landing, blog, legal). Same color language as the app itself
+   (landing, legal). Same color language as the app itself
    (templates/index.html), reused here as its own stylesheet since
    these pages don't share a Jinja base with the app shell.
 
@@ -622,32 +622,6 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
 .site-footer .footer-col a:hover { color: var(--text); }
 .site-footer .footer-bottom { border-top: 1px solid var(--shadow-md); padding-top: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
-/* ---- Blog ---- */
-
-.blog-list { display: grid; gap: 20px; max-width: 760px; margin: 0 auto; }
-.blog-card {
-  border: 1px solid var(--shadow-md); border-radius: var(--radius); padding: 22px;
-  text-decoration: none; color: inherit; display: block; background: var(--face);
-  transition: box-shadow 0.12s ease, border-color 0.12s ease;
-}
-.blog-card:hover { box-shadow: var(--shadow-card); border-color: var(--shadow-dk); }
-.blog-card .date { font-size: 12.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-.blog-card h3 { font-size: 19px; margin: 8px 0 6px; font-weight: 650; color: var(--text); }
-.blog-card p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
-
-.blog-post { max-width: 700px; margin: 0 auto; }
-.blog-post .date { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-.blog-post h1 { font-size: 32px; margin: 10px 0 24px; letter-spacing: -0.01em; }
-.blog-post .post-body { font-size: 16.5px; }
-.blog-post .post-body h2 { font-size: 22px; margin: 36px 0 12px; }
-.blog-post .post-body h3 { font-size: 18px; margin: 28px 0 10px; }
-.blog-post .post-body p { margin: 0 0 16px; }
-.blog-post .post-body ul, .blog-post .post-body ol { margin: 0 0 16px; padding-left: 22px; }
-.blog-post .post-body code { background: var(--face-dark); padding: 2px 5px; border-radius: 4px; font-size: 14px; }
-.blog-post .post-body pre { background: var(--face-dark); padding: 14px; border-radius: var(--radius-sm); overflow-x: auto; }
-.blog-post .back-link { display: inline-block; margin-bottom: 24px; font-size: 14px; text-decoration: none; color: var(--text-muted); }
-.blog-post .back-link:hover { color: var(--text); }
-
 /* ---- Legal pages ---- */
 
 .legal-page { max-width: 760px; margin: 0 auto; }
@@ -688,7 +662,7 @@ section.centered p.section-lead { margin-left: auto; margin-right: auto; }
   box-shadow: 0 0 22px -6px rgba(72,211,230,0.75);
 }
 :root[data-theme="dark"] .btn-secondary { border-color: rgba(239,230,210,0.6); text-shadow: var(--backlight); }
-:root[data-theme="dark"] .feature-card, :root[data-theme="dark"] .soon-card, :root[data-theme="dark"] .blog-card {
+:root[data-theme="dark"] .feature-card, :root[data-theme="dark"] .soon-card {
   background: linear-gradient(180deg, #171C22 0%, #13171C 100%); border-color: #262E37;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.035);
 }

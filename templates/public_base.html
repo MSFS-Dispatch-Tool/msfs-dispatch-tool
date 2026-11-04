@@ -14,13 +14,12 @@
 </head>
 <body>
 
-{# Child templates set nav_current ("home", "blog") before extending. #}
+{# Child templates set nav_current ("home") before extending. #}
 {% set nav_current = nav_current | default('') %}
 <nav class="site-nav" aria-label="Main">
   <div class="nav-pills">
     <a href="/" class="{{ 'is-current' if nav_current == 'home' }}"{% if nav_current == 'home' %} aria-current="page"{% endif %}>Home</a>
     <a href="/#how-it-works" id="navHowItWorks">How it works</a>
-    <a href="/blog" class="{{ 'is-current' if nav_current == 'blog' }}"{% if nav_current == 'blog' %} aria-current="page"{% endif %}>Blog</a>
     <a href="/app">Open app</a>
   </div>
 </nav>
@@ -36,10 +35,6 @@
         <a href="/">Overview</a>
         <a href="/#how-it-works">How it works</a>
         <a href="/app">Open app</a>
-      </div>
-      <div class="footer-col">
-        <h5>Resources</h5>
-        <a href="/blog">Blog</a>
       </div>
       <div class="footer-col">
         <h5>Legal</h5>

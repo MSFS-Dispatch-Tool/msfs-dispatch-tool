@@ -17,7 +17,6 @@ from werkzeug.datastructures import MultiDict
 import db
 import auth
 import wxmap
-import blog
 import flightstats
 import webperf
 import demo
@@ -85,7 +84,7 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 # runs locally.
 PUBLIC_ENDPOINTS = {"login", "signup", "auth_callback", "auth_session", "access_restricted", "client_errors", "healthz", "join_waitlist",
                     "resend_verification_route", "request_password_reset_route", "static",
-                    "index", "blog_index", "blog_post", "legal_privacy", "legal_terms", "legal_cookies"}
+                    "index", "legal_privacy", "legal_terms", "legal_cookies"}
 
 
 # The date the privacy, cookie and terms pages last changed. Update it
@@ -1187,19 +1186,6 @@ def dispatch_app():
                            new_reports=_new_report_count(),
                             current_user_email=(user["email"] if user else ""), countries=countries,
                            iata_delay_codes=iata_delay_codes, min_turnaround_minutes=MIN_TURNAROUND_MINUTES)
-
-
-@app.route("/blog")
-def blog_index():
-    return render_template("blog_index.html", posts=blog.list_posts())
-
-
-@app.route("/blog/<slug>")
-def blog_post(slug):
-    post = blog.get_post(slug)
-    if not post:
-        return render_template("blog_index.html", posts=blog.list_posts()), 404
-    return render_template("blog_post.html", post=post)
 
 
 @app.route("/privacy")

@@ -52,12 +52,12 @@ them off here as they're done.
       SayIntentions: SAPI's documentation asks for the app's developer key
       on every request. getWX answers without it, and the SAYINTENTIONS ATIS
       source is offered meanwhile (one pilot, Nov 2026); the key goes into
-      SAYINTENTIONS_DEVELOPER_KEY below before VirtualDispatch opens to
+      SAYINTENTIONS_DEVELOPER_KEY above before VirtualDispatch opens to
       other pilots.
-- [ ] Before the paid plan goes live: none of the terms found covers
-      commercial use of the networks' data. Ask VATSIM (tech@vatsim.net), IVAO (DevOps)
-      and SayIntentions to confirm that reading runways in use for a paid
-      product is fine.
+- [x] Commercial use of the networks' data: not applicable. VirtualDispatch
+      is free, with no paid plan (decided 4 Nov 2026). If that ever changes,
+      ask VATSIM (tech@vatsim.net), IVAO (DevOps) and SayIntentions first:
+      none of the terms found covers commercial use.
 - [ ] FLASK_SECRET_KEY set and kept stable: Navigraph tokens, Hoppie codes
       and SayIntentions keys are encrypted with keys derived from it.
 
@@ -68,11 +68,12 @@ them off here as they're done.
 - [x] Render: a start command sized for the plan, e.g.
       `gunicorn app:app --workers 2 --threads 4 --timeout 60` (each worker
       takes about 90 MB).
-- [ ] Supabase: move to Pro when VirtualDispatch's paid plan goes live
-      (decided 15 Oct 2026). Pro keeps daily backups for 7 days and never
-      pauses the project. Until then, accepted risks: no backups to restore
-      from, and the project pauses after about a week without use (restore it
-      from the Supabase dashboard; the data is kept).
+- [ ] Supabase: decide whether to move to Pro before other pilots join.
+      VirtualDispatch is free (decided 4 Nov 2026), so Pro would be a running
+      cost with no revenue. Pro keeps daily backups for 7 days and never
+      pauses the project. On the free plan, accepted risks: no backups to
+      restore from, and the project pauses after about a week without use
+      (restore it from the Supabase dashboard; the data is kept).
 - [x] Supabase: DATABASE_URL points at the connection pooler, not a direct
       connection, so the workers don't run out of database connections
       (transaction mode, port 6543: the app uses no prepared statements,
