@@ -1,7 +1,7 @@
 """House style check for the app's UI copy: a sentence shown in the app
 (a hint, a note, an empty state, an error or confirm dialog) never ends
 with a full stop. Periods between sentences are fine; only the last one
-goes. The public site (landing, blog, legal pages) is prose and exempt.
+goes. The public site (landing, legal pages) is prose and exempt.
 
     python tools/check_ui_copy.py          # list offenders, exit 1 if any
     python tools/check_ui_copy.py --fix    # remove the final full stops

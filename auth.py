@@ -70,8 +70,8 @@ ADMIN_EMAILS = {
 # Access lock. Until OPEN_ACCESS is set ("1"/"true"/"yes"/"on"), the app is
 # limited to ADMIN_EMAILS, ALLOWED_EMAILS (comma-separated,
 # case-insensitive) and the allowed pilots added on the admin page, and
-# only those emails can create an account. The landing page,
-# blog and legal pages stay public either way. If neither list is set,
+# only those emails can create an account. The landing page
+# and legal pages stay public either way. If neither list is set,
 # existing accounts keep access (only sign-ups close), so turning the
 # lock on can never shut the owner out; set ALLOWED_EMAILS to lock those
 # down too.
