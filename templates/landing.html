@@ -252,11 +252,11 @@
   <div class="container cta-band-inner">
     {% if signups_open %}
     <h2>Start dispatching</h2>
-    <p>Create an account and try it free of charge.</p>
+    <p>VirtualDispatch is free to use. Create an account to start.</p>
     <a href="{{ url_for('signup') }}" class="btn btn-primary">Create an account</a>
     {% else %}
     <h2>Join the beta</h2>
-    <p>VirtualDispatch is in private beta. Leave an email address to receive an invitation when a place opens.</p>
+    <p>VirtualDispatch is free to use and in private beta. Leave an email address to receive an invitation when a place opens.</p>
     {% set joined = request.args.get('waitlist') == 'joined' %}
     <form class="waitlist" id="waitlistForm" action="{{ url_for('join_waitlist') }}" method="post"{% if joined %} hidden{% endif %}>
       <div class="waitlist-row">
