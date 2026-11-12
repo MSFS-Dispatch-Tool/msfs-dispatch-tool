@@ -25,6 +25,7 @@ import notams
 import acars
 import alternates
 import atis
+import taf
 import monitoring
 import navigraph
 import ops
@@ -2148,6 +2149,21 @@ def _simbrief_dispatch_params(args):
 
 REMARKS_MAX_CHARS = 2500
 
+# Time at a destination alternate: a missed approach, then the diversion
+# at about 300 kt
+ALTN_MISSED_APPROACH_MINUTES = 10
+ALTN_NM_PER_MINUTE = 5
+
+
+def _zulu_today(value):
+    """A leg time as the app shows it ("15:49Z", "00:20Z (+1d)") as a UTC
+    datetime, counted from today; None when it isn't one."""
+    m = re.match(r"^(\d{2}):(\d{2})Z(?: \(([+-]?\d+)d\))?$", (value or "").strip())
+    if not m:
+        return None
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    return today + timedelta(days=int(m.group(3) or 0), hours=int(m.group(1)), minutes=int(m.group(2)))
+
 # The pilot's OFP options, each a SimBrief dispatch option of the same name
 # (maps: detailed flight maps, or none), with the defaults used until the
 # pilot changes them. Weights in KGS unless the pilot chooses LBS.
@@ -2876,8 +2892,10 @@ def simbrief_airframes():
 
 @app.route("/simbrief/plan-options", methods=["GET", "POST"])
 def simbrief_plan_options():
-    """GET: the destination alternates offered for a leg (?flight=), the
-    OFP layout, and the pilot's default OFP options. POST {"options":
+    """GET: the destination alternates offered for a leg (?flight=), each
+    with its TAF checked against planning minima around the time the
+    aircraft would get there (from the leg's ELDT, ?eldt=15:49Z), the OFP
+    layout, and the pilot's default OFP options. POST {"options":
     {...}}: saves them as the pilot's defaults (SAVE AS DEFAULT)."""
     user_id = current_user_id()
     prefs = db.get_simbrief(user_id) if db.db_available() else {}
@@ -2891,7 +2909,14 @@ def simbrief_plan_options():
     if route_leg is None:
         return jsonify({"error": "UNKNOWN FLIGHT"}), 400
     saved = prefs.get("ofp_options") if isinstance(prefs.get("ofp_options"), dict) else {}
-    return jsonify({"alternates": leg_alternates(route_leg), "options": ofp_options(saved),
+    offered = leg_alternates(route_leg)
+    eldt = _zulu_today(request.args.get("eldt", default="", type=str))
+    if offered and eldt:
+        weather = fetch_weather_batch([a["icao"] for a in offered])
+        for a in offered:
+            eta = eldt + timedelta(minutes=ALTN_MISSED_APPROACH_MINUTES + a["nm"] / ALTN_NM_PER_MINUTE)
+            a["wx"] = taf.assess((weather.get(a["icao"]) or {}).get("taf"), eta)
+    return jsonify({"alternates": offered, "options": ofp_options(saved),
                     "layout": simbrief_api.plan_format(carrier_for(route_leg)["icao"])})
 
 
@@ -2958,7 +2983,7 @@ def simbrief_generate():
     if airframe:
         params["type"] = airframe
     try:
-        data = simbrief_api.generate(navigraph_access_token(user_id), params)
+        data, dropped = _simbrief_generate_with_retries(navigraph_access_token(user_id), params)
     except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
         navigraph.log.warning("SimBrief plan generation failed: %s", exc)
         return jsonify({"error": str(exc), "fallback": True}), 502
@@ -2974,7 +2999,48 @@ def simbrief_generate():
     # The OFP just made is the pilot's latest: a check right after reads it from here
     with _simbrief_lock:
         _simbrief_api_cache[user_id] = (time.monotonic(), data)
-    return jsonify({**ofp_summary(data), "source": "api"})
+    answer = {**ofp_summary(data), "source": "api"}
+    if dropped:
+        answer["warning"] = f"SIMBRIEF DID NOT ACCEPT THE {' AND '.join(dropped)}. OFP GENERATED WITHOUT THEM"
+    return jsonify(answer)
+
+
+# Plan settings SimBrief's API may refuse (it answered INTERNAL_ERROR to
+# one of them): after a refusal the plan is tried again without them, one
+# group at a time, and the pilot is told which ones it went without.
+SIMBRIEF_OPTIONAL_PARAMS = (
+    ("OFP LAYOUT", ("planformat",)),
+    ("OFP OPTIONS", ("units", "maps", "stepclimbs", "navlog", "etops", "tlr", "notams", "firnot")),
+    ("ALTERNATE", ("altn",)),
+)
+
+
+def _simbrief_generate_with_retries(token, params):
+    """(OFP, the groups of settings left out to get it). A refusal that
+    isn't the sign-in or the connection is retried without the optional
+    settings, a group more each time; the first refusal is raised if
+    none of that works."""
+    try:
+        return simbrief_api.generate(token, params), []
+    except simbrief_api.SimBriefError as exc:
+        if exc.reconnect or exc.status is None:
+            raise
+        refused = exc
+    attempt, dropped = dict(params), []
+    for label, keys in SIMBRIEF_OPTIONAL_PARAMS:
+        if not any(k in attempt for k in keys):
+            continue
+        attempt = {k: v for k, v in attempt.items() if k not in keys}
+        dropped.append(label)
+        try:
+            data = simbrief_api.generate(token, attempt)
+        except simbrief_api.SimBriefError as exc:
+            if exc.reconnect or exc.status is None:
+                raise
+            continue
+        navigraph.log.warning("SimBrief refused a plan (%s); generated without %s", refused, ", ".join(dropped))
+        return data, dropped
+    raise refused
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 """Destination alternates for the SimBrief plan, offered by the app instead
-of left to SimBrief: airports the leg's airline serves (so suitable for its
-aircraft and handled by the company), within reach of the destination: the
-nearest of the airline's bases, then the nearest of its other airports.
-The pilot can also leave the choice to SimBrief.
+of left to SimBrief: the airline's own bases (airports it operates from,
+so suitable for its aircraft and staffed by the company), within reach of
+the destination, nearest first. The pilot can also leave the choice to
+SimBrief.
 
 A base is an airport the airline flies many departures from in the
 schedule data: at least BASE_SHARE of its busiest airport's departures,
@@ -16,7 +16,7 @@ MIN_NM = 10          # closer is the same aerodrome area: no alternate
 MAX_NM = 200         # usual reach of a short-haul destination alternate
 EXTENDED_NM = 350    # only when nothing is within MAX_NM
 BASE_SHARE = 0.15
-SHOWN = 5            # bases, and other airports, offered at most
+SHOWN = 6            # bases offered at most
 
 
 def departures_by_airline(routes):
@@ -35,9 +35,9 @@ def bases(departures):
 
 
 def alternates(dest_icao, departures, airports_by_icao):
-    """The alternates for a destination, best first: up to SHOWN bases by
-    distance, then up to SHOWN other airports by distance: [{"icao", "name"
-    (the airport's short name, e.g. "Linate"), "nm", "base"}]. Empty when the airline serves nothing in reach."""
+    """The alternates for a destination: up to SHOWN of the airline's bases
+    by distance, [{"icao", "name" (the airport's short name, e.g. "Linate"),
+    "nm"}]. Empty when the airline serves nothing in reach."""
     dest = airports_by_icao.get(dest_icao)
     if not dest:
         return []
@@ -48,12 +48,10 @@ def alternates(dest_icao, departures, airports_by_icao):
         if icao == dest_icao or not airport:
             continue
         nm = great_circle_nm(dest, airport)
-        if nm is not None and nm >= MIN_NM:
-            name = airport.get("short_name") or airport.get("name") or ""
-            found.append({"icao": icao, "name": name, "nm": nm, "base": icao in company_bases})
+        if icao in company_bases and nm is not None and nm >= MIN_NM:
+            found.append({"icao": icao, "name": airport.get("short_name") or airport.get("name") or "", "nm": nm})
     for reach in (MAX_NM, EXTENDED_NM):
         within = [a for a in found if a["nm"] <= reach]
         if within:
-            within.sort(key=lambda a: a["nm"])
-            return [a for a in within if a["base"]][:SHOWN] + [a for a in within if not a["base"]][:SHOWN]
+            return sorted(within, key=lambda a: a["nm"])[:SHOWN]
     return []

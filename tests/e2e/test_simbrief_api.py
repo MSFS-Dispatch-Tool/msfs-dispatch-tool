@@ -63,9 +63,19 @@ async def main():
         await page.wait_for_selector("#sbAltnSel-0")
         altns = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 option')].map(o => o.textContent.toUpperCase())")
         groups = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 optgroup')].map(g => g.label)")
-        check("ALTERNATE offers easyJet's airports near Belfast City, nearest base first, or SimBrief's choice",
-              altns[0] == "EGAA BELFAST INTERNATIONAL · 12 NM" and any(a.startswith("EGPF GLASGOW") for a in altns)
-              and altns[-1] == "SIMBRIEF CHOOSES" and groups[0] == "AIRLINE BASES" and groups[-1] == "SIMBRIEF", (altns, groups))
+        check("ALTERNATE offers easyJet's bases near Belfast City, nearest first, or SimBrief's choice",
+              altns[0].startswith("EGAA BELFAST INTERNATIONAL · 12 NM") and any(a.startswith("EGPF GLASGOW") for a in altns)
+              and not any(a.startswith("EGAE") for a in altns)
+              and altns[-1] == "SIMBRIEF CHOOSES" and groups == ["AIRLINE BASES", "SIMBRIEF"], (altns, groups))
+        wx = await page.inner_text("#sbAltn-0")
+        check("each alternate's TAF is checked: the nearest base in fog is skipped for the next one above minima",
+              altns[0].endswith("BELOW MINIMA") and altns[1] == "EGPF GLASGOW · 90 NM · TAF OK"
+              and await page.eval_on_selector("#sbAltnSel-0", "s => s.value") == "EGPF"
+              and "TAF EGPF: ABOVE PLANNING MINIMA" in wx, (altns[:2], wx))
+        await page.select_option("#sbAltnSel-0", "EGAA")
+        wx = await page.inner_text("#sbAltn-0")
+        check("choosing it anyway shows why it is below minima",
+              "TAF EGAA: BELOW PLANNING MINIMA" in wx and "VIS 400 M" in wx and "CEILING 200 FT" in wx, wx)
         ofp = await page.inner_text("#sbOfp-0")
         check("OFP options start in KG with flight maps on and stepclimbs off",
               await page.eval_on_selector("input[name=sbUnits-0]:checked", "r => r.value") == "KGS"

@@ -3184,6 +3184,8 @@ async function chooseAircraftType(index, type) {
 // leg's plan only, until SAVE AS DEFAULT.
 const planOptions = {};
 let ofpDefaults = null;   // {units, maps, stepclimbs, navlog, etops, tlr, notams, firnot}
+// The alternate's forecast against planning minima (taf.py): label, tone
+const ALTN_WX = { ok: ['TAF OK', 'ok'], caution: ['TAF CAUTION', 'caution'], below: ['BELOW MINIMA', 'nogo'], unknown: ['NO VALID TAF', 'caution'] };
 // The switches, in the rows they appear in
 const OFP_GROUPS = [['NAVLOG', [['navlog', 'DETAILED NAVLOG'], ['maps', 'FLIGHT MAPS'], ['stepclimbs', 'PLAN STEPCLIMBS']]],
   ['PERFORMANCE', [['tlr', 'RUNWAY ANALYSIS'], ['etops', 'ETOPS PLANNING']]],
@@ -3193,11 +3195,14 @@ async function loadPlanOptions(flight, index) {
   const key = simbriefApiKey(flight, index);
   if (!planOptions[key]) {
     try {
-      const r = await (await fetch('/simbrief/plan-options?' + new URLSearchParams({ flight: flight.legs[index].flight_number }))).json();
+      const leg = flight.legs[index];
+      const r = await (await fetch('/simbrief/plan-options?' + new URLSearchParams({ flight: leg.flight_number, eldt: leg.eldt || leg.sldt || '' }))).json();
       if (r.error) throw new Error(r.error);
       const alternates = r.alternates || [];
       if (!ofpDefaults) ofpDefaults = r.options;
-      planOptions[key] = { alternates, altn: alternates.length ? alternates[0].icao : 'AUTO', layout: r.layout || '', ofp: { ...ofpDefaults } };
+      // The nearest base whose forecast is above planning minima, then any above minima
+      const best = ['ok', 'caution'].map(s => alternates.find(a => a.wx && a.wx.status === s)).find(Boolean) || alternates[0];
+      planOptions[key] = { alternates, altn: best ? best.icao : 'AUTO', layout: r.layout || '', ofp: { ...ofpDefaults } };
     } catch (e) {
       planOptions[key] = { alternates: [], altn: 'AUTO', error: true, ofp: ofpDefaults ? { ...ofpDefaults } : null };
     }
@@ -3207,15 +3212,15 @@ async function loadPlanOptions(flight, index) {
 function paintPlanOptions(flight, index) {
   const p = planOptions[simbriefApiKey(flight, index)]; if (!p) return;
   const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
-  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.name)} &middot; ${fmtNum(a.nm)} NM</option>`;
-  const bases = p.alternates.filter(a => a.base), others = p.alternates.filter(a => !a.base);
+  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.name)} &middot; ${fmtNum(a.nm)} NM${a.wx ? ' &middot; ' + ALTN_WX[a.wx.status][0] : ''}</option>`;
+  const chosen = p.alternates.find(a => a.icao === p.altn);
   if (altEl) altEl.innerHTML = '<span class="sheet-k">ALTERNATE</span><span class="sheet-v">' + (p.alternates.length
     ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">
-        ${bases.length ? `<optgroup label="AIRLINE BASES">${bases.map(altnOption).join('')}</optgroup>` : ''}
-        ${others.length ? `<optgroup label="OTHER AIRLINE AIRPORTS">${others.map(altnOption).join('')}</optgroup>` : ''}
+        <optgroup label="AIRLINE BASES">${p.alternates.map(altnOption).join('')}</optgroup>
         <optgroup label="SIMBRIEF"><option value="AUTO"${p.altn === 'AUTO' ? ' selected' : ''}>SIMBRIEF CHOOSES</option></optgroup></select>
-      <span class="plan-note">${p.altn === 'AUTO' ? 'SIMBRIEF PICKS THE ALTERNATE WHEN THE OFP IS GENERATED' : `AIRLINE AIRPORTS NEAR ${escText(flight.legs[index].arrival_info.icao)}, NEAREST BASE FIRST`}</span>`
-    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
+      ${p.altn === 'AUTO' ? '<span class="plan-note">SIMBRIEF PICKS THE ALTERNATE WHEN THE OFP IS GENERATED. ITS WEATHER IS NOT CHECKED</span>'
+        : chosen && chosen.wx ? `<span class="plan-wx ${ALTN_WX[chosen.wx.status][1]}">TAF ${escText(chosen.icao)}: ${escText(chosen.wx.text)}</span>` : ''}`
+    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE BASE WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
   const o = p.ofp;
   if (ofpEl && o) ofpEl.innerHTML = `
       <div class="sheet-row plan-row"><span class="sheet-k">WEIGHTS</span><span class="sheet-v"><span class="plan-seg" role="radiogroup" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
@@ -3325,6 +3330,7 @@ async function sendToSimbrief(index) {
   state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(fresh.legs[index], data);
   stopOfpWatch();
   showBriefingWithOfp(fresh);
+  if (data.warning) alert(data.warning);
 }
 
 // Fetches the leg's OFP. While waiting for the pilot to generate it the

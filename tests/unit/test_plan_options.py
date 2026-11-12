@@ -17,12 +17,11 @@ AIRPORTS = {
 }
 
 
-def test_bases_come_first_then_the_nearest():
-    departures = {"EGAC": 40, "EGAA": 100, "EGPF": 80, "EGAE": 5, "EGKK": 300}
+def test_only_the_airlines_bases_are_offered_nearest_first():
+    departures = {"EGAC": 40, "EGAA": 100, "EGPF": 80, "EGAE": 5, "EGKK": 300}     # Derry isn't a base
     got = alternates.alternates("EGAC", departures, AIRPORTS)
-    assert [(a["icao"], a["base"]) for a in got] == [("EGAA", True), ("EGPF", True), ("EGAE", False)]
-    assert got[0] == {"icao": "EGAA", "name": "Belfast International", "nm": 12, "base": True}
-    assert got[2]["name"] == "Derry"
+    assert [a["icao"] for a in got] == ["EGAA", "EGPF"]
+    assert got[0] == {"icao": "EGAA", "name": "Belfast International", "nm": 12}
 
 
 def test_a_far_destination_looks_further_and_an_isolated_one_gets_none():
