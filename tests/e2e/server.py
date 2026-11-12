@@ -318,6 +318,8 @@ def main():
     patch_navigraph(args.port)
     patch_sayintentions()
     patch_atis()
+    # SimBrief's OFP layouts as if read from its list
+    simbrief_api._layouts.update({"at": float("inf"), "codes": {"LIDO", "EZY"}})
     SCENARIOS[args.scenario]()
     app.app.run(port=args.port, debug=False)
 

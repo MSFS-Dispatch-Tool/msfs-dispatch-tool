@@ -60,6 +60,17 @@ async def main():
         rwys = await page.inner_text("#sbRunways-0")
         check("switching to SayIntentions reads its ATIS", "08R SAYINTENTIONS ATIS O" in rwys, rwys)
         await page.select_option("#sbRunwaySel-0", "vatsim"); await page.wait_for_timeout(500)
+        await page.wait_for_selector("#sbAltnSel-0")
+        altns = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 option')].map(o => o.textContent.toUpperCase())")
+        check("ALTERNATE offers easyJet's airports near Belfast City, its bases first",
+              altns[0] == "EGAA BELFAST · 12 NM · BASE" and any(a.startswith("EGPF GLASGOW") for a in altns), altns)
+        ofp = await page.inner_text("#sbOfp-0")
+        check("OFP options start in KG with flight maps on and stepclimbs off",
+              await page.eval_on_selector("#sbUnits-0", "s => s.value") == "KGS"
+              and await page.is_checked("[data-opt=maps]") and not await page.is_checked("[data-opt=stepclimbs]")
+              and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp, ofp)
+        await page.select_option("#sbAltnSel-0", "EGPF")
+        await page.check("[data-opt=stepclimbs]"); await page.wait_for_timeout(300)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
         await page.click("#afNextBtn")
@@ -71,6 +82,9 @@ async def main():
               sent["type"] == info["selected"] and sent["orig"] == leg["departure_info"]["icao"]
               and sent["dest"] == leg["arrival_info"]["icao"] and sent["static_id"] == state["simbrief_static_id"], sent)
         check("the ATIS runway goes into the plan, none where there's no ATIS", sent.get("origrwy") == "08R" and "destrwy" not in sent, sent)
+        check("the chosen alternate, easyJet's layout and the OFP options go into the plan",
+              sent.get("altn") == "EGPF" and sent.get("planformat") == "EZY" and sent.get("units") == "KGS"
+              and sent.get("maps") == "detail" and str(sent.get("stepclimbs")) == "1" and str(sent.get("notams")) == "1", sent)
         check("the departure time goes inside the date", sent["date"].endswith(" - " + leg["eobt"][:5]) and "deph" not in sent,
               (sent["date"], leg["eobt"]))
         check("the OFP lands in the briefing, with no SimBrief tab opened",
@@ -95,6 +109,9 @@ async def main():
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'sent'", timeout=10000)
         sent = json.load(urllib.request.urlopen(BASE + "/__simbrief/last"))
         check("SimBrief's standard aircraft is sent by its type", sent["type"] == info["type"], sent["type"])
+        check("the OFP options are kept for the next flights",
+              (await page.evaluate("fetch('/simbrief/plan-options?flight=U2803').then(r => r.json())"))["options"]["stepclimbs"] is True)
+        await page.evaluate("setOfpOption('stepclimbs', false)")                                 # back to the defaults
         check("a refusal says why and opens SimBrief instead",
               alerts and "INVALID AIRCRAFT TYPE" in alerts[-1] and "OPENING SIMBRIEF" in alerts[-1] and len(popups) == 1, alerts)
         check.done(page)

@@ -608,6 +608,11 @@
   .plan-rwys b { font-weight: 700; letter-spacing: 0.03em; margin-right: 4px; }
   .plan-rwy { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 13.5px; margin-right: 4px; }
   .plan-wait { margin: 0; padding: 10px 12px; border-top: 1px solid var(--shadow-md); }
+  .plan-switches { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+  .af-field .plan-switches select { width: auto; }
+  .plan-switch { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--text); cursor: pointer; }
+  .plan-switch input { margin: 0; accent-color: var(--titlebar); }
+  .af-field:empty { display: none; }
   .af-field { display: flex; flex-direction: column; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted); }
   .af-field select { font: inherit; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text); width: 100%; max-width: 520px;
     padding: 6px 8px; border: 1px solid var(--shadow-dk); border-radius: var(--radius-sm); background: var(--white); }

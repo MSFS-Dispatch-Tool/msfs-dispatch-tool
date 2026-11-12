@@ -2164,7 +2164,9 @@ function planPaneHtml(flight, i) {
         <div class="af-field" id="sbType-${i}"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')}</b></div>
         <span class="sb-airframe" id="sbAirframe-${i}"></span>
         <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">READING ATIS&hellip;</span></div>
-        <p class="plan-note" id="sbSendNote-${i}">${api ? 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING' : ''}</p>
+        <div class="af-field" id="sbAltn-${i}"><span>ALTERNATE</span><span class="plan-note">LOADING&hellip;</span></div>
+        <div class="af-field" id="sbOfp-${i}"></div>
+        <p class="plan-note" id="sbSendNote-${i}">${api ? 'OFP GENERATED ON SIMBRIEF WITH THESE SETTINGS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING' : ''}</p>
         ${current}
       </div>${waiting}</section>`;
   return form + sheetSection('THIS LEG', legRows);
@@ -2283,6 +2285,7 @@ function renderRecap(flight) {
   if (document.getElementById('sbType-' + i)) paintAircraftChoice(flight, i);
   if (document.getElementById('sbAirframe-' + i)) loadSimbriefAirframes(flight, i);
   if (document.getElementById('sbRunways-' + i)) { if (runwayInfo[simbriefApiKey(flight, i)]) paintRunways(flight, i); else loadRunways(flight, i); }
+  if (document.getElementById('sbAltn-' + i)) loadPlanOptions(flight, i);
   // Waiting for this leg's OFP (also after a reload): watch for it
   const waiting = flight.leg_state.findIndex((s, k) => s.simbrief === 'sent' && legStage(flight, k) === 'ofp');
   if (waiting >= 0) { startOfpWatch(waiting); paintOfpWatch(); } else stopOfpWatch();
@@ -3057,6 +3060,12 @@ function simbriefLegOptions(flight, index, staticId) {
   const rwy = runwayInfo[simbriefApiKey(flight, index)];
   if (rwy && rwy.dep) options.dep_rwy = rwy.dep.rwy;
   if (rwy && rwy.arr) options.arr_rwy = rwy.arr.rwy;
+  const plan = planOptions[simbriefApiKey(flight, index)];
+  if (plan && plan.altn) options.altn = plan.altn;
+  if (ofpOptions) {
+    options.units = ofpOptions.units;
+    OFP_SWITCHES.forEach(([k]) => { options[k] = ofpOptions[k] ? 1 : 0; });
+  }
   return options;
 }
 
@@ -3109,7 +3118,7 @@ function paintSimbriefAirframes(flight, index) {
     `<option value="${escText(a.id)}"${a.id === info.selected ? ' selected' : ''}>${escText(a.name)} &middot; ${escText(a.reg)}${a.comments ? ` (${escText(a.comments)})` : ''}</option>`));
   el.innerHTML = `<label class="af-field"><span>AIRFRAME</span><select id="sbAirframeSel-${index}" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></label>`;
   const note = document.getElementById('sbSendNote-' + index);
-  if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
+  if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH THESE SETTINGS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
   paintNextBar();
 }
 
@@ -3159,6 +3168,56 @@ async function chooseAircraftType(index, type) {
     alert('AIRCRAFT CHANGE FAILED. CHECK CONNECTION, THEN RETRY');
     if (sel) sel.disabled = false;
   }
+}
+
+// ---- ALTERNATE and OFP options (/simbrief/plan-options). The alternate is
+// chosen per leg among the airline's own airports near the destination,
+// its bases first; the OFP options are the pilot's, kept for every flight. ----
+const planOptions = {};   // per leg: {alternates, altn, error}
+let ofpOptions = null;    // {units, maps, stepclimbs, navlog, etops, tlr, notams, firnot}
+const OFP_SWITCHES = [['maps', 'FLIGHT MAPS'], ['navlog', 'DETAILED NAVLOG'], ['stepclimbs', 'PLAN STEPCLIMBS'], ['tlr', 'RUNWAY ANALYSIS'],
+  ['notams', 'NOTAMS'], ['firnot', 'FIR NOTAMS'], ['etops', 'ETOPS PLANNING']];
+async function loadPlanOptions(flight, index) {
+  const key = simbriefApiKey(flight, index);
+  if (!planOptions[key]) {
+    try {
+      const r = await (await fetch('/simbrief/plan-options?' + new URLSearchParams({ flight: flight.legs[index].flight_number }))).json();
+      if (r.error) throw new Error(r.error);
+      const alternates = r.alternates || [];
+      planOptions[key] = { alternates, altn: alternates.length ? alternates[0].icao : '' };
+      if (!ofpOptions) ofpOptions = r.options;
+    } catch (e) {
+      planOptions[key] = { alternates: [], altn: '', error: true };
+    }
+  }
+  paintPlanOptions(flight, index);
+}
+function paintPlanOptions(flight, index) {
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p) return;
+  const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
+  if (altEl) altEl.innerHTML = '<span>ALTERNATE</span>' + (p.alternates.length
+    ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">${p.alternates.map(a =>
+      `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.city)} &middot; ${fmtNum(a.nm)} NM${a.base ? ' &middot; BASE' : ''}</option>`).join('')}</select>`
+    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO COMPANY AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`);
+  if (ofpEl && ofpOptions) ofpEl.innerHTML = `<span>OFP OPTIONS</span><div class="plan-switches">
+      <select id="sbUnits-${index}" onchange="setOfpOption('units', this.value)" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
+        `<option value="${v}"${ofpOptions.units === v ? ' selected' : ''}>${label}</option>`).join('')}</select>
+      ${OFP_SWITCHES.map(([k, label]) => `<label class="plan-switch"><input type="checkbox" data-opt="${k}"${ofpOptions[k] ? ' checked' : ''} onchange="setOfpOption('${k}', this.checked)">${label}</label>`).join('')}
+    </div>`;
+}
+function choosePlanAltn(index, icao) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)];
+  if (p) p.altn = icao;
+}
+async function setOfpOption(key, value) {
+  ofpOptions = { ...ofpOptions, [key]: value };
+  try {
+    const r = await (await fetch('/simbrief/plan-options', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ options: ofpOptions })
+    })).json();
+    if (r.options) ofpOptions = r.options;
+  } catch (e) { /* kept for this session; saved again with the next change */ }
 }
 
 // ---- RUNWAYS: from the ATIS of the network the pilot flies on (see

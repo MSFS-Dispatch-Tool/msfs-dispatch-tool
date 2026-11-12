@@ -28,6 +28,8 @@ def client(app_module, monkeypatch):
     monkeypatch.setattr(app_module, "fetch_weather_batch",
                         lambda icaos: {i: {"metar": None, "taf": None} for i in set(icaos)})
     app_module._simbrief_cache.clear()
+    # SimBrief's OFP layouts as if read from its list: easyJet's and LIDO
+    monkeypatch.setattr(app_module.simbrief_api, "_layouts", {"at": float("inf"), "codes": {"LIDO", "EZY"}})
     return app_module.app.test_client()
 
 
