@@ -174,5 +174,5 @@ def logbook(records, airport):
         for icao in (row["dep"], row["arr"]):
             if icao and icao not in airports:
                 info = airport(icao) or {}
-                airports[icao] = {k: info.get(k) for k in ("name", "city", "country", "lat", "lon")}
+                airports[icao] = {k: info.get(k) for k in ("name", "short_name", "city", "country", "lat", "lon")}
     return {"flights": rows, "airports": airports}

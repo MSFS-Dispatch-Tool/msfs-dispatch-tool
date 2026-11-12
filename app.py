@@ -23,6 +23,7 @@ import demo
 import techlog
 import notams
 import acars
+import alternates
 import atis
 import monitoring
 import navigraph
@@ -1028,7 +1029,7 @@ def build_network():
     return {
         "carriers": list(ACTIVE_CARRIER_CODES),
         "airports": [
-            {k: airports_by_icao[icao][k] for k in ("icao", "iata", "name", "city", "country", "lat", "lon")}
+            {k: airports_by_icao[icao][k] for k in ("icao", "iata", "name", "short_name", "city", "country", "lat", "lon")}
             for icao in served
         ],
         "routes": [[index[d], index[a], m] for (d, a), m in sorted(masks.items())
@@ -1037,6 +1038,13 @@ def build_network():
 
 
 network = build_network()
+departures_by_airline = alternates.departures_by_airline(routes)
+
+
+def leg_alternates(route_leg):
+    """The destination alternates offered for a leg, best first (see
+    alternates.py)."""
+    return alternates.alternates(route_leg["arrival_icao"], departures_by_airline[route_leg["carrier"]], airports_by_icao)
 
 WEATHER_USER_AGENT = "VirtualDispatch/1.0 (personal MSFS immersion tool; not for real-world ops use)"
 
@@ -1208,7 +1216,8 @@ def airports_search():
     q = request.args.get("q", "").strip().upper()
     if not q:
         return jsonify([])
-    matches = [a for a in airports if a["icao"].startswith(q) or a["iata"].startswith(q) or a["city"].upper().startswith(q)]
+    matches = [a for a in airports if a["icao"].startswith(q) or a["iata"].startswith(q) or a["city"].upper().startswith(q)
+               or a["short_name"].upper().startswith(q)]
     return jsonify(matches[:15])
 
 
@@ -2115,10 +2124,50 @@ def _simbrief_dispatch_params(args):
         rwy = args.get(arg, default="", type=str).strip().upper()
         if atis.RUNWAY_RE.match(rwy):
             params[key] = rwy
+    # The destination alternate the pilot chose from the airline's own
+    # airports (/simbrief/plan-options), or AUTO to leave it to SimBrief;
+    # without a choice, the first offered.
+    altn = args.get("altn", default="", type=str).strip().upper()
+    if altn == "AUTO":
+        altn = ""
+    elif not atis.ICAO_RE.match(altn) or altn == params["dest"]:
+        offered = leg_alternates(route_leg)
+        altn = offered[0]["icao"] if offered else ""
+    if altn:
+        params["altn"] = altn
+    # The OFP: the airline's own layout, and the pilot's OFP options
+    params["planformat"] = simbrief_api.plan_format(params["airline"])
+    options = ofp_options(args)
+    params["units"] = options["units"]
+    params["maps"] = "detail" if options["maps"] else "none"
+    for key in OFP_SWITCHES:
+        if key != "maps":
+            params[key] = 1 if options[key] else 0
     return params, None
 
 
 REMARKS_MAX_CHARS = 2500
+
+# The pilot's OFP options, each a SimBrief dispatch option of the same name
+# (maps: detailed flight maps, or none), with the defaults used until the
+# pilot changes them. Weights in KGS unless the pilot chooses LBS.
+OFP_SWITCHES = {"maps": True, "stepclimbs": False, "navlog": True, "etops": True, "tlr": True,
+                "notams": True, "firnot": True}
+OFP_UNITS = ("KGS", "LBS")
+
+
+def ofp_options(values):
+    """The OFP options from saved preferences or a request, every one
+    present: {"units": "KGS", "maps": True, ...}."""
+    values = values or {}
+
+    def switch(key, default):
+        value = str(values.get(key, "")).strip().lower()
+        return True if value in ("1", "true", "on") else False if value in ("0", "false", "off") else default
+    options = {key: switch(key, default) for key, default in OFP_SWITCHES.items()}
+    units = str(values.get("units") or "").strip().upper()
+    options["units"] = units if units in OFP_UNITS else "KGS"
+    return options
 
 
 def ofp_route_fixes(navlog):
@@ -2823,6 +2872,27 @@ def simbrief_airframes():
     remembered = (db.get_simbrief(user_id).get("airframes") or {}).get(f"{airline}:{sb_type}")
     return jsonify({"available": True, "type": sb_type, "airframes": airframes,
                     "selected": _default_airframe(airframes, remembered, codes)})
+
+
+@app.route("/simbrief/plan-options", methods=["GET", "POST"])
+def simbrief_plan_options():
+    """GET: the destination alternates offered for a leg (?flight=), the
+    OFP layout, and the pilot's default OFP options. POST {"options":
+    {...}}: saves them as the pilot's defaults (SAVE AS DEFAULT)."""
+    user_id = current_user_id()
+    prefs = db.get_simbrief(user_id) if db.db_available() else {}
+    if request.method == "POST":
+        body = request.get_json(silent=True) or {}
+        options = ofp_options(body.get("options") if isinstance(body.get("options"), dict) else {})
+        if db.db_available():
+            db.save_simbrief({**prefs, "ofp_options": options}, user_id)
+        return jsonify({"options": options})
+    route_leg = routes_by_flight_number.get(request.args.get("flight", default="", type=str).strip())
+    if route_leg is None:
+        return jsonify({"error": "UNKNOWN FLIGHT"}), 400
+    saved = prefs.get("ofp_options") if isinstance(prefs.get("ofp_options"), dict) else {}
+    return jsonify({"alternates": leg_alternates(route_leg), "options": ofp_options(saved),
+                    "layout": simbrief_api.plan_format(carrier_for(route_leg)["icao"])})
 
 
 @app.route("/atis/runways")

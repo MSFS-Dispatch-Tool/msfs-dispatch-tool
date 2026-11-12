@@ -62,7 +62,7 @@ async def main():
         check("step 1 is PLAN WITH SIMBRIEF and the page opens on the PLAN tab", now == "PLAN WITH SIMBRIEF" and await page.locator("#af-pane-plan").is_visible())
         check("the steps are a tracker, not buttons", await page.locator(".af-flow button").count() == 0)
         check("the next action is in the bar: OPEN SIMBRIEF without Navigraph", "OPEN SIMBRIEF" in await page.text_content("#afNextBtn"))
-        check("the plan shows the aircraft to fly", "AIRCRAFT" in await page.inner_text("#sbType-0"))
+        check("the plan shows the aircraft to fly", "TYPE" in await page.inner_text("#sbType-0"))
         await page.evaluate("selectRecapTab('briefing')")
         check("away from the plan, the bar leads back to it", "PLAN THE FLIGHT" in await page.text_content("#afNextBtn"))
         check("the briefing is for reading: no buttons at its end", await page.locator("#af-pane-briefing .sheets ~ * button").count() == 0)

@@ -228,7 +228,7 @@ function attachAirportDropdown(inputId, dropdownId, endpoint) {
     dropdown.innerHTML = items.map((a, i) => `
       <div class="opt${i === activeIndex ? ' active' : ''}" data-icao="${a.icao}">
         <span class="code">${a.icao} / ${a.iata}</span>
-        <span class="place">${a.city}</span>
+        <span class="place">${a.short_name || a.city}</span>
       </div>`).join('');
     dropdown.classList.add('open');
     dropdown.querySelectorAll('.opt').forEach((el, i) => {
@@ -717,7 +717,7 @@ function filteredItineraries(skip) {
 
 function airportLabel(icao) {
   const a = networkData && networkData.airportsByIcao[icao];
-  return a ? `${icao} (${a.city.toUpperCase()})` : icao;
+  return a ? `${icao} (${(a.short_name || a.city).toUpperCase()})` : icao;
 }
 
 function carrierName(code) {
@@ -1547,7 +1547,7 @@ function addAirportMarker(a, kind, info) {
   } else {
     const count = info ? ` &middot; ${plural(info.count, 'ITINERARY', 'ITINERARIES')}` : '';
     const via = kind === 'via' ? '<br>MULTI-LEG TURNAROUND (VIA) ONLY' : '';
-    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
+    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.short_name || a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
       { direction: 'top', offset: [0, -6], className: wx ? 'wx-tip' : '' });
   }
   mapAirportEntries.push({ a, info });
@@ -2159,14 +2159,21 @@ function planPaneHtml(flight, i) {
   const waiting = st.simbrief === 'sent'
     ? `<p class="plan-wait"><span class="ofp-watch" aria-live="polite"><span class="ofp-watch-dot" aria-hidden="true"></span><span id="ofpWatchNote">MONITORING SIMBRIEF. OFP LOADS ON GENERATION</span></span></p>` : '';
   const current = st.ofp && st.simbrief === 'available' ? `<p class="plan-current">CURRENT OFP: ${ofpDoneText(st.ofp)}</p>` : '';
-  const form = `<section class="sheet plan-form"><h4 class="sheet-h">SIMBRIEF PLAN</h4>
-      <div class="plan-fields">
-        <div class="af-field" id="sbType-${i}"><span>AIRCRAFT</span><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')}</b></div>
-        <span class="sb-airframe" id="sbAirframe-${i}"></span>
-        <div class="af-field plan-runways" id="sbRunways-${i}"><span>RUNWAYS</span><span class="plan-note">READING ATIS&hellip;</span></div>
-        <p class="plan-note" id="sbSendNote-${i}">${api ? 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING' : ''}</p>
-        ${current}
-      </div>${waiting}</section>`;
+  const form = `<div class="plan-form">
+      <section class="sheet"><h4 class="sheet-h"><span class="plan-step">1</span>AIRCRAFT</h4>
+        <div class="sheet-row plan-row" id="sbType-${i}"><span class="sheet-k">TYPE</span><span class="sheet-v"><b class="plan-fixed">${escText(leg.aircraft_type || 'N/A')}</b></span></div>
+        <div class="sheet-row plan-row" id="sbAirframe-${i}"></div>
+      </section>
+      <section class="sheet"><h4 class="sheet-h"><span class="plan-step">2</span>ROUTE</h4>
+        <div class="sheet-row plan-row" id="sbRunways-${i}"><span class="sheet-k">RUNWAYS</span><span class="sheet-v plan-note">READING ATIS&hellip;</span></div>
+        <div class="sheet-row plan-row" id="sbAltn-${i}"><span class="sheet-k">ALTERNATE</span><span class="sheet-v plan-note">LOADING&hellip;</span></div>
+      </section>
+      <section class="sheet"><h4 class="sheet-h"><span class="plan-step">3</span>OFP OPTIONS</h4>
+        <div id="sbOfp-${i}"><div class="sheet-row plan-row"><span class="sheet-k">OPTIONS</span><span class="sheet-v plan-note">LOADING&hellip;</span></div></div>
+      </section>
+      <p class="plan-note plan-send" id="sbSendNote-${i}">${api ? 'OFP GENERATED ON SIMBRIEF WITH THESE SETTINGS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING' : ''}</p>
+      ${current}${waiting}
+    </div>`;
   return form + sheetSection('THIS LEG', legRows);
 }
 
@@ -2283,6 +2290,7 @@ function renderRecap(flight) {
   if (document.getElementById('sbType-' + i)) paintAircraftChoice(flight, i);
   if (document.getElementById('sbAirframe-' + i)) loadSimbriefAirframes(flight, i);
   if (document.getElementById('sbRunways-' + i)) { if (runwayInfo[simbriefApiKey(flight, i)]) paintRunways(flight, i); else loadRunways(flight, i); }
+  if (document.getElementById('sbAltn-' + i)) loadPlanOptions(flight, i);
   // Waiting for this leg's OFP (also after a reload): watch for it
   const waiting = flight.leg_state.findIndex((s, k) => s.simbrief === 'sent' && legStage(flight, k) === 'ofp');
   if (waiting >= 0) { startOfpWatch(waiting); paintOfpWatch(); } else stopOfpWatch();
@@ -3057,6 +3065,13 @@ function simbriefLegOptions(flight, index, staticId) {
   const rwy = runwayInfo[simbriefApiKey(flight, index)];
   if (rwy && rwy.dep) options.dep_rwy = rwy.dep.rwy;
   if (rwy && rwy.arr) options.arr_rwy = rwy.arr.rwy;
+  const plan = planOptions[simbriefApiKey(flight, index)];
+  if (plan && plan.altn) options.altn = plan.altn;
+  const ofp = (plan && plan.ofp) || ofpDefaults;
+  if (ofp) {
+    options.units = ofp.units;
+    OFP_SWITCHES.forEach(([k]) => { options[k] = ofp[k] ? 1 : 0; });
+  }
   return options;
 }
 
@@ -3107,9 +3122,9 @@ function paintSimbriefAirframes(flight, index) {
   if (!info.available) return;
   const options = [`<option value="">SIMBRIEF STANDARD ${escText(info.type)}</option>`].concat((info.airframes || []).map(a =>
     `<option value="${escText(a.id)}"${a.id === info.selected ? ' selected' : ''}>${escText(a.name)} &middot; ${escText(a.reg)}${a.comments ? ` (${escText(a.comments)})` : ''}</option>`));
-  el.innerHTML = `<label class="af-field"><span>AIRFRAME</span><select id="sbAirframeSel-${index}" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></label>`;
+  el.innerHTML = `<span class="sheet-k">AIRFRAME</span><span class="sheet-v"><select id="sbAirframeSel-${index}" aria-label="Airframe" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></span>`;
   const note = document.getElementById('sbSendNote-' + index);
-  if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH SELECTED AIRFRAME AND RUNWAYS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
+  if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH THESE SETTINGS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
   paintNextBar();
 }
 
@@ -3131,8 +3146,8 @@ async function paintAircraftChoice(flight, index) {
   try { fleet = fleetOptionsFor(leg, await getCarriers(), await getOwnedAircraft()); } catch (e) { return; }
   if (fleet.length < 2 || !document.getElementById('sbType-' + index)) return;
   const recommended = leg.recommended_type || leg.aircraft_type;
-  el.innerHTML = `<span>AIRCRAFT</span><select id="sbTypeSel-${index}" onchange="chooseAircraftType(${index}, this.value)">${fleet.map(ac =>
-    `<option value="${escAttr(ac.type)}"${ac.type === leg.aircraft_type ? ' selected' : ''}>${escText(ac.type)} &middot; ${ac.seats} SEATS${ac.type === recommended ? ' (RECOMMENDED)' : ''}</option>`).join('')}</select>`;
+  el.innerHTML = `<span class="sheet-k">TYPE</span><span class="sheet-v"><select id="sbTypeSel-${index}" aria-label="Aircraft type" onchange="chooseAircraftType(${index}, this.value)">${fleet.map(ac =>
+    `<option value="${escAttr(ac.type)}"${ac.type === leg.aircraft_type ? ' selected' : ''}>${escText(ac.type)} &middot; ${ac.seats} SEATS${ac.type === recommended ? ' (RECOMMENDED)' : ''}</option>`).join('')}</select></span>`;
 }
 
 async function chooseAircraftType(index, type) {
@@ -3161,6 +3176,87 @@ async function chooseAircraftType(index, type) {
   }
 }
 
+// ---- ALTERNATE and OFP options (/simbrief/plan-options). The alternate is
+// chosen per leg among the airline's own airports near the destination,
+// its bases first; the OFP options are the pilot's, kept for every flight. ----
+// Per leg: {alternates, altn ('AUTO': SimBrief chooses), layout, ofp, error}.
+// The OFP options start from the pilot's defaults; a change applies to that
+// leg's plan only, until SAVE AS DEFAULT.
+const planOptions = {};
+let ofpDefaults = null;   // {units, maps, stepclimbs, navlog, etops, tlr, notams, firnot}
+// The switches, in the rows they appear in
+const OFP_GROUPS = [['NAVLOG', [['navlog', 'DETAILED NAVLOG'], ['maps', 'FLIGHT MAPS'], ['stepclimbs', 'PLAN STEPCLIMBS']]],
+  ['PERFORMANCE', [['tlr', 'RUNWAY ANALYSIS'], ['etops', 'ETOPS PLANNING']]],
+  ['NOTAMS', [['notams', 'AIRPORT NOTAMS'], ['firnot', 'FIR NOTAMS']]]];
+const OFP_SWITCHES = OFP_GROUPS.flatMap(([, switches]) => switches);
+async function loadPlanOptions(flight, index) {
+  const key = simbriefApiKey(flight, index);
+  if (!planOptions[key]) {
+    try {
+      const r = await (await fetch('/simbrief/plan-options?' + new URLSearchParams({ flight: flight.legs[index].flight_number }))).json();
+      if (r.error) throw new Error(r.error);
+      const alternates = r.alternates || [];
+      if (!ofpDefaults) ofpDefaults = r.options;
+      planOptions[key] = { alternates, altn: alternates.length ? alternates[0].icao : 'AUTO', layout: r.layout || '', ofp: { ...ofpDefaults } };
+    } catch (e) {
+      planOptions[key] = { alternates: [], altn: 'AUTO', error: true, ofp: ofpDefaults ? { ...ofpDefaults } : null };
+    }
+  }
+  paintPlanOptions(flight, index);
+}
+function paintPlanOptions(flight, index) {
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p) return;
+  const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
+  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.name)} &middot; ${fmtNum(a.nm)} NM</option>`;
+  const bases = p.alternates.filter(a => a.base), others = p.alternates.filter(a => !a.base);
+  if (altEl) altEl.innerHTML = '<span class="sheet-k">ALTERNATE</span><span class="sheet-v">' + (p.alternates.length
+    ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">
+        ${bases.length ? `<optgroup label="AIRLINE BASES">${bases.map(altnOption).join('')}</optgroup>` : ''}
+        ${others.length ? `<optgroup label="OTHER AIRLINE AIRPORTS">${others.map(altnOption).join('')}</optgroup>` : ''}
+        <optgroup label="SIMBRIEF"><option value="AUTO"${p.altn === 'AUTO' ? ' selected' : ''}>SIMBRIEF CHOOSES</option></optgroup></select>
+      <span class="plan-note">${p.altn === 'AUTO' ? 'SIMBRIEF PICKS THE ALTERNATE WHEN THE OFP IS GENERATED' : `AIRLINE AIRPORTS NEAR ${escText(flight.legs[index].arrival_info.icao)}, NEAREST BASE FIRST`}</span>`
+    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
+  const o = p.ofp;
+  if (ofpEl && o) ofpEl.innerHTML = `
+      <div class="sheet-row plan-row"><span class="sheet-k">WEIGHTS</span><span class="sheet-v"><span class="plan-seg" role="radiogroup" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
+        `<label><input type="radio" name="sbUnits-${index}" value="${v}"${o.units === v ? ' checked' : ''} onchange="setOfpOption(${index}, 'units', this.value)"><span>${label}</span></label>`).join('')}</span></span></div>
+      ${p.layout ? `<div class="sheet-row plan-row"><span class="sheet-k">LAYOUT</span><span class="sheet-v"><span><b class="plan-fixed">${escText(p.layout)}</b> <span class="plan-note">&middot; ${p.layout === 'LIDO' ? 'SIMBRIEF STANDARD' : 'AIRLINE FORMAT'}</span></span></span></div>` : ''}
+      ${OFP_GROUPS.map(([group, switches]) => `<div class="sheet-row plan-row"><span class="sheet-k">${group}</span><span class="sheet-v plan-switches">${switches.map(([k, label]) =>
+        `<label class="plan-switch"><input type="checkbox" role="switch" data-opt="${k}"${o[k] ? ' checked' : ''} onchange="setOfpOption(${index}, '${k}', this.checked)"><span>${label}</span></label>`).join('')}</span></div>`).join('')}
+      <div class="sheet-row plan-row plan-default"><span class="sheet-k"></span><span class="sheet-v" id="sbOfpSave-${index}">${ofpSaveHtml(index, o)}</span></div>`;
+}
+function ofpIsDefault(o) { return !!ofpDefaults && Object.keys(ofpDefaults).every(k => ofpDefaults[k] === o[k]); }
+function ofpSaveHtml(index, o, error) {
+  return `<span class="plan-save"><button class="ghost" type="button" id="sbOfpSaveBtn-${index}" onclick="saveOfpDefaults(${index})"${ofpIsDefault(o) ? ' disabled' : ''}>SAVE AS DEFAULT</button>${error ? `<span class="plan-note">${error}</span>` : ''}</span>`;
+}
+function choosePlanAltn(index, icao) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)];
+  if (p) { p.altn = icao; paintPlanOptions(flight, index); }
+}
+function setOfpOption(index, key, value) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p || !p.ofp) return;
+  p.ofp = { ...p.ofp, [key]: value };
+  const el = document.getElementById('sbOfpSave-' + index);
+  if (el) el.innerHTML = ofpSaveHtml(index, p.ofp);
+}
+async function saveOfpDefaults(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p || !p.ofp) return;
+  const el = document.getElementById('sbOfpSave-' + index);
+  try {
+    const r = await (await fetch('/simbrief/plan-options', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ options: p.ofp })
+    })).json();
+    if (!r.options) throw new Error();
+    ofpDefaults = r.options;
+    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp);
+  } catch (e) {
+    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp, 'NOT SAVED. CHECK CONNECTION, THEN RETRY');
+  }
+}
+
 // ---- RUNWAYS: from the ATIS of the network the pilot flies on (see
 // atis.py). The choice of network is remembered; the runways are read again
 // just before the plan is made, so the OFP gets the ones in use then. ----
@@ -3184,10 +3280,10 @@ function paintRunways(flight, index) {
   const line = (icao, found) => `<li><b>${icao}</b> ${found
     ? `<span class="plan-rwy">${escText(found.rwy)}</span> <span class="plan-note">${escText(net)} ATIS${found.letter ? ' ' + escText(found.letter) : ''}</span>`
     : `<span class="plan-note">${info.source === 'none' ? 'SIMBRIEF BY WIND' : info.error ? `${escText(info.error.toUpperCase())}. SIMBRIEF BY WIND` : `NO ${escText(net.toUpperCase())} ATIS RWY. SIMBRIEF BY WIND`}</span>`}</li>`;
-  el.innerHTML = `<span>RUNWAYS</span>
+  el.innerHTML = `<span class="sheet-k">RUNWAYS</span><span class="sheet-v">
     <select id="sbRunwaySel-${index}" onchange="loadRunways(loadActiveFlight(), ${index}, this.value)" aria-label="Runway source">
       ${RUNWAY_SOURCES.map(([k, label]) => `<option value="${k}"${k === info.source ? ' selected' : ''}>${label}</option>`).join('')}</select>
-    <ul class="plan-rwys">${line(leg.departure_info.icao + ' DEP', info.dep)}${line(leg.arrival_info.icao + ' ARR', info.arr)}</ul>`;
+    <ul class="plan-rwys">${line(leg.departure_info.icao + ' DEP', info.dep)}${line(leg.arrival_info.icao + ' ARR', info.arr)}</ul></span>`;
 }
 
 async function sendToSimbrief(index) {
@@ -4589,6 +4685,8 @@ function countryName(code) {
 function typeName(t) { return (AIRCRAFT_TYPES[t] || {}).name || t || 'Unknown'; }
 function typeFamily(t) { return (AIRCRAFT_TYPES[t] || {}).family || 'Other'; }
 function statsAirport(icao) { return (statsData && statsData.airports[icao]) || {}; }
+// The airport's own short name ("Linate"), or its town for an airport outside the route network
+function airportShortName(a) { return a.short_name || a.city || a.name || ''; }
 function rowCountries(r) { return [statsAirport(r.dep).country, statsAirport(r.arr).country]; }
 function isDomestic(r) { const [a, b] = rowCountries(r); return !!a && a === b; }
 
@@ -4748,7 +4846,7 @@ function statsFilterOptions(key, rows) {
     else if (key === 'airport') { add(r.dep); if (r.arr !== r.dep) add(r.arr); }
   });
   const label = (v) => key === 'carrier' ? (CARRIER_NAMES[v] || v) : key === 'type' ? typeName(v)
-    : key === 'country' ? countryName(v) : `${v} ${statsAirport(v).city || statsAirport(v).name || ''}`.trim();
+    : key === 'country' ? countryName(v) : `${v} ${airportShortName(statsAirport(v))}`.trim();
   return [...counts.entries()].map(([v, n]) => [v, `${label(v)} (${n})`]).sort((a, b) => a[1].localeCompare(b[1]));
 }
 
@@ -4866,7 +4964,7 @@ function statsOverview(el, rows, range, group) {
   const byType = [...groupRows(rows, r => r.type)].map(([t, rs]) => ({ label: escText(typeName(t)), key: t, rows: rs })).sort((a, b) => b.rows.length - a.rows.length).slice(0, 5);
   const movements = new Map();
   rows.forEach(r => [r.dep, r.arr].forEach(a => movements.set(a, (movements.get(a) || 0) + 1)));
-  const topAirports = [...movements].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([a, n]) => ({ label: `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`, key: a, n }));
+  const topAirports = [...movements].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([a, n]) => ({ label: `<b>${a}</b> ${escText(airportShortName(statsAirport(a)))}`, key: a, n }));
   const dom = rows.filter(isDomestic).length, intl = rows.length - dom;
   el.innerHTML = `
     <div class="st-grid st-grid-overview">
@@ -5041,7 +5139,7 @@ function statsAirports(el, rows, range) {
   const newOnes = [...ap.keys()].filter(a => firstSeen[a] >= range[0] && firstSeen[a] <= range[1]).sort((a, b) => firstSeen[a].localeCompare(firstSeen[b]));
   const routes = [...groupRows(rows, r => [r.dep, r.arr].sort().join('-'))].map(([k, rs]) => ({ k, rs, dist: rs.find(r => r.dist != null)?.dist ?? null }));
   const byDist = rows.filter(r => r.dist != null).sort((a, b) => b.dist - a.dist);
-  const apLabel = a => `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`;
+  const apLabel = a => `<b>${a}</b> ${escText(airportShortName(statsAirport(a)))}`;
   const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} NM</td><td class="num">${fmtDay(r.date)}</td></tr>`;
   el.innerHTML = `
     <div class="st-grid st-grid-3">
@@ -5110,7 +5208,7 @@ function statsOperations(el, rows) {
         ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}` }) : '<p class="st-hint">NO MEL ITEMS ON THESE FLIGHTS</p>'}
         <h3>DEPARTURE PUNCTUALITY BY AIRPORT <span class="st-muted">2+ departures, worst first</span></h3>
         ${byAirport.length ? `<div class="st-scroll st-scroll-short"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEPARTURES</th><th class="num">ON TIME</th><th class="num">AVG DELAY</th></tr></thead><tbody>
-          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
+          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(airportShortName(statsAirport(x.a)))}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>SCHEDULED DEPARTURE TIME (UTC)</h3>
