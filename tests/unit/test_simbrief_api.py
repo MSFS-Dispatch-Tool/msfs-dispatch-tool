@@ -222,9 +222,19 @@ def test_send_to_simbrief_generates_the_plan_with_the_chosen_airframe(client, ap
     assert client.get("/simbrief/ofp").get_json()["source"] == "api" and fake_simbrief[0] == []
 
 
+def test_a_refused_plan_is_tried_again_without_the_optional_settings(client, generating, fake_generate):
+    calls, replies = fake_generate
+    replies += [Posted({"error": "INTERNAL_ERROR"}, 500), Posted({"error": "INTERNAL_ERROR"}, 500)]   # then a plan
+    got = client.post("/simbrief/generate", json={**LEG, "altn": "EGPF"}).get_json()
+    assert got["source"] == "api" and got["warning"] == "SIMBRIEF DID NOT ACCEPT THE OFP LAYOUT AND OFP OPTIONS. OFP GENERATED WITHOUT THEM"
+    sent = [c["data"] for c in calls]
+    assert "planformat" in sent[0] and "planformat" not in sent[1] and "maps" in sent[1]
+    assert "maps" not in sent[2] and "units" not in sent[2] and sent[2]["altn"] == "EGPF"
+
+
 def test_a_refused_generation_falls_back_to_simbrief_com(client, app_module, generating, fake_generate):
     _, replies = fake_generate
-    replies.append(Posted({"error": "Invalid aircraft type"}, 400))
+    replies += [Posted({"error": "Invalid aircraft type"}, 400)] * (1 + len(app_module.SIMBRIEF_OPTIONAL_PARAMS))
     resp = client.post("/simbrief/generate", json={**LEG, "airframe": "100_9"})
     assert resp.status_code == 502 and resp.get_json()["fallback"] and "INVALID AIRCRAFT TYPE" in resp.get_json()["error"]
     assert generating == {}                                                     # nothing remembered

@@ -2983,7 +2983,7 @@ def simbrief_generate():
     if airframe:
         params["type"] = airframe
     try:
-        data = simbrief_api.generate(navigraph_access_token(user_id), params)
+        data, dropped = _simbrief_generate_with_retries(navigraph_access_token(user_id), params)
     except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
         navigraph.log.warning("SimBrief plan generation failed: %s", exc)
         return jsonify({"error": str(exc), "fallback": True}), 502
@@ -2999,7 +2999,48 @@ def simbrief_generate():
     # The OFP just made is the pilot's latest: a check right after reads it from here
     with _simbrief_lock:
         _simbrief_api_cache[user_id] = (time.monotonic(), data)
-    return jsonify({**ofp_summary(data), "source": "api"})
+    answer = {**ofp_summary(data), "source": "api"}
+    if dropped:
+        answer["warning"] = f"SIMBRIEF DID NOT ACCEPT THE {' AND '.join(dropped)}. OFP GENERATED WITHOUT THEM"
+    return jsonify(answer)
+
+
+# Plan settings SimBrief's API may refuse (it answered INTERNAL_ERROR to
+# one of them): after a refusal the plan is tried again without them, one
+# group at a time, and the pilot is told which ones it went without.
+SIMBRIEF_OPTIONAL_PARAMS = (
+    ("OFP LAYOUT", ("planformat",)),
+    ("OFP OPTIONS", ("units", "maps", "stepclimbs", "navlog", "etops", "tlr", "notams", "firnot")),
+    ("ALTERNATE", ("altn",)),
+)
+
+
+def _simbrief_generate_with_retries(token, params):
+    """(OFP, the groups of settings left out to get it). A refusal that
+    isn't the sign-in or the connection is retried without the optional
+    settings, a group more each time; the first refusal is raised if
+    none of that works."""
+    try:
+        return simbrief_api.generate(token, params), []
+    except simbrief_api.SimBriefError as exc:
+        if exc.reconnect or exc.status is None:
+            raise
+        refused = exc
+    attempt, dropped = dict(params), []
+    for label, keys in SIMBRIEF_OPTIONAL_PARAMS:
+        if not any(k in attempt for k in keys):
+            continue
+        attempt = {k: v for k, v in attempt.items() if k not in keys}
+        dropped.append(label)
+        try:
+            data = simbrief_api.generate(token, attempt)
+        except simbrief_api.SimBriefError as exc:
+            if exc.reconnect or exc.status is None:
+                raise
+            continue
+        navigraph.log.warning("SimBrief refused a plan (%s); generated without %s", refused, ", ".join(dropped))
+        return data, dropped
+    raise refused
 
 
 if __name__ == "__main__":

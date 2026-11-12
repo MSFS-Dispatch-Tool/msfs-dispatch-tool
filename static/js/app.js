@@ -3214,17 +3214,13 @@ function paintPlanOptions(flight, index) {
   const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
   const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.name)} &middot; ${fmtNum(a.nm)} NM${a.wx ? ' &middot; ' + ALTN_WX[a.wx.status][0] : ''}</option>`;
   const chosen = p.alternates.find(a => a.icao === p.altn);
-  const bases = p.alternates.filter(a => a.base), others = p.alternates.filter(a => !a.base);
   if (altEl) altEl.innerHTML = '<span class="sheet-k">ALTERNATE</span><span class="sheet-v">' + (p.alternates.length
     ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">
-        ${bases.length ? `<optgroup label="AIRLINE BASES">${bases.map(altnOption).join('')}</optgroup>` : ''}
-        ${others.length ? `<optgroup label="OTHER AIRLINE AIRPORTS">${others.map(altnOption).join('')}</optgroup>` : ''}
+        <optgroup label="AIRLINE BASES">${p.alternates.map(altnOption).join('')}</optgroup>
         <optgroup label="SIMBRIEF"><option value="AUTO"${p.altn === 'AUTO' ? ' selected' : ''}>SIMBRIEF CHOOSES</option></optgroup></select>
       ${p.altn === 'AUTO' ? '<span class="plan-note">SIMBRIEF PICKS THE ALTERNATE WHEN THE OFP IS GENERATED. ITS WEATHER IS NOT CHECKED</span>'
-        : chosen && chosen.wx ? `<span class="plan-wx ${ALTN_WX[chosen.wx.status][1]}">TAF ${escText(chosen.icao)}: ${escText(chosen.wx.text)}</span>
-          <span class="plan-note">PLANNING MINIMA 400 FT / 1350 M (CAT I ILS + 200 FT / 800 M), ETA &plusmn;1H</span>`
-        : `<span class="plan-note">AIRLINE AIRPORTS NEAR ${escText(flight.legs[index].arrival_info.icao)}, NEAREST BASE FIRST</span>`}`
-    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
+        : chosen && chosen.wx ? `<span class="plan-wx ${ALTN_WX[chosen.wx.status][1]}">TAF ${escText(chosen.icao)}: ${escText(chosen.wx.text)}</span>` : ''}`
+    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE BASE WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
   const o = p.ofp;
   if (ofpEl && o) ofpEl.innerHTML = `
       <div class="sheet-row plan-row"><span class="sheet-k">WEIGHTS</span><span class="sheet-v"><span class="plan-seg" role="radiogroup" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
@@ -3334,6 +3330,7 @@ async function sendToSimbrief(index) {
   state.aircraft_type_mismatch = await ofpAircraftTypeMismatch(fresh.legs[index], data);
   stopOfpWatch();
   showBriefingWithOfp(fresh);
+  if (data.warning) alert(data.warning);
 }
 
 // Fetches the leg's OFP. While waiting for the pilot to generate it the
