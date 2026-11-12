@@ -3115,10 +3115,6 @@ async function loadSimbriefAirframes(flight, index) {
   paintSimbriefAirframes(flight, index);
 }
 
-function simbriefApiAvailable(flight, index) {
-  const info = simbriefApiLegs[simbriefApiKey(flight, index)];
-  return !!(info && info.available);
-}
 function paintSimbriefAirframes(flight, index) {
   const el = document.getElementById('sbAirframe-' + index);
   const info = simbriefApiLegs[simbriefApiKey(flight, index)];
@@ -3129,7 +3125,6 @@ function paintSimbriefAirframes(flight, index) {
   el.innerHTML = `<span class="sheet-k">AIRFRAME</span><span class="sheet-v"><select id="sbAirframeSel-${index}" aria-label="Airframe" onchange="chooseSimbriefAirframe(${index}, this.value)">${options.join('')}</select></span>`;
   const note = document.getElementById('sbSendNote-' + index);
   if (note) note.textContent = 'OFP GENERATED ON SIMBRIEF WITH THESE SETTINGS. ROUTE, FUEL, WEIGHTS AND NOTAMS LOAD INTO BRIEFING';
-  paintPlanOptions(flight, index);
   paintNextBar();
 }
 
@@ -3230,9 +3225,7 @@ function paintPlanOptions(flight, index) {
   if (ofpEl && o) ofpEl.innerHTML = `
       <div class="sheet-row plan-row"><span class="sheet-k">WEIGHTS</span><span class="sheet-v"><span class="plan-seg" role="radiogroup" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
         `<label><input type="radio" name="sbUnits-${index}" value="${v}"${o.units === v ? ' checked' : ''} onchange="setOfpOption(${index}, 'units', this.value)"><span>${label}</span></label>`).join('')}</span></span></div>
-      ${p.layout ? `<div class="sheet-row plan-row"><span class="sheet-k">LAYOUT</span><span class="sheet-v"><span>${simbriefApiAvailable(flight, index)
-        ? '<b class="plan-fixed">SIMBRIEF ACCOUNT</b> <span class="plan-note">&middot; AS SET IN SIMBRIEF. NOT ACCEPTED THROUGH THE API</span>'
-        : `<b class="plan-fixed">${escText(p.layout)}</b> <span class="plan-note">&middot; ${p.layout === 'LIDO' ? 'SIMBRIEF STANDARD' : 'AIRLINE FORMAT'}</span>`}</span></span></div>` : ''}
+      ${p.layout ? `<div class="sheet-row plan-row"><span class="sheet-k">LAYOUT</span><span class="sheet-v"><span><b class="plan-fixed">${escText(p.layout)}</b> <span class="plan-note">&middot; ${p.layout === 'LIDO' ? 'SIMBRIEF STANDARD' : 'AIRLINE FORMAT'}</span></span></span></div>` : ''}
       ${OFP_GROUPS.map(([group, switches]) => `<div class="sheet-row plan-row"><span class="sheet-k">${group}</span><span class="sheet-v plan-switches">${switches.map(([k, label]) =>
         `<label class="plan-switch"><input type="checkbox" role="switch" data-opt="${k}"${o[k] ? ' checked' : ''} onchange="setOfpOption(${index}, '${k}', this.checked)"><span>${label}</span></label>`).join('')}</span></div>`).join('')}
       <div class="sheet-row plan-row plan-default"><span class="sheet-k"></span><span class="sheet-v" id="sbOfpSave-${index}">${ofpSaveHtml(index, o)}</span></div>`;

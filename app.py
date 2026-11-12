@@ -2982,12 +2982,12 @@ def simbrief_generate():
                              args.get("aircraft_type", default="", type=str).strip())
     if airframe:
         params["type"] = airframe
-    # The API refuses any OFP layout (INTERNAL_ERROR, for LIDO too, Nov
-    # 2026): the plan takes the layout set in the pilot's SimBrief account.
-    # The simbrief.com form takes the airline's.
-    params.pop("planformat", None)
+    # The airline's OFP layout: the API neither applies the layout set in
+    # the pilot's SimBrief account nor takes "planformat" (INTERNAL_ERROR,
+    # Nov 2026), so it goes in as _simbrief_generate_in_layout works out
+    layout = params.pop("planformat", None)
     try:
-        data, dropped = _simbrief_generate_with_retries(navigraph_access_token(user_id), params)
+        data, dropped, layout_missed = _simbrief_generate_in_layout(navigraph_access_token(user_id), params, layout)
     except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
         navigraph.log.warning("SimBrief plan generation failed: %s", exc)
         return jsonify({"error": str(exc), "fallback": True}), 502
@@ -3004,9 +3004,60 @@ def simbrief_generate():
     with _simbrief_lock:
         _simbrief_api_cache[user_id] = (time.monotonic(), data)
     answer = {**ofp_summary(data), "source": "api"}
+    warnings = []
+    if layout_missed:
+        warnings.append(f"OFP IN {layout_missed} LAYOUT: SIMBRIEF'S API DID NOT APPLY {layout}")
     if dropped:
-        answer["warning"] = f"SIMBRIEF DID NOT ACCEPT THE {' AND '.join(dropped)}. OFP GENERATED WITHOUT THEM"
+        warnings.append(f"SIMBRIEF DID NOT ACCEPT THE {' AND '.join(dropped)}. OFP GENERATED WITHOUT THEM")
+    if warnings:
+        answer["warning"] = ". ".join(warnings)
     return jsonify(answer)
+
+
+# How SimBrief's API takes an OFP layout isn't documented, and the
+# classic "planformat" makes it fail. The plans it returns name their
+# layout "ofp_layout", so that is tried first, then "layout"; each plan
+# that comes back is checked for the layout asked for. The first field
+# that works is used from then on; one refused or ignored is not tried
+# again while the app runs. LIDO is the API's own default: nothing to send.
+SIMBRIEF_LAYOUT_FIELDS = ("ofp_layout", "layout")
+_simbrief_layout_field = {"good": None, "bad": set()}
+
+
+def _ofp_layout(data):
+    p = data.get("params") if isinstance(data, dict) else None
+    return str((p if isinstance(p, dict) else {}).get("ofp_layout") or "").upper()
+
+
+def _simbrief_generate_in_layout(token, params, layout):
+    """(OFP, the groups of settings left out, the layout the OFP came in
+    when it isn't the one asked for, or "")."""
+    known = _simbrief_layout_field
+    if layout and layout != simbrief_api.DEFAULT_LAYOUT:
+        fields = [known["good"]] if known["good"] else [f for f in SIMBRIEF_LAYOUT_FIELDS if f not in known["bad"]]
+        ignored = None
+        for field in fields:
+            try:
+                data = simbrief_api.generate(token, {**params, field: layout})
+            except simbrief_api.SimBriefError as exc:
+                if exc.reconnect or exc.status is None:
+                    raise
+                navigraph.log.warning("SimBrief refused the OFP layout as %s: %s", field, exc)
+                known["good"] = None
+                known["bad"].add(field)
+                continue
+            if _ofp_layout(data) == layout:
+                known["good"] = field
+                return data, [], ""
+            navigraph.log.warning("SimBrief ignored the OFP layout as %s: plan in %s", field, _ofp_layout(data))
+            known["good"] = None
+            known["bad"].add(field)
+            ignored = data
+        if ignored is not None:
+            return ignored, [], _ofp_layout(ignored) or "SIMBRIEF'S"
+    data, dropped = _simbrief_generate_with_retries(token, params)
+    applied = _ofp_layout(data)
+    return data, dropped, applied if layout and applied and applied != layout else ""
 
 
 # Plan settings SimBrief's API may refuse (it answers INTERNAL_ERROR to

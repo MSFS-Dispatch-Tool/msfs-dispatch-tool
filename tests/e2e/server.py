@@ -232,6 +232,7 @@ def scenario_simbrief():
         frame = next((a for a in SIMBRIEF_AIRFRAMES if a["airframe_internal_id"] == params["type"]), None)
         ofp["origin"]["icao_code"], ofp["destination"]["icao_code"] = params["orig"], params["dest"]
         ofp["params"]["static_id"] = params.get("static_id", "")
+        ofp["params"]["ofp_layout"] = params.get("ofp_layout", "LIDO")         # the API's default layout
         ofp["aircraft"]["icao_code"] = frame["airframe_icao"] if frame else params["type"]
         ofp["aircraft"]["reg"] = frame["airframe_registration"] if frame else "N320SB"
         return ofp
@@ -239,7 +240,7 @@ def scenario_simbrief():
     app.app.add_url_rule("/__simbrief/last", "fake_simbrief_last", lambda: flask.jsonify(seen["last"]))
 
     def refuse():
-        seen["refuse"] = 1 + len(app.SIMBRIEF_OPTIONAL_PARAMS)
+        seen["refuse"] = len(app.SIMBRIEF_LAYOUT_FIELDS) + 1 + len(app.SIMBRIEF_OPTIONAL_PARAMS)
         return flask.jsonify({"ok": True})
     app.app.add_url_rule("/__simbrief/refuse", "fake_simbrief_refuse", refuse, methods=["POST"])
 

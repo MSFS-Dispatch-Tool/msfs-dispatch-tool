@@ -155,7 +155,15 @@ def generating(app_module, connected, monkeypatch):
     monkeypatch.setattr(app_module.db, "save_simbrief", lambda p, user: prefs.update(p))
     app_module._simbrief_airframes_cache.clear()
     app_module._simbrief_last_generate.clear()
+    monkeypatch.setattr(app_module, "_simbrief_layout_field", {"good": None, "bad": set()})
     return prefs
+
+
+def plan_in(layout):
+    """SimBrief's answer: a plan in this OFP layout."""
+    data = json.loads(json.dumps(API_SAMPLE))
+    data["params"]["ofp_layout"] = layout
+    return Posted(data, 200)
 
 
 def test_the_departure_time_goes_inside_the_date():
@@ -222,19 +230,51 @@ def test_send_to_simbrief_generates_the_plan_with_the_chosen_airframe(client, ap
     assert client.get("/simbrief/ofp").get_json()["source"] == "api" and fake_simbrief[0] == []
 
 
-def test_a_refused_plan_is_tried_again_without_the_optional_settings(client, generating, fake_generate):
+def test_the_airline_layout_goes_in_as_ofp_layout(client, app_module, generating, fake_generate):
+    calls, _ = fake_generate
+    got = client.post("/simbrief/generate", json=LEG).get_json()        # easyJet: EZY, and the plan comes back in EZY
+    assert "warning" not in got and len(calls) == 1
+    assert calls[0]["data"]["ofp_layout"] == "EZY" and "planformat" not in calls[0]["data"]
+    assert app_module._simbrief_layout_field["good"] == "ofp_layout"
+
+
+def test_a_layout_field_simbrief_refuses_or_ignores_is_not_tried_again(client, app_module, generating, fake_generate):
     calls, replies = fake_generate
-    replies += [Posted({"error": "INTERNAL_ERROR"}, 500), Posted({"error": "INTERNAL_ERROR"}, 500)]   # then a plan
-    got = client.post("/simbrief/generate", json={**LEG, "altn": "EGPF"}).get_json()
+    replies += [Posted({"error": "INTERNAL_ERROR"}, 500), plan_in("EZY")]
+    assert "warning" not in client.post("/simbrief/generate", json=LEG).get_json()
+    assert [("ofp_layout" in c["data"], "layout" in c["data"]) for c in calls] == [(True, False), (False, True)]
+    app_module._simbrief_last_generate.clear()
+    client.post("/simbrief/generate", json=LEG)
+    assert "layout" in calls[-1]["data"] and len(calls) == 3                 # straight to the field that works
+
+
+def test_without_a_layout_field_that_works_the_plan_says_so(client, app_module, generating, fake_generate):
+    calls, replies = fake_generate
+    replies += [plan_in("LIDO"), plan_in("LIDO")]                          # both fields ignored
+    got = client.post("/simbrief/generate", json=LEG).get_json()
+    assert got["warning"] == "OFP IN LIDO LAYOUT: SIMBRIEF'S API DID NOT APPLY EZY" and len(calls) == 2
+    app_module._simbrief_last_generate.clear()
+    replies.append(plan_in("LIDO"))
+    got = client.post("/simbrief/generate", json=LEG).get_json()
+    assert len(calls) == 3 and "ofp_layout" not in calls[-1]["data"] and "layout" not in calls[-1]["data"]
+    assert got["warning"].startswith("OFP IN LIDO LAYOUT")
+
+
+def test_a_refused_plan_is_tried_again_without_the_optional_settings(client, app_module, generating, fake_generate):
+    calls, replies = fake_generate
+    replies += [Posted({"error": "INTERNAL_ERROR"}, 500), Posted({"error": "INTERNAL_ERROR"}, 500), plan_in("LIDO")]
+    ryanair = next(r["flight_number"] for r in app_module.routes if r["carrier"] == "RYR")         # LIDO: no layout sent
+    got = client.post("/simbrief/generate", json={**LEG, "flights": ryanair, "aircraft_type": "738", "altn": "EGPF"}).get_json()
     assert got["source"] == "api" and got["warning"] == "SIMBRIEF DID NOT ACCEPT THE OFP OPTIONS AND ALTERNATE. OFP GENERATED WITHOUT THEM"
     sent = [c["data"] for c in calls]
-    assert not any("planformat" in s for s in sent)                       # never through the API
+    assert not any("planformat" in s or "ofp_layout" in s for s in sent)
     assert "maps" in sent[0] and "maps" not in sent[1] and sent[1]["altn"] == "EGPF" and "altn" not in sent[2]
 
 
 def test_a_refused_generation_falls_back_to_simbrief_com(client, app_module, generating, fake_generate):
     _, replies = fake_generate
-    replies += [Posted({"error": "Invalid aircraft type"}, 400)] * (1 + len(app_module.SIMBRIEF_OPTIONAL_PARAMS))
+    replies += [Posted({"error": "Invalid aircraft type"}, 400)] * (
+        len(app_module.SIMBRIEF_LAYOUT_FIELDS) + 1 + len(app_module.SIMBRIEF_OPTIONAL_PARAMS))
     resp = client.post("/simbrief/generate", json={**LEG, "airframe": "100_9"})
     assert resp.status_code == 502 and resp.get_json()["fallback"] and "INVALID AIRCRAFT TYPE" in resp.get_json()["error"]
     assert generating == {}                                                     # nothing remembered
