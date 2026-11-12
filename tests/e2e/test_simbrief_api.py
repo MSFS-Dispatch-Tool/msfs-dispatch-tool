@@ -66,9 +66,9 @@ async def main():
               altns[0] == "EGAA BELFAST · 12 NM · BASE" and any(a.startswith("EGPF GLASGOW") for a in altns), altns)
         ofp = await page.inner_text("#sbOfp-0")
         check("OFP options start in KG with flight maps on and stepclimbs off",
-              await page.eval_on_selector("#sbUnits-0", "s => s.value") == "KGS"
+              await page.eval_on_selector("input[name=sbUnits-0]:checked", "r => r.value") == "KGS"
               and await page.is_checked("[data-opt=maps]") and not await page.is_checked("[data-opt=stepclimbs]")
-              and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp, ofp)
+              and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp and "LAYOUT\nEZY" in ofp, ofp)
         await page.select_option("#sbAltnSel-0", "EGPF")
         await page.check("[data-opt=stepclimbs]"); await page.wait_for_timeout(300)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))

@@ -85,6 +85,7 @@ def test_plan_options_offer_alternates_and_keep_the_pilots_ofp_options(client, a
     monkeypatch.setattr(app_module.db, "save_simbrief", lambda p, user: stored.update(p))
     got = client.get("/simbrief/plan-options?flight=U2765").get_json()
     assert got["alternates"][0]["icao"] == "EGAA" and got["options"]["units"] == "KGS" and not got["options"]["stepclimbs"]
+    assert got["layout"] == "EZY"
     client.post("/simbrief/plan-options", json={"options": {"units": "LBS", "stepclimbs": True, "maps": False}})
     got = client.get("/simbrief/plan-options?flight=U2765").get_json()["options"]
     assert (got["units"], got["stepclimbs"], got["maps"], got["notams"]) == ("LBS", True, False, True)

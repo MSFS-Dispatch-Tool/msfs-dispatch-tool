@@ -2888,7 +2888,8 @@ def simbrief_plan_options():
     if route_leg is None:
         return jsonify({"error": "UNKNOWN FLIGHT"}), 400
     saved = prefs.get("ofp_options") if isinstance(prefs.get("ofp_options"), dict) else {}
-    return jsonify({"alternates": leg_alternates(route_leg), "options": ofp_options(saved)})
+    return jsonify({"alternates": leg_alternates(route_leg), "options": ofp_options(saved),
+                    "layout": simbrief_api.plan_format(carrier_for(route_leg)["icao"])})
 
 
 @app.route("/atis/runways")
