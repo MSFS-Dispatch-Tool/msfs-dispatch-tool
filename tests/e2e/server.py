@@ -213,6 +213,15 @@ def scenario_simbrief():
     sent; POST /__simbrief/refuse makes the next generation fail."""
     seen = {"last": None, "refuse": False}
     simbrief_api.user_airframes = lambda token: SIMBRIEF_AIRFRAMES
+    # Belfast City's alternates: Belfast International in fog all day,
+    # Glasgow clear (TAFs valid from today 00Z to tomorrow 24Z)
+    today, tomorrow = datetime.now(timezone.utc), datetime.now(timezone.utc) + timedelta(days=1)
+    valid = f"{today:%d}00/{tomorrow:%d}24"
+    alternate_tafs = {"EGAA": f"TAF EGAA {today:%d}0000Z {valid} 24008KT 9999 SCT030 TEMPO {valid} 0400 FG VV002",
+                      "EGPF": f"TAF EGPF {today:%d}0000Z {valid} 24010KT 9999 FEW030"}
+    weather = app.fetch_weather_batch
+    app.fetch_weather_batch = lambda icaos: {
+        i: ({**wx, "taf": alternate_tafs[i]} if i in alternate_tafs else wx) for i, wx in weather(icaos).items()}
 
     def generate(token, params):
         seen["last"] = dict(params)

@@ -25,6 +25,7 @@ import notams
 import acars
 import alternates
 import atis
+import taf
 import monitoring
 import navigraph
 import ops
@@ -2148,6 +2149,21 @@ def _simbrief_dispatch_params(args):
 
 REMARKS_MAX_CHARS = 2500
 
+# Time at a destination alternate: a missed approach, then the diversion
+# at about 300 kt
+ALTN_MISSED_APPROACH_MINUTES = 10
+ALTN_NM_PER_MINUTE = 5
+
+
+def _zulu_today(value):
+    """A leg time as the app shows it ("15:49Z", "00:20Z (+1d)") as a UTC
+    datetime, counted from today; None when it isn't one."""
+    m = re.match(r"^(\d{2}):(\d{2})Z(?: \(([+-]?\d+)d\))?$", (value or "").strip())
+    if not m:
+        return None
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    return today + timedelta(days=int(m.group(3) or 0), hours=int(m.group(1)), minutes=int(m.group(2)))
+
 # The pilot's OFP options, each a SimBrief dispatch option of the same name
 # (maps: detailed flight maps, or none), with the defaults used until the
 # pilot changes them. Weights in KGS unless the pilot chooses LBS.
@@ -2876,8 +2892,10 @@ def simbrief_airframes():
 
 @app.route("/simbrief/plan-options", methods=["GET", "POST"])
 def simbrief_plan_options():
-    """GET: the destination alternates offered for a leg (?flight=), the
-    OFP layout, and the pilot's default OFP options. POST {"options":
+    """GET: the destination alternates offered for a leg (?flight=), each
+    with its TAF checked against planning minima around the time the
+    aircraft would get there (from the leg's ELDT, ?eldt=15:49Z), the OFP
+    layout, and the pilot's default OFP options. POST {"options":
     {...}}: saves them as the pilot's defaults (SAVE AS DEFAULT)."""
     user_id = current_user_id()
     prefs = db.get_simbrief(user_id) if db.db_available() else {}
@@ -2891,7 +2909,14 @@ def simbrief_plan_options():
     if route_leg is None:
         return jsonify({"error": "UNKNOWN FLIGHT"}), 400
     saved = prefs.get("ofp_options") if isinstance(prefs.get("ofp_options"), dict) else {}
-    return jsonify({"alternates": leg_alternates(route_leg), "options": ofp_options(saved),
+    offered = leg_alternates(route_leg)
+    eldt = _zulu_today(request.args.get("eldt", default="", type=str))
+    if offered and eldt:
+        weather = fetch_weather_batch([a["icao"] for a in offered])
+        for a in offered:
+            eta = eldt + timedelta(minutes=ALTN_MISSED_APPROACH_MINUTES + a["nm"] / ALTN_NM_PER_MINUTE)
+            a["wx"] = taf.assess((weather.get(a["icao"]) or {}).get("taf"), eta)
+    return jsonify({"alternates": offered, "options": ofp_options(saved),
                     "layout": simbrief_api.plan_format(carrier_for(route_leg)["icao"])})
 
 
