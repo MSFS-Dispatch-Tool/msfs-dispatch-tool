@@ -226,10 +226,10 @@ def test_a_refused_plan_is_tried_again_without_the_optional_settings(client, gen
     calls, replies = fake_generate
     replies += [Posted({"error": "INTERNAL_ERROR"}, 500), Posted({"error": "INTERNAL_ERROR"}, 500)]   # then a plan
     got = client.post("/simbrief/generate", json={**LEG, "altn": "EGPF"}).get_json()
-    assert got["source"] == "api" and got["warning"] == "SIMBRIEF DID NOT ACCEPT THE OFP LAYOUT AND OFP OPTIONS. OFP GENERATED WITHOUT THEM"
+    assert got["source"] == "api" and got["warning"] == "SIMBRIEF DID NOT ACCEPT THE OFP OPTIONS AND ALTERNATE. OFP GENERATED WITHOUT THEM"
     sent = [c["data"] for c in calls]
-    assert "planformat" in sent[0] and "planformat" not in sent[1] and "maps" in sent[1]
-    assert "maps" not in sent[2] and "units" not in sent[2] and sent[2]["altn"] == "EGPF"
+    assert not any("planformat" in s for s in sent)                       # never through the API
+    assert "maps" in sent[0] and "maps" not in sent[1] and sent[1]["altn"] == "EGPF" and "altn" not in sent[2]
 
 
 def test_a_refused_generation_falls_back_to_simbrief_com(client, app_module, generating, fake_generate):

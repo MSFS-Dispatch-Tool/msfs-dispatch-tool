@@ -80,7 +80,7 @@ async def main():
         check("OFP options start in KG with flight maps on and stepclimbs off",
               await page.eval_on_selector("input[name=sbUnits-0]:checked", "r => r.value") == "KGS"
               and await page.is_checked("[data-opt=maps]") and not await page.is_checked("[data-opt=stepclimbs]")
-              and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp and "LAYOUT\nEZY" in ofp, ofp)
+              and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp and "LAYOUT\nSIMBRIEF ACCOUNT" in ofp, ofp)
         await page.select_option("#sbAltnSel-0", "EGPF")
         await page.check("[data-opt=stepclimbs]")
         check("SAVE AS DEFAULT is offered once an option differs from the defaults", await page.is_enabled("#sbOfpSaveBtn-0"))
@@ -98,8 +98,8 @@ async def main():
               sent["type"] == info["selected"] and sent["orig"] == leg["departure_info"]["icao"]
               and sent["dest"] == leg["arrival_info"]["icao"] and sent["static_id"] == state["simbrief_static_id"], sent)
         check("the ATIS runway goes into the plan, none where there's no ATIS", sent.get("origrwy") == "08R" and "destrwy" not in sent, sent)
-        check("the chosen alternate, easyJet's layout and the OFP options go into the plan",
-              sent.get("altn") == "EGPF" and sent.get("planformat") == "EZY" and sent.get("units") == "KGS"
+        check("the chosen alternate and the OFP options go into the plan; the layout is left to the SimBrief account",
+              sent.get("altn") == "EGPF" and "planformat" not in sent and sent.get("units") == "KGS"
               and sent.get("maps") == "detail" and str(sent.get("stepclimbs")) == "1" and str(sent.get("notams")) == "1", sent)
         check("the departure time goes inside the date", sent["date"].endswith(" - " + leg["eobt"][:5]) and "deph" not in sent,
               (sent["date"], leg["eobt"]))
