@@ -2982,6 +2982,10 @@ def simbrief_generate():
                              args.get("aircraft_type", default="", type=str).strip())
     if airframe:
         params["type"] = airframe
+    # The API refuses any OFP layout (INTERNAL_ERROR, for LIDO too, Nov
+    # 2026): the plan takes the layout set in the pilot's SimBrief account.
+    # The simbrief.com form takes the airline's.
+    params.pop("planformat", None)
     try:
         data, dropped = _simbrief_generate_with_retries(navigraph_access_token(user_id), params)
     except (navigraph.NavigraphError, simbrief_api.SimBriefError) as exc:
@@ -3005,11 +3009,11 @@ def simbrief_generate():
     return jsonify(answer)
 
 
-# Plan settings SimBrief's API may refuse (it answered INTERNAL_ERROR to
-# one of them): after a refusal the plan is tried again without them, one
-# group at a time, and the pilot is told which ones it went without.
+# Plan settings SimBrief's API may refuse (it answers INTERNAL_ERROR to
+# settings it doesn't take, as it does to an OFP layout): after a refusal
+# the plan is tried again without them, one group at a time, and the pilot
+# is told which ones it went without.
 SIMBRIEF_OPTIONAL_PARAMS = (
-    ("OFP LAYOUT", ("planformat",)),
     ("OFP OPTIONS", ("units", "maps", "stepclimbs", "navlog", "etops", "tlr", "notams", "firnot")),
     ("ALTERNATE", ("altn",)),
 )
