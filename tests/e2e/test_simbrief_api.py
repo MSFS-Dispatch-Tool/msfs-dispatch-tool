@@ -62,15 +62,23 @@ async def main():
         await page.select_option("#sbRunwaySel-0", "vatsim"); await page.wait_for_timeout(500)
         await page.wait_for_selector("#sbAltnSel-0")
         altns = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 option')].map(o => o.textContent.toUpperCase())")
-        check("ALTERNATE offers easyJet's airports near Belfast City, its bases first",
-              altns[0] == "EGAA BELFAST · 12 NM · BASE" and any(a.startswith("EGPF GLASGOW") for a in altns), altns)
+        groups = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 optgroup')].map(g => g.label)")
+        check("ALTERNATE offers easyJet's airports near Belfast City, nearest base first, or SimBrief's choice",
+              altns[0] == "EGAA BELFAST · 12 NM" and any(a.startswith("EGPF GLASGOW") for a in altns)
+              and altns[-1] == "SIMBRIEF CHOOSES" and groups[0] == "AIRLINE BASES" and groups[-1] == "SIMBRIEF", (altns, groups))
         ofp = await page.inner_text("#sbOfp-0")
         check("OFP options start in KG with flight maps on and stepclimbs off",
               await page.eval_on_selector("input[name=sbUnits-0]:checked", "r => r.value") == "KGS"
               and await page.is_checked("[data-opt=maps]") and not await page.is_checked("[data-opt=stepclimbs]")
               and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp and "LAYOUT\nEZY" in ofp, ofp)
         await page.select_option("#sbAltnSel-0", "EGPF")
-        await page.check("[data-opt=stepclimbs]"); await page.wait_for_timeout(300)
+        await page.check("[data-opt=stepclimbs]")
+        check("a changed option applies to this plan only until it's saved as default",
+              "CHANGED FOR THIS PLAN ONLY" in await page.inner_text("#sbOfpSave-0") and await page.is_enabled("#sbOfpSaveBtn-0"))
+        await page.click("#sbOfpSaveBtn-0"); await page.wait_for_selector("#sbOfpSaveBtn-0:disabled")
+        check("SAVE AS DEFAULT keeps the options for the next plans",
+              "SAVED" in await page.inner_text("#sbOfpSave-0")
+              and (await page.evaluate("fetch('/simbrief/plan-options?flight=U2803').then(r => r.json())"))["options"]["stepclimbs"] is True)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
         await page.click("#afNextBtn")
@@ -109,9 +117,7 @@ async def main():
         await page.wait_for_function("loadActiveFlight().leg_state[0].simbrief === 'sent'", timeout=10000)
         sent = json.load(urllib.request.urlopen(BASE + "/__simbrief/last"))
         check("SimBrief's standard aircraft is sent by its type", sent["type"] == info["type"], sent["type"])
-        check("the OFP options are kept for the next flights",
-              (await page.evaluate("fetch('/simbrief/plan-options?flight=U2803').then(r => r.json())"))["options"]["stepclimbs"] is True)
-        await page.evaluate("setOfpOption('stepclimbs', false)")                                 # back to the defaults
+        await page.evaluate("fetch('/simbrief/plan-options', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({options: {stepclimbs: false}})})")   # back to the defaults
         check("a refusal says why and opens SimBrief instead",
               alerts and "INVALID AIRCRAFT TYPE" in alerts[-1] and "OPENING SIMBRIEF" in alerts[-1] and len(popups) == 1, alerts)
         check.done(page)

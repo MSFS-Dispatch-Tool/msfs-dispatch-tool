@@ -3067,9 +3067,10 @@ function simbriefLegOptions(flight, index, staticId) {
   if (rwy && rwy.arr) options.arr_rwy = rwy.arr.rwy;
   const plan = planOptions[simbriefApiKey(flight, index)];
   if (plan && plan.altn) options.altn = plan.altn;
-  if (ofpOptions) {
-    options.units = ofpOptions.units;
-    OFP_SWITCHES.forEach(([k]) => { options[k] = ofpOptions[k] ? 1 : 0; });
+  const ofp = (plan && plan.ofp) || ofpDefaults;
+  if (ofp) {
+    options.units = ofp.units;
+    OFP_SWITCHES.forEach(([k]) => { options[k] = ofp[k] ? 1 : 0; });
   }
   return options;
 }
@@ -3178,8 +3179,11 @@ async function chooseAircraftType(index, type) {
 // ---- ALTERNATE and OFP options (/simbrief/plan-options). The alternate is
 // chosen per leg among the airline's own airports near the destination,
 // its bases first; the OFP options are the pilot's, kept for every flight. ----
-const planOptions = {};   // per leg: {alternates, altn, error}
-let ofpOptions = null;    // {units, maps, stepclimbs, navlog, etops, tlr, notams, firnot}
+// Per leg: {alternates, altn ('AUTO': SimBrief chooses), layout, ofp, error}.
+// The OFP options start from the pilot's defaults; a change applies to that
+// leg's plan only, until SAVE AS DEFAULT.
+const planOptions = {};
+let ofpDefaults = null;   // {units, maps, stepclimbs, navlog, etops, tlr, notams, firnot}
 // The switches, in the rows they appear in
 const OFP_GROUPS = [['NAVLOG', [['navlog', 'DETAILED NAVLOG'], ['maps', 'FLIGHT MAPS'], ['stepclimbs', 'PLAN STEPCLIMBS']]],
   ['PERFORMANCE', [['tlr', 'RUNWAY ANALYSIS'], ['etops', 'ETOPS PLANNING']]],
@@ -3192,10 +3196,10 @@ async function loadPlanOptions(flight, index) {
       const r = await (await fetch('/simbrief/plan-options?' + new URLSearchParams({ flight: flight.legs[index].flight_number }))).json();
       if (r.error) throw new Error(r.error);
       const alternates = r.alternates || [];
-      planOptions[key] = { alternates, altn: alternates.length ? alternates[0].icao : '', layout: r.layout || '' };
-      if (!ofpOptions) ofpOptions = r.options;
+      if (!ofpDefaults) ofpDefaults = r.options;
+      planOptions[key] = { alternates, altn: alternates.length ? alternates[0].icao : 'AUTO', layout: r.layout || '', ofp: { ...ofpDefaults } };
     } catch (e) {
-      planOptions[key] = { alternates: [], altn: '', error: true };
+      planOptions[key] = { alternates: [], altn: 'AUTO', error: true, ofp: ofpDefaults ? { ...ofpDefaults } : null };
     }
   }
   paintPlanOptions(flight, index);
@@ -3203,31 +3207,56 @@ async function loadPlanOptions(flight, index) {
 function paintPlanOptions(flight, index) {
   const p = planOptions[simbriefApiKey(flight, index)]; if (!p) return;
   const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
+  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.city)} &middot; ${fmtNum(a.nm)} NM</option>`;
+  const bases = p.alternates.filter(a => a.base), others = p.alternates.filter(a => !a.base);
   if (altEl) altEl.innerHTML = '<span class="sheet-k">ALTERNATE</span><span class="sheet-v">' + (p.alternates.length
-    ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">${p.alternates.map(a =>
-      `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.city)} &middot; ${fmtNum(a.nm)} NM${a.base ? ' &middot; BASE' : ''}</option>`).join('')}</select>
-      <span class="plan-note">AIRLINE AIRPORTS NEAR ${escText(flight.legs[index].arrival_info.icao)}, BASES FIRST</span>`
-    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO COMPANY AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
-  if (ofpEl && ofpOptions) ofpEl.innerHTML = `
+    ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">
+        ${bases.length ? `<optgroup label="AIRLINE BASES">${bases.map(altnOption).join('')}</optgroup>` : ''}
+        ${others.length ? `<optgroup label="OTHER AIRLINE AIRPORTS">${others.map(altnOption).join('')}</optgroup>` : ''}
+        <optgroup label="SIMBRIEF"><option value="AUTO"${p.altn === 'AUTO' ? ' selected' : ''}>SIMBRIEF CHOOSES</option></optgroup></select>
+      <span class="plan-note">${p.altn === 'AUTO' ? 'SIMBRIEF PICKS THE ALTERNATE WHEN THE OFP IS GENERATED' : `AIRLINE AIRPORTS NEAR ${escText(flight.legs[index].arrival_info.icao)}, NEAREST BASE FIRST`}</span>`
+    : `<span class="plan-note">${p.error ? 'ALTERNATES NOT AVAILABLE' : 'NO AIRLINE AIRPORT WITHIN 350 NM'}. SIMBRIEF CHOOSES</span>`) + '</span>';
+  const o = p.ofp;
+  if (ofpEl && o) ofpEl.innerHTML = `
       <div class="sheet-row plan-row"><span class="sheet-k">WEIGHTS</span><span class="sheet-v"><span class="plan-seg" role="radiogroup" aria-label="OFP weight units">${[['KGS', 'KG'], ['LBS', 'LB']].map(([v, label]) =>
-        `<label><input type="radio" name="sbUnits-${index}" value="${v}"${ofpOptions.units === v ? ' checked' : ''} onchange="setOfpOption('units', this.value)"><span>${label}</span></label>`).join('')}</span></span></div>
+        `<label><input type="radio" name="sbUnits-${index}" value="${v}"${o.units === v ? ' checked' : ''} onchange="setOfpOption(${index}, 'units', this.value)"><span>${label}</span></label>`).join('')}</span></span></div>
       ${p.layout ? `<div class="sheet-row plan-row"><span class="sheet-k">LAYOUT</span><span class="sheet-v"><span><b class="plan-fixed">${escText(p.layout)}</b> <span class="plan-note">&middot; ${p.layout === 'LIDO' ? 'SIMBRIEF STANDARD' : 'AIRLINE FORMAT'}</span></span></span></div>` : ''}
       ${OFP_GROUPS.map(([group, switches]) => `<div class="sheet-row plan-row"><span class="sheet-k">${group}</span><span class="sheet-v plan-switches">${switches.map(([k, label]) =>
-        `<label class="plan-switch"><input type="checkbox" role="switch" data-opt="${k}"${ofpOptions[k] ? ' checked' : ''} onchange="setOfpOption('${k}', this.checked)"><span>${label}</span></label>`).join('')}</span></div>`).join('')}`;
+        `<label class="plan-switch"><input type="checkbox" role="switch" data-opt="${k}"${o[k] ? ' checked' : ''} onchange="setOfpOption(${index}, '${k}', this.checked)"><span>${label}</span></label>`).join('')}</span></div>`).join('')}
+      <div class="sheet-row plan-row plan-default"><span class="sheet-k"></span><span class="sheet-v" id="sbOfpSave-${index}">${ofpSaveHtml(index, o)}</span></div>`;
+}
+function ofpIsDefault(o) { return !!ofpDefaults && Object.keys(ofpDefaults).every(k => ofpDefaults[k] === o[k]); }
+function ofpSaveHtml(index, o, note) {
+  const same = ofpIsDefault(o);
+  return `<span class="plan-save"><button class="ghost" type="button" id="sbOfpSaveBtn-${index}" onclick="saveOfpDefaults(${index})"${same ? ' disabled' : ''}>SAVE AS DEFAULT</button>
+    <span class="plan-note">${note || (same ? 'YOUR DEFAULT OPTIONS' : 'CHANGED FOR THIS PLAN ONLY')}</span></span>`;
 }
 function choosePlanAltn(index, icao) {
   const flight = loadActiveFlight(); if (!flight) return;
   const p = planOptions[simbriefApiKey(flight, index)];
-  if (p) p.altn = icao;
+  if (p) { p.altn = icao; paintPlanOptions(flight, index); }
 }
-async function setOfpOption(key, value) {
-  ofpOptions = { ...ofpOptions, [key]: value };
+function setOfpOption(index, key, value) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p || !p.ofp) return;
+  p.ofp = { ...p.ofp, [key]: value };
+  const el = document.getElementById('sbOfpSave-' + index);
+  if (el) el.innerHTML = ofpSaveHtml(index, p.ofp);
+}
+async function saveOfpDefaults(index) {
+  const flight = loadActiveFlight(); if (!flight) return;
+  const p = planOptions[simbriefApiKey(flight, index)]; if (!p || !p.ofp) return;
+  const el = document.getElementById('sbOfpSave-' + index);
   try {
     const r = await (await fetch('/simbrief/plan-options', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ options: ofpOptions })
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ options: p.ofp })
     })).json();
-    if (r.options) ofpOptions = r.options;
-  } catch (e) { /* kept for this session; saved again with the next change */ }
+    if (!r.options) throw new Error();
+    ofpDefaults = r.options;
+    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp, 'SAVED. USED FOR EVERY NEW PLAN');
+  } catch (e) {
+    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp, 'NOT SAVED. CHECK CONNECTION, THEN RETRY');
+  }
 }
 
 // ---- RUNWAYS: from the ATIS of the network the pilot flies on (see

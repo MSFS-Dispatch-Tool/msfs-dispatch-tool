@@ -76,6 +76,7 @@ def test_the_pilots_choices_reach_simbrief(client):
     got = sent(client, "&flights=U2765&aircraft_type=320&altn=EGPF&units=LBS&maps=0&stepclimbs=1&notams=0")
     assert (got["altn"], got["units"], got["maps"], got["stepclimbs"], got["notams"]) == ("EGPF", "LBS", "none", "1", "0")
     assert sent(client, "&flights=U2765&aircraft_type=320&altn=EGAC")["altn"] != "EGAC"     # never the destination
+    assert "altn" not in sent(client, "&flights=U2765&aircraft_type=320&altn=AUTO")         # SimBrief chooses
 
 
 def test_plan_options_offer_alternates_and_keep_the_pilots_ofp_options(client, app_module, monkeypatch):

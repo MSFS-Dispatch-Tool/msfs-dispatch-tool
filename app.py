@@ -2124,10 +2124,12 @@ def _simbrief_dispatch_params(args):
         if atis.RUNWAY_RE.match(rwy):
             params[key] = rwy
     # The destination alternate the pilot chose from the airline's own
-    # airports (/simbrief/plan-options); without one, the first offered.
-    # Never left to SimBrief.
+    # airports (/simbrief/plan-options), or AUTO to leave it to SimBrief;
+    # without a choice, the first offered.
     altn = args.get("altn", default="", type=str).strip().upper()
-    if not atis.ICAO_RE.match(altn) or altn == params["dest"]:
+    if altn == "AUTO":
+        altn = ""
+    elif not atis.ICAO_RE.match(altn) or altn == params["dest"]:
         offered = leg_alternates(route_leg)
         altn = offered[0]["icao"] if offered else ""
     if altn:
@@ -2873,9 +2875,9 @@ def simbrief_airframes():
 
 @app.route("/simbrief/plan-options", methods=["GET", "POST"])
 def simbrief_plan_options():
-    """GET: the destination alternates offered for a leg (?flight=), and
-    the pilot's OFP options. POST {"options": {...}}: saves the pilot's OFP
-    options for the next flights."""
+    """GET: the destination alternates offered for a leg (?flight=), the
+    OFP layout, and the pilot's default OFP options. POST {"options":
+    {...}}: saves them as the pilot's defaults (SAVE AS DEFAULT)."""
     user_id = current_user_id()
     prefs = db.get_simbrief(user_id) if db.db_available() else {}
     if request.method == "POST":

@@ -1,7 +1,8 @@
 """Destination alternates for the SimBrief plan, offered by the app instead
 of left to SimBrief: airports the leg's airline serves (so suitable for its
-aircraft and handled by the company), within reach of the destination, the
-airline's bases first, then by distance.
+aircraft and handled by the company), within reach of the destination: the
+nearest of the airline's bases, then the nearest of its other airports.
+The pilot can also leave the choice to SimBrief.
 
 A base is an airport the airline flies many departures from in the
 schedule data: at least BASE_SHARE of its busiest airport's departures,
@@ -15,7 +16,7 @@ MIN_NM = 10          # closer is the same aerodrome area: no alternate
 MAX_NM = 200         # usual reach of a short-haul destination alternate
 EXTENDED_NM = 350    # only when nothing is within MAX_NM
 BASE_SHARE = 0.15
-LIMIT = 6
+SHOWN = 5            # bases, and other airports, offered at most
 
 
 def departures_by_airline(routes):
@@ -34,8 +35,9 @@ def bases(departures):
 
 
 def alternates(dest_icao, departures, airports_by_icao):
-    """Up to LIMIT alternates for a destination, best first: [{"icao",
-    "city", "nm", "base"}]. Empty when the airline serves nothing in reach."""
+    """The alternates for a destination, best first: up to SHOWN bases by
+    distance, then up to SHOWN other airports by distance: [{"icao", "city",
+    "nm", "base"}]. Empty when the airline serves nothing in reach."""
     dest = airports_by_icao.get(dest_icao)
     if not dest:
         return []
@@ -53,5 +55,6 @@ def alternates(dest_icao, departures, airports_by_icao):
     for reach in (MAX_NM, EXTENDED_NM):
         within = [a for a in found if a["nm"] <= reach]
         if within:
-            return sorted(within, key=lambda a: (not a["base"], a["nm"]))[:LIMIT]
+            within.sort(key=lambda a: a["nm"])
+            return [a for a in within if a["base"]][:SHOWN] + [a for a in within if not a["base"]][:SHOWN]
     return []
