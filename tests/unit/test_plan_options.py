@@ -9,11 +9,11 @@ import alternates
 import simbrief_api
 
 AIRPORTS = {
-    "EGAC": {"city": "Belfast", "lat": 54.6181, "lon": -5.8725},
-    "EGAA": {"city": "Belfast", "lat": 54.6575, "lon": -6.2158},      # 12 NM
-    "EGPF": {"city": "Glasgow", "lat": 55.8719, "lon": -4.4331},      # 90 NM
-    "EGAE": {"city": "Derry, Derry and Strabane", "lat": 55.0428, "lon": -7.1611},   # 51 NM
-    "EGKK": {"city": "London", "lat": 51.1481, "lon": -0.1903},       # 290 NM
+    "EGAC": {"short_name": "Belfast City", "city": "Belfast", "lat": 54.6181, "lon": -5.8725},
+    "EGAA": {"short_name": "Belfast International", "city": "Belfast", "lat": 54.6575, "lon": -6.2158},   # 12 NM
+    "EGPF": {"short_name": "Glasgow", "city": "Glasgow", "lat": 55.8719, "lon": -4.4331},                # 90 NM
+    "EGAE": {"short_name": "Derry", "city": "Derry, Derry and Strabane", "lat": 55.0428, "lon": -7.1611}, # 51 NM
+    "EGKK": {"short_name": "Gatwick", "city": "London", "lat": 51.1481, "lon": -0.1903},                 # 290 NM
 }
 
 
@@ -21,8 +21,8 @@ def test_bases_come_first_then_the_nearest():
     departures = {"EGAC": 40, "EGAA": 100, "EGPF": 80, "EGAE": 5, "EGKK": 300}
     got = alternates.alternates("EGAC", departures, AIRPORTS)
     assert [(a["icao"], a["base"]) for a in got] == [("EGAA", True), ("EGPF", True), ("EGAE", False)]
-    assert got[0] == {"icao": "EGAA", "city": "Belfast", "nm": 12, "base": True}
-    assert got[2]["city"] == "Derry"
+    assert got[0] == {"icao": "EGAA", "name": "Belfast International", "nm": 12, "base": True}
+    assert got[2]["name"] == "Derry"
 
 
 def test_a_far_destination_looks_further_and_an_isolated_one_gets_none():

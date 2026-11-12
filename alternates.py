@@ -36,8 +36,8 @@ def bases(departures):
 
 def alternates(dest_icao, departures, airports_by_icao):
     """The alternates for a destination, best first: up to SHOWN bases by
-    distance, then up to SHOWN other airports by distance: [{"icao", "city",
-    "nm", "base"}]. Empty when the airline serves nothing in reach."""
+    distance, then up to SHOWN other airports by distance: [{"icao", "name"
+    (the airport's short name, e.g. "Linate"), "nm", "base"}]. Empty when the airline serves nothing in reach."""
     dest = airports_by_icao.get(dest_icao)
     if not dest:
         return []
@@ -49,9 +49,8 @@ def alternates(dest_icao, departures, airports_by_icao):
             continue
         nm = great_circle_nm(dest, airport)
         if nm is not None and nm >= MIN_NM:
-            city = (airport.get("city") or airport.get("name") or "").split(" (")[0].split(",")[0]
-            found.append({"icao": icao, "city": city,
-                          "nm": nm, "base": icao in company_bases})
+            name = airport.get("short_name") or airport.get("name") or ""
+            found.append({"icao": icao, "name": name, "nm": nm, "base": icao in company_bases})
     for reach in (MAX_NM, EXTENDED_NM):
         within = [a for a in found if a["nm"] <= reach]
         if within:

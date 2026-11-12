@@ -1029,7 +1029,7 @@ def build_network():
     return {
         "carriers": list(ACTIVE_CARRIER_CODES),
         "airports": [
-            {k: airports_by_icao[icao][k] for k in ("icao", "iata", "name", "city", "country", "lat", "lon")}
+            {k: airports_by_icao[icao][k] for k in ("icao", "iata", "name", "short_name", "city", "country", "lat", "lon")}
             for icao in served
         ],
         "routes": [[index[d], index[a], m] for (d, a), m in sorted(masks.items())
@@ -1216,7 +1216,8 @@ def airports_search():
     q = request.args.get("q", "").strip().upper()
     if not q:
         return jsonify([])
-    matches = [a for a in airports if a["icao"].startswith(q) or a["iata"].startswith(q) or a["city"].upper().startswith(q)]
+    matches = [a for a in airports if a["icao"].startswith(q) or a["iata"].startswith(q) or a["city"].upper().startswith(q)
+               or a["short_name"].upper().startswith(q)]
     return jsonify(matches[:15])
 
 

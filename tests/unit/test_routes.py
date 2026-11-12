@@ -210,3 +210,12 @@ def test_health_check_answers_without_signing_in(client, monkeypatch):
     resp = client.get("/healthz")
     assert resp.status_code == 200 and resp.get_json() == {"ok": True}
     assert client.get("/app").status_code == 302                     # the app itself still needs a sign-in
+
+
+def test_every_airport_has_its_own_short_name(client, app_module):
+    """Map labels, alternates and statistics name the airport, not its town."""
+    names = {a["icao"]: a.get("short_name") for a in app_module.airports}
+    assert all(names.values())
+    assert (names["LIML"], names["LIMC"], names["EGKK"], names["EGAC"]) == ("Linate", "Malpensa", "Gatwick", "Belfast City")
+    assert all("short_name" in a for a in app_module.network["airports"])
+    assert "LIML" in [a["icao"] for a in client.get("/airports/search?q=LINATE").get_json()]

@@ -228,7 +228,7 @@ function attachAirportDropdown(inputId, dropdownId, endpoint) {
     dropdown.innerHTML = items.map((a, i) => `
       <div class="opt${i === activeIndex ? ' active' : ''}" data-icao="${a.icao}">
         <span class="code">${a.icao} / ${a.iata}</span>
-        <span class="place">${a.city}</span>
+        <span class="place">${a.short_name || a.city}</span>
       </div>`).join('');
     dropdown.classList.add('open');
     dropdown.querySelectorAll('.opt').forEach((el, i) => {
@@ -717,7 +717,7 @@ function filteredItineraries(skip) {
 
 function airportLabel(icao) {
   const a = networkData && networkData.airportsByIcao[icao];
-  return a ? `${icao} (${a.city.toUpperCase()})` : icao;
+  return a ? `${icao} (${(a.short_name || a.city).toUpperCase()})` : icao;
 }
 
 function carrierName(code) {
@@ -1547,7 +1547,7 @@ function addAirportMarker(a, kind, info) {
   } else {
     const count = info ? ` &middot; ${plural(info.count, 'ITINERARY', 'ITINERARIES')}` : '';
     const via = kind === 'via' ? '<br>MULTI-LEG TURNAROUND (VIA) ONLY' : '';
-    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
+    marker.bindTooltip(`<strong>${a.icao}</strong> &middot; ${a.short_name || a.city}${count}${via}${wx ? '<br>' + wx : ''}`,
       { direction: 'top', offset: [0, -6], className: wx ? 'wx-tip' : '' });
   }
   mapAirportEntries.push({ a, info });
@@ -3207,7 +3207,7 @@ async function loadPlanOptions(flight, index) {
 function paintPlanOptions(flight, index) {
   const p = planOptions[simbriefApiKey(flight, index)]; if (!p) return;
   const altEl = document.getElementById('sbAltn-' + index), ofpEl = document.getElementById('sbOfp-' + index);
-  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.city)} &middot; ${fmtNum(a.nm)} NM</option>`;
+  const altnOption = a => `<option value="${escAttr(a.icao)}"${a.icao === p.altn ? ' selected' : ''}>${escText(a.icao)} ${escText(a.name)} &middot; ${fmtNum(a.nm)} NM</option>`;
   const bases = p.alternates.filter(a => a.base), others = p.alternates.filter(a => !a.base);
   if (altEl) altEl.innerHTML = '<span class="sheet-k">ALTERNATE</span><span class="sheet-v">' + (p.alternates.length
     ? `<select id="sbAltnSel-${index}" onchange="choosePlanAltn(${index}, this.value)" aria-label="Destination alternate">
@@ -3226,10 +3226,8 @@ function paintPlanOptions(flight, index) {
       <div class="sheet-row plan-row plan-default"><span class="sheet-k"></span><span class="sheet-v" id="sbOfpSave-${index}">${ofpSaveHtml(index, o)}</span></div>`;
 }
 function ofpIsDefault(o) { return !!ofpDefaults && Object.keys(ofpDefaults).every(k => ofpDefaults[k] === o[k]); }
-function ofpSaveHtml(index, o, note) {
-  const same = ofpIsDefault(o);
-  return `<span class="plan-save"><button class="ghost" type="button" id="sbOfpSaveBtn-${index}" onclick="saveOfpDefaults(${index})"${same ? ' disabled' : ''}>SAVE AS DEFAULT</button>
-    <span class="plan-note">${note || (same ? 'YOUR DEFAULT OPTIONS' : 'CHANGED FOR THIS PLAN ONLY')}</span></span>`;
+function ofpSaveHtml(index, o, error) {
+  return `<span class="plan-save"><button class="ghost" type="button" id="sbOfpSaveBtn-${index}" onclick="saveOfpDefaults(${index})"${ofpIsDefault(o) ? ' disabled' : ''}>SAVE AS DEFAULT</button>${error ? `<span class="plan-note">${error}</span>` : ''}</span>`;
 }
 function choosePlanAltn(index, icao) {
   const flight = loadActiveFlight(); if (!flight) return;
@@ -3253,7 +3251,7 @@ async function saveOfpDefaults(index) {
     })).json();
     if (!r.options) throw new Error();
     ofpDefaults = r.options;
-    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp, 'SAVED. USED FOR EVERY NEW PLAN');
+    if (el) el.innerHTML = ofpSaveHtml(index, p.ofp);
   } catch (e) {
     if (el) el.innerHTML = ofpSaveHtml(index, p.ofp, 'NOT SAVED. CHECK CONNECTION, THEN RETRY');
   }
@@ -4687,6 +4685,8 @@ function countryName(code) {
 function typeName(t) { return (AIRCRAFT_TYPES[t] || {}).name || t || 'Unknown'; }
 function typeFamily(t) { return (AIRCRAFT_TYPES[t] || {}).family || 'Other'; }
 function statsAirport(icao) { return (statsData && statsData.airports[icao]) || {}; }
+// The airport's own short name ("Linate"), or its town for an airport outside the route network
+function airportShortName(a) { return a.short_name || a.city || a.name || ''; }
 function rowCountries(r) { return [statsAirport(r.dep).country, statsAirport(r.arr).country]; }
 function isDomestic(r) { const [a, b] = rowCountries(r); return !!a && a === b; }
 
@@ -4846,7 +4846,7 @@ function statsFilterOptions(key, rows) {
     else if (key === 'airport') { add(r.dep); if (r.arr !== r.dep) add(r.arr); }
   });
   const label = (v) => key === 'carrier' ? (CARRIER_NAMES[v] || v) : key === 'type' ? typeName(v)
-    : key === 'country' ? countryName(v) : `${v} ${statsAirport(v).city || statsAirport(v).name || ''}`.trim();
+    : key === 'country' ? countryName(v) : `${v} ${airportShortName(statsAirport(v))}`.trim();
   return [...counts.entries()].map(([v, n]) => [v, `${label(v)} (${n})`]).sort((a, b) => a[1].localeCompare(b[1]));
 }
 
@@ -4964,7 +4964,7 @@ function statsOverview(el, rows, range, group) {
   const byType = [...groupRows(rows, r => r.type)].map(([t, rs]) => ({ label: escText(typeName(t)), key: t, rows: rs })).sort((a, b) => b.rows.length - a.rows.length).slice(0, 5);
   const movements = new Map();
   rows.forEach(r => [r.dep, r.arr].forEach(a => movements.set(a, (movements.get(a) || 0) + 1)));
-  const topAirports = [...movements].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([a, n]) => ({ label: `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`, key: a, n }));
+  const topAirports = [...movements].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([a, n]) => ({ label: `<b>${a}</b> ${escText(airportShortName(statsAirport(a)))}`, key: a, n }));
   const dom = rows.filter(isDomestic).length, intl = rows.length - dom;
   el.innerHTML = `
     <div class="st-grid st-grid-overview">
@@ -5139,7 +5139,7 @@ function statsAirports(el, rows, range) {
   const newOnes = [...ap.keys()].filter(a => firstSeen[a] >= range[0] && firstSeen[a] <= range[1]).sort((a, b) => firstSeen[a].localeCompare(firstSeen[b]));
   const routes = [...groupRows(rows, r => [r.dep, r.arr].sort().join('-'))].map(([k, rs]) => ({ k, rs, dist: rs.find(r => r.dist != null)?.dist ?? null }));
   const byDist = rows.filter(r => r.dist != null).sort((a, b) => b.dist - a.dist);
-  const apLabel = a => `<b>${a}</b> ${escText(statsAirport(a).city || statsAirport(a).name || '')}`;
+  const apLabel = a => `<b>${a}</b> ${escText(airportShortName(statsAirport(a)))}`;
   const flightLine = r => `<tr><td>${escText(r.fn)}</td><td>${r.dep} &rarr; ${r.arr}</td><td class="num">${fmtNum(r.dist)} NM</td><td class="num">${fmtDay(r.date)}</td></tr>`;
   el.innerHTML = `
     <div class="st-grid st-grid-3">
@@ -5208,7 +5208,7 @@ function statsOperations(el, rows) {
         ${mels.length ? statsBars(mels.map(([m, rs]) => ({ label: escText(m), n: rs.length })), { value: it => it.n, fmt: v => `${v} ${v === 1 ? 'FLIGHT' : 'FLIGHTS'}` }) : '<p class="st-hint">NO MEL ITEMS ON THESE FLIGHTS</p>'}
         <h3>DEPARTURE PUNCTUALITY BY AIRPORT <span class="st-muted">2+ departures, worst first</span></h3>
         ${byAirport.length ? `<div class="st-scroll st-scroll-short"><table class="st-table st-clickable"><thead><tr><th>AIRPORT</th><th class="num">DEPARTURES</th><th class="num">ON TIME</th><th class="num">AVG DELAY</th></tr></thead><tbody>
-          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(statsAirport(x.a).city || '')}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
+          ${byAirport.map(x => `<tr onclick="setStatsFilter('airport', '${x.a}')" tabindex="0" title="Filter by this"><td><b>${x.a}</b> ${escText(airportShortName(statsAirport(x.a)))}</td><td class="num">${x.n}</td><td class="num">${x.otp}%</td><td class="num">${fmtSigned(x.avg)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="st-hint">Not enough departures per airport yet</p>'}
       </section>
       <section class="st-card st-card-stack">
         <h3>SCHEDULED DEPARTURE TIME (UTC)</h3>

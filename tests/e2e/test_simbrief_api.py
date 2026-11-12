@@ -64,7 +64,7 @@ async def main():
         altns = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 option')].map(o => o.textContent.toUpperCase())")
         groups = await page.evaluate("[...document.querySelectorAll('#sbAltnSel-0 optgroup')].map(g => g.label)")
         check("ALTERNATE offers easyJet's airports near Belfast City, nearest base first, or SimBrief's choice",
-              altns[0] == "EGAA BELFAST · 12 NM" and any(a.startswith("EGPF GLASGOW") for a in altns)
+              altns[0] == "EGAA BELFAST INTERNATIONAL · 12 NM" and any(a.startswith("EGPF GLASGOW") for a in altns)
               and altns[-1] == "SIMBRIEF CHOOSES" and groups[0] == "AIRLINE BASES" and groups[-1] == "SIMBRIEF", (altns, groups))
         ofp = await page.inner_text("#sbOfp-0")
         check("OFP options start in KG with flight maps on and stepclimbs off",
@@ -73,12 +73,10 @@ async def main():
               and "RUNWAY ANALYSIS" in ofp and "FIR NOTAMS" in ofp and "LAYOUT\nEZY" in ofp, ofp)
         await page.select_option("#sbAltnSel-0", "EGPF")
         await page.check("[data-opt=stepclimbs]")
-        check("a changed option applies to this plan only until it's saved as default",
-              "CHANGED FOR THIS PLAN ONLY" in await page.inner_text("#sbOfpSave-0") and await page.is_enabled("#sbOfpSaveBtn-0"))
+        check("SAVE AS DEFAULT is offered once an option differs from the defaults", await page.is_enabled("#sbOfpSaveBtn-0"))
         await page.click("#sbOfpSaveBtn-0"); await page.wait_for_selector("#sbOfpSaveBtn-0:disabled")
         check("SAVE AS DEFAULT keeps the options for the next plans",
-              "SAVED" in await page.inner_text("#sbOfpSave-0")
-              and (await page.evaluate("fetch('/simbrief/plan-options?flight=U2803').then(r => r.json())"))["options"]["stepclimbs"] is True)
+              (await page.evaluate("fetch('/simbrief/plan-options?flight=U2803').then(r => r.json())"))["options"]["stepclimbs"] is True)
         await page.locator(".af-tabs").screenshot(path=shot("simbrief_airframe_picker.png"))
 
         await page.click("#afNextBtn")
